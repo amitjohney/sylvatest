@@ -41,12 +41,11 @@ for kind in gitrepositories kustomizations helmreleases helmcharts; do
 done
 
 echo_b "\U0001F4DC Install telco-cloud-init Helm release"
-if kubectl get helmreleases.helm.toolkit.fluxcd.io telco-cloud-init &>/dev/null; then
-    # Ask flux to reconcile
-    kubectl annotate --overwrite helmrelease/telco-cloud-init reconcile.fluxcd.io/requestedAt="$(date +%s)"
-else
-    kubectl kustomize kustomize-components/telco-cloud-init/bootstrap/ | envsubst | kubectl apply -f -
-fi
+kubectl kustomize kustomize-components/telco-cloud-init/bootstrap | envsubst | kubectl apply -f -
+
+# this is just to force-refresh in a dev environment with a new commit (or refreshed parameters)
+kubectl annotate --overwrite gitrepository/telco-cloud-init reconcile.fluxcd.io/requestedAt="$(date +%s)"
+kubectl annotate --overwrite helmrelease/telco-cloud-init reconcile.fluxcd.io/requestedAt="$(date +%s)"
 
 # Starting from here, the script will just be following components & cluster deployment :)
 
