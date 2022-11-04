@@ -15,5 +15,6 @@ patches:
       namespace: default
     spec:
       values:
-        cluster:
-          enabled: no
+        components:
+          cluster:
+            enabled: false
