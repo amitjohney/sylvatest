@@ -11,7 +11,7 @@ spec:
       containers:
       - name: pivot
         #FIXME(feleouet): build & publish image when this component will be living in its own repository
-        image: registry.gitlab.com/t6306/components/capi-bootstrap/capi-pivot:latest
+        image: registry.gitlab.com/t6306/components/capi-bootstrap/kube-job:latest
         command: ["/bin/sh", "-c", "/opt/entrypoint.sh"]
         volumeMounts:
         - mountPath: /opt/
