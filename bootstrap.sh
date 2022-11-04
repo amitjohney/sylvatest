@@ -17,8 +17,7 @@ if [[ -z ${GITLAB_USER} || -z ${GITLAB_TOKEN} ]]; then
 fi
 
 # Kill all child processes (kubectl watches) on exit
-#trap "jobs -rp | xargs -r kill" SIGINT SIGTERM EXIT
-[[ ! $CI ]] &&  trap "killall kubectl -q"  EXIT
+trap 'pids="$(jobs -p)"; [ -n "$pids" ] && kill $pids' EXIT
 set -eu
 
 # FIXME: check if script has not already run & pivot (and exit in that case)
