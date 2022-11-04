@@ -1,5 +1,5 @@
 {{- $envAll := . -}}
-{{- if (tuple $envAll "cluster" | include "is-component-enabled") -}}
+{{- if (or (tuple $envAll "cluster" | include "is-component-enabled") (tuple $envAll "capd" | include "is-component-enabled")) -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
