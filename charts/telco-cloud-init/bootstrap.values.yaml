@@ -175,7 +175,7 @@ components:
 
               echo "-- Patch the telco-cloud-init HelmRelease to allow the Flux cluster redefinition to happen in the management cluster"
               kubectl --kubeconfig management-cluster-kubeconfig \
-                  patch helmrelease telco-cloud-init --type=json --patch='[{"op":"remove","path":"/spec/values/cluster"}]'
+                  patch helmrelease telco-cloud-init --type=json --patch='[{"op":"remove","path":"/spec/values/components/cluster"}]'
 
               # NOTE: here we could add a reference to another valueFile that would deploy components specific to the management cluster
               # '[{"op":"add","path":"/spec/chart/spec/valuesFiles/-","value":"charts/telco-cloud-init/management.values.yaml"}]'
