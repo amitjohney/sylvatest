@@ -4,8 +4,6 @@
 
 phase: bootstrap  ## or 'management'
 
-# this defines the defaults for the .spec produced for the Kustomization resource
-# generated for each item of 'components'
 component_kustomization_spec_defaults:
   force: false
   prune: false
