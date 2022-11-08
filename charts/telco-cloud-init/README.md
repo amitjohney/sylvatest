@@ -6,7 +6,7 @@ The key purpose of this chart is to facilitate the creation of the bootstrap clu
 follow-up with the creation with the management cluster, both sharing many commmon components.
 
 The installation of the components is done thanks to FluxCD resources. And the dependency
-resolution built-in Flux is used to orchestrate the creation of the management cluster after installing the base components on the boostrap cluster, which is then followed by 
+resolution built-in Flux is used to orchestrate the creation of the management cluster after installing the base components on the bootstrap cluster, which is then followed by 
 the deployments of components in the management cluster.
 
 This chart also acts as the place where we handle "meta-release" aspect; ie. where we determine the different versions to use for the different components.
@@ -39,7 +39,7 @@ When instantiating this chart on the management cluster, this chart will:
 When a "pivot" setup is wanted, where the management cluster manages its own ClusterAPI
 lifecycle with GitOps, the following additional actions are done:
 
-* the installation of the chart on the boostrap cluster triggers a pivot operation once
+* the installation of the chart on the bootstrap cluster triggers a pivot operation once
   CAPI components are installed on the management cluster
 * the installation of the chart on the management cluster install Flux resources
   for the ClusterAPI definitions describing itself
@@ -58,7 +58,7 @@ Flux is already installed on the cluster on which the chart is being installed.
 
 * prepare a file having the credentials needed to access git repos (and gitlab docker registry):
 
-```
+```terminal
 $ cat < EOF > secrets.yaml
 git_auth_default: 
   username: $GITLAB_USER
@@ -71,7 +71,7 @@ registry_secret:
 ```
 * prepare the file(s) with the Helm overrides that you want:
 
-```
+```terminal
 $ cat < EOF > myoverrides.yaml
 phase: management  # e.g. to test the installation of the chart on the management cluster
 
@@ -107,7 +107,7 @@ Helm overrides, to allow deploying and maintaining different flavors/specializat
 of TelcoCloud, relying on kustomize overlays carrying the different layers that inject Helm
 overrides into a FluxCD HelmRelease.
 
-Example in capi-bootstrap project.
+This is how this chart is used [in the context of this git repository](../../kustomize-components/telco-cloud-init/).
 
 ## Design notes
 
@@ -118,19 +118,12 @@ Example in capi-bootstrap project.
 
 * use HelmRelease as top-level objects instead of Kustomization resources
 
-* split boostrap specific values into a separate values file under `chart/` which would be called only
-  when instantiating for boostrap (could use HelmChart valuesFile if doing this with GitOps workflow)
-
 * to allow the `telco-cloud-init` release on the management cluster to be handled via GitOps, we need
   to generate it via a Kustomization (or HelmRelease) defined in the management cluster itself (instead of via a
-  Kustomization defined in the boostrap cluster with a kubeConfig pointing to mgmt cluster) - this will require
+  Kustomization defined in the bootstrap cluster with a kubeConfig pointing to mgmt cluster) - this will require
   adding an intermediate Kustomization to do that
 
 * have flux handle itself in the management cluster (currently broken when a proxy is needed)
-
-* parametrize the revision of telco-cloud-init (and capi-bootstrap) to use, so that when in a dev or CI
-  environment, the components from those repos are deployed from the right version rather than from a hardcoded branch
-  (see `$self_commit` in `capi-bootstrap`)
 
 * allow use of `{{ .Values.xxx }}` in  some or all values (requires passing values into gotpl interpreter)  (?)
 

@@ -1,10 +1,10 @@
 # kube-job
 
-This job is intended to be run as a Flux Kustomization that will overload the content of kube-job.sh.
+This job is intended to be run as a Flux Kustomization that will overload the content of `kube-job.sh`.
 
-It is can be used (with moderation) to introduce some specific jobs in flux dependency chart, when they can not be done in other way. For example, we may use it to copy secrets and configs or to perform cluster-api pivot from bootstrap to managent cluster.
+This can be used (with moderation) to introduce some specific jobs in flux dependency chain, when they can not be done in other way. For example, we may use it to copy secrets and configs or to perform cluster-api pivot from bootstrap to management cluster.
 
-```
+```yaml
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
 kind: Kustomization
 metadata:
