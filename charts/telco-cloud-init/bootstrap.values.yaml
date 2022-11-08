@@ -4,14 +4,9 @@
 
 phase: bootstrap  ## or 'management'
 
-component_kustomization_spec_defaults:
-  force: false
-  prune: false
-  interval: 100000m
-  retryInterval: 30s
-  path: ""
-  wait: false
-  timeout: 30s
+component_kustomization_spec_default:
+  interval: 100000m   # for bootstrap, we don't care about having flux update things on the longterm
+  retryInterval: 30s  # but we want it to retry quickly so that the system converges faster (quicker reaction when a dependency is met)
 
 
 components:

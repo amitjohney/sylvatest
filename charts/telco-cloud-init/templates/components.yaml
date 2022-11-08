@@ -55,7 +55,7 @@ metadata:
 spec:
     {{- $source_ref := dict "sourceRef" (dict "kind" "GitRepository" "name" (printf "component-%s" $component_name)) -}}
     {{- $spec := dict -}}
-    {{- $spec = mergeOverwrite $spec $envAll.Values.component_kustomization_spec_defaults ($component_def.spec | default dict) $source_ref }}
+    {{- $spec = mergeOverwrite $spec $envAll.Values.component_kustomization_spec_default ($component_def.spec | default dict) $source_ref }}
 {{ $spec | toYaml | indent 2 }}
   {{- end -}}
 {{ end }}

@@ -53,14 +53,13 @@ git_repo_templates:
         branch: develop
 
 
-# this defines the defaults for the .spec produced for the Kustomization resource
+# this defines the default for the .spec produced for the Kustomization resource
 # generated for each item of 'components'
-component_kustomization_spec_defaults:
+component_kustomization_spec_default:
   force: false
-  prune: false
-  interval: 100000m
-  retryInterval: 30s
-  path: ""
+  prune: true
+  interval: 15m
+  retryInterval: 1m
   wait: false
   timeout: 30s
 
@@ -75,7 +74,7 @@ components:
   #   labels: (optional) dict holding labels to add to the resources for this component
   #   ref_override: optional, if defined, this dict will be used for the GitRepository overriding spec.ref
   #   spec:  # contains a partial spec for a FluxCD Kustomization, most of the
-  #          # things are generated from component_kustomization_spec_defaults
+  #          # things are generated from component_kustomization_spec_default
   #     # sourceRef is generated from .git_repo field
   #     path: ./path-to-component-under-repo
   #     # the final path will hence be:
