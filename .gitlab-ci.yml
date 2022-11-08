@@ -11,76 +11,55 @@ default:
   tags:
     - gitlab-org-docker
 
-# FIXME: use gitla-ci include or extends... (this is just a parallel try) :P
+.test-capd:
+  stage: test
+  before_script:
+    # FIXME: build an image with following tools (+clusterctl)
+    - apk add --no-cache curl bash git gettext # for envsubst
+    - curl -Lo /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v0.15.0/kind-linux-amd64
+    - chmod +x /usr/local/bin/kind
+    - curl -Lo /usr/local/bin/kubectl https://dl.k8s.io/release/v1.25.0/bin/linux/amd64/kubectl
+    - chmod +x /usr/local/bin/kubectl
+    - curl -Lo /usr/local/bin/kubetail https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail
+    - chmod +x /usr/local/bin/kubetail
+    - curl -L https://get.helm.sh/helm-v3.10.1-linux-amd64.tar.gz | tar xz
+    - mv linux-amd64/helm /usr/local/bin/
+
+    - DOCKER_IP=$(getent hosts docker | awk '{print $1}')
+    - |
+      # create a cluster with access to API endpoint through docker-in-docker address
+      cat <<EOF | kind create cluster --name capd --config=-
+      kind: Cluster
+      apiVersion: kind.x-k8s.io/v1alpha4
+      networking:
+        apiServerAddress: "$DOCKER_IP"
+        apiServerPort: 6443
+      EOF
+    - kubectl cluster-info --context kind-capd
+
+    - KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
+    - ip route add $KIND_PREFIX via $DOCKER_IP
+
+    - export DOCKER_HOST=tcp://$DOCKER_IP:2375
+    - export GITLAB_USER=$CI_REGISTRY_USER
+    - export GITLAB_TOKEN=$CI_JOB_TOKEN
+  only:
+    refs:
+      - merge_requests
+      - develop
+      - tags
+
 test-rke2-capd:
   timeout: 45min
-  stage: test
+  extends: .test-capd
   script:
-    # FIXME: build an image with following tools (+clusterctl)
-    - apk add --no-cache curl bash git gettext # for envsubst
-    - curl -Lo /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v0.15.0/kind-linux-amd64
-    - chmod +x /usr/local/bin/kind
-    - curl -Lo /usr/local/bin/kubectl https://dl.k8s.io/release/v1.25.0/bin/linux/amd64/kubectl
-    - chmod +x /usr/local/bin/kubectl
-    - curl -Lo /usr/local/bin/kubetail https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail
-    - chmod +x /usr/local/bin/kubetail
-    - curl -L https://get.helm.sh/helm-v3.10.1-linux-amd64.tar.gz | tar xz
-    - mv linux-amd64/helm /usr/local/bin/
-
-    - DOCKER_IP=$(getent hosts docker | awk '{print $1}')
-    - |
-      # create a cluster with access to API endpoint through docker-in-docker address
-      cat <<EOF | kind create cluster --name capd --config=-
-      kind: Cluster
-      apiVersion: kind.x-k8s.io/v1alpha4
-      networking:
-        apiServerAddress: "$DOCKER_IP"
-        apiServerPort: 6443
-      EOF
-    - kubectl cluster-info --context kind-capd
-
-    - KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
-    - ip route add $KIND_PREFIX via $DOCKER_IP
-
-    - export DOCKER_HOST=tcp://$DOCKER_IP:2375
-    - export GITLAB_USER=$CI_REGISTRY_USER
-    - export GITLAB_TOKEN=$CI_JOB_TOKEN
     - ./bootstrap.sh rke2-capd
-  #only:
-  #  - master
-  #  - tags
+  except:
+    variables:
+      - $CI_MERGE_REQUEST_TITLE =~ /^(\[Draft\]|\(Draft\)|Draft:)/
 
 test-kubeadm-capd:
-  timeout: 45min
-  stage: test
+  timeout: 30min
+  extends: .test-capd
   script:
-    # FIXME: build an image with following tools (+clusterctl)
-    - apk add --no-cache curl bash git gettext # for envsubst
-    - curl -Lo /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v0.15.0/kind-linux-amd64
-    - chmod +x /usr/local/bin/kind
-    - curl -Lo /usr/local/bin/kubectl https://dl.k8s.io/release/v1.25.0/bin/linux/amd64/kubectl
-    - chmod +x /usr/local/bin/kubectl
-    - curl -Lo /usr/local/bin/kubetail https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail
-    - chmod +x /usr/local/bin/kubetail
-    - curl -L https://get.helm.sh/helm-v3.10.1-linux-amd64.tar.gz | tar xz
-    - mv linux-amd64/helm /usr/local/bin/
-
-    - DOCKER_IP=$(getent hosts docker | awk '{print $1}')
-    - |
-      # create a cluster with access to API endpoint through docker-in-docker address
-      cat <<EOF | kind create cluster --name capd --config=-
-      kind: Cluster
-      apiVersion: kind.x-k8s.io/v1alpha4
-      networking:
-        apiServerAddress: "$DOCKER_IP"
-        apiServerPort: 6443
-      EOF
-    - kubectl cluster-info --context kind-capd
-
-    - KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
-    - ip route add $KIND_PREFIX via $DOCKER_IP
-
-    - export DOCKER_HOST=tcp://$DOCKER_IP:2375
-    - export GITLAB_USER=$CI_REGISTRY_USER
-    - export GITLAB_TOKEN=$CI_JOB_TOKEN
     - ./bootstrap.sh kubeadm-capd
