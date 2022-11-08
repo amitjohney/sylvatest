@@ -77,8 +77,7 @@ Create a kind cluster and use it as default kubectl context:
 kind create cluster --name bootstrap
 ```
 
-Provided that you work on orange's falcon platform, you need to provide (at least) your ssh-key name in [values.yaml](environment-values/kubeadm-capo/values.yaml) and openstack credentials that will be used by capo in [secrets.yaml](environment-values/kubeadm-capo/secrets.yaml).
-```
+Provided that you work on Orange's Falcon platform, you need to provide (at least) your ssh-key name in [values.yaml](environment-values/kubeadm-capo/values.yaml) and openstack credentials that will be used by capo in [infra-secrets.yaml](environment-values/kubeadm-capo/infra-secrets.yaml).
 
 Once this is done, you just need to run the bootstrap script:
 ```shell

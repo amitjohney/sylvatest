@@ -246,7 +246,7 @@ cluster:
     ssh_key_name:
     image: capo-ubuntu-2004-kube-v1.23.6-calico-3.23.1
     network_id:  # openstack network to use as external network
-    clouds_yaml: # defined via helm install --set-file capo.clouds_yaml=/path/to/cloud.yaml
+    clouds_yaml: # (this is a dict, not a YAML string)
     #cacert: # cert used to validate CA of OpenStack APIs
 
 capd:
