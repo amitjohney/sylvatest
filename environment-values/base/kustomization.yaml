@@ -6,6 +6,9 @@ kind: Kustomization
 resources:
   - secrets.yaml
 
+commonLabels:
+  copy-from-bootstrap-to-management: ""
+
 configMapGenerator:
 - name: management-cluster-values
   options:

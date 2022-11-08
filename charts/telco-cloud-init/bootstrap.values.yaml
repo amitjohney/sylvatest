@@ -66,16 +66,10 @@ components:
               done
 
               echo "-- Copy secrets and configmaps from bootstrap to management cluster"
-              set +e  # because kubectl may exit with 1 if secrets/management-cluster-infra-secrets is absent
-                      # we can improve this later on by selecting which secrets and configmaps to copy based on a label
-                      # see https://gitlab.com/t6306/components/capi-bootstrap/-/issues/26
-              kubectl get \
-                configmap/proxy-env-vars \
-                configmap/management-cluster-values \
-                secret/management-cluster-secrets \
-                secrets/management-cluster-infra-secrets \
+              kubectl get configmaps,secrets \
+                -l copy-from-bootstrap-to-management= \
                 -o json \
-                  | jq '.items[] | del(.metadata.labels."helm.toolkit.fluxcd.io/name") | del(.metadata.labels."helm.toolkit.fluxcd.io/namespace") | del(.metadata.resourceVersion) | del(.metadata.uid) | del(.metadata.creationTimestamp)' \
+                  | jq '.items[] | del(.metadata.labels."helm.toolkit.fluxcd.io/name") | del(.metadata.labels."copy-from-bootstrap-to-management") | del(.metadata.labels."helm.toolkit.fluxcd.io/namespace") | del(.metadata.resourceVersion) | del(.metadata.uid) | del(.metadata.creationTimestamp)' \
                   | kubectl --kubeconfig management-cluster-kubeconfig apply -f -
 
               echo "-- All done"
