@@ -56,7 +56,7 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 
 Function used to determine if a component in 'components' (.Values.components dict) is
 enabled based on the 'phase' and the .enabled value of the component
-(yes/no/bootstrap-only/management-only)
+(yes/no/management-only)
 
 The default for <component>.enabled is .Values.component_default_enable .
 
@@ -78,13 +78,12 @@ Usage:
       {{- fail (printf "phase='%s' is neither 'bootstrap' or 'management'" $phase) -}}
     {{- end -}}
     {{- if (or (eq $component_enabled "true")
-               (eq $component_enabled (printf "%s-only" $phase)))
+               (and (eq $component_enabled "management-only") (eq $phase "management")))
     -}}
 true
-    {{- else if (eq ($component_enabled) "false") -}}{{/* we return an empty string to mean "false", this is a well-known trick for gotpl... */}}
-    {{- else if (or (eq $component_enabled "management-only")
-                    (eq $component_enabled "bootstrap-only")) -}}{{/* catch all if syntax is valid but we didn't matcht the current phase */}}
+    {{- else if (or (eq ($component_enabled) "false")
+                    (and (eq $component_enabled "management-only") (eq $phase "bootstrap"))) -}}{{/* we return an empty string to mean "false", this is a well-known trick for gotpl... */}}
     {{- else -}}
-      {{- fail (printf "components.%s.enabled=%s is neither a boolean or 'bootstrap-only'/'management-only'" $component_name $component_enabled) -}}
+      {{- fail (printf "components.%s.enabled=%s is neither a boolean or 'management-only'" $component_name $component_enabled) -}}
     {{- end -}}
 {{- end -}}

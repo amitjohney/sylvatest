@@ -8,7 +8,9 @@ git_repo_templates:
 
 components:
   capd:
-    enabled: true # bootstrap-only, management-only
+    enabled: true
+  kubed:
+    enabled: true
   cabpr:
     enabled: true
   cluster:

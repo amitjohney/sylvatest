@@ -6,11 +6,6 @@
 nameOverride: ""
 fullnameOverride: ""
 
-# 'phase' determines whether we are instantiating this chart
-# on the bootstrap cluster or on the management cluster
-# (this is used to determine which component manifest to generate)
-phase: management
-
 # registry secrets
 registry_secret:
   registry.gitlab.com:
@@ -64,13 +59,11 @@ component_kustomization_spec_defaults:
   wait: false
   timeout: 30s
 
-component_default_enable: yes
-
 # this defines Flux Kustomizations objects, and for each
 # a corresponding GitRepository (and Secret, TODO: the Secret don't need to be generated for each component)
 components:
   # <component-name>:
-  #   enabled: yes/no/bootstrap-only/management-only
+  #   enabled: yes/no/management-only
   #   repo: <name of the repo under 'git_repo_templates', defaults to 'default'>
   #   labels: (optional) dict holding labels to add to the resources for this component
   #   ref_override: optional, if defined, this dict will be used for the GitRepository overriding spec.ref
@@ -255,3 +248,14 @@ capd:
 # debug_values can be used to see how flux merged helm release values in telco-cloud-init-values-debug secret:
 # kubectl get secrets telco-cloud-init-values-debug -o template="{{ .data.values }}" | base64 -d
 debug_values: no
+
+
+# 'phase' determines whether we are instantiating this chart
+# on the bootstrap cluster or on the management cluster
+#
+# this is used to determine which component manifests to generate
+# for a given item under 'components':
+# if 'enabled' is set to 'management-only' then the component is enabled only if 'phase: management'
+phase: management
+
+component_default_enable: management-only  # this simply ensures that adding a component in this file under components does not implicitly enable it for "bootstrap"

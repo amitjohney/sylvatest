@@ -1,8 +1,12 @@
 # Bootstrap values for telco-cloud-init.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates during the bootstrap process
+# 
+# These value are meant to be used as overrides to the default values from values.yaml
+# when the chart is instantiated in the bootstrap cluster
 
-phase: bootstrap  ## or 'management'
+# set 'phase: bootstrap' so that
+# * components with 'enabled: management-only' are ignored
+# * components with 'enabled: boostrap-only' are enabled
+phase: bootstrap
 
 component_kustomization_spec_defaults:
   force: false
@@ -16,8 +20,14 @@ component_kustomization_spec_defaults:
 
 components:
 
+  cert-manager:
+    enabled: yes
+
+  capi:
+    enabled: yes
+
   management-cluster-configs:
-    enabled: bootstrap-only
+    enabled: yes
     repo: capi-bootstrap
     spec:
       # FIXME: This is very hacky, we should use an ad-hoc kustomisation instead of this job to re-create configmap and secrets on maangement cluster
@@ -81,7 +91,7 @@ components:
               echo "-- All done"
 
   management-cluster-flux:
-    enabled: bootstrap-only
+    enabled: yes
     repo: capi-bootstrap
     labels:
       suspend-on-pivot: "yes"  # this component must be suspended before pivot
@@ -103,7 +113,7 @@ components:
   # we reinject current values into it, to have the exact same things
   # this is done via a ConfigMap and a Secret (to hold security sensitive things)
   management-telco-cloud-init:
-    enabled: bootstrap-only
+    enabled: yes
     repo: capi-bootstrap
     labels:
       suspend-on-pivot: "yes"  # this component must be suspended before pivot
@@ -122,7 +132,7 @@ components:
           name: management-cluster-values
 
   pivot:
-    enabled: bootstrap-only
+    enabled: yes
     repo: capi-bootstrap
     spec:
       path: ./kustomize-components/kube-job
