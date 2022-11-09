@@ -117,7 +117,30 @@ Then you can delete bootstrap VM:
 openstack --os-cloud falcon server delete bootstrap
 ```
 
+### Installation without bootstrap, on a pre-existing cluster
+
+The `apply.sh` script can be used to deploy the stack on a pre-existing cluster
+without relying on the bootstrap stage at all.
+
+Assuming that the current `kubectl` context points to the target cluster and
+that the environment values have been prepared under some `environment-values/xxxxx` directory,
+and that the `GITLAB_USER` and `GITLAB_TOKEN` environement variables are suitably set,
+the following will deploy the stack:
+
+```
+./apply.sh <path/to/environment>
+```
+
 ## Tips & Troubleshooting
+
+### Generic
+
+You can see detailed status information on management cluster provisioning with:
+
+```shell
+clusterctl describe cluster management-cluster --show-conditions all
+```
+### When bootstraping from an OpenStack VM with userdata
 
 You can ssh to bootstrap and cluster VMs using provided ssh key with ubuntu user
 
@@ -127,15 +150,20 @@ You can follow flux sync using `kubectl -n flux-system get kustomizations.kustom
 
 And check for management cluster control plane using `kubectl get kubeadmcontrolplane`
 
-You can also see detailed status information on management cluster provisioning with:
-
-```shell
-clusterctl describe cluster management-cluster --show-conditions all
-```
-
 Note that after pivot, these commands won't return anything on bootstrap cluster, as the resources we'll have been moved to management cluster.
 
-You can retrieve management cluster kubeconfig in `~/bootstrap/[CLUSTER_NAME]-kubeconfig`
+You can retrieve management cluster kubeconfig in `~/bootstrap/management-cluster-kubeconfig`
+
+### Working directly on the management cluster
+
+Once the bootstrap phase is done, and the pivot is done, the management
+cluster can be updated with:
+
+```
+./apply.sh <your-environment-name>
+```
+
+This assumes that the required environment variables are set.
 
 ## Cleaning things up
 
