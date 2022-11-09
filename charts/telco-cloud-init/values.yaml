@@ -86,7 +86,6 @@ components:
     # note that Flux is always installed on the current cluster as a pre-requisite to installing the chart
     # this components contains Flux definitions *to manage the Flux system itself via gitops*
 
-    enabled: management-only
     repo: capi-bootstrap
     spec:
       path: ./kustomize-components/flux-system
