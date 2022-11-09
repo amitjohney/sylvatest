@@ -76,7 +76,7 @@ components:
   #
 
   # test-example:
-  #   
+  #
   #   thanks to git_repo_templates.default which has base_url defined this is sufficient
   #   to create a GitRepository pointing to  https://gitlab.com/t6306/components/example-comp.git/
   #   and a FluxKustomization deploying the kustomization.yaml found there
@@ -85,8 +85,6 @@ components:
     # note that Flux is always installed on the current cluster as a pre-requisite to installing the chart
     # this components contains Flux definitions *to manage the Flux system itself via gitops*
 
-    ## FIXME: paint isn't dry yet, but later we'll enable that
-    enabled: no  # management-only
     repo: capi-bootstrap
     spec:
       path: ./kustomize-components/flux-system
