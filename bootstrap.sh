@@ -11,7 +11,7 @@ kubectl kustomize kustomize-components/flux-system | envsubst | kubectl apply -f
 echo_b "\U000023F3 Wait for Flux to be ready..."
 kubectl wait --for condition=Available --timeout 600s --all-namespaces --all deployment
 
-background_watch management gitrepositories kustomizations helmreleases helmcharts
+background_watch bootstrap gitrepositories kustomizations helmreleases helmcharts
 
 echo_b "\U0001F4DC Install telco-cloud-init Helm release"
 kubectl kustomize kustomize-components/telco-cloud-init/bootstrap | envsubst | kubectl apply -f -
