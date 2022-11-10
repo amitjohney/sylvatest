@@ -1,0 +1,53 @@
+{{- if or .Values.vsphereCsi.enabled .Values.storageClass.enabled .Values.cluster.additionalClusterResourceSet }}
+apiVersion: addons.cluster.x-k8s.io/v1beta1
+kind: ClusterResourceSet
+metadata:
+  {{- if include "cluster-api-vsphere.annotations" . }}
+  annotations: {{- include "cluster-api-vsphere.annotations" . | nindent 4 }}
+  {{- end }}
+  labels:
+    cluster.x-k8s.io/cluster-name: {{ include "cluster-api-vsphere.clusterName" . }}
+    {{- include "cluster-api-vsphere.labels" . | nindent 4 }}
+  name: {{ include "cluster-api-vsphere.clusterName" . }}-crs-0
+  namespace: {{ .Release.Namespace | quote }}
+spec:
+  clusterSelector:
+    matchLabels:
+      cluster.x-k8s.io/cluster-name: {{ include "cluster-api-vsphere.clusterName" . }}
+      {{- include "cluster-api-vsphere.selectorLabels" . | nindent 6 }}
+  resources:
+  {{- if .Values.vsphereCsi.enabled }}
+# VSPHERE-CSI - START
+  - kind: Secret
+    name: vsphere-csi-controller
+  - kind: ConfigMap
+    name: vsphere-csi-controller-role
+  - kind: ConfigMap
+    name: vsphere-csi-controller-binding
+  - kind: Secret
+    name: csi-vsphere-config
+  - kind: ConfigMap
+    name: csi.vsphere.vmware.com
+  - kind: ConfigMap
+    name: vsphere-csi-node
+  - kind: ConfigMap
+    name: vsphere-csi-controller
+  - kind: Secret
+    name: cloud-controller-manager
+  - kind: Secret
+    name: cloud-provider-vsphere-credentials
+  - kind: ConfigMap
+    name: cpi-manifests
+  {{- end }}
+  {{- if .Values.storageClass.enabled }}
+  - kind: ConfigMap
+    name: {{ include "cluster-api-vsphere.clusterName" . }}-storageclass
+  {{- end }}
+  {{- if .Values.cni.calico.enabled }}
+  - kind: ConfigMap
+    name: calico-configmap
+  {{- end }}
+  {{- if .Values.cluster.additionalClusterResourceSet }}
+{{ toYaml .Values.cluster.additionalClusterResourceSet | indent 2 }}
+  {{- end }}
+{{- end }}

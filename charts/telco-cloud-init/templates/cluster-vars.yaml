@@ -17,4 +17,12 @@ data:
 {{ if eq .Values.cluster.flavor.infra_provider "capd" }}
   DOCKER_HOST: {{ .Values.capd.docker_host }}
 {{ end }}
+{{ if eq .Values.cluster.flavor.infra_provider "capv" }}
+  VS_DC_NAME: {{ .Values.cluster.capv.dataCenter }}
+  VS_NETWORK: {{ .Values.cluster.capv.network }}
+  VS_USERNAME: {{ .Values.cluster.capv.username }}
+  VS_PASSWORD: {{ .Values.cluster.capv.password }}
+  VS_SERVER: {{ .Values.cluster.capv.server }}
+  VS_TLS_THUMBPRINT: {{ .Values.cluster.capv.tlsThumbprint }}
+{{ end }}
 {{ end }}

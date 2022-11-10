@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: component-metal3-values
+  namespace: default
+  labels:
+    copy-from-bootstrap-to-management: ""
+stringData:
+  values: |
+    global:
+      storageClass: $METAL3_STORAGECLASS
+    ironicIPADownloaderBaseURI: $IPA_DOWNLOADER_BASE_URI
+    httpProxy: $http_proxy
+    httpsProxy: $https_proxy
+    noProxy: localhost,$IPA_DONWLOADER_IP
+    persistence:
+      ironic:
+        accessMode: "ReadWriteOnce"
+    services:
+      ironic:
+      # Specify the IP address used by Ironic service
+        ironicIP: $IRONIC_IP
+        annotations:
+          metallb.universe.tf/address-pool: ironic-pool
