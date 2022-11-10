@@ -1,0 +1,138 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ../base
+components:
+  - ../../components/orange-proxy/RKE2ControlPlane
+patches:
+- patch: |-
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+    kind: OpenStackCluster
+    metadata:
+      name: ${CLUSTER_NAME}
+      namespace: default
+    spec:
+      dnsNameservers:
+      - 172.20.115.54
+      allowAllInClusterTraffic: true
+      disableAPIServerFloatingIP: true
+      apiServerLoadBalancer:
+        enabled: false
+      network:
+        id: ${CAPO_NETWORK_ID}
+      apiServerFixedIP: ${KUBE_VIP_IP}
+- patch: |-
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+    kind: OpenStackMachineTemplate
+    metadata:
+      name: ${CLUSTER_NAME}-cp-template
+      namespace: default
+    spec:
+      template:
+        spec:
+          rootVolume:
+            diskSize: 60
+            volumeType: ceph_sas
+          ports:
+            - network:
+                id: ${CAPO_NETWORK_ID}
+              allowedAddressPairs:
+                - ipAddress: ${KUBE_VIP_IP}
+- patch: |-
+    apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
+    kind: RKE2ControlPlane
+    metadata:
+      name: ${CLUSTER_NAME}-control-plane
+      namespace: default
+    spec:
+      rke2ConfigSpec:
+        files:
+        - path: /etc/default/rke2-server
+          owner: "root:root"
+          permissions: "0644"
+          content: |
+            HTTP_PROXY=http://proxy.rd.francetelecom.fr:8080
+            HTTPS_PROXY=http://proxy.rd.francetelecom.fr:8080
+            NO_PROXY=localhost,127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+        - path: /var/lib/rancher/rke2/server/manifests/metallb.yaml
+          owner: "root:root"
+          permissions: "0644"
+          content: |
+              ---
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: metallb-system
+              ---
+              apiVersion: helm.cattle.io/v1
+              kind: HelmChart
+              metadata:
+                name: metallb
+                namespace: metallb-system
+              spec:
+                chart: metallb
+                repo: https://metallb.github.io/metallb
+                targetNamespace: metallb-system
+                tolerations:
+                - key: node.cloudprovider.kubernetes.io/uninitialized
+                  value: "true"
+                  effect: NoSchedule
+                - effect: NoExecute
+                  key: node-role.kubernetes.io/etcd
+                - effect: NoSchedule
+                  key: node-role.kubernetes.io/master
+                - effect: NoSchedule
+                  key: node-role.kubernetes.io/control-plane
+                nodeSelector:
+                  node-role.kubernetes.io/control-plane: "true"
+                valuesContent: |-
+                  controller.nodeSelector:
+                    node-role.kubernetes.io/control-plane: "true"
+                  controller.tolerations:
+                    - key: node.cloudprovider.kubernetes.io/uninitialized
+                      value: "true"
+                      effect: NoSchedule
+                    - effect: NoExecute
+                      key: node-role.kubernetes.io/etcd
+                    - effect: NoSchedule
+                      key: node-role.kubernetes.io/master
+                    - effect: NoSchedule
+                      key: node-role.kubernetes.io/control-plane
+              ---
+              apiVersion: metallb.io/v1beta1
+              kind: IPAddressPool
+              metadata:
+                name: lbpool
+                namespace: metallb-system
+              spec:
+                addresses:
+                  - ${KUBE_VIP_IP}/32
+              ---
+              apiVersion: metallb.io/v1beta1
+              kind: L2Advertisement
+              metadata:
+                name: l2advertisement
+                namespace: metallb-system
+              spec:
+                ipAddressPools:
+                - lbpool
+              ---
+              apiVersion: v1
+              kind: Service
+              metadata:
+                name: kubernetes-vip
+                namespace: kube-system
+              spec:
+                type: LoadBalancer
+                loadBalancerIP: ${KUBE_VIP_IP}
+                ports:
+                - name: https
+                  port: 6443
+                  protocol: TCP
+                  targetPort: 6443
+                - name: rancher
+                  port: 9345
+                  protocol: TCP
+                  targetPort: 9345
+                selector:
+                  component: kube-apiserver

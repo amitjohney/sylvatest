@@ -1,0 +1,92 @@
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: ${CLUSTER_NAME}
+  namespace: default
+spec:
+  clusterNetwork:
+    services:
+      cidrBlocks: ["10.43.0.0/16"]
+    pods:
+      cidrBlocks: ["10.42.0.0/16"]
+    serviceDomain: cluster.local
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
+    kind: RKE2ControlPlane
+    name: ${CLUSTER_NAME}-control-plane
+    namespace: default
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+    kind: OpenStackCluster
+    name: ${CLUSTER_NAME}
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+kind: OpenStackCluster
+metadata:
+  name: ${CLUSTER_NAME}
+  namespace: default
+spec:
+  cloudName: capo_cloud
+  externalNetworkId: ${CAPO_NETWORK_ID}
+  identityRef:
+    kind: Secret
+    name: management-cluster-cloud-config
+  managedSecurityGroups: true
+  disableAPIServerFloatingIP: true
+  apiServerLoadBalancer:
+    enabled: false
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
+kind: RKE2ControlPlane
+metadata:
+  name: ${CLUSTER_NAME}-control-plane
+  namespace: default
+spec:
+  infrastructureTemplate:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+    kind: OpenStackMachineTemplate
+    name: ${CLUSTER_NAME}-cp-template
+    namespace: default
+  rke2ConfigSpec:
+    files: []
+    serverConfig:
+      tlsSan:
+      - localhost
+      - 127.0.0.1
+      - 0.0.0.0
+    agentConfig:
+      #nodeName: "{{ ds.meta_data.local_hostname }}"
+      kubeletArgs:
+        - "eviction-hard=nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%"
+        - "provider-id=openstack://{{ ds.meta_data.uuid }}"
+    deployRKE2Commands:
+      - "sed -i '1i snapshotter: native' /etc/rancher/rke2/config.yaml"
+      - "echo 'cni: calico' >> /etc/rancher/rke2/config.yaml"
+      - systemctl daemon-reload
+      - systemctl enable rke2-server.service
+      - systemctl start rke2-server.service
+      # Mimics kubeadm bootstrap output as capd is watching that file to set BootstrapExecSucceededCondition condition
+      - "mkdir -p /run/cluster-api;  touch /run/cluster-api/bootstrap-success.complete"
+      - ln -s /etc/rancher/rke2/rke2.yaml /etc/kubernetes/kubelet.conf
+      - ln -s /var/lib/rancher/rke2/bin/kubectl /usr/local/bin/kubectl
+  replicas: 3
+  version: v1.24.4+rke2r1
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+kind: OpenStackMachineTemplate
+metadata:
+  name: ${CLUSTER_NAME}-cp-template
+  namespace: default
+spec:
+  template:
+    spec:
+      cloudName: capo_cloud
+      flavor: m1.medium
+      identityRef:
+        kind: Secret
+        name: management-cluster-cloud-config
+      image: ${MACHINE_IMAGE}
+      sshKeyName: ${SSH_KEY_NAME}
+      securityGroups:
+        - name: default
+
