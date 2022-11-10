@@ -2,27 +2,8 @@
 
 source tools/shell-lib/common.sh
 
-ENV_NAME=${ENV_NAME:-$1}
-if [[ ! -f environment-values/${ENV_NAME}/kustomization.yaml ]]; then
-    echo "Usage: $0 [env_name]"
-    echo "This script expects to find a kustomisation in environment-values/${ENV_NAME} directory to generate management-cluster configuration and secrets"
-    exit 1
-fi
-
-export CURRENT_COMMIT=${CI_COMMIT_SHA:-$(git rev-parse HEAD)}
-
-if [[ -z ${GITLAB_USER} || -z ${GITLAB_TOKEN} ]]; then
-    echo "GITLAB_USER and GITLAB_TOKEN variables must be defined (token must grant read access to repositories and regitries)"
-    exit 1
-fi
-
-# FIXME: check if script has not already run & pivot (and exit in that case)
-
-# Let env-specific scripts perform ad-hoc tasks
-[[ -f ./tools/bootstrap/${ENV_NAME}.sh ]] && source ./tools/bootstrap/${ENV_NAME}.sh
-
 echo_b "\U0001F512 Create management cluster secrets and configmaps"
-kubectl kustomize environment-values/${ENV_NAME} | envsubst | kubectl apply -f -
+kubectl kustomize ${ENV_PATH} | envsubst | kubectl apply -f -
 
 echo_b "\U0001F5D8 Bootstraping flux"
 kubectl kustomize kustomize-components/flux-system | envsubst | kubectl apply -f -
@@ -43,9 +24,7 @@ kubectl annotate --overwrite helmrelease/telco-cloud-init reconcile.fluxcd.io/re
 
 echo_b "\U000023F3 Wait for Helm chart to be ready"
 
-kubectl wait --for condition=Ready --timeout 300s --all gitrepositories
-kubectl wait --for condition=Ready --timeout 300s --all helmcharts
-kubectl wait --for condition=Ready --timeout 300s --all helmrelease
+kubectl wait --for condition=Ready --timeout 300s --all gitrepositories,helmcharts,helmrelease
 
 echo_b "\U000023F3 Wait for flux to apply management cluster definition"
 kubectl wait --for condition=Ready --timeout 300s kustomization cluster

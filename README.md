@@ -58,9 +58,12 @@ EOF
 
 And provide your gitlab username and a gitlab token with read access to repository and registry.
 ```
-GITLAB_USER=your_name GITLAB_TOKEN=glpat-XXXXXXX ./bootstrap.sh rke2-capd
+GITLAB_USER=your_name GITLAB_TOKEN=glpat-XXXXXXX ./bootstrap.sh environment-values/rke2-capd
 ```
-You can also deploy cluster using the kubeadm infrastructure provider by providing the corresponding `kubeadm-capd` parameter
+
+In the above command, we're just instructing the bootstrap script to use sample configuration provided in [environment-values/rke2-capd/](environment-values/rke2-capd/) directory. You will probably want to modify these values to adapt to your needs and environment (for example, you may want to change the management-cluster kustomisation path in [values.yaml](environment-values/rke2-capd/values.yaml)).
+
+You can also deploy cluster using the kubeadm infrastructure provider by using the corresponding `environment-values/kubeadm-capd` directory
 
 For now it will only deploy a single-node RKE2 cluster, but it's a starting point to add more stuff (rancher, [capi-rancher-import](https://gitlab.com/t6306/components/capi-rancher-import), workload-clusters...)
 
@@ -81,8 +84,16 @@ Provided that you work on Orange's Falcon platform, you need to provide (at leas
 
 Once this is done, you just need to run the bootstrap script:
 ```shell
-GITLAB_USER=your_name GITLAB_TOKEN=glpat-XXXXXXX ./bootstrap.sh kubeadm-capo
+GITLAB_USER=your_name GITLAB_TOKEN=glpat-XXXXXXX ./bootstrap.sh environment-values/kubeadm-capo
 ```
+
+> **_NOTE FOR DEVELOPPERS:_**
+> If you intent to contribute to this project, you will probably want to avoid committing values and secrets related to your environment. To that extent, you can create your own copy of values directory that will be gitignored:
+> ```shell
+> cp -a environment-values/kubeadm-capo environment-values/my-capo-env
+> # Fill my-capo-env with your local values, then
+> ./bootstrap.sh environment-values/my-capo-env
+> ```
 
 ### Using a disposable openstack VM
 
