@@ -16,10 +16,6 @@ if [[ -z ${GITLAB_USER} || -z ${GITLAB_TOKEN} ]]; then
     exit 1
 fi
 
-# Kill all child processes (kubectl watches) on exit
-trap 'pids="$(jobs -p)"; [ -n "$pids" ] && kill $pids' EXIT
-set -eu
-
 # FIXME: check if script has not already run & pivot (and exit in that case)
 
 # Let env-specific scripts perform ad-hoc tasks
@@ -34,10 +30,7 @@ kubectl kustomize kustomize-components/flux-system | envsubst | kubectl apply -f
 echo_b "\U000023F3 Wait for Flux to be ready..."
 kubectl wait --for condition=Available --timeout 600s --all-namespaces --all deployment
 
-# Watch flux resources in background
-for kind in gitrepositories kustomizations helmreleases helmcharts; do
-    kubectl get $kind --show-kind --no-headers -A -w | sed 's/^/bootstrap /' &
-done
+background_watch management gitrepositories kustomizations helmreleases helmcharts
 
 echo_b "\U0001F4DC Install telco-cloud-init Helm release"
 kubectl kustomize kustomize-components/telco-cloud-init/bootstrap | envsubst | kubectl apply -f -
@@ -64,12 +57,10 @@ kubectl wait --for condition=Ready --timeout 600s cluster management-cluster
 # Retrieve maangement cluster secret
 kubectl get secret management-cluster-kubeconfig -o jsonpath='{.data.value}' | base64 -d > management-cluster-kubeconfig
 
-echo_b "\U000023F3 Wait for flux fo be installed on management cluster"
+echo_b "\U000023F3 Wait for flux to be installed on management cluster"
 kubectl wait --for condition=Ready --timeout 1200s kustomization management-cluster-flux
 
-for kind in gitrepositories kustomizations helmreleases; do
-    kubectl --kubeconfig management-cluster-kubeconfig get $kind --show-kind --no-headers -A -w | sed 's/^/management /' &
-done
+kubectl_additional_args="--kubeconfig management-cluster-kubeconfig" background_watch management gitrepositories kustomizations helmreleases helmcharts
 
 echo_b "\U000023F3 Wait for remaining components to be installed on management cluster and pivot"
 kubectl wait --for condition=Ready --timeout 1200s --all kustomizations
