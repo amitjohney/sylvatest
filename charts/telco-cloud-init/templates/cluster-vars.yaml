@@ -12,6 +12,7 @@ data:
 {{ if eq .Values.cluster.flavor.infra_provider "capo" }}
   SSH_KEY_NAME: {{ .Values.cluster.capo.ssh_key_name }}
   CAPO_NETWORK_ID: {{ .Values.cluster.capo.network_id }}
+  KUBE_VIP_IP: {{ .Values.cluster.capo.kube_vip_ip }}
 {{ end }}
 {{ if eq .Values.cluster.flavor.infra_provider "capd" }}
   DOCKER_HOST: {{ .Values.capd.docker_host }}

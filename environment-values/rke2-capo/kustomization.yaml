@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../base
+
+configMapGenerator:
+- name: management-cluster-values
+  behavior: merge
+  options:
+    disableNameSuffixHash: true
+  files:
+  - values=values.yaml
+
+secretGenerator:
+- name: management-cluster-infra-secrets
+  options:
+    disableNameSuffixHash: true
+  files:
+  - infra-secrets=infra-secrets.yaml
+
