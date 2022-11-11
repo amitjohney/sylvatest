@@ -15,10 +15,10 @@ components:
     spec:
       #path: ./kustomize-components/management-cluster/kubeadm-capo/base
       path: ./kustomize-components/management-cluster/kubeadm-capo/orange-falcon
-    dependsOn:
-    - name: capi
-    - name: capo
-    - name: cabpk
+      dependsOn:
+      - name: capi
+      - name: capo
+      - name: cabpk
 
 cluster:
   image: capo-ubuntu-2004-kube-v1.23.6-calico-3.23.1

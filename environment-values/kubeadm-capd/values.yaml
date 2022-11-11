@@ -17,10 +17,10 @@ components:
     spec:
       path: ./kustomize-components/management-cluster/kubeadm-capd/base
       #path: ./kustomize-components/management-cluster/kubeadm-capd/orange-proxy
-    dependsOn:
-    - name: capi
-    - name: capd
-    - name: cabpk
+      dependsOn:
+      - name: capi
+      - name: capd
+      - name: cabpk
 
 cluster:
   image: registry.gitlab.com/t6306/components/capi-bootstrap/kindest/node:v1.25.0-cni # just kindest/node with preloaded vlan cni binary

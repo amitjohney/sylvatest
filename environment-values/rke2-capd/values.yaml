@@ -14,12 +14,12 @@ components:
   cabpr:
     enabled: true
   cluster:
-    #spec:
+    spec:
     #  path: kustomize-components/management-cluster/rke2-capd/orange-proxy
-    dependsOn:
-    - name: capi
-    - name: capd
-    - name: cabpr
+      dependsOn:
+      - name: capi
+      - name: capd
+      - name: cabpr
 
   #FIXME: figure out why pivot works locally and not in gitlab ci... (whereas pivot work with kubadm-capd in ci)
   pivot:
