@@ -11,7 +11,6 @@ The following variables will be substituted:
 
 - `GITLAB_USER`
 - `GITLAB_TOKEN`
-- `CURRENT_COMMIT`
 - `http_proxy`
 - `https_proxy`
 - `no_proxy`

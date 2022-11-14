@@ -49,15 +49,20 @@
 
       {{- $repo_def := deepCopy (index $envAll.Values.git_repo_templates $repo_name) -}}
 
-      {{- $secret_ref := dict "secretRef" (dict "name" (printf "git-repo-auth-%s" $repo_name)) -}}{{/* Secret is templated in git-repo-auth.yaml */}}
-      {{- $git_ref_override := dict "ref" ($component_def.ref_override | default dict) -}}
-      {{- $git_repo_spec := dict -}}
-      {{- $git_repo_spec = mergeOverwrite $git_repo_spec $envAll.Values.git_repo_spec_default $repo_def.spec $secret_ref $git_ref_override -}}
-      {{- if not (hasKey $git_repo_spec "url") -}}
-        {{- fail (printf "repository template '%s' does not have 'url' defined" $repo_name) -}}
-      {{- end -}}
 
-      {{- $git_repo_name := printf "component-%s" $component_name }}
+      {{- $git_repo_name := ""}}
+      {{- if hasKey $repo_def "existing_gitrepository" -}}
+        {{- $git_repo_name = $repo_def.existing_gitrepository -}}
+      {{- else -}}
+        {{- $git_repo_name = printf "component-%s" $component_name -}}
+
+        {{- $secret_ref := dict "secretRef" (dict "name" (printf "git-repo-auth-%s" $repo_name)) -}}{{/* Secret is templated in git-repo-auth.yaml */}}
+        {{- $git_ref_override := dict "ref" ($component_def.ref_override | default dict) -}}
+        {{- $git_repo_spec := dict -}}
+        {{- $git_repo_spec = mergeOverwrite $git_repo_spec $envAll.Values.git_repo_spec_default $repo_def.spec $secret_ref $git_ref_override -}}
+        {{- if not (hasKey $git_repo_spec "url") -}}
+          {{- fail (printf "repository template '%s' does not have 'url' defined" $repo_name) -}}
+        {{- end }}
 
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
@@ -68,6 +73,8 @@ metadata:
     telco-cloud-init.repo: {{ $repo_name }}
 {{ $labels | toYaml | indent 4 }}
 spec: {{ $git_repo_spec | toYaml | nindent 2 }}
+
+      {{ end }}
 
       {{ if hasKey $component_def "helmrelease_spec" -}}
         {{/*
