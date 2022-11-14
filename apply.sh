@@ -10,6 +10,10 @@
 
 source $(dirname $0)/tools/shell-lib/common.sh
 
+if [[ -f management-cluster-kubeconfig ]]; then
+    export KUBECONFIG=${KUBECONFIG:-management-cluster-kubeconfig}
+fi
+
 if ! (kubectl get nodes > /dev/null); then
     echo_b "Cannot access cluster, 'kubectl get nodes' gives:"
     kubectl get nodes
