@@ -4,6 +4,9 @@ kind: Kustomization
 resources:
 - ../base
 
+commonLabels:
+  suspend-on-pivot: "yes" 
+
 patches:
 - target:
     kind: HelmRelease
