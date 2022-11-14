@@ -10,6 +10,10 @@
 
 source $(dirname $0)/tools/shell-lib/common.sh
 
+if [[ -f management-cluster-kubeconfig ]]; then
+    export KUBECONFIG=${KUBECONFIG:-management-cluster-kubeconfig}
+fi
+
 if ! (kubectl get nodes > /dev/null); then
     echo_b "Cannot access cluster, 'kubectl get nodes' gives:"
     kubectl get nodes
@@ -24,7 +28,7 @@ if ! (kubectl get namespace flux-system >/dev/null); then
     kubectl wait --for condition=Available --timeout 600s --all-namespaces --all deployment
 fi
 
-echo_b "\U0001F4DC Start watching Flux resources in the background"
+echo_b "\U0001F440 Start watching Flux resources in the background"
 background_watch "    " gitrepositories kustomizations helmreleases helmcharts
 
 echo_b "\U0001F512 Create or update management cluster secrets and configmaps"
