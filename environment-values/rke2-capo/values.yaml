@@ -15,10 +15,10 @@ components:
   cluster:
     spec:
       path: kustomize-components/management-cluster/rke2-capo/orange-falcon
-    dependsOn:
-    - name: capi
-    - name: capo
-    - name: cabpr
+      dependsOn:
+      - name: capi
+      - name: capo
+      - name: cabpr
 
 cluster:
   image: Ubuntu 20.04 RKE2
