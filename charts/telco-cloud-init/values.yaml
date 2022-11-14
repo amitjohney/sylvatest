@@ -238,6 +238,7 @@ cluster:
     network_id:  # openstack network to use as external network
     clouds_yaml: # (this is a dict, not a YAML string)
     #cacert: # cert used to validate CA of OpenStack APIs
+    kube_vip_ip: 55.55.55.55
 
 capd:
   docker_host: unix:///var/run/docker.sock
