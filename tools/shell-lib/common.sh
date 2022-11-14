@@ -10,7 +10,7 @@ function background_watch() {
   done
 }
 
-if [[ ! $# -eq 1 && -f ${1}/kustomization.yaml ]]; then
+if ! [[ $# -eq 1 && -f ${1}/kustomization.yaml ]]; then
     echo "Usage: $0 [env_name]"
     echo "This script expects to find a kustomisation in [env_name] directory to generate management-cluster configuration and secrets"
     exit 1
