@@ -4,8 +4,7 @@ git_repo_templates:
   capi-bootstrap:
     spec:
       ref:
-        branch: cm-rke2-capo
-        
+        commit: $CURRENT_COMMIT        
 
 components:
   capo:
