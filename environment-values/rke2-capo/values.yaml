@@ -4,7 +4,7 @@ git_repo_templates:
   capi-bootstrap:
     spec:
       ref:
-        commit: $CURRENT_COMMIT        
+        commit: $CURRENT_COMMIT
 
 components:
   capo:
@@ -18,6 +18,12 @@ components:
       - name: capi
       - name: capo
       - name: cabpr
+  rancher:
+    enabled: management-only
+  k8s-gateway:
+    enabled: management-only  
+  rancher-import:
+    enabled: management-only
 
 cluster:
   image: Ubuntu 20.04 RKE2
@@ -27,7 +33,8 @@ cluster:
   capo:
     ssh_key_name: telco
     network_id: c314d52c-80fe-42b6-9092-55be383d1951
-    kube_vip_ip: 172.20.129.164
+    kube_vip_ip: 172.20.129.245
+    k8sgateway_lb_ip: 172.20.129.244
 
 proxies:
   no_proxy: 127.0.0.1,localhost,172.20.0.0/16,10.43.0.0/16,10.42.0.0/16,10.10.10.0/24

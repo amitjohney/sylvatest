@@ -21,6 +21,17 @@ components:
       - name: capi
       - name: capd
       - name: cabpk
+  # rancher:
+  #   enabled: management-only
+  #   spec:
+  #     dependsOn:
+  #     - name: ingress-nginx
+  # k8s-gateway:
+  #   enabled: management-only
+  # rancher-import:
+  #   enabled: management-only
+  # ingress-nginx:
+  #   enabled: management-only
 
 cluster:
   image: registry.gitlab.com/t6306/components/capi-bootstrap/kindest/node:v1.25.0-cni # just kindest/node with preloaded vlan cni binary
