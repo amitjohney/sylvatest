@@ -1795,22 +1795,3 @@ webhooks:
     resources:
     - l2advertisements
   sideEffects: None
----
-apiVersion: metallb.io/v1beta1
-kind: IPAddressPool
-metadata:
-  name: ironic-pool
-  namespace: metallb-system
-spec:
-  addresses:
-# Specify the IP address used by Irnoc service
-  - 163.162.114.139-163.162.114.139
----
-apiVersion: metallb.io/v1beta1
-kind: L2Advertisement
-metadata:
-  name: ironic
-  namespace: metallb-system
-spec:
-  ipAddressPools:
-   - ironic-pool

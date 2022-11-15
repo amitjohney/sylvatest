@@ -31,13 +31,14 @@ patches:
       template:
         spec:
           rootVolume:
-            diskSize: 60
+            diskSize: 80
             volumeType: ceph_sas
           ports:
             - network:
                 id: ${CAPO_NETWORK_ID}
               allowedAddressPairs:
                 - ipAddress: ${KUBE_VIP_IP}
+                - ipAddress: ${K8SGATEWAY_LB_IP}                
 - patch: |-
     apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
     kind: RKE2ControlPlane

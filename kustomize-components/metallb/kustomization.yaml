@@ -14,5 +14,5 @@ patches:
         path: /spec/conversion/webhook/clientConfig/caBundle
     patch: |-
       - op: add  
-        path: /metadata/annotations/cert-manager.io/inject-ca-from
-        value: metallb-system/metallb-serving-cert
+        path: "/metadata/annotations/cert-manager.io~1inject-ca-from"
+        value: metallb-system/Certificate/metallb-serving-cert

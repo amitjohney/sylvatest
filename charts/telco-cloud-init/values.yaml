@@ -215,6 +215,62 @@ components:
           name: management-cluster
           namespace: default
 
+  rancher:
+    enabled: no
+    repo: capi-bootstrap
+    spec:
+      path: ./kustomize-components/rancher
+      dependsOn:
+      - name: cert-manager
+      wait: true
+
+  k8s-gateway:
+    enabled: no
+    repo: capi-bootstrap
+    spec:
+      path: ./kustomize-components/k8s-gateway
+      dependsOn:
+      - name: rancher
+      wait: true
+      postBuild:
+        substituteFrom:
+        - kind: ConfigMap
+          name: cluster-vars
+
+  rancher-import:
+    enabled: no
+    repo: capi-bootstrap
+    spec:
+      path: ./kustomize-components/rancher-import
+      dependsOn:
+      - name: rancher
+      - name: k8s-gateway
+      wait: true
+      patches:
+      - target:
+          kind: GitRepository
+          name: capi-rancher-import
+        patch: |
+          - op: add
+            path: /spec/secretRef/name
+            # FIXME(baburciu): it's hardcoded, due to known format ./charts/telco-cloud-init/templates/components.yaml and component
+            value: git-auth-repo-component-rancher-import
+      - target:
+          kind: HelmRelease
+          name: capi-rancher-import
+        patch: |
+          - op: add
+            path: /spec/values/conf/cattle_agent_kustomize_source/spec/secretRef/name
+            # FIXME(baburciu): it's hardcoded, due to known format ./charts/telco-cloud-init/templates/components.yaml and component
+            value: git-auth-repo-component-rancher-import              
+
+  ingress-nginx:
+    enabled: no
+    repo: capi-bootstrap
+    spec:
+      path: ./kustomize-components/ingress-nginx
+      wait: true
+
 ## stuff related to the 'cluster' component
 
 cluster:
@@ -239,9 +295,11 @@ cluster:
     clouds_yaml: # (this is a dict, not a YAML string)
     #cacert: # cert used to validate CA of OpenStack APIs
     kube_vip_ip: 55.55.55.55
+    k8sgateway_lb_ip: 44.44.44.44
 
 capd:
   docker_host: unix:///var/run/docker.sock
+  k8sgateway_lb_ip: 44.44.44.44
 
 # debug_values can be used to see how flux merged helm release values in telco-cloud-init-values-debug secret:
 # kubectl get secrets telco-cloud-init-values-debug -o template="{{ .data.values }}" | base64 -d

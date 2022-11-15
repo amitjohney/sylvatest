@@ -186,3 +186,4 @@ components:
                   annotate --overwrite helmrelease/telco-cloud-init reconcile.fluxcd.io/requestedAt="$(date +%s)"
 
               echo "-- All done"
+

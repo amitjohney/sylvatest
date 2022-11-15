@@ -44,6 +44,9 @@ kubectl_additional_args="--kubeconfig management-cluster-kubeconfig" background_
 echo_b "\U000023F3 Wait for remaining components to be installed on management cluster and pivot"
 kubectl wait --for condition=Ready --timeout 1200s --all kustomizations
 
+echo_b "\U000023F3 Wait for components installed on management cluster to be ready"
+kubectl --kubeconfig management-cluster-kubeconfig wait --for condition=Ready --timeout 1200s --all kustomizations
+
 echo_b "\U00002714 Management cluster is ready"
 kubectl --kubeconfig management-cluster-kubeconfig get nodes
 

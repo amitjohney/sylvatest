@@ -19,6 +19,17 @@ components:
       - name: capi
       - name: capo
       - name: cabpk
+  # rancher:
+  #   enabled: management-only
+  #   spec:
+  #     dependsOn:
+  #     - name: ingress-nginx
+  # k8s-gateway:
+  #   enabled: management-only
+  # rancher-import:
+  #   enabled: management-only
+  # ingress-nginx:
+  #   enabled: management-only
 
 cluster:
   image: capo-ubuntu-2004-kube-v1.23.6-calico-3.23.1

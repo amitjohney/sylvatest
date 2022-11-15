@@ -20,6 +20,23 @@ components:
       - name: capi
       - name: capd
       - name: cabpr
+  rancher:
+    enabled: management-only
+  k8s-gateway:
+    enabled: management-only
+    spec:    
+      dependsOn:
+      - name: metallb    
+  rancher-import:
+    enabled: management-only
+  metallb:
+    enabled: management-only
+    repo: capi-bootstrap
+    spec:
+      path: ./kustomize-components/metallb
+      dependsOn:
+      - name: cert-manager      
+      wait: true    
 
   #FIXME: figure out why pivot works locally and not in gitlab ci... (whereas pivot work with kubadm-capd in ci)
   pivot:
@@ -32,6 +49,7 @@ cluster:
 
 capd:
   docker_host: $DOCKER_HOST
+  k8sgateway_lb_ip: 172.20.129.244
 
 proxies:
   http_proxy: $http_proxy
