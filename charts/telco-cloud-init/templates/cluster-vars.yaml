@@ -1,5 +1,5 @@
 {{- $envAll := . -}}
-{{- if (or (tuple $envAll "cluster" | include "is-component-enabled") (tuple $envAll "capd" | include "is-component-enabled")) -}}
+{{- if (or (tuple $envAll "cluster" | include "is-component-enabled") (tuple $envAll "capd" | include "is-component-enabled") (tuple $envAll "k8s-gateway" | include "is-component-enabled")) -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -13,10 +13,8 @@ data:
   SSH_KEY_NAME: {{ .Values.cluster.capo.ssh_key_name }}
   CAPO_NETWORK_ID: {{ .Values.cluster.capo.network_id }}
   KUBE_VIP_IP: {{ .Values.cluster.capo.kube_vip_ip }}
-  K8SGATEWAY_LB_IP: {{ .Values.cluster.capo.k8sgateway_lb_ip }}
 {{ end }}
 {{ if eq .Values.cluster.flavor.infra_provider "capd" }}
   DOCKER_HOST: {{ .Values.capd.docker_host }}
-  K8SGATEWAY_LB_IP: {{ .Values.capd.k8sgateway_lb_ip }}  
 {{ end }}
 {{ end }}
