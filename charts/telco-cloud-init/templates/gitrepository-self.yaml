@@ -1,0 +1,26 @@
+{{/* This GitRepository is referred to from 'component_helmrelease_kustomization_spec_default' */}}
+{{- $envAll := . -}}
+{{- $repo_name := "capi-bootstrap" -}}
+{{- $component_name := "capi-bootstrap" -}}
+{{- $repo_def := deepCopy (index $envAll.Values.git_repo_templates $repo_name) -}}
+{{- $auth := $repo_def.auth | default $envAll.Values.git_auth_default -}}
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: GitRepository
+metadata:
+  name: capi-bootstrap
+  labels:
+{{ include "telco-cloud-init.labels" $envAll | indent 4 }}
+spec:
+{{ $secret_ref := dict "secretRef" (dict "name" "git-repo-auth-capi-bootstrap") -}}
+{{- $spec := dict -}}
+{{- $spec = mergeOverwrite $spec $envAll.Values.git_repo_spec_default $repo_def.spec $secret_ref -}}
+{{- if not (hasKey $spec "url") -}}
+    {{- if not (hasKey $repo_def "base_url") -}}
+        {{- fail (printf "repository template '%s' has neither '.spec.url' nor '.base_url' defined" $repo_name) -}}
+    {{- end -}}
+    {{- $_ := set $spec "url" (printf "%s/%s.git" $repo_def.base_url $component_name) -}}
+{{- else if hasKey $repo_def "base_url" -}}
+    {{- fail (printf "repository template '%s' has both '.spec.url' and '.base_url' defined" $repo_name) -}}
+{{- end }}
+{{ $spec | toYaml | indent 2 }}

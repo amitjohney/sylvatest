@@ -14,9 +14,9 @@ components:
   cabpr:
     enabled: true
   cluster:
-    spec:
-    #  path: kustomize-components/management-cluster/rke2-capd/orange-proxy
-      dependsOn:
+    kustomization_spec:
+      path: ./kustomize-components/management-cluster/rke2-capd/base
+    depends_on:
       - name: capi
       - name: capd
       - name: cabpr
@@ -24,18 +24,17 @@ components:
     enabled: management-only
   k8s-gateway:
     enabled: management-only
-    spec:    
-      dependsOn:
-      - name: metallb    
+    depends_on:
+    - name: metallb
   rancher-import:
     enabled: management-only
   metallb:
     enabled: management-only
     repo: capi-bootstrap
+    depends_on:
+    - name: cert-manager      
     spec:
       path: ./kustomize-components/metallb
-      dependsOn:
-      - name: cert-manager      
       wait: true    
 
   #FIXME: figure out why pivot works locally and not in gitlab ci... (whereas pivot work with kubadm-capd in ci)

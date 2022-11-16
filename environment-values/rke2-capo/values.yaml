@@ -12,12 +12,12 @@ components:
   cabpr:
     enabled: true
   cluster:
-    spec:
+    kustomization_spec:
       path: kustomize-components/management-cluster/rke2-capo/orange-falcon
-      dependsOn:
-      - name: capi
-      - name: capo
-      - name: cabpr
+    depends_on:
+    - name: capi
+    - name: capo
+    - name: cabpr      
   rancher:
     enabled: management-only
   k8s-gateway:

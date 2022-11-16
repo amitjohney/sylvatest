@@ -1,0 +1,13 @@
+{{- $envAll := . -}}
+{{ range $repo_name, $repo_def := .Values.git_repo_templates }}
+{{- $auth := $repo_def.auth | default $envAll.Values.git_auth_default -}}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: git-repo-auth-{{ $repo_name }}
+  labels:
+    telco-cloud-init.repo: {{ $repo_name }}
+{{ include "telco-cloud-init.labels" $envAll | indent 4 }}
+stringData: {{ $auth | toYaml | nindent 2 }}
+{{ end }}
