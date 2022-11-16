@@ -12,6 +12,8 @@ component_kustomization_spec_default:
   interval: 100000m   # for bootstrap, we don't care about having flux update things on the longterm
   retryInterval: 30s  # but we want it to retry quickly so that the system converges faster (quicker reaction when a dependency is met)
 
+component_helmrelease_spec_default:
+  interval: 100000m
 
 components:
 
@@ -23,12 +25,12 @@ components:
 
   management-cluster-configs:
     enabled: yes
+    depends_on:
+      - name: cluster
     repo: capi-bootstrap
-    spec:
+    kustomization_spec:
       # FIXME: This is very hacky, we should use an ad-hoc kustomisation instead of this job to re-create configmap and secrets on maangement cluster
       path: ./kustomize-components/kube-job
-      dependsOn:
-      - name: cluster
       wait: true
       force: true
       patches:
@@ -81,13 +83,11 @@ components:
 
   management-cluster-flux:
     enabled: yes
-    repo: capi-bootstrap
-    labels:
-      suspend-on-pivot: "yes"  # this component must be suspended before pivot
-    spec:
-      path: ./kustomize-components/flux-system
-      dependsOn:
+    depends_on:
       - name: management-cluster-configs
+    repo: capi-bootstrap
+    kustomization_spec:
+      path: ./kustomize-components/flux-system
       kubeConfig:
         secretRef:
           name: management-cluster-kubeconfig
@@ -97,20 +97,20 @@ components:
         substituteFrom:
         - kind: ConfigMap
           name: proxy-env-vars
+    labels:
+      suspend-on-pivot: "yes"  # this component must be suspended before pivot
 
   # instantiate 'telco-cloud-init' chart again in the management cluster
   # we reinject current values into it, to have the exact same things
   # this is done via a ConfigMap and a Secret (to hold security sensitive things)
   management-telco-cloud-init:
     enabled: yes
-    repo: capi-bootstrap
-    labels:
-      suspend-on-pivot: "yes"  # this component must be suspended before pivot
-    spec:
-      path: ./kustomize-components/telco-cloud-init/management-before-pivot/
-      dependsOn:
+    depends_on:
       - name: cluster
       - name: management-cluster-flux
+    repo: capi-bootstrap
+    kustomization_spec:
+      path: ./kustomize-components/telco-cloud-init/management-before-pivot/
       kubeConfig:
         secretRef:
           name: management-cluster-kubeconfig
@@ -119,14 +119,16 @@ components:
         substituteFrom: # Substitute $CURRENT_COMMIT
         - kind: ConfigMap
           name: management-cluster-values
+    labels:
+      suspend-on-pivot: "yes"  # this component must be suspended before pivot
 
   pivot:
     enabled: yes
-    repo: capi-bootstrap
-    spec:
-      path: ./kustomize-components/kube-job
-      dependsOn:
+    depends_on:
       - name: management-telco-cloud-init
+    repo: capi-bootstrap
+    kustomization_spec:
+      path: ./kustomize-components/kube-job
       wait: true
       force: true
       patches:

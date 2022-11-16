@@ -14,17 +14,16 @@ components:
   cabpk:
     enabled: true
   cluster:
-    spec:
+    kustomization_spec:
       path: ./kustomize-components/management-cluster/kubeadm-capd/base
       #path: ./kustomize-components/management-cluster/kubeadm-capd/orange-proxy
-      dependsOn:
+    depends_on:
       - name: capi
       - name: capd
       - name: cabpk
   # rancher:
   #   enabled: management-only
-  #   spec:
-  #     dependsOn:
+  #   depends_on:
   #     - name: ingress-nginx
   # k8s-gateway:
   #   enabled: management-only

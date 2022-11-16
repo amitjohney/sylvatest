@@ -1,49 +1,101 @@
 {{- $envAll := . -}}
 {{ range $component_name, $component_def := .Values.components }}
   {{- if (tuple $envAll $component_name | include "is-component-enabled") -}}
-    {{- $repo_name := $component_def.repo | default "default" -}}
+    {{/*********** Prepare labels used in all generated objects */}}
+
     {{- $labels := deepCopy ($component_def.labels | default dict) -}}
     {{- $_ := set $labels "telco-cloud-init.component" $component_name -}}
-    {{- if not (hasKey $envAll.Values.git_repo_templates $repo_name) -}}
-      {{- fail (printf "components.%s.repo refers to '%s' that isn't defined in .git_repo_templates" $component_name $repo_name) -}}
+
+    {{/************ Sanity checks */}}
+
+    {{- if (not (or (hasKey $component_def "helmrelease_spec")
+                    (hasKey $component_def "kustomization_spec"))) -}}
+      {{- fail (printf "component '%s' does not have 'helmrelease_spec' or 'kustomization_spec' defined" $component_name) -}}
     {{- end -}}
-    {{- $repo_def := deepCopy (index $envAll.Values.git_repo_templates $repo_name) -}}
-    {{- $auth := $repo_def.auth | default $envAll.Values.git_auth_default -}}
-    {{- $secret_name := printf "git-auth-repo-component-%s" $component_name }}
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: {{ $secret_name }}
-  labels:
-    telco-cloud-init.repo: {{ $repo_name }}
-{{ $labels | toYaml | indent 4 }}
-{{ include "telco-cloud-init.labels" $envAll | indent 4 }}
-stringData:
-{{ $auth | toYaml | indent 2 }}
+
+    {{- if (and (hasKey $component_def "helm_repo_url")
+                (not (hasKey $component_def "helmrelease_spec"))) -}}
+      {{- fail (printf "component '%s' has 'helm_repo_url' but no 'helmrelease_spec'" $component_name) -}}
+    {{- end -}}
+
+    {{- if hasKey ($component_def.kustomization_spec|default dict) "dependsOn" -}}
+      {{- fail (printf "components.$component_name.kustomization_spec.dependsOn is defined, you need to use components.$component_name.depends_on instead") -}}
+    {{- end -}}
+
+    {{- if hasKey ($component_def.helmrelease_spec|default dict) "dependsOn" -}}
+      {{- fail (printf "components.$component_name.helmrelease_spec.dependsOn is defined, you need to use components.$component_name.depends_on instead") -}}
+    {{- end -}}
+
+    {{- $helmrelease_spec_overrides := dict -}}
+    {{- $kustomization_spec_overrides := dict -}}
+
+    {{/************* Generation of Flux sources (GitRepository or HelmRepository) */}}
+
+    {{- if not (hasKey $component_def "helm_repo_url") -}}
+      {{/* if no helm_repo_url is set, then we know we'll use a GitRepository */}}
+
+      {{/* sanity checks on the repo definition */}}
+      {{- $repo_name := $component_def.repo | default nil -}}
+      {{- if not $repo_name -}}
+        {{- fail (printf "components.%s.repo isn't defined" $component_name) -}}
+      {{- end -}}
+
+      {{- if not (hasKey $envAll.Values.git_repo_templates $repo_name) -}}
+        {{- fail (printf "components.%s.repo refers to '%s' that isn't defined in .git_repo_templates" $component_name $repo_name) -}}
+      {{- end -}}
+
+      {{/* definition of the repo specification */}}
+
+      {{- $repo_def := deepCopy (index $envAll.Values.git_repo_templates $repo_name) -}}
+
+      {{- $secret_ref := dict "secretRef" (dict "name" (printf "git-repo-auth-%s" $repo_name)) -}}{{/* Secret is templated in git-repo-auth.yaml */}}
+      {{- $git_ref_override := dict "ref" ($component_def.ref_override | default dict) -}}
+      {{- $git_repo_spec := dict -}}
+      {{- $git_repo_spec = mergeOverwrite $git_repo_spec $envAll.Values.git_repo_spec_default $repo_def.spec $secret_ref $git_ref_override -}}
+      {{- if not (hasKey $git_repo_spec "url") -}}
+        {{- fail (printf "repository template '%s' does not have 'url' defined" $repo_name) -}}
+      {{- end -}}
+
+      {{- $git_repo_name := printf "component-%s" $component_name }}
+
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: GitRepository
 metadata:
-  name: component-{{ $component_name }}
+  name: {{ $git_repo_name }}
   labels:
     telco-cloud-init.repo: {{ $repo_name }}
 {{ $labels | toYaml | indent 4 }}
 {{ include "telco-cloud-init.labels" $envAll | indent 4 }}
-spec:
-    {{ $secret_ref := dict "secretRef" (dict "name" $secret_name) -}}
-    {{- $git_ref_override := dict "ref" ($component_def.ref_override | default dict) -}}
-    {{- $spec := dict -}}
-    {{- $spec = mergeOverwrite $spec $envAll.Values.git_repo_spec_default $repo_def.spec $secret_ref $git_ref_override -}}
-    {{- if not (hasKey $spec "url") -}}
-        {{- if not (hasKey $repo_def "base_url") -}}
-            {{- fail (printf "repository template '%s' has neither '.spec.url' nor '.base_url' defined" $repo_name) -}}
-        {{- end -}}
-        {{- $_ := set $spec "url" (printf "%s/%s.git" $repo_def.base_url $component_name) -}}
-    {{- else if hasKey $repo_def "base_url" -}}
-      {{- fail (printf "repository template '%s' has both '.spec.url' and '.base_url' defined" $repo_name) -}}
-    {{- end }}
-{{ $spec | toYaml | indent 2 }}
+spec: {{ $git_repo_spec | toYaml | nindent 2 }}
+
+      {{ if hasKey $component_def "helmrelease_spec" -}}
+        {{/*
+        if helm_release_spec is used then we inject our GitRepository in it as sourceRef 
+        (the Kustomization will in that case, see in 'component_helmrelease_kustomization_spec_default',
+         use capi-bootstrap defined in 'gitrepository-self.yaml' as the GitRepo)
+        */}}
+        {{- $helmrelease_spec_overrides = dict "chart" (dict "spec" (dict "sourceRef" (dict "kind" "GitRepository" "name" $git_repo_name) "reconcileStrategy" "Revision")) -}}
+      {{- else -}}{{/* if 'helmrelease_spec' isn't used, then the GitRepository is used for the Kustomization */}}
+        {{- $kustomization_spec_overrides = dict "sourceRef" (dict "kind" "GitRepository" "name" $git_repo_name) -}}
+      {{- end }}
+
+    {{ else }}{{/* helm_repo is declared, we generate a HelmRepository */}}
+---
+      {{- $helm_repo_spec := dict -}}
+      {{- $helm_repo_spec = mergeOverwrite $helm_repo_spec $envAll.Values.helm_repo_spec_default (dict "url" $component_def.helm_repo_spec | default dict) (dict "url" $component_def.helm_repo_url) -}}
+      {{- $helmrelease_spec_overrides = dict "chart" (dict "spec" (dict "sourceRef" (dict "kind" "HelmRepository" "name" (printf "component-%s" $component_name)))) }}
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: component-{{ $component_name }}
+  labels:
+{{ $labels | toYaml | indent 4 }}
+{{ include "telco-cloud-init.labels" $envAll | indent 4 }}
+spec: {{ $helm_repo_spec | toYaml | nindent 2 }}
+    {{ end }}
+
+    {{/******************* Generation of the Kustomization */}}
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
 kind: Kustomization
@@ -52,10 +104,29 @@ metadata:
   labels:
 {{ $labels | toYaml | indent 4 }}
 {{ include "telco-cloud-init.labels" $envAll | indent 4 }}
-spec:
-    {{- $source_ref := dict "sourceRef" (dict "kind" "GitRepository" "name" (printf "component-%s" $component_name)) -}}
-    {{- $spec := dict -}}
-    {{- $spec = mergeOverwrite $spec $envAll.Values.component_kustomization_spec_default ($component_def.spec | default dict) $source_ref }}
-{{ $spec | toYaml | indent 2 }}
+
+    {{/* here, if "helmrelease_spec" is used, we define the spec of the inner HelmRelease */}}
+    {{- if hasKey $component_def "helmrelease_spec" -}}
+      {{/* this is where we refer to ./kustomize-components/helmrelease-generic */}}
+      {{- $kustomization_spec_overrides = mergeOverwrite $kustomization_spec_overrides $envAll.Values.component_helmrelease_kustomization_spec_default -}}
+
+      {{- $helmrelease_spec := dict -}}
+      {{- $helmrelease_spec := mergeOverwrite $helmrelease_spec $envAll.Values.component_helmrelease_spec_default ($component_def.helmrelease_spec | default dict) $helmrelease_spec_overrides -}}
+
+      {{- $patch := include "helmrelease-kustomization-patch-template" (tuple $component_name $helmrelease_spec $labels) | fromYaml -}}
+      {{- $_ := set $kustomization_spec_overrides "patches" (list $patch) -}}  
+    {{- end -}}
+
+    {{/* let's set the dependsOn field */}}
+    {{- $dependsOn := dict -}}
+    {{- if hasKey $component_def "depends_on" -}}
+      {{- $_ := set $dependsOn "dependsOn" $component_def.depends_on -}}
+    {{- end -}}
+
+    {{/* finalize the definition of the Kustomization spec by merging everything we have */}}
+    {{- $kustomization_spec := dict -}}
+    {{- $kustomization_spec = mergeOverwrite $kustomization_spec $envAll.Values.component_kustomization_spec_default ($component_def.kustomization_spec | default dict) $dependsOn $kustomization_spec_overrides }}
+
+spec: {{ $kustomization_spec | toYaml | nindent 2 }}
   {{- end -}}
 {{ end }}

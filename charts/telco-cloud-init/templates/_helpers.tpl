@@ -87,3 +87,32 @@ true
       {{- fail (printf "components.%s.enabled=%s is neither a boolean or 'management-only'" $component_name $component_enabled) -}}
     {{- end -}}
 {{- end -}}
+
+
+
+{{/*
+
+This is used by components.yaml to patch the HelmRelease
+resource produced when the kustomization from kustomize-components/helmrelease-generic
+which is used to create a Flux Kustomization that generates a HelmRelease.
+
+*/}}
+{{ define "helmrelease-kustomization-patch-template" }}
+{{- $component_name := index . 0 -}}
+{{- $helmrelease_spec := index . 1 -}}
+{{- $labels := index . 2 -}}
+target:
+  kind: HelmRelease
+patch: |
+  - op: replace
+    path: /metadata
+    value:
+      namespace: default
+      name: {{ $component_name }}
+      labels:
+{{ $labels | toYaml | indent 8 }}
+  - op: replace
+    path: /spec
+    value: 
+{{ $helmrelease_spec | toYaml | indent 6 }}
+{{ end }}

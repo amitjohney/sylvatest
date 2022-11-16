@@ -109,14 +109,82 @@ overrides into a FluxCD HelmRelease.
 
 This is how this chart is used [in the context of this git repository](../../kustomize-components/telco-cloud-init/).
 
+## Component definitions examples
+
+To define a new component, an entry can be added under `components` in values (either in `values.yaml` in the chart,
+or in the values of the chart overriden for a given deployment flavor or for a given deployment).
+
+### Component using a kustomization defined in capi-boostrap repo
+
+```yaml
+components:
+
+  my-component:
+    repo: capi-bootstrap   # this refers to .git_repo_templates.capi-bootstrap (defined in default values)
+    kustomization_spec:
+      path: ./kustomize-component/myComponent
+    depends_on:
+      - name: my-other-component  # my-component will not be deployed before my-other-component is ready
+```
+
+### Component using a kustomization defined in another repository
+
+```yaml
+git_repo_templates:
+  project-foo:
+    spec:
+      url: https://gitlab.com/t6306/components/foo.git
+
+components:
+
+  my-component:
+    repo: project-foo
+    kustomization_spec:
+      path: ./kustomize  # this will point to https://gitlab.com/t6306/components/foo.git / kustomize
+```
+
+### Component using a Helm chart defined in a git repository
+
+```yaml
+git_repo_templates:
+  helm-chart-bar:
+    spec:
+      url: https://gitlab.com/t6306/helm-charts/bar.git
+      ref:
+        tag: v1.0.3
+
+components:
+
+  my-component:
+    repo: helm-chart-bar
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: ./my-chart   # this will point to https://gitlab.com/t6306/helm-charts/bar.git / my-chart  on tag v1.0.3
+```
+
+With this type of component definition, Flux will reconciliate the HelmRelease based
+on the git revision (ignoring version field in the Helm chart `Chart.yaml` file).
+
+### Component using a Helm chart defined in a Helm repository
+
+```yaml
+components:
+
+  cert-manager:
+    helm_repo_url: https://charts.jetstack.io
+    helmrelease_spec:
+      chart:
+        spec:   # this will use v1.8.2 of the cert-manager chart found in the Helm repo at https://charts.jetstack.io
+          chart: cert-manager
+          version: v1.8.2
+```
 ## Design notes
 
 * no use case is identified to instantiate this chart multiple times in a
   given namespace, so this isn't supported (resource names aren't prefixed with the release name)
 
 ## TODO:
-
-* use HelmRelease as top-level objects instead of Kustomization resources
 
 * to allow the `telco-cloud-init` release on the management cluster to be handled via GitOps, we need
   to generate it via a Kustomization (or HelmRelease) defined in the management cluster itself (instead of via a
