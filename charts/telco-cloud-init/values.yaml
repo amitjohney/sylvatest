@@ -222,6 +222,7 @@ components:
       path: ./kustomize-components/rancher
       dependsOn:
       - name: cert-manager
+      - name: k8s-gateway
       wait: true
 
   k8s-gateway:
@@ -229,8 +230,6 @@ components:
     repo: capi-bootstrap
     spec:
       path: ./kustomize-components/k8s-gateway
-      dependsOn:
-      - name: rancher
       wait: true
       postBuild:
         substituteFrom:
