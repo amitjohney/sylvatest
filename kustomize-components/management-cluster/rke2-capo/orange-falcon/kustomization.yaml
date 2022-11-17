@@ -38,7 +38,6 @@ patches:
                 id: ${CAPO_NETWORK_ID}
               allowedAddressPairs:
                 - ipAddress: ${KUBE_VIP_IP}
-                - ipAddress: ${K8SGATEWAY_LB_IP}                
 - patch: |-
     apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
     kind: RKE2ControlPlane
@@ -123,6 +122,8 @@ patches:
               metadata:
                 name: kubernetes-vip
                 namespace: kube-system
+                annotations:
+                  metallb.universe.tf/allow-shared-ip: "share-vip-${KUBE_VIP_IP}"
               spec:
                 type: LoadBalancer
                 loadBalancerIP: ${KUBE_VIP_IP}

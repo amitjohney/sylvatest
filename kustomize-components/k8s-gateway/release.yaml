@@ -27,4 +27,6 @@ spec:
     domain: "sylva"
     replicaCount: 3
     service:
-      loadBalancerIP: "${K8SGATEWAY_LB_IP}"
+      loadBalancerIP: "${KUBE_VIP_IP}"
+      annotations:
+        metallb.universe.tf/allow-shared-ip: "share-vip-${KUBE_VIP_IP}"
