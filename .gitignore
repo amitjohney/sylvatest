@@ -2,5 +2,3 @@ bootstrap-data
 *-kubeconfig
 *secrets.yaml
 
-# Ignore enviroment value to ensure that changed files won't be commited by inadvertence
-environment-values/*

@@ -16,4 +16,3 @@ The following variables will be substituted:
 - `https_proxy`
 - `no_proxy`
 
-Note that this whole directory is gitignored to make sure that custom configurations won't be committed by inadvertence. So if you intent to contribute to the project, make sure to use your own copy of values, this way your values and secrets can't be added to any changes by inadvertence. If you really intent to add files from that directory into git, use `git add -f` to add files to git index.
