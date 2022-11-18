@@ -34,7 +34,10 @@ echo_b "\U000023F3 Wait for management cluster to be ready"
 kubectl wait --for condition=ControlPlaneReady --timeout 600s cluster management-cluster
 
 # Retrieve maangement cluster secret
+orig_umask=$(umask)
+umask og-rw
 kubectl get secret management-cluster-kubeconfig -o jsonpath='{.data.value}' | base64 -d > management-cluster-kubeconfig
+umask $orig_umask
 
 echo_b "\U000023F3 Wait for flux to be installed on management cluster"
 kubectl wait --for condition=Ready --timeout 1200s kustomization management-cluster-flux

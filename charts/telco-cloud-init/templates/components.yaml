@@ -5,6 +5,7 @@
 
     {{- $labels := deepCopy ($component_def.labels | default dict) -}}
     {{- $_ := set $labels "telco-cloud-init.component" $component_name -}}
+    {{- $_ := mergeOverwrite $labels (include "telco-cloud-init.labels" $envAll | fromYaml) }}
 
     {{/************ Sanity checks */}}
 
@@ -66,7 +67,6 @@ metadata:
   labels:
     telco-cloud-init.repo: {{ $repo_name }}
 {{ $labels | toYaml | indent 4 }}
-{{ include "telco-cloud-init.labels" $envAll | indent 4 }}
 spec: {{ $git_repo_spec | toYaml | nindent 2 }}
 
       {{ if hasKey $component_def "helmrelease_spec" -}}
@@ -91,7 +91,6 @@ metadata:
   name: component-{{ $component_name }}
   labels:
 {{ $labels | toYaml | indent 4 }}
-{{ include "telco-cloud-init.labels" $envAll | indent 4 }}
 spec: {{ $helm_repo_spec | toYaml | nindent 2 }}
     {{ end }}
 
@@ -103,7 +102,6 @@ metadata:
   name: {{ $component_name }}
   labels:
 {{ $labels | toYaml | indent 4 }}
-{{ include "telco-cloud-init.labels" $envAll | indent 4 }}
 
     {{/* here, if "helmrelease_spec" is used, we define the spec of the inner HelmRelease */}}
     {{- if hasKey $component_def "helmrelease_spec" -}}
