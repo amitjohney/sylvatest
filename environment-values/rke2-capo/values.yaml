@@ -17,11 +17,11 @@ components:
     depends_on:
     - name: capi
     - name: capo
-    - name: cabpr      
+    - name: cabpr
   rancher:
     enabled: management-only
   k8s-gateway:
-    enabled: management-only  
+    enabled: management-only
   rancher-import:
     enabled: management-only
 
@@ -37,7 +37,7 @@ cluster:
     k8sgateway_lb_ip: 172.20.129.244
 
 proxies:
-  no_proxy: 127.0.0.1,localhost,172.20.0.0/16,10.43.0.0/16,10.42.0.0/16,10.10.10.0/24
-  https_proxy: http://10.193.21.116:8080
-  http_proxy: http://10.193.21.116:8080
-
+proxies:
+  http_proxy: $http_proxy
+  https_proxy: $https_proxy
+  no_proxy: $no_proxy

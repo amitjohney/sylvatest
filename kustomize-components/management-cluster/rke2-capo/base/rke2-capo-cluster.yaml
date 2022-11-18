@@ -32,9 +32,13 @@ spec:
     kind: Secret
     name: management-cluster-cloud-config
   managedSecurityGroups: true
+  allowAllInClusterTraffic: true
   disableAPIServerFloatingIP: true
   apiServerLoadBalancer:
     enabled: false
+  network:
+    id: ${CAPO_NETWORK_ID}
+  apiServerFixedIP: ${KUBE_VIP_IP}
 ---
 apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
 kind: RKE2ControlPlane
@@ -48,26 +52,104 @@ spec:
     name: ${CLUSTER_NAME}-cp-template
     namespace: default
   rke2ConfigSpec:
-    files: []
+    files:
+    - path: /var/lib/rancher/rke2/server/manifests/metallb.yaml
+      owner: "root:root"
+      permissions: "0644"
+      content: |
+          ---
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: metallb-system
+          ---
+          apiVersion: helm.cattle.io/v1
+          kind: HelmChart
+          metadata:
+            name: metallb
+            namespace: metallb-system
+          spec:
+            chart: metallb
+            repo: https://metallb.github.io/metallb
+            targetNamespace: metallb-system
+            tolerations:
+            - key: node.cloudprovider.kubernetes.io/uninitialized
+              value: "true"
+              effect: NoSchedule
+            - effect: NoExecute
+              key: node-role.kubernetes.io/etcd
+            - effect: NoSchedule
+              key: node-role.kubernetes.io/master
+            - effect: NoSchedule
+              key: node-role.kubernetes.io/control-plane
+            nodeSelector:
+              node-role.kubernetes.io/control-plane: "true"
+            valuesContent: |-
+              controller.nodeSelector:
+                node-role.kubernetes.io/control-plane: "true"
+              controller.tolerations:
+                - key: node.cloudprovider.kubernetes.io/uninitialized
+                  value: "true"
+                  effect: NoSchedule
+                - effect: NoExecute
+                  key: node-role.kubernetes.io/etcd
+                - effect: NoSchedule
+                  key: node-role.kubernetes.io/master
+                - effect: NoSchedule
+                  key: node-role.kubernetes.io/control-plane
+          ---
+          apiVersion: metallb.io/v1beta1
+          kind: IPAddressPool
+          metadata:
+            name: lbpool
+            namespace: metallb-system
+          spec:
+            addresses:
+              - ${KUBE_VIP_IP}/32
+          ---
+          apiVersion: metallb.io/v1beta1
+          kind: L2Advertisement
+          metadata:
+            name: l2advertisement
+            namespace: metallb-system
+          spec:
+            ipAddressPools:
+            - lbpool
+          ---
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: kubernetes-vip
+            namespace: kube-system
+            annotations:
+              metallb.universe.tf/allow-shared-ip: "share-vip-${KUBE_VIP_IP}"
+          spec:
+            type: LoadBalancer
+            loadBalancerIP: ${KUBE_VIP_IP}
+            ports:
+            - name: https
+              port: 6443
+              protocol: TCP
+              targetPort: 6443
+            - name: rancher
+              port: 9345
+              protocol: TCP
+              targetPort: 9345
+            selector:
+              component: kube-apiserver
     serverConfig:
       tlsSan:
       - localhost
       - 127.0.0.1
       - 0.0.0.0
     agentConfig:
-      #nodeName: "{{ ds.meta_data.local_hostname }}"
       kubeletArgs:
-        - "eviction-hard=nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%"
         - "provider-id=openstack://{{ ds.meta_data.uuid }}"
     deployRKE2Commands:
-      - "sed -i '1i snapshotter: native' /etc/rancher/rke2/config.yaml"
       - "echo 'cni: calico' >> /etc/rancher/rke2/config.yaml"
       - systemctl daemon-reload
       - systemctl enable rke2-server.service
       - systemctl start rke2-server.service
-      # Mimics kubeadm bootstrap output as capd is watching that file to set BootstrapExecSucceededCondition condition
-      - "mkdir -p /run/cluster-api;  touch /run/cluster-api/bootstrap-success.complete"
-      - ln -s /etc/rancher/rke2/rke2.yaml /etc/kubernetes/kubelet.conf
       - ln -s /var/lib/rancher/rke2/bin/kubectl /usr/local/bin/kubectl
   replicas: 3
   version: v1.24.4+rke2r1
@@ -89,4 +171,9 @@ spec:
       sshKeyName: ${SSH_KEY_NAME}
       securityGroups:
         - name: default
+      ports:
+      - network:
+          id: ${CAPO_NETWORK_ID}
+        allowedAddressPairs:
+          - ipAddress: ${KUBE_VIP_IP}
 
