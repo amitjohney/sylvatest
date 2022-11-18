@@ -34,7 +34,6 @@ cluster:
     ssh_key_name: telco
     network_id: c314d52c-80fe-42b6-9092-55be383d1951
     kube_vip_ip: 172.20.129.245
-    k8sgateway_lb_ip: 172.20.129.244
 
 proxies:
   no_proxy: 127.0.0.1,localhost,172.20.0.0/16,10.43.0.0/16,10.42.0.0/16,10.10.10.0/24
