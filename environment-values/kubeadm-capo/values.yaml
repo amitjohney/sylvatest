@@ -38,6 +38,7 @@ cluster:
   capo:
     ssh_key_name: $SSH_KEY_NAME
     network_id: c314d52c-80fe-42b6-9092-55be383d1951
+    kube_vip_ip: 1.2.3.4  # replace me
 
 proxies:
   http_proxy: $http_proxy

@@ -48,7 +48,6 @@ cluster:
 
 capd:
   docker_host: $DOCKER_HOST
-  k8sgateway_lb_ip: 172.20.129.244
 
 proxies:
   http_proxy: $http_proxy
