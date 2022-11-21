@@ -67,7 +67,7 @@ metadata:
   labels:
     telco-cloud-init.repo: {{ $repo_name }}
 {{ $labels | toYaml | indent 4 }}
-spec: {{ $git_repo_spec | toYaml | nindent 2 }}
+spec: {{ index (tuple $envAll $git_repo_spec | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | nindent 2 }}
 
       {{ if hasKey $component_def "helmrelease_spec" -}}
         {{/*
@@ -91,7 +91,7 @@ metadata:
   name: component-{{ $component_name }}
   labels:
 {{ $labels | toYaml | indent 4 }}
-spec: {{ $helm_repo_spec | toYaml | nindent 2 }}
+spec: {{ index (tuple $envAll $helm_repo_spec | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | nindent 2 }}
     {{ end }}
 
     {{/******************* Generation of the Kustomization */}}
@@ -125,6 +125,6 @@ metadata:
     {{- $kustomization_spec := dict -}}
     {{- $kustomization_spec = mergeOverwrite $kustomization_spec $envAll.Values.component_kustomization_spec_default ($component_def.kustomization_spec | default dict) $dependsOn $kustomization_spec_overrides }}
 
-spec: {{ $kustomization_spec | toYaml | nindent 2 }}
+spec: {{ index (tuple $envAll $kustomization_spec | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | nindent 2 }}
   {{- end -}}
 {{ end }}

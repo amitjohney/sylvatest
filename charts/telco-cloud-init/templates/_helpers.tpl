@@ -116,3 +116,86 @@ patch: |
     value: 
 {{ $helmrelease_spec | toYaml | indent 6 }}
 {{ end }}
+
+{{/*
+
+interpret-inner-gotpl
+
+This is used to interpret any '{{ .. }}' templating found
+in a datastructure, doing that on all strings found at the
+different levels.
+
+This template returns the resulting datastructure
+marshalled as a JSON dict {"result": ...}
+
+Usage:
+
+    tuple $envAll $data | include "interpret-inner-gotpl"
+
+Example:
+
+    $data := dict "foo" (dict "bar" "{{ .Values.bar }}")
+    index (tuple $envAll $data | include "interpret-inner-gotpl" | fromJson) "result"
+
+Values:
+
+    bar: something here
+
+Result:
+
+    {"foo": {"bar": "something here"}}
+
+
+Note well that there are a few limitations:
+
+* there is no error management on templating:
+
+    foo: 42
+    x: "{{ .Values.fooo }}"  -> x after processing by this template will give "" (nothing complains about 'fooo' not being defined)
+
+* the templating that you use cannot currently return anything else than a string.
+
+    foo: 42
+    x: "{{ .Values.foo }}"  -> x after processing by this template will give "42" not 42
+
+    bar:
+     - 1
+     - 2
+     - 3
+    y: "{{ .Values.bar }}"  -> y after processing by this template will give '[1 2 3]', which is not what you want (not a list of numbers)
+
+* everything looking like "{{ }}" will be interpreted, even non-gotpl stuff
+  that you might want to try to put in your manifest because a given component
+  would need that
+
+*/}}
+{{ define "interpret-inner-gotpl" }}
+    {{ $envAll := index . 0 }}
+    {{ $data := index . 1 }}
+    {{ $kind := kindOf $data }}
+    {{ $result := 0 }}
+    {{ if (eq $kind "string") }}
+        {{ if contains "{{" $data }}
+            {{/* This is where we actually trigger GoTPL interpretation */}}
+            {{ $result = tpl $data $envAll }}
+        {{ else }}
+            {{ $result = $data }}
+        {{ end }}
+    {{ else if (eq $kind "slice") }}
+        {{/* this is a list, recurse on each item */}}
+        {{ $result = list }}
+        {{ range $data }}
+            {{ $result = append $result (index (tuple $envAll . | include "interpret-inner-gotpl" | fromJson) "result") }}
+        {{ end }}
+    {{ else if (eq $kind "map") }}
+        {{/* this is a dictionary, recurse on each key-value pair */}}
+        {{ $result = dict }}
+        {{ range $key,$value := $data }}
+            {{ $_ := set $result (index (tuple $envAll $key | include "interpret-inner-gotpl" | fromJson) "result") (index (tuple $envAll $value | include "interpret-inner-gotpl" | fromJson) "result") }}
+        {{ end }}
+    {{ else }}  {{/* bool, int, float64 */}}
+        {{ $result = $data }}
+    {{ end }}
+
+{{ dict "result" $result | toJson }}
+{{ end }}
