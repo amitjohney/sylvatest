@@ -31,7 +31,7 @@ kubectl wait --for condition=Ready --timeout 300s kustomization cluster
 
 #FIXME: following wait should not be necessary, we should figure out why flux healthchecks on cluster don't work properly
 echo_b "\U000023F3 Wait for management cluster to be ready"
-kubectl wait --for condition=ControlPlaneReady --timeout 600s cluster management-cluster
+kubectl wait --for condition=ControlPlaneReady --timeout 1200s cluster management-cluster
 
 # Retrieve maangement cluster secret
 orig_umask=$(umask)
