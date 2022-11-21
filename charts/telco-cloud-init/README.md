@@ -179,6 +179,36 @@ components:
           chart: cert-manager
           version: v1.8.2
 ```
+
+### How to feed settings coming from Helm values into the configuration of components
+
+You can use Helm templating to feed settings coming from values into
+the configuration of your components:
+
+```yaml
+mgmt_cluster_domain_name: my-mgmt-cluster.foo.org
+
+components:
+
+  foo:
+    ...
+    helmrelease_spec:
+      ...
+      values:
+        externalName: "{{ .Values.mgmt_cluster_domain_name }}"
+
+  bar:
+    ...
+    kustomization_spec:
+      ...
+      postBuild:
+        substitute:
+          MAIN_URL: "https://bar-{{ .Values.mgmt_cluster_domain_name }}"
+
+```
+
+(watch out for limitations, as explained in (`_helpers.tpl`)[templates/_helpers.tpl] in `interpret-inner-gotpl`)
+
 ## Design notes
 
 * no use case is identified to instantiate this chart multiple times in a
