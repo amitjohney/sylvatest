@@ -36,7 +36,6 @@ cluster:
     kube_vip_ip: 172.20.129.245
 
 proxies:
-proxies:
   http_proxy: $http_proxy
   https_proxy: $https_proxy
   no_proxy: $no_proxy
