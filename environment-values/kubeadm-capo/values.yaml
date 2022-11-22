@@ -9,18 +9,52 @@ git_repo_templates:
 components:
   cluster:
     kustomization_spec:
-      #path: ./kustomize-components/management-cluster/kubeadm-capo/base
-      path: ./kustomize-components/management-cluster/kubeadm-capo/orange-falcon
-  # rancher:
-  #   enabled: management-only
-  #   depends_on:
-  #     - name: ingress-nginx
-  # k8s-gateway:
-  #   enabled: management-only
-  # rancher-import:
-  #   enabled: management-only
-  # ingress-nginx:
-  #   enabled: management-only
+      path: ./kustomize-components/cluster-manifests/kubeadm-capo/orange-falcon
+  cluster-resource-sets:
+    enabled: true
+  rancher:
+    enabled: management-only
+    depends_on:
+      - name: ingress-nginx
+    helmrelease_spec:
+      values:
+        ingress:
+          ingressClassName: nginx
+  k8s-gateway:
+    enabled: management-only
+  capi-rancher-import:
+    enabled: management-only
+  ingress-nginx:
+    enabled: management-only
+  first-login-rancher:
+    enabled: management-only
+  workload-cluster:
+    enabled: management-only
+    repo: capi-bootstrap
+    depends_on:
+      - name: capi
+      - name: capo
+      - name: cabpk
+      - name: rancher
+      - name: first-login-rancher
+    kustomization_spec:
+      path: ./kustomize-components/cluster-manifests/kubeadm-capo/orange-falcon-single-node
+      postBuild:
+        substitute:
+         CAPO_NETWORK_ID: "{{ .Values.cluster.capo.network_id }}"
+         CLUSTER_NAME: "first-workload-cluster"
+         K8SGATEWAY_LB_IP: "{{ .Values.cluster.capo.kube_vip_ip }}"   # NOTE: same as KUBE_VIP_IP var for management cluster, exposing its k8s-gateway DNS svc
+         KUBE_VIP_IP: # set an IP for your workload cluster kube-api LB VIP here
+         MACHINE_IMAGE: "{{ .Values.cluster.capo.image }}"
+         SSH_KEY_NAME: "{{ .Values.cluster.capo.ssh_key_name }}"
+  cluster-import:
+    enabled: management-only
+    depends_on:
+      - name: workload-cluster
+    kustomization_spec:
+      postBuild:
+        substitute:
+         CLUSTER_NAME: "first-workload-cluster"
 
 cluster:
   image: capo-ubuntu-2004-kube-v1.23.6-calico-3.23.1

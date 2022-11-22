@@ -9,8 +9,7 @@ git_repo_templates:
 components:
   cluster:
     kustomization_spec:
-      path: ./kustomize-components/management-cluster/kubeadm-capd/base
-      #path: ./kustomize-components/management-cluster/kubeadm-capd/orange-proxy
+      path: ./kustomize-components/cluster-manifests/kubeadm-capd/base
   # rancher:
   #   enabled: management-only
   #   depends_on:

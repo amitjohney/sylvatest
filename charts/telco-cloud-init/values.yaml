@@ -39,6 +39,12 @@ git_repo_templates: # template to generate Flux GitRepository resources
         # tag/commit will take precedence, see https://fluxcd.io/flux/components/source/api/#source.toolkit.fluxcd.io/v1beta2.GitRepositoryRef
         branch: develop
 
+  capi-rancher-import:
+    spec:
+      url: https://gitlab.com/t6306/components/capi-rancher-import.git
+      ref:
+        branch: main
+
 helm_repo_spec_default:
   interval: 60m0s
 
@@ -231,7 +237,7 @@ components:
     kustomization_spec:
       # see note below under .cluster
       # the choice made here, for now, requires setting other values consistently under .cluster.xxx
-      path: ./kustomize-components/management-cluster/_override_me_/base
+      path: ./kustomize-components/cluster-manifests/_override_me_/base
       postBuild:
         substituteFrom:
         - kind: ConfigMap
@@ -248,54 +254,187 @@ components:
     depends_on:
       - name: cert-manager
       - name: k8s-gateway
-    kustomization_spec:
-      path: ./kustomize-components/rancher
-      wait: true
+    helm_repo_url: https://releases.rancher.com/server-charts/stable
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: rancher
+          version: "2.6.9"
+          sourceRef:
+            namespace: default
+      targetNamespace: cattle-system
+      interval: 10m0s
+      install:
+        createNamespace: true
+        remediation:
+          retries: 3
+          remediateLastFailure: false
+      upgrade:
+        remediation:
+          retries: 3
+      values:
+        bootstrapPassword: test-how-it-works
+        useBundledSystemChart: true
+        hostname: rancher.sylva
+        ingress:
+          enabled: true
+        # restrictedAdmin: true
+        replicas: 1
+        features: embedded-cluster-api=false,provisioningv2=true
+        debug: true
+      postRenderers:
+        - kustomize:
+            patches:
+              # this is to avoid that the too-short default liveness probe
+              # prevents the Rancher installation from finishing before the pod is killed
+              - patch: |-
+                  apiVersion: apps/v1
+                  kind: Deployment
+                  metadata:
+                    name: rancher
+                  spec:
+                    template:
+                      spec:
+                        containers:
+                          - name: rancher
+                            livenessProbe:
+                              initialDelaySeconds: 120
+                              periodSeconds: 30
+                              failureThreshold: 20
+                target:
+                  kind: Deployment
+                  name: rancher
+                  namespace: cattle-system
 
   k8s-gateway:
     enabled: no
     repo: capi-bootstrap
-    kustomization_spec:
-      path: ./kustomize-components/k8s-gateway
-      wait: true
-      postBuild:
-        substituteFrom:
-        - kind: ConfigMap
-          name: cluster-vars
+    helm_repo_url: https://ori-edge.github.io/k8s_gateway/
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: k8s-gateway
+          version: "2.0.0"
+          sourceRef:
+            namespace: default
+      interval: 1m0s
+      values:
+        domain: "sylva"
+        replicaCount: 3
+        service:
+          loadBalancerIP: "{{ .Values.cluster.capo.kube_vip_ip }}"
 
-  rancher-import:
+  capi-rancher-import:
     enabled: no
-    repo: capi-bootstrap
+    repo: capi-rancher-import
     depends_on:
-    - name: rancher
-    - name: k8s-gateway
-    kustomization_spec:
-      path: ./kustomize-components/rancher-import
-      wait: true
-      patches:
-      - target:
-          kind: GitRepository
-          name: capi-rancher-import
-        patch: |
-          - op: add
-            path: /spec/secretRef/name
-            # FIXME(baburciu): it's hardcoded, due to known format ./charts/telco-cloud-init/templates/components.yaml and component
-            value: git-auth-repo-component-rancher-import
-      - target:
-          kind: HelmRelease
-          name: capi-rancher-import
-        patch: |
-          - op: add
-            path: /spec/values/conf/cattle_agent_kustomize_source/spec/secretRef/name
-            # FIXME(baburciu): it's hardcoded, due to known format ./charts/telco-cloud-init/templates/components.yaml and component
-            value: git-auth-repo-component-rancher-import              
+      - name: rancher
+      - name: k8s-gateway
+    helmrelease_spec:
+      chart:
+        spec:
+          sourceRef:
+            namespace: default
+          chart: charts/capi-rancher-import
+          reconcileStrategy: Revision
+          valuesFiles:
+            - charts/capi-rancher-import/values.yaml
+      interval: 1m0s
+      values:
+        conf:
+          env:
+            - name: URL_REMAP
+              value: "https://rancher.sylva/ https://rancher.cattle-system.svc.cluster.local/"
+            - name: REQUESTS_SSL_VERIFY
+              value: "no"
+          cattle_agent_kustomize_source:
+            spec:
+              gitImplementation: libgit2
+              ref:
+                branch: main
+              secretRef:
+                # FIXME(baburciu): it's hardcoded, due to known format ./charts/telco-cloud-init/templates/components.yaml
+                name: "git-repo-auth-capi-bootstrap"
 
   ingress-nginx:
     enabled: no
     repo: capi-bootstrap
+    helm_repo_url: https://kubernetes.github.io/ingress-nginx
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: ingress-nginx
+          version: "4.4.0"
+          sourceRef:
+            namespace: default
+      interval: 1m0s
+      values:
+        controller:
+          config:
+            use-forwarded-headers: true
+          kind: DaemonSet
+          hostNetwork: true
+          service:
+            externalIPs:
+            - "{{ .Values.cluster.capo.kube_vip_ip }}"
+
+  first-login-rancher:
+    enabled: no
+    repo: capi-bootstrap
+    depends_on:
+      - name: rancher
     kustomization_spec:
-      path: ./kustomize-components/ingress-nginx
+      path: ./kustomize-components/kube-job
       wait: true
+      force: true
+      patches:
+      - target:
+          kind: Job
+          name: kube-job
+        patch: |
+          - op: replace
+            path: /metadata/name
+            value: first-login-rancher-job
+      - target:
+          kind: ConfigMap
+          name: job-scripts
+        patch: |
+          - op: replace
+            path: /data/kube-job.sh
+            value: |
+              #!/bin/bash
+
+              set -e
+              set -vx
+
+              echo "-- Wait for Rancher deployment to be ready"
+              attempts=0
+              until kubectl wait --for condition=Available --timeout 600s --namespace cattle-system deployment rancher; do
+                sleep 8
+                ((attempts++)) && ((attempts==max_attempts)) && exit -1
+              done
+
+              echo "-- Retrieve randomly generated Rancher bootstrap password"
+              BOOTSTRAP_PASSWORD=`kubectl -n cattle-system get secret bootstrap-secret -o jsonpath='{.data.bootstrapPassword}' | base64 -d`
+
+              echo "-- Login Rancher server and retrieve login token good for 1 minute"
+              USERNAME=admin
+              LOGIN_TOKEN=`curl --insecure -s https://rancher.cattle-system.svc.cluster.local/v3-public/localProviders/local?action=login -H 'content-type: application/json' --data-binary '{"username":"'$USERNAME'","password":"'$BOOTSTRAP_PASSWORD'","ttl":60000}' | jq -r .token`
+
+              echo "-- Create API key good forever and set Rancher server URL"
+              API_KEY=`curl --insecure -s 'https://rancher.cattle-system.svc.cluster.local/v3/token' -H 'Content-Type: application/json' -H "Authorization: Bearer $LOGIN_TOKEN" --data-binary '{"type":"token","description":"for setting server URL"}' | jq -r .token`
+              echo "API Key: $API_KEY"
+              curl --insecure 'https://rancher.cattle-system.svc.cluster.local/v3/settings/server-url' -H 'Content-Type: application/json' -H "Authorization: Bearer $API_KEY" -X PUT --data-binary '{"name":"server-url","value":"https://rancher.sylva"}' | jq .
+
+              echo "-- All done"
+
+  cluster-import:
+    enabled: no
+    repo: capi-bootstrap
+    depends_on:
+      - name: first-login-rancher
+    kustomization_spec:
+      path: ./kustomize-components/cluster-import
 
 ## stuff related to the 'cluster' component
 

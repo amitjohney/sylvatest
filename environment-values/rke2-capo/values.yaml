@@ -9,7 +9,7 @@ git_repo_templates:
 components:
   cluster:
     kustomization_spec:
-      path: kustomize-components/management-cluster/rke2-capo/orange-falcon
+      path: kustomize-components/cluster-manifests/rke2-capo/orange-falcon
   rancher:
     enabled: management-only
   k8s-gateway:
