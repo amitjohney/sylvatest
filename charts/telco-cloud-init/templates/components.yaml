@@ -1,4 +1,4 @@
-{{- $envAll := . -}}
+{{- $envAll := set . "Values" (include "interpret-values-gotpl" . | fromJson) -}}
 {{ range $component_name, $component_def := .Values.components }}
   {{- if (tuple $envAll $component_name | include "is-component-enabled") -}}
     {{/*********** Prepare labels used in all generated objects */}}
@@ -67,11 +67,11 @@ metadata:
   labels:
     telco-cloud-init.repo: {{ $repo_name }}
 {{ $labels | toYaml | indent 4 }}
-spec: {{ index (tuple $envAll $git_repo_spec | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | nindent 2 }}
+spec: {{ $git_repo_spec | toYaml | nindent 2 }}
 
       {{ if hasKey $component_def "helmrelease_spec" -}}
         {{/*
-        if helm_release_spec is used then we inject our GitRepository in it as sourceRef 
+        if helm_release_spec is used then we inject our GitRepository in it as sourceRef
         (the Kustomization will in that case, see in 'component_helmrelease_kustomization_spec_default',
          use capi-bootstrap defined in 'gitrepository-self.yaml' as the GitRepo)
         */}}
@@ -91,7 +91,7 @@ metadata:
   name: component-{{ $component_name }}
   labels:
 {{ $labels | toYaml | indent 4 }}
-spec: {{ index (tuple $envAll $helm_repo_spec | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | nindent 2 }}
+spec: {{ $helm_repo_spec | toYaml | nindent 2 }}
     {{ end }}
 
     {{/******************* Generation of the Kustomization */}}
@@ -112,7 +112,7 @@ metadata:
       {{- $helmrelease_spec := mergeOverwrite $helmrelease_spec $envAll.Values.component_helmrelease_spec_default ($component_def.helmrelease_spec | default dict) $helmrelease_spec_overrides -}}
 
       {{- $patch := include "helmrelease-kustomization-patch-template" (tuple $component_name $helmrelease_spec $labels) | fromYaml -}}
-      {{- $_ := set $kustomization_spec_overrides "patches" (list $patch) -}}  
+      {{- $_ := set $kustomization_spec_overrides "patches" (list $patch) -}} 
     {{- end -}}
 
     {{/* let's set the dependsOn field */}}
@@ -125,6 +125,6 @@ metadata:
     {{- $kustomization_spec := dict -}}
     {{- $kustomization_spec = mergeOverwrite $kustomization_spec $envAll.Values.component_kustomization_spec_default ($component_def.kustomization_spec | default dict) $dependsOn $kustomization_spec_overrides }}
 
-spec: {{ index (tuple $envAll $kustomization_spec | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | nindent 2 }}
+spec: {{ $kustomization_spec | toYaml | nindent 2 }}
   {{- end -}}
 {{ end }}

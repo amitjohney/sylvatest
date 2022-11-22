@@ -1,5 +1,5 @@
 {{/* This GitRepository is referred to from 'component_helmrelease_kustomization_spec_default' */}}
-{{- $envAll := . -}}
+{{- $envAll := set . "Values" (include "interpret-values-gotpl" . | fromJson) -}}
 {{- $repo_name := "capi-bootstrap" -}}
 {{- $component_name := "capi-bootstrap" -}}
 {{- $repo_def := deepCopy (index $envAll.Values.git_repo_templates $repo_name) -}}

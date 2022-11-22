@@ -10,7 +10,7 @@ the chart using following command:
 kubectl get secrets telco-cloud-init-values-debug -o template="{{ .data.values }}" | base64 -d
 
 */}}
-{{- $envAll := . -}}
+{{- $envAll := set . "Values" (include "interpret-values-gotpl" . | fromJson) -}}
 {{- if $envAll.Values.debug_values  -}}
 apiVersion: v1
 kind: Secret
