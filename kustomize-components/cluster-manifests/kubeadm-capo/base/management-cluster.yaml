@@ -7,9 +7,10 @@ metadata:
     cni: calico
 spec:
   clusterNetwork:
+    services:
+      cidrBlocks: ["10.43.0.0/16"]
     pods:
-      cidrBlocks:
-      - 192.168.0.0/16
+      cidrBlocks: ["10.42.0.0/16"]
     serviceDomain: cluster.local
   controlPlaneRef:
     apiVersion: controlplane.cluster.x-k8s.io/v1beta1
@@ -32,8 +33,7 @@ spec:
     kind: Secret
     name: management-cluster-cloud-config
   managedSecurityGroups: true
-  nodeCidr: 10.6.0.0/24
-  disableAPIServerFloatingIP: false
+  disableAPIServerFloatingIP: true
   apiServerLoadBalancer:
     enabled: false
 ---
@@ -59,32 +59,9 @@ metadata:
   namespace: default
 spec:
   kubeadmConfigSpec:
-    files:
-    - path: /etc/cni/net.d/10-bridge.conf
-      owner: root:root
-      permissions: "0644"
-      content: |
-        {
-            "cniVersion": "0.3.1",
-            "name": "localnet",
-            "type": "bridge",
-            "bridge": "bridge0",
-            "isDefaultGateway": true,
-            "forceAddress": false,
-            "ipMasq": true,
-            "hairpinMode": true,
-            "ipam": {
-                "type": "host-local",
-                "subnet": "192.168.0.0/16"
-            }
-        }
     clusterConfiguration:
       imageRepository: k8s.gcr.io
     initConfiguration:
-      #NOTE: Here we use cloud-init data to register provider-id, thus we don't have to rely on kubelet cloud provider (and won't require openstack API connectivity from workload clusters)
-      # Kubelet uses cloud provider essentially to read provide-id: https://github.com/kubernetes/kubernetes/blob/c1e69551be1a72f0f8db6778f20658199d3a686d/staging/src/k8s.io/legacy-cloud-providers/openstack/openstack_instances.go#L163
-      # It is being deprecated and will move to external cloud provider: https://github.com/kubernetes/cloud-provider-openstack
-      # But this is painfull to deploy and manage, see what CAPA is doing for that purpose: https://github.com/kubernetes-sigs/cluster-api-provider-aws/blob/main/templates/cluster-template-external-cloud-provider.yaml
       nodeRegistration:
         kubeletExtraArgs:
           provider-id: openstack://{{ ds.meta_data.uuid }}
@@ -102,9 +79,7 @@ spec:
       apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
       kind: OpenStackMachineTemplate
       name: ${CLUSTER_NAME}-control-plane
-  # As there is a bug with FIP in capo, use a single node unless you have ocatavia/apiServerLoadBalancer enabled
-  # https://github.com/kubernetes-sigs/cluster-api-provider-openstack/issues/1265
-  replicas: 1
+  replicas: 3
   version: v1.23.6
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5

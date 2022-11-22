@@ -11,9 +11,16 @@ patches:
       group: apiextensions.k8s.io
       version: v1
       kind: CustomResourceDefinition
+      name: bgppeers.metallb.io
     patch: |-
       - op: remove
         path: /spec/conversion/webhook/clientConfig/caBundle
+
+  - target:
+      group: apiextensions.k8s.io
+      version: v1
+      kind: CustomResourceDefinition
+    patch: |-
       - op: add  
         path: /metadata/annotations/cert-manager.io~1inject-ca-from
         value: metallb-system/metallb-serving-cert

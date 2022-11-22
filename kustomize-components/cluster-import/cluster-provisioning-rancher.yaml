@@ -1,0 +1,9 @@
+apiVersion: provisioning.cattle.io/v1
+kind: Cluster
+metadata:
+  name: rancher-provisioning-${CLUSTER_NAME}
+  namespace: default
+  annotations:
+    field.cattle.io/description: import CAPI CAPO workload-cluster
+  labels:
+    capi-rancher-import.cluster-name: ${CLUSTER_NAME}

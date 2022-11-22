@@ -1,0 +1,133 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ../base
+patches:
+- patch: |-
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+    kind: OpenStackCluster
+    metadata:
+      name: ${CLUSTER_NAME}
+      namespace: default
+    spec:
+      dnsNameservers:
+      - 172.20.115.54
+      network:
+        id: ${CAPO_NETWORK_ID}
+      apiServerFixedIP: ${KUBE_VIP_IP}
+- patch: |-
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+    kind: KubeadmControlPlane
+    metadata:
+      name: ${CLUSTER_NAME}-control-plane
+      namespace: default
+    spec:
+      kubeadmConfigSpec:
+        clusterConfiguration:
+          imageRepository: k8s.gcr.io
+        files:
+        - path: /etc/systemd/system/containerd.service.d/proxy.conf
+          owner: root
+          permissions: "0644"
+          content: |
+            [Service]
+            Environment="HTTP_PROXY=http://proxy.rd.francetelecom.fr:8080"
+            Environment="HTTPS_PROXY=http://proxy.rd.francetelecom.fr:8080"
+            Environment="NO_PROXY=localhost,127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+        - path: /etc/kubernetes/manifests/kube-vip.yaml
+          owner: root:root
+          permissions: "0644"
+          content: |
+            apiVersion: v1
+            kind: Pod
+            metadata:
+              creationTimestamp: null
+              name: kube-vip
+              namespace: kube-system
+            spec:
+              containers:
+              - args:
+                - manager
+                env:
+                - name: svc_enable
+                  value: "true"
+                - name: vip_arp
+                  value: "true"
+                - name: port
+                  value: "6443"
+                - name: vip_cidr
+                  value: "32"
+                - name: cp_enable
+                  value: "true"
+                - name: cp_namespace
+                  value: kube-system
+                - name: vip_ddns
+                  value: "false"
+                - name: vip_leaderelection
+                  value: "true"
+                - name: vip_leaseduration
+                  value: "5"
+                - name: vip_renewdeadline
+                  value: "3"
+                - name: vip_retryperiod
+                  value: "1"
+                - name: address
+                  value: ${KUBE_VIP_IP}
+                - name: prometheus_server
+                  value: :2112
+                image: ghcr.io/kube-vip/kube-vip:v0.5.0
+                imagePullPolicy: Always
+                name: kube-vip
+                resources: {}
+                securityContext:
+                  capabilities:
+                    add:
+                    - NET_ADMIN
+                    - NET_RAW
+                volumeMounts:
+                - mountPath: /etc/kubernetes/admin.conf
+                  name: kubeconfig
+              hostAliases:
+              - hostnames:
+                - kubernetes
+                ip: 127.0.0.1
+              hostNetwork: true
+              volumes:
+              - hostPath:
+                  path: /etc/kubernetes/admin.conf
+                name: kubeconfig
+        - path: /etc/resolvconf/resolv.conf.d/head
+          owner: root
+          permissions: "0644"
+          content: |
+            nameserver ${K8SGATEWAY_LB_IP}
+        preKubeadmCommands:
+        - systemctl daemon-reload
+        - systemctl restart containerd.service
+        - sudo apt update
+        - sudo apt -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confnew install resolvconf
+        - sudo systemctl start resolvconf.service
+        - sudo systemctl enable resolvconf.service
+        postKubeadmCommands:
+        - export KUBECONFIG=/etc/kubernetes/admin.conf
+        - kubectl taint nodes --all node-role.kubernetes.io/master-
+        - sudo systemctl restart resolvconf.service
+        - sudo systemctl restart systemd-resolved.service
+      replicas: 1
+- patch: |-
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+    kind: OpenStackMachineTemplate
+    metadata:
+      name: ${CLUSTER_NAME}-control-plane
+      namespace: default
+    spec:
+      template:
+        spec:
+          rootVolume:
+            diskSize: 80
+            volumeType: ceph_sas
+          ports:
+            - network:
+                id: ${CAPO_NETWORK_ID}
+              allowedAddressPairs:
+                - ipAddress: ${KUBE_VIP_IP}
