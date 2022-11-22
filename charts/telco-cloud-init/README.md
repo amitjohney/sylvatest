@@ -73,8 +73,6 @@ registry_secret:
 
 ```terminal
 $ cat < EOF > myoverrides.yaml
-phase: management  # e.g. to test the installation of the chart on the management cluster
-
 cluster:
   flavor:
     infra_provider: capd
