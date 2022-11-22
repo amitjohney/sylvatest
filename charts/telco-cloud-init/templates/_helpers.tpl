@@ -71,7 +71,11 @@ Usage:
     {{- $component_def := index $envAll.Values.components $component_name -}}
     {{- $component_enabled := toString $envAll.Values.component_default_enable -}}
     {{- if hasKey $component_def "enabled" -}}
-      {{- $component_enabled = toString $component_def.enabled -}}  
+      {{- if kindIs "string" $component_def.enabled -}}
+        {{- $component_enabled = tpl $component_def.enabled $envAll -}}
+      {{- else -}}
+        {{- $component_enabled = toString $component_def.enabled -}}
+      {{- end -}}
     {{- end -}}
     {{- $phase := $envAll.Values.phase -}}
     {{- if not (or (eq $phase "bootstrap") (eq $phase "management")) -}}

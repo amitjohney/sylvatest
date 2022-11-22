@@ -7,17 +7,9 @@ git_repo_templates:
         commit: $CURRENT_COMMIT
 
 components:
-  capo:
-    enabled: true
-  cabpr:
-    enabled: true
   cluster:
     kustomization_spec:
       path: kustomize-components/management-cluster/rke2-capo/orange-falcon
-    depends_on:
-    - name: capi
-    - name: capo
-    - name: cabpr
   rancher:
     enabled: management-only
   k8s-gateway:

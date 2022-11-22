@@ -110,7 +110,7 @@ components:
           optional: true
 
   kubed:
-    use: no # need to enable for 'capd' provider
+    enabled: '{{ eq .Values.cluster.flavor.infra_provider "capd" }}'
     # FIXME: maybe is isn't required any more with this helm chart, and we could create secrets in components namespaces?
     # We need kubed to copy secrets from namespace to namespace for the 'capd' provider
     # Unfortunately, it doesn't seems to be possible to pass registry secrets from default namespace to others without the use of an additionnal tool like this one:
@@ -153,7 +153,7 @@ components:
       wait: true
 
   capd:
-    enabled: no
+    enabled: '{{ eq .Values.cluster.flavor.infra_provider "capd" }}'
     repo: capi-bootstrap
     depends_on:
       - name: cert-manager
@@ -166,7 +166,7 @@ components:
       wait: true
 
   capo:
-    enabled: no
+    enabled: '{{ eq .Values.cluster.flavor.infra_provider "capo" }}'
     repo: capi-bootstrap
     depends_on:
       - name: cert-manager
@@ -175,7 +175,7 @@ components:
       wait: true
 
   capm3:
-    enabled: no
+    enabled: '{{ eq .Values.cluster.flavor.infra_provider "capm3" }}'
     repo: capi-bootstrap
     depends_on:
       - name: cert-manager
@@ -184,7 +184,7 @@ components:
       wait: true
 
   capv:
-    enabled: no
+    enabled: '{{ eq .Values.cluster.flavor.infra_provider "capv" }}'
     repo: capi-bootstrap
     depends_on:
       - name: cert-manager
@@ -192,8 +192,8 @@ components:
       path: ./kustomize-components/capv
       wait: true
 
-  cabpk:
-    enabled: no
+  cabpk:  # kubeadm
+    enabled: '{{ eq .Values.cluster.flavor.bootstrap_provider "cabpk" }}'
     repo: capi-bootstrap
     depends_on:
       - name: cert-manager
@@ -202,7 +202,7 @@ components:
       wait: true
 
   cabpr:  # RKE2
-    enabled: no
+    enabled: '{{ eq .Values.cluster.flavor.bootstrap_provider "cabpr" }}'
     repo: capi-bootstrap
     depends_on:
       - name: cert-manager
@@ -210,8 +210,8 @@ components:
       path: ./kustomize-components/cabpr
       wait: true
 
-  cluster-resource-sets:  # for now only needed for kubeadm
-    enabled: no  ## we'll turn this to false once we deploy calico with Flux
+  cluster-resource-sets:
+    enabled: '{{ eq .Values.cluster.flavor.bootstrap_provider "cabpk" }}'  ## we'll turn this to false once we deploy calico with Flux
     repo: capi-bootstrap
     depends_on:
       - name: capi  # is this the right dependency ?
@@ -224,6 +224,8 @@ components:
     repo: capi-bootstrap
     depends_on:
       - name: capi
+      - name: '{{ .Values.cluster.flavor.infra_provider }}'
+      - name: '{{ .Values.cluster.flavor.bootstrap_provider }}'
     labels:
       suspend-on-pivot: "yes"  # this component must be suspended before pivot
     kustomization_spec:
@@ -309,8 +311,8 @@ cluster:
   # for the 'cluster' component
   # e.g. you can use ./management-cluster-def/rke2-capd
   flavor:
-    infra_provider: capd   # capo
-    bootstrap_provider: cabpr  # RKE2 or kubeadm
+    infra_provider: please-file-me     # capd or capo
+    bootstrap_provider: please-file-me # cabpr (RKE2) or cabpk (kubeadm)
 
   capo:
     ssh_key_name:
