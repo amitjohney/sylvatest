@@ -7,20 +7,10 @@ git_repo_templates:
         commit: $CURRENT_COMMIT
 
 components:
-  capd:
-    enabled: true
-  kubed:
-    enabled: true
-  cabpk:
-    enabled: true
   cluster:
     kustomization_spec:
       path: ./kustomize-components/management-cluster/kubeadm-capd/base
       #path: ./kustomize-components/management-cluster/kubeadm-capd/orange-proxy
-    depends_on:
-      - name: capi
-      - name: capd
-      - name: cabpk
   # rancher:
   #   enabled: management-only
   #   depends_on:

@@ -7,18 +7,10 @@ git_repo_templates:
         commit: $CURRENT_COMMIT
 
 components:
-  capo:
-    enabled: true
-  cabpk:
-    enabled: true
   cluster:
     kustomization_spec:
       #path: ./kustomize-components/management-cluster/kubeadm-capo/base
       path: ./kustomize-components/management-cluster/kubeadm-capo/orange-falcon
-    depends_on:
-      - name: capi
-      - name: capo
-      - name: cabpk
   # rancher:
   #   enabled: management-only
   #   depends_on:
