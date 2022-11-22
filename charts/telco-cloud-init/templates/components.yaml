@@ -108,7 +108,7 @@ metadata:
       {{/* this is where we refer to ./kustomize-components/helmrelease-generic */}}
       {{- $kustomization_spec_overrides = mergeOverwrite $kustomization_spec_overrides $envAll.Values.component_helmrelease_kustomization_spec_default -}}
 
-      {{- $helmrelease_spec := dict -}}
+      {{- $helmrelease_spec := dict "releaseName" $component_name -}}
       {{- $helmrelease_spec := mergeOverwrite $helmrelease_spec $envAll.Values.component_helmrelease_spec_default ($component_def.helmrelease_spec | default dict) $helmrelease_spec_overrides -}}
 
       {{- $patch := include "helmrelease-kustomization-patch-template" (tuple $component_name $helmrelease_spec $labels) | fromYaml -}}
