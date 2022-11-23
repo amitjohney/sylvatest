@@ -102,7 +102,7 @@ components:
         # defining the management cluster, which we can't define before having done the pivot
         # (this value override is reverted after pivot by the pivot job below)
         - target:
-            kind: HelmRelease 
+            kind: HelmRelease
             name: telco-cloud-init
           patch: |
             kind: HelmRelease
@@ -115,8 +115,8 @@ components:
                     enabled: false
         # we don't need to define the GitRepository because the one from bootstrap cluster is copied into
         # the management cluster (thanks to copy-from-bootstrap-to-management label)
-        - target:  
-            kind: GitRepository 
+        - target:
+            kind: GitRepository
             name: telco-cloud-init
           patch: |
             kind: GitRepository
