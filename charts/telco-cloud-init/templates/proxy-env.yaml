@@ -1,4 +1,4 @@
-{{- $envAll := . -}}
+{{- $envAll := set . "Values" (include "interpret-values-gotpl" . | fromJson) -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
