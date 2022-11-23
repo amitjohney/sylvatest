@@ -282,6 +282,8 @@ components:
         replicas: 1
         features: embedded-cluster-api=false,provisioningv2=true
         debug: true
+        proxy: '{{ .Values.proxies.https_proxy }}'
+        noProxy: '{{ .Values.proxies.no_proxy }}'
       postRenderers:
         - kustomize:
             patches:
