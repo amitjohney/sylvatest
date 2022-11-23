@@ -1,0 +1,16 @@
+---
+image: docker:latest
+
+default:
+  before_script:
+    - apk add --no-cache curl bash git yamllint   
+    - curl -L https://get.helm.sh/helm-v3.10.1-linux-amd64.tar.gz | tar xz
+    - mv linux-amd64/helm /usr/local/bin/ 
+
+.helm-lint:
+  script:
+    - helm lint charts/${HELM_NAME}
+
+.helm-yamllint:
+  script:
+    - yamllint charts/${HELM_NAME} -c tools/gci-templates/helm-yamllint.conf  

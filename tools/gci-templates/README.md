@@ -1,0 +1,1 @@
+This directory contains gitlab-ci templates, scripts used to generate jobs and linter config files.
