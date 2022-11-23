@@ -63,11 +63,6 @@ $ cat < EOF > secrets.yaml
 git_auth_default: 
   username: $GITLAB_USER
   password: $GITLAB_TOKEN
-
-registry_secret:
-  registry.gitlab.com:
-    username: $GITLAB_USER
-    password
 ```
 * prepare the file(s) with the Helm overrides that you want:
 
