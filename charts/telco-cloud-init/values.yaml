@@ -8,9 +8,8 @@ fullnameOverride: ""
 
 # registry secrets
 registry_secret:
-  registry.gitlab.com:
-    username: your_user_name
-    password: glpat-XXXXX
+  # when using gitlab, git creds can be used as registry creds
+  registry.gitlab.com: '{{ .Values.git_auth_default | include "preserve-type" }}'
 
 # repository secrets
 git_auth_default:
