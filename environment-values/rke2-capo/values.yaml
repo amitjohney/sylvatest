@@ -1,11 +1,5 @@
 debug: true
 
-git_repo_templates:
-  capi-bootstrap:
-    spec:
-      ref:
-        commit: $CURRENT_COMMIT
-
 components:
   cluster:
     kustomization_spec:

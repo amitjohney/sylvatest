@@ -4,6 +4,8 @@ kind: GitRepository
 metadata:
   name: telco-cloud-init
   namespace: default
+  labels:
+    copy-from-bootstrap-to-management: ""
 spec:
   gitImplementation: libgit2
   interval: 120m
@@ -43,4 +45,7 @@ spec:
     name: management-cluster-infra-secrets
     valuesKey: infra-secrets
     optional: true
-  values: {}
+  values:
+    git_repo_templates:
+      capi-bootstrap:
+        existing_gitrepository: telco-cloud-init

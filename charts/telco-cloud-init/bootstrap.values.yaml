@@ -73,7 +73,7 @@ components:
               done
 
               echo "-- Copy secrets and configmaps from bootstrap to management cluster"
-              kubectl get configmaps,secrets \
+              kubectl get configmaps,secrets,gitrepository \
                 -l copy-from-bootstrap-to-management= \
                 -o json \
                   | jq '.items[] | del(.metadata.labels."helm.toolkit.fluxcd.io/name") | del(.metadata.labels."copy-from-bootstrap-to-management") | del(.metadata.labels."helm.toolkit.fluxcd.io/namespace") | del(.metadata.resourceVersion) | del(.metadata.uid) | del(.metadata.creationTimestamp)' \
@@ -101,8 +101,6 @@ components:
       suspend-on-pivot: "yes"  # this component must be suspended before pivot
 
   # instantiate 'telco-cloud-init' chart again in the management cluster
-  # we reinject current values into it, to have the exact same things
-  # this is done via a ConfigMap and a Secret (to hold security sensitive things)
   management-telco-cloud-init:
     enabled: yes
     depends_on:
@@ -110,15 +108,37 @@ components:
       - name: management-cluster-flux
     repo: capi-bootstrap
     kustomization_spec:
-      path: ./kustomize-components/telco-cloud-init/management-before-pivot/
+      path: ./kustomize-components/telco-cloud-init/base
       kubeConfig:
         secretRef:
           name: management-cluster-kubeconfig
       wait: true
-      postBuild:
-        substituteFrom: # Substitute $CURRENT_COMMIT
-        - kind: ConfigMap
-          name: management-cluster-values
+      patches:
+        # for now we keep the 'cluster' component disabled, it produces CAPI resources
+        # defining the management cluster, which we can't define before having done the pivot
+        # (this value override is reverted after pivot by the pivot job below)
+        - target:
+            kind: HelmRelease 
+            name: telco-cloud-init
+          patch: |
+            kind: HelmRelease
+            metadata:
+              name: ignored
+            spec:
+              values:
+                components:
+                  cluster:
+                    enabled: false
+        # we don't need to define the GitRepository because the one from bootstrap cluster is copied into
+        # the management cluster (thanks to copy-from-bootstrap-to-management label)
+        - target:  
+            kind: GitRepository 
+            name: telco-cloud-init
+          patch: |
+            kind: GitRepository
+            metadata:
+              name: unwanted
+            $patch: delete
     labels:
       suspend-on-pivot: "yes"  # this component must be suspended before pivot
 
@@ -174,7 +194,7 @@ components:
 
               echo "-- Patch the telco-cloud-init HelmRelease to allow the Flux cluster redefinition to happen in the management cluster"
               kubectl --kubeconfig management-cluster-kubeconfig \
-                  patch helmrelease telco-cloud-init --type=json --patch='[{"op":"remove","path":"/spec/values/components/cluster"}]'
+                  patch helmrelease telco-cloud-init --type=json --patch='[{"op":"remove","path":"/spec/values/components/cluster/enabled"}]'
 
               # NOTE: here we could add a reference to another valueFile that would deploy components specific to the management cluster
               # '[{"op":"add","path":"/spec/chart/spec/valuesFiles/-","value":"charts/telco-cloud-init/management.values.yaml"}]'
