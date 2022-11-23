@@ -14,20 +14,21 @@ components:
     enabled: management-only
   k8s-gateway:
     enabled: management-only
-  rancher-import:
+  capi-rancher-import:
     enabled: management-only
 
 cluster:
-  image: Ubuntu 20.04 RKE2
+  image: Ubuntu 20.04 Pack
   flavor:
     infra_provider: capo
     bootstrap_provider: cabpr
   capo:
     ssh_key_name: telco
     network_id: c314d52c-80fe-42b6-9092-55be383d1951
-    kube_vip_ip: 172.20.129.245
+    kube_vip_ip: 1.2.3.4  # replace me
 
 proxies:
-  http_proxy: $http_proxy
-  https_proxy: $https_proxy
-  no_proxy: $no_proxy
+  # put your own proxy settings here if you need
+  http_proxy:
+  https_proxy:
+  no_proxy:
