@@ -11,7 +11,7 @@ git_repo_templates:
       username: $METAL3_CHART_USERNAME
       password: $METAL3_CHART_TOKEN
     spec:
-      url: https://gitlab.com/t6306/components/capi-bootstrap.git
+      url: https://gitlab.com/t6306/components/helm-charts/metal3.git
       ref:
         branch: main
 
@@ -46,16 +46,16 @@ components:
   metallb:
     enabled: management-only
     repo: capi-bootstrap
-    dependsOn:
+    depends_on:
     - name: cert-manager
     kustomization_spec:
       path: ./kustomize-components/metallb
       wait: true
   
-  metal3:
+  metal3-metallb-config:
     enabled: management-only
     repo: capi-bootstrap
-    dependsOn:
+    depends_on:
     - name: cert-manager
     - name: metallb
     kustomization_spec:
@@ -64,24 +64,44 @@ components:
       postBuild:
         substitute:
           IRONIC_IP: $IRONIC_IP
+
+  metal3:
+    enabled: management-only
+    repo: metal3
+    depends_on:
+    - name: cert-manager
+    - name: metal3-metallb-config
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: egate/metal3
+      install:
+        createNamespace: true
+      targetNamespace: metal3-system
+      valuesFrom:
+      - kind: Secret
+        name: component-metal3-values
+        valuesKey: values
   
   cluster:
     enabled: yes
     repo: capi-bootstrap
     labels:
       suspend-on-pivot: "yes"  # this component must be suspended before pivot
-    dependsOn:
+    depends_on:
     - name: capi
     - name: capv
     - name: cabpk
     kustomization_spec:
       # see note below under .cluster
       # the choice made here, for now, requires setting other values consistently under .cluster.xxx
-      path: ./kustomize-components/management-cluster/kubeadm-capv/tim-lab
+      path: ./kustomize-components/cluster-manifests/kubeadm-capv/tim-lab
       postBuild:
         substituteFrom:
         - kind: ConfigMap
           name: cluster-vars
+        - kind: Secret
+          name: management-cluster-credentials
       healthChecks:
         - apiVersion: cluster.x-k8s.io/v1beta1
           kind: Cluster
@@ -108,10 +128,6 @@ cluster:
     dataCenter: $VS_DC_NAME
     # -- VSphere network for VMs and CSI
     network: $VS_NETWORK
-    # -- Vsphere username
-    username: $VS_USERNAME
-    # -- VSphere password
-    password: $VS_PASSWORD
     # -- VSphere server dns name
     server: $VS_SERVER
     # -- VSphere https TLS thumbprint
