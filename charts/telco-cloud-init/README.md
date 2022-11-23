@@ -224,5 +224,4 @@ components:
 * allow use of `{{ .Values.xxx }}` in  some or all values (requires passing values into gotpl interpreter)  (?)
 
 * add gitlab CI for the chart:
-  * helm linter
   * play `helm template` on a set of test `values.yaml` files
