@@ -22,10 +22,10 @@ components:
     enabled: management-only
     repo: capi-bootstrap
     depends_on:
-    - name: cert-manager      
+    - name: cert-manager
     spec:
       path: ./kustomize-components/metallb
-      wait: true    
+      wait: true
 
   #FIXME: figure out why pivot works locally and not in gitlab ci... (whereas pivot work with kubadm-capd in ci)
   pivot:

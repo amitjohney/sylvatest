@@ -5,7 +5,7 @@ resources:
 - ../base
 
 commonLabels:
-  suspend-on-pivot: "yes" 
+  suspend-on-pivot: "yes"
 
 patches:
 - target:

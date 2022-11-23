@@ -21,6 +21,6 @@ patches:
       version: v1
       kind: CustomResourceDefinition
     patch: |-
-      - op: add  
+      - op: add
         path: /metadata/annotations/cert-manager.io~1inject-ca-from
         value: metallb-system/metallb-serving-cert
