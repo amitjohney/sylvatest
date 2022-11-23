@@ -310,7 +310,7 @@ components:
                   namespace: cattle-system
 
   rancher-webhook-service:
-    enabled: '{{ include "is-component-enabled" (tuple . "rancher") }}'
+    enabled: '{{ include "is-component-enabled" (tuple . "rancher") | eq "true" }}'
     repo: capi-bootstrap
     depends_on:
       - name: rancher
