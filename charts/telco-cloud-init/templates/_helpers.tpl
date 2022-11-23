@@ -113,6 +113,6 @@ patch: |
 {{ $labels | toYaml | indent 8 }}
   - op: replace
     path: /spec
-    value: 
+    value:
 {{ $helmrelease_spec | toYaml | indent 6 }}
 {{ end }}

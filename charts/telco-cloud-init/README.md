@@ -6,7 +6,7 @@ The key purpose of this chart is to facilitate the creation of the bootstrap clu
 follow-up with the creation with the management cluster, both sharing many commmon components.
 
 The installation of the components is done thanks to FluxCD resources. And the dependency
-resolution built-in Flux is used to orchestrate the creation of the management cluster after installing the base components on the bootstrap cluster, which is then followed by 
+resolution built-in Flux is used to orchestrate the creation of the management cluster after installing the base components on the bootstrap cluster, which is then followed by
 the deployments of components in the management cluster.
 
 This chart also acts as the place where we handle "meta-release" aspect; ie. where we determine the different versions to use for the different components.
@@ -60,7 +60,7 @@ Flux is already installed on the cluster on which the chart is being installed.
 
 ```terminal
 $ cat < EOF > secrets.yaml
-git_auth_default: 
+git_auth_default:
   username: $GITLAB_USER
   password: $GITLAB_TOKEN
 

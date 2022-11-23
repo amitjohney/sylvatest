@@ -112,7 +112,7 @@ metadata:
       {{- $helmrelease_spec := mergeOverwrite $helmrelease_spec $envAll.Values.component_helmrelease_spec_default ($component_def.helmrelease_spec | default dict) $helmrelease_spec_overrides -}}
 
       {{- $patch := include "helmrelease-kustomization-patch-template" (tuple $component_name $helmrelease_spec $labels) | fromYaml -}}
-      {{- $_ := set $kustomization_spec_overrides "patches" (list $patch) -}} 
+      {{- $_ := set $kustomization_spec_overrides "patches" (list $patch) -}}
     {{- end -}}
 
     {{/* let's set the dependsOn field */}}
