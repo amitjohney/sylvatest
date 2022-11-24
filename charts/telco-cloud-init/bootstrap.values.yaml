@@ -23,10 +23,32 @@ components:
   capi:
     enabled: yes
 
-  management-cluster-configs:
+  management-cluster-flux:
     enabled: yes
     depends_on:
       - name: cluster
+      # FIXME; Flux wait/healthcheck on management cluster does not work as expected, it becomes ready as soon as manifests are applied
+      # cluster readyness will actually be ensured by the retries on installations of this kustomization for now.
+      # maybe cluster CRD is not compatible with kstatus? (see https://fluxcd.io/flux/components/kustomize/kustomization/#health-assessment)
+    repo: capi-bootstrap
+    kustomization_spec:
+      path: ./kustomize-components/flux-system
+      kubeConfig:
+        secretRef:
+          name: management-cluster-kubeconfig
+      targetNamespace: flux-system
+      wait: true
+      postBuild:
+        substituteFrom:
+        - kind: ConfigMap
+          name: proxy-env-vars
+    labels:
+      suspend-on-pivot: "yes"  # this component must be suspended before pivot
+
+  management-cluster-configs:
+    enabled: yes
+    depends_on:
+      - name: management-cluster-flux
     repo: capi-bootstrap
     kustomization_spec:
       # FIXME: This is very hacky, we should use an ad-hoc kustomisation instead of this job to re-create configmap and secrets on maangement cluster
@@ -49,28 +71,10 @@ components:
             path: /data/kube-job.sh
             value: |
               #!/bin/bash
-
               set -e
-
-              # FIXME; Flux wait/healthcheck on management cluster should be handling that...
-              # maybe cluster CRD is not compatible with kstatus? (see https://fluxcd.io/flux/components/kustomize/kustomization/#health-assessment)
-              echo "-- Wait for management cluster kubeconfig"
-              attempts=0
-              max_attempts=60
-              until kubectl get secret management-cluster-kubeconfig; do
-                sleep 10
-                ((attempts++)) && ((attempts==max_attempts)) && exit -1
-              done
 
               echo "-- Retrieve target cluster kubeconfig"
               kubectl get secret management-cluster-kubeconfig -o jsonpath='{.data.value}' | base64 -d > management-cluster-kubeconfig
-
-              echo "-- Wait for management cluster to be ready"
-              attempts=0
-              until kubectl --kubeconfig management-cluster-kubeconfig wait --for condition=Ready --timeout 2s --all nodes; do
-                sleep 8
-                ((attempts++)) && ((attempts==max_attempts)) && exit -1
-              done
 
               echo "-- Copy secrets and configmaps from bootstrap to management cluster"
               kubectl get configmaps,secrets,gitrepository \
@@ -81,31 +85,11 @@ components:
 
               echo "-- All done"
 
-  management-cluster-flux:
-    enabled: yes
-    depends_on:
-      - name: management-cluster-configs
-    repo: capi-bootstrap
-    kustomization_spec:
-      path: ./kustomize-components/flux-system
-      kubeConfig:
-        secretRef:
-          name: management-cluster-kubeconfig
-      targetNamespace: flux-system
-      wait: true
-      postBuild:
-        substituteFrom:
-        - kind: ConfigMap
-          name: proxy-env-vars
-    labels:
-      suspend-on-pivot: "yes"  # this component must be suspended before pivot
-
   # instantiate 'telco-cloud-init' chart again in the management cluster
   management-telco-cloud-init:
     enabled: yes
     depends_on:
-      - name: cluster
-      - name: management-cluster-flux
+      - name: management-cluster-configs
     repo: capi-bootstrap
     kustomization_spec:
       path: ./kustomize-components/telco-cloud-init/base
