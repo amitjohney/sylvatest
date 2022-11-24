@@ -113,7 +113,7 @@ cluster:
   # TODO: derive kubeconfig secret name from this ^
 
   # image reference depends provider
-  image: ""
+  image: "ubuntu-2004-kube-v1.22.8"
 
   # for now, the choice below needs to be made
   # consistently with the choice of a matching kustomization path
