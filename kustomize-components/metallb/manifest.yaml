@@ -18,7 +18,7 @@ spec:
     strategy: Webhook
     webhook:
       clientConfig:
-        caBundle: Cg====
+        caBundle: Cg==
         service:
           name: webhook-service
           namespace: metallb-system
@@ -231,7 +231,7 @@ spec:
     strategy: Webhook
     webhook:
       clientConfig:
-        caBundle: Cg====
+        caBundle: Cg==
         service:
           name: webhook-service
           namespace: metallb-system
@@ -343,7 +343,7 @@ spec:
     strategy: Webhook
     webhook:
       clientConfig:
-        caBundle: Cg====
+        caBundle: Cg==
         service:
           name: webhook-service
           namespace: metallb-system
@@ -552,7 +552,7 @@ spec:
     strategy: Webhook
     webhook:
       clientConfig:
-        caBundle: Cg====
+        caBundle: Cg==
         service:
           name: webhook-service
           namespace: metallb-system
@@ -835,7 +835,7 @@ spec:
     strategy: Webhook
     webhook:
       clientConfig:
-        caBundle: Cg====
+        caBundle: Cg==
         service:
           name: webhook-service
           namespace: metallb-system
@@ -912,7 +912,7 @@ spec:
     strategy: Webhook
     webhook:
       clientConfig:
-        caBundle: Cg====
+        caBundle: Cg==
         service:
           name: webhook-service
           namespace: metallb-system
@@ -999,7 +999,7 @@ spec:
     strategy: Webhook
     webhook:
       clientConfig:
-        caBundle: Cg====
+        caBundle: Cg==
         service:
           name: webhook-service
           namespace: metallb-system
