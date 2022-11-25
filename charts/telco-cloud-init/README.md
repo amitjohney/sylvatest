@@ -190,6 +190,9 @@ components:
       values:
         externalName: "{{ .Values.mgmt_cluster_domain_name }}"
 
+    helm_secret_values: ## this is well suited to secure creds (what is set here will be stored in a Secret, mapped into the valuesFrom field of the HelmRelease)
+      password: '{{ .Values.foo_password }}'
+
   bar:
     ...
     kustomization_spec:

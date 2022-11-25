@@ -102,16 +102,9 @@ metadata:
   labels:
 {{ $labels | toYaml | indent 4 }}
 spec: {{ $helm_repo_spec | toYaml | nindent 2 }}
-    {{ end }}
+    {{ end -}}
 
     {{/******************* Generation of the Kustomization */}}
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
-kind: Kustomization
-metadata:
-  name: {{ $component_name }}
-  labels:
-{{ $labels | toYaml | indent 4 }}
 
     {{/* here, if "helmrelease_spec" is used, we define the spec of the inner HelmRelease */}}
     {{- if hasKey $component_def "helmrelease_spec" -}}
@@ -121,6 +114,28 @@ metadata:
       {{- $helmrelease_spec := dict "releaseName" $component_name -}}
       {{- $helmrelease_spec := mergeOverwrite $helmrelease_spec $envAll.Values.component_helmrelease_spec_default ($component_def.helmrelease_spec | default dict) $helmrelease_spec_overrides -}}
 
+      {{- if hasKey $component_def "helm_secret_values" -}}
+        {{/* if the component has "helm_secret_values" defined, then
+             we add to valuesFrom a Secret with "helm_secret_values"
+        */}}
+        {{- $secretName := printf "helm-component-values-%s" $component_name }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $secretName }}
+  labels: {{ $labels | toYaml | nindent 4 }}
+stringData:
+  values: |{{ $component_def.helm_secret_values | toYaml | nindent 4 }}
+
+        {{ $valuesFrom := $helmrelease_spec.valuesFrom | default list -}}
+        {{- $secretsValues := dict "kind" "Secret" "name" $secretName "valuesKey" "values" -}}
+
+        {{- $_ := set $helmrelease_spec "valuesFrom" (append $valuesFrom $secretsValues) -}}
+
+      {{- end -}}
+
+      {{/* inject the HelmRelease spec via a patch in the Kustomization: */}}
       {{- $patch := include "helmrelease-kustomization-patch-template" (tuple $component_name $helmrelease_spec $labels) | fromYaml -}}
       {{- $_ := set $kustomization_spec_overrides "patches" (list $patch) -}}
     {{- end -}}
@@ -135,6 +150,12 @@ metadata:
     {{- $kustomization_spec := dict -}}
     {{- $kustomization_spec = mergeOverwrite $kustomization_spec $envAll.Values.component_kustomization_spec_default ($component_def.kustomization_spec | default dict) $dependsOn $kustomization_spec_overrides }}
 
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: {{ $component_name }}
+  labels: {{ $labels | toYaml | nindent 4 }}
 spec: {{ $kustomization_spec | toYaml | nindent 2 }}
   {{- end -}}
 {{ end }}
