@@ -35,12 +35,12 @@ components:
       path: ./kustomize-components/cluster-manifests/kubeadm-capo/orange-falcon-single-node
       postBuild:
         substitute:
-         CAPO_NETWORK_ID: "{{ .Values.cluster.capo.network_id }}"
-         CLUSTER_NAME: "first-workload-cluster"
-         K8SGATEWAY_LB_IP: "{{ .Values.cluster.capo.kube_vip_ip }}"   # NOTE: same as KUBE_VIP_IP var for management cluster, exposing its k8s-gateway DNS svc
-         KUBE_VIP_IP: # set an IP for your workload cluster kube-api LB VIP here
-         MACHINE_IMAGE: "{{ .Values.cluster.capo.image }}"
-         SSH_KEY_NAME: "{{ .Values.cluster.capo.ssh_key_name }}"
+          CAPO_NETWORK_ID: "{{ .Values.cluster.capo.network_id }}"
+          CLUSTER_NAME: "first-workload-cluster"
+          K8SGATEWAY_LB_IP: "{{ .Values.cluster.capo.kube_vip_ip }}"   # NOTE: same as KUBE_VIP_IP var for management cluster, exposing its k8s-gateway DNS svc
+          KUBE_VIP_IP: # set an IP for your workload cluster kube-api LB VIP here
+          MACHINE_IMAGE: "{{ .Values.cluster.capo.image }}"
+          SSH_KEY_NAME: "{{ .Values.cluster.capo.ssh_key_name }}"
   cluster-import:
     enabled: management-only
     depends_on:
@@ -48,7 +48,7 @@ components:
     kustomization_spec:
       postBuild:
         substitute:
-         CLUSTER_NAME: "first-workload-cluster"
+          CLUSTER_NAME: "first-workload-cluster"
 
 cluster:
   image: capo-ubuntu-2004-kube-v1.23.6-calico-3.23.1

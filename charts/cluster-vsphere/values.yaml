@@ -76,7 +76,7 @@ machines:
   domain: ""
   # -- IPv4 gateway
   gateway: ""
-  
+
   # -- users to create on machines
   # see https://github.com/kubernetes-sigs/cluster-api/blob/main/bootstrap/kubeadm/api/v1beta1/kubeadmconfig_types.go#L257 for documentation about user config object
   users: []
@@ -212,7 +212,7 @@ vsphere:
 vsphereCsi:
   # -- Installs vsphere-csi on the cluster
   enabled: true
-  
+
   cloudControllerManager:
     # -- resources of vsphere-cloud-controller-manager
     resources:
@@ -223,7 +223,7 @@ vsphereCsi:
     csiAttacher:
       # -- resources of the container csi-attacher in vsphere-csi-controller
       resources: {}
-      # 
+      #
 #    csiResizer:
 #      # -- resources of the container csi-resizer in vsphere-csi-controller
 #      resources: {}
@@ -231,15 +231,15 @@ vsphereCsi:
     vsphereCsiController:
       # -- resources of the container vsphere-csi-controller in vsphere-csi-controller
       resources: {}
-      # 
+      #
     vsphereSyncer:
       # -- resources of the container vsphere-syncer in vsphere-csi-controller
       resources: {}
-      # 
+      #
     csiProvisioner:
       # -- resources of the container csi-provisioner in vsphere-csi-controller
       resources: {}
-      # 
+      #
 #    csiSnapshotter:
 #      # -- resources of the container csi-snapshotter in vsphere-csi-controller
 #      resources: {}
@@ -247,7 +247,7 @@ vsphereCsi:
     livenessProbe:
       # -- resources of the container liveness-probe in vsphere-csi-controller
       resources: {}
-      # 
+      #
 
   node:
     nodeDriverRegistrar:
