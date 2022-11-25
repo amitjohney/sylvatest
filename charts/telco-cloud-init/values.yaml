@@ -360,14 +360,11 @@ components:
               value: "https://rancher.sylva/ https://rancher.cattle-system.svc.cluster.local/"
             - name: REQUESTS_SSL_VERIFY
               value: "no"
-          cattle_agent_kustomize_source:
-            spec:
-              gitImplementation: libgit2
-              ref:
-                branch: main
-              secretRef:
-                # FIXME(baburciu): it's hardcoded, due to known format ./charts/telco-cloud-init/templates/components.yaml
-                name: "git-repo-auth-capi-bootstrap"
+          cattle_agent_kustomize_source_ref:
+            kind: GitRepository
+            name: component-capi-rancher-import
+            namespace: default
+          cattle_agent_kustomize_path: ./cattle-kustomize
 
   ingress-nginx:
     enabled: no
@@ -448,6 +445,9 @@ components:
       - name: first-login-rancher
     kustomization_spec:
       path: ./kustomize-components/cluster-import
+      postBuild:
+        substitute:
+          CLUSTER_FLAVOR: "{{ upper .Values.cluster.flavor.bootstrap_provider }} {{ upper .Values.cluster.flavor.infra_provider }}"
 
 ## stuff related to the 'cluster' component
 

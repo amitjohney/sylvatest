@@ -69,6 +69,23 @@ For now it will only deploy a single-node RKE2 cluster, but it's a starting poin
 
 ## Deploying clusters in openstack
 
+:::note
+For environments where an automatic creation of a workload cluster and its importing in Rancher server (deployed in the management cluster) workflow is triggered (like for _kubeadm-capo_) we have some traffic flow requirements:
+1. since the [workload cluster's /etc/resolv.conf](./kustomize-components/cluster-manifests/kubeadm-capo/orange-falcon-single-node/kustomization.yaml#L99-115) would be configured with the management cluster's k8s-gateway LoadBalancer service External IP (set by the `KUBE_VIP_IP` var of management cluster) to allow for resolving the Rancher FQDN, we will need to also permit DNS traffic (UDP port 53) for the management cluster ingress direction. <br/>
+2. since the workload cluster's [cattle-cluster-agent](https://docs.ranchermanager.rancher.io/v2.6/how-to-guides/new-user-guides/launch-kubernetes-with-rancher/about-rancher-agents#cattle-cluster-agent) will conenct to the Rancher server FQDN (Ingress service External IP set by the `KUBE_VIP_IP` var of management cluster), we will need to also permit TLS traffic (TCP port 443) for the management cluster ingress direction, as per [Rancher downstream nodes port requirements](https://docs.ranchermanager.rancher.io/v2.6/getting-started/installation-and-upgrade/installation-requirements/port-requirements#downstream-kubernetes-cluster-nodes). Such traffic flow would also be needed for connecting to Rancher webUI. <br/>
+If we are deploying both the management cluster and the workload cluster on the same Neutron network, like having all nodes attached to the same VLAN-based Provider Network, then these flows are permitted by default due to the fact that traffic internal to a Neutron network is not subject to Security Group-based filtering. <br/>
+
+However, if the management cluster and the workload cluster nodes would not share the same network (like using different Provider Networks), we can meet these requirements by setting the proper rules for the `default` SG of the OpenStack tenant in which the management cluster is deployed, since in the manifest of the _kubeadm-capo_ management cluster we're adding this [pre-existing SG to the spec of an OpenStackMachineTemplate](./kustomize-components/cluster-manifests/kubeadm-capo/base/management-cluster.yaml#L100-101).
+To provide these rule in OpenStack, the tenant admin can run:
+
+```console
+openstack security group rule create --ethertype IPv4 --ingress --protocol udp --dst-port 53 --remote-ip 0.0.0.0/0 
+--description "For k8s-gateway DNS resolving of Rancher" default
+openstack security group rule create --ethertype IPv4 --ingress --protocol tcp --dst-port 443 --remote-ip 0.0.0.0/0 --description "For Rancher importing" default
+```
+
+:::
+
 ### Using kind
 
 The workflow is quite similar to previous one with docker, you'll only have to provide different variables:
