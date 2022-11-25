@@ -1,0 +1,3 @@
+# Exclude chart path as for the global yamllint
+ignore: |
+  charts/**

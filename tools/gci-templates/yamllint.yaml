@@ -3,10 +3,6 @@
 ---
 extends: default
 
-# Exclude templates path as our helm template include some gotpl
-ignore: |
-  charts/*/templates/
-
 # Rules documentation: http://yamllint.readthedocs.io/en/latest/rules.html
 rules:
 
@@ -49,3 +45,6 @@ rules:
 
   indentation:
     indent-sequences: whatever  # accept that sequence items can be either indented and non-indented (k8s community style)
+
+  new-line-at-end-of-file: enable
+

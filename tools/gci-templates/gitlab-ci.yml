@@ -3,9 +3,9 @@ image: docker:latest
 
 default:
   before_script:
-    - apk add --no-cache curl bash git yamllint   
+    - apk add --no-cache curl bash git yamllint
     - curl -L https://get.helm.sh/helm-v3.10.1-linux-amd64.tar.gz | tar xz
-    - mv linux-amd64/helm /usr/local/bin/ 
+    - mv linux-amd64/helm /usr/local/bin/
 
 .helm-lint:
   script:
@@ -13,4 +13,4 @@ default:
 
 .helm-yamllint:
   script:
-    - yamllint charts/${HELM_NAME} -c tools/gci-templates/helm-yamllint.conf  
+    - yamllint charts/${HELM_NAME} -d "$(cat < tools/gci-templates/yamllint.yaml) $(cat < tools/gci-templates/yamllint-helm-exclude-chart-templates.yaml)"
