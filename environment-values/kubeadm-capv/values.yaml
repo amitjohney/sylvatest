@@ -1,0 +1,139 @@
+---
+
+git_repo_templates:
+  capi-bootstrap:
+    spec:
+      url: https://gitlab.com/t6306/components/capi-bootstrap.git
+      ref:
+        commit: $CURRENT_COMMIT
+  metal3:
+    auth:
+      username: $METAL3_CHART_USERNAME
+      password: $METAL3_CHART_TOKEN
+    spec:
+      url: https://gitlab.com/t6306/components/helm-charts/metal3.git
+      ref:
+        branch: main
+
+components:
+  capv:
+    enabled: true
+  cabpk:
+    enabled: true
+  capm3:
+    enabled: management-only
+  cabpr:  # RKE2
+    enabled: management-only
+  cluster-resource-sets:  # for now only needed for kubeadm
+    enabled: true
+  
+  # TODO: do not share with egate
+  flux-system:
+    enabled: management-only
+  
+  management-cluster-flux:
+    enabled: yes
+    repo: capi-bootstrap
+    kustomization_spec:
+      path: ./kustomize-components/flux-system
+      targetNamespace: flux-system
+    labels:
+      suspend-on-pivot: "yes"
+    
+  kubed:
+    enabled: no
+
+  metallb:
+    enabled: management-only
+    repo: capi-bootstrap
+    depends_on:
+    - name: cert-manager
+    kustomization_spec:
+      path: ./kustomize-components/metallb
+      wait: true
+  
+  metal3-metallb-config:
+    enabled: management-only
+    repo: capi-bootstrap
+    depends_on:
+    - name: cert-manager
+    - name: metallb
+    kustomization_spec:
+      path: ./kustomize-components/metal3
+      wait: true
+      postBuild:
+        substitute:
+          IRONIC_IP: $IRONIC_IP
+
+  metal3:
+    enabled: management-only
+    repo: metal3
+    depends_on:
+    - name: cert-manager
+    - name: metal3-metallb-config
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: egate/metal3
+      install:
+        createNamespace: true
+      targetNamespace: metal3-system
+      valuesFrom:
+      - kind: Secret
+        name: component-metal3-values
+        valuesKey: values
+  
+  cluster:
+    enabled: yes
+    repo: capi-bootstrap
+    labels:
+      suspend-on-pivot: "yes"  # this component must be suspended before pivot
+    depends_on:
+    - name: capi
+    - name: capv
+    - name: cabpk
+    kustomization_spec:
+      # see note below under .cluster
+      # the choice made here, for now, requires setting other values consistently under .cluster.xxx
+      path: ./kustomize-components/cluster-manifests/kubeadm-capv/tim-lab
+      postBuild:
+        substituteFrom:
+        - kind: ConfigMap
+          name: cluster-vars
+        - kind: Secret
+          name: management-cluster-credentials
+      healthChecks:
+        - apiVersion: cluster.x-k8s.io/v1beta1
+          kind: Cluster
+          name: management-cluster
+          namespace: default
+
+cluster:
+  name: management-cluster
+  # TODO: derive kubeconfig secret name from this ^
+
+  # image reference depends provider
+  image: "ubuntu-2004-kube-v1.22.8"
+
+  # for now, the choice below needs to be made
+  # consistently with the choice of a matching kustomization path
+  # for the 'cluster' component
+  # e.g. you can use ./management-cluster-def/rke2-capd
+  flavor:
+    infra_provider: capv   # capv
+    bootstrap_provider: cabpk  # RKE2 or kubeadm
+
+  capv:
+    # -- Datacenter to use
+    dataCenter: $VS_DC_NAME
+    # -- VSphere network for VMs and CSI
+    network: $VS_NETWORK
+    # -- VSphere server dns name
+    server: $VS_SERVER
+    # -- VSphere https TLS thumbprint
+    tlsThumbprint: $VS_TLS_THUMBPRINT
+
+proxy:
+  http_proxy: $http_proxy
+  https_proxy: $https_proxy
+  no_proxy: $no_proxy

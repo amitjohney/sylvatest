@@ -1,3 +1,4 @@
+---
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
 metadata:
@@ -5,7 +6,7 @@ metadata:
   namespace: metallb-system
 spec:
   addresses:
-# Specify the IP address used by Irnoc service
+# Specify the IP address used by Ironic service
   - ${IRONIC_IP}-${IRONIC_IP}
 ---
 apiVersion: metallb.io/v1beta1
