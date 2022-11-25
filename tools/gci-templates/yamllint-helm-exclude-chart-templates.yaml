@@ -1,0 +1,3 @@
+# Exclude templates path as our helm template include some gotpl
+ignore: |
+  charts/*/templates/
