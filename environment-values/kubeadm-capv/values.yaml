@@ -26,11 +26,11 @@ components:
     enabled: management-only
   cluster-resource-sets:  # for now only needed for kubeadm
     enabled: true
-  
+
   # TODO: do not share with egate
   flux-system:
     enabled: management-only
-  
+
   management-cluster-flux:
     enabled: yes
     repo: capi-bootstrap
@@ -39,7 +39,7 @@ components:
       targetNamespace: flux-system
     labels:
       suspend-on-pivot: "yes"
-    
+
   kubed:
     enabled: no
 
@@ -51,7 +51,7 @@ components:
     kustomization_spec:
       path: ./kustomize-components/metallb
       wait: true
-  
+
   metal3-metallb-config:
     enabled: management-only
     repo: capi-bootstrap
@@ -82,7 +82,7 @@ components:
       - kind: Secret
         name: component-metal3-values
         valuesKey: values
-  
+
   cluster:
     enabled: yes
     repo: capi-bootstrap

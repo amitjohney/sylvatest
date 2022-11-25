@@ -16,4 +16,4 @@ metadata:
   namespace: metallb-system
 spec:
   ipAddressPools:
-   - ironic-pool
+  - ironic-pool
