@@ -38,12 +38,14 @@ git_repo_templates: # template to generate Flux GitRepository resources
       ref:
         # tag/commit will take precedence, see https://fluxcd.io/flux/components/source/api/#source.toolkit.fluxcd.io/v1beta2.GitRepositoryRef
         branch: develop
+    auth: '{{ .Values.git_auth_default | include "preserve-type" }}'
 
   capi-rancher-import:
     spec:
       url: https://gitlab.com/t6306/components/capi-rancher-import.git
       ref:
         branch: main
+    auth: '{{ .Values.git_auth_default | include "preserve-type" }}'
 
 helm_repo_spec_default:
   interval: 60m0s
