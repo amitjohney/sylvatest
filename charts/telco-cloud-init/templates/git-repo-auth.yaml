@@ -1,6 +1,6 @@
 {{- $envAll := set . "Values" (include "interpret-values-gotpl" . | fromJson) -}}
 {{ range $repo_name, $repo_def := .Values.git_repo_templates }}
-{{- $auth := $repo_def.auth | default $envAll.Values.git_auth_default -}}
+{{- if hasKey $repo_def "auth" -}}
 ---
 apiVersion: v1
 kind: Secret
@@ -9,5 +9,6 @@ metadata:
   labels:
     telco-cloud-init.repo: {{ $repo_name }}
 {{ include "telco-cloud-init.labels" $envAll | indent 4 }}
-stringData: {{ $auth | toYaml | nindent 2 }}
+stringData: {{ $repo_def.auth | toYaml | nindent 2 }}
+{{ end -}}
 {{ end }}

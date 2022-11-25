@@ -56,7 +56,10 @@
       {{- else -}}
         {{- $git_repo_name = printf "component-%s" $component_name -}}
 
-        {{- $secret_ref := dict "secretRef" (dict "name" (printf "git-repo-auth-%s" $repo_name)) -}}{{/* Secret is templated in git-repo-auth.yaml */}}
+        {{- $secret_ref := dict }}
+        {{- if hasKey $repo_def "auth" }}
+          {{- $secret_ref = dict "secretRef" (dict "name" (printf "git-repo-auth-%s" $repo_name)) -}}{{/* Secret is templated in git-repo-auth.yaml */}}
+        {{- end -}}
         {{- $git_ref_override := dict "ref" ($component_def.ref_override | default dict) -}}
         {{- $git_repo_spec := dict -}}
         {{- $git_repo_spec = mergeOverwrite $git_repo_spec $envAll.Values.git_repo_spec_default $repo_def.spec $secret_ref $git_ref_override -}}
