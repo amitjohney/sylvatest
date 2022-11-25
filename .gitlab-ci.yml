@@ -8,9 +8,14 @@ services:
   - name: docker:dind
     alias: docker
 
+variables:
+  DOCKER_TLS_CERTDIR: ""
+
 default:
   tags:
     - gitlab-org-docker
+    #- docker
+    #- o-romania
 
 chart-generator:
   stage: generate
@@ -73,20 +78,18 @@ chart-jobs:
     - export DOCKER_HOST=tcp://$DOCKER_IP:2375
     - export GITLAB_USER=$CI_REGISTRY_USER
     - export GITLAB_TOKEN=$CI_JOB_TOKEN
-  only:
-    refs:
-      - merge_requests
-      - develop
-      - tags
+    - export DEBUG_ON_EXIT=1
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+    - if: $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
+    - when: manual
 
 test-rke2-capd:
   timeout: 45min
   extends: .test-capd
   script:
     - ./bootstrap.sh environment-values/rke2-capd
-  except:
-    variables:
-      - $CI_MERGE_REQUEST_TITLE =~ /^(\[Draft\]|\(Draft\)|Draft:)/
 
 test-kubeadm-capd:
   timeout: 30min

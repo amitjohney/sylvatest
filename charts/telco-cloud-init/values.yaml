@@ -481,6 +481,10 @@ capd:
 # kubectl get secrets telco-cloud-init-values-debug -o template="{{ .data.values }}" | base64 -d
 debug_values: no
 
+proxies:
+  https_proxy: ""
+  http_proxy: ""
+  no_proxy: ""
 
 # 'phase' determines whether we are instantiating this chart
 # on the bootstrap cluster or on the management cluster
