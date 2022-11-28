@@ -170,9 +170,8 @@ components:
     kustomization_spec:
       path: ./kustomize-components/capd
       postBuild:
-        substituteFrom:
-        - kind: ConfigMap
-          name: cluster-vars
+        substitute:
+          DOCKER_HOST: '{{ .Values.capd.docker_host }}'
       wait: true
 
   capo:
