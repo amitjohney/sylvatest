@@ -35,28 +35,10 @@ trap 'pids="$(jobs -rp)"; [ -n "$pids" ] && kill $pids' EXIT
 BASE_DIR="$(realpath $(dirname $0))"
 
 function exit_trap() {
-    # Grab some info in case of failure, essentially usefull to troubleshoot CI, fell free to add your own commands while troubleshooting
+    # Call debug script if needed
     if [[ $? -ne 0 && ${DEBUG_ON_EXIT:-"0"} -eq 1 ]]; then
-        echo_b "Docker containers"
-        docker ps
-        echo_b "System info"
-        free -h
-        df -h || true
-        echo_b "Flux kustomize-controller  logs in bootstrap cluster"
-        kubectl logs -n flux-system -l app=kustomize-controller
-        echo_b "CAPI logs in bootstrap cluster"
-        kubectl logs -n capi-system -l control-plane=controller-manager
-        echo_b "CAPD logs in bootstrap cluster"
-        kubectl logs -n capd-system -l control-plane=controller-manager
-        if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
-            export KUBECONFIG=${KUBECONFIG:-$BASE_DIR/management-cluster-kubeconfig}
-            echo_b "Get nodes in management cluster"
-            kubectl --request-timeout=3s get nodes
-            echo_b "Get pods in management cluster"
-            kubectl --request-timeout=3s get pods -A
-        fi
-        echo_b "Dump node logs"
-        docker ps -q -f name=management-cluster-control-plane* | xargs -I % -r docker exec % journalctl -e
+        echo_b "gathering debugging logs in debug-on-exit.log file"
+        ${BASE_DIR}/tools/shell-lib/debug-on-exit.sh > debug-on-exit.log
     fi
 
     # Kill all child processes (kubectl watches) on exit

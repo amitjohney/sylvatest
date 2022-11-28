@@ -287,8 +287,8 @@ components:
         replicas: -3
         features: embedded-cluster-api=false,provisioningv2=true
         debug: true
-        proxy: '{{ .Values.proxies.https_proxy }}'
-        noProxy: '{{ .Values.proxies.no_proxy }}'
+        proxy: '{{ get .Values.proxies "https_proxy" }}'
+        noProxy: '{{ get .Values.proxies "no_proxy" }}'
       postRenderers:
         - kustomize:
             patches:
@@ -485,6 +485,7 @@ capd:
 # kubectl get secrets telco-cloud-init-values-debug -o template="{{ .data.values }}" | base64 -d
 debug_values: no
 
+# add your proxy settings if required
 proxies:
   https_proxy: ""
   http_proxy: ""
