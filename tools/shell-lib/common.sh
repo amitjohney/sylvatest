@@ -36,7 +36,7 @@ BASE_DIR="$(realpath $(dirname $0))"
 
 function exit_trap() {
     # Grab some info in case of failure, essentially usefull to troubleshoot CI, fell free to add your own commands while troubleshooting
-    if [[ $? -ne 0 && $DEBUG_ON_EXIT -eq 1 ]]; then
+    if [[ $? -ne 0 && ${DEBUG_ON_EXIT:-"0"} -eq 1 ]]; then
         echo_b "Docker containers"
         docker ps
         echo_b "System info"
