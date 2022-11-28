@@ -1,4 +1,5 @@
 #!/bin/bash
+# this uses the RANCHER_EXTERNAL_URL as an environment variable (e.g. RANCHER_EXTERNAL_URL=https://rancher.sylva)
 
 set -e
 set -vx
@@ -20,6 +21,6 @@ LOGIN_TOKEN=`curl --insecure -s https://rancher.cattle-system.svc.cluster.local/
 echo "-- Create API key good forever and set Rancher server URL"
 API_KEY=`curl --insecure -s 'https://rancher.cattle-system.svc.cluster.local/v3/token' -H 'Content-Type: application/json' -H "Authorization: Bearer $LOGIN_TOKEN" --data-binary '{"type":"token","description":"for setting server URL"}' | jq -r .token`
 echo "API Key: $API_KEY"
-curl --insecure 'https://rancher.cattle-system.svc.cluster.local/v3/settings/server-url' -H 'Content-Type: application/json' -H "Authorization: Bearer $API_KEY" -X PUT --data-binary '{"name":"server-url","value":"https://rancher.sylva"}' | jq .
+curl --insecure 'https://rancher.cattle-system.svc.cluster.local/v3/settings/server-url' -H 'Content-Type: application/json' -H "Authorization: Bearer $API_KEY" -X PUT --data-binary '{"name":"server-url","value":"'$RANCHER_EXTERNAL_URL'"}' | jq .
 
 echo "-- All done"
