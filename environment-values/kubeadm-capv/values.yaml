@@ -8,8 +8,8 @@ git_repo_templates:
         commit: $CURRENT_COMMIT
   metal3:
     auth:
-      username: $METAL3_CHART_USERNAME
-      password: $METAL3_CHART_TOKEN
+      username: # replace me
+      password: # replace me
     spec:
       url: https://gitlab.com/t6306/components/helm-charts/metal3.git
       ref:
@@ -63,7 +63,7 @@ components:
       wait: true
       postBuild:
         substitute:
-          IRONIC_IP: $IRONIC_IP
+          IRONIC_IP: # replace me
 
   metal3:
     enabled: management-only
@@ -125,15 +125,15 @@ cluster:
 
   capv:
     # -- Datacenter to use
-    dataCenter: $VS_DC_NAME
+    dataCenter: # replace me
     # -- VSphere network for VMs and CSI
-    network: $VS_NETWORK
+    network: # replace me
     # -- VSphere server dns name
-    server: $VS_SERVER
+    server: # replace me
     # -- VSphere https TLS thumbprint
-    tlsThumbprint: $VS_TLS_THUMBPRINT
+    tlsThumbprint: # replace me
 
-proxy:
-  http_proxy: $http_proxy
-  https_proxy: $https_proxy
-  no_proxy: $no_proxy
+proxies:
+  http_proxy: # replace me
+  https_proxy: # replace me
+  no_proxy: # replace me
