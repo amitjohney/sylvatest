@@ -41,7 +41,3 @@ The following variables will be substituted:
 
 - `GITLAB_USER`
 - `GITLAB_TOKEN`
-- `http_proxy`
-- `https_proxy`
-- `no_proxy`
-

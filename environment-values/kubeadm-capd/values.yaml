@@ -22,9 +22,10 @@ cluster:
     bootstrap_provider: cabpk
 
 capd:
-  docker_host: $DOCKER_HOST
+  docker_host: $DOCKER_HOST  # dynamically replaced in CI
 
 proxies:
-  http_proxy: $http_proxy
-  https_proxy: $https_proxy
-  no_proxy: $no_proxy
+  # put your own proxy settings here if you need
+  http_proxy:
+  https_proxy:
+  no_proxy:

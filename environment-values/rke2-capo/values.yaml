@@ -17,7 +17,7 @@ cluster:
     infra_provider: capo
     bootstrap_provider: cabpr
   capo:
-    ssh_key_name: telco
+    ssh_key_name: # put the name of your nova SSH keypair here
     network_id: c314d52c-80fe-42b6-9092-55be383d1951
     kube_vip_ip: 1.2.3.4  # replace me
 
