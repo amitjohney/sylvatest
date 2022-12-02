@@ -107,6 +107,7 @@ components:
   #     # - <git repo template>.spec.url + <component>.spec.path  (if <git repo template> has spec.url defined)
   #
   #   helm_secret_values: # (dict), if set what is put here is injected in HelmRelease.valuesFrom as a Secret
+  #   kustomization_substitute_secrets: # (dict), if set what is put here is injected in Kustomization.postBuild.substituteFrom as a Secret
 
   flux-system:
     # note that Flux is always installed on the current cluster as a pre-requisite to installing the chart
