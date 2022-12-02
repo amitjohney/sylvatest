@@ -140,6 +140,28 @@ stringData:
       {{- $_ := set $kustomization_spec_overrides "patches" (list $patch) -}}
     {{- end -}}
 
+    {{- $kustomization_spec := dict -}}
+
+    {{- if hasKey $component_def "kustomization_substitute_secrets" -}}
+        {{/* if the component has "kustomization_substitute_secrets" defined, then
+             we add to substituteFrom a Secret with "kustomization_substitute_secrets"
+        */}}
+        {{- $secretName := printf "kustomization-component-substitute-%s" $component_name }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $secretName }}
+  labels: {{ $labels | toYaml | nindent 4 }}
+stringData:
+{{ $component_def.kustomization_substitute_secrets | toYaml | nindent 2 }}
+
+      {{ $substituteFrom := ($kustomization_spec.postBuild | default dict).substituteFrom | default list -}}
+      {{- $secretsValues := dict "kind" "Secret" "name" $secretName -}}
+
+      {{- $_ := mergeOverwrite $kustomization_spec (dict "postBuild" (dict "substituteFrom" (append $substituteFrom $secretsValues))) -}}
+    {{- end -}}
+
     {{/* let's set the dependsOn field */}}
     {{- $dependsOn := dict -}}
     {{- if hasKey $component_def "depends_on" -}}
@@ -147,7 +169,6 @@ stringData:
     {{- end -}}
 
     {{/* finalize the definition of the Kustomization spec by merging everything we have */}}
-    {{- $kustomization_spec := dict -}}
     {{- $kustomization_spec = mergeOverwrite $kustomization_spec $envAll.Values.component_kustomization_spec_default ($component_def.kustomization_spec | default dict) $dependsOn $kustomization_spec_overrides }}
 
 ---
