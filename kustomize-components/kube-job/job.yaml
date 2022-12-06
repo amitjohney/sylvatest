@@ -9,7 +9,7 @@ spec:
   template:
     spec:
       containers:
-      - name: pivot
+      - name: run-script
         #FIXME(feleouet): build & publish image when this component will be living in its own repository
         image: registry.gitlab.com/t6306/components/capi-bootstrap/kube-job:latest
         command: ["/bin/sh", "-c", "/opt/entrypoint.sh"]
