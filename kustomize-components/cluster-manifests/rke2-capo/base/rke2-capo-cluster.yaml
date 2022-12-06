@@ -68,6 +68,7 @@ spec:
               controller:
                 publishService:
                   enabled: true
+                hostNetwork: false
                 service:
                   enabled: true
                   loadBalancerIP: "${KUBE_VIP_IP}"
