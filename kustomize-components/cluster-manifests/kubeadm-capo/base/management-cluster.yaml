@@ -91,7 +91,7 @@ spec:
   template:
     spec:
       cloudName: capo_cloud
-      flavor: m1.medium
+      flavor: m1.large
       identityRef:
         kind: Secret
         name: management-cluster-cloud-config
