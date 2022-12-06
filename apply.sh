@@ -42,9 +42,9 @@ force_reconcile_and_wait gitrepository telco-cloud-init
 
 force_reconcile_and_wait helmrelease telco-cloud-init
 
-force_reconcile_and_wait gitrepositories             -l app.kubernetes.io/instance=telco-cloud-init
+force_reconcile_and_wait gitrepositories             "-l app.kubernetes.io/instance=telco-cloud-init"
 
-force_reconcile_and_wait kustomizations,helmreleases -l app.kubernetes.io/instance=telco-cloud-init
+force_reconcile_and_wait kustomizations,helmreleases "-l app.kubernetes.io/instance=telco-cloud-init"
 
 # Starting from here, the script will just be following Flux components
 
