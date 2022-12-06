@@ -499,6 +499,19 @@ components:
         substitute:
           CLUSTER_FLAVOR: "{{ upper .Values.cluster.flavor.bootstrap_provider }} {{ upper .Values.cluster.flavor.infra_provider }}"
 
+  monitoring:
+    enabled: no
+    repo: capi-bootstrap
+    wait: true
+    depends_on:
+      - name: rancher
+    kustomization_spec:
+      path: ./kustomize-components/monitoring
+      postBuild:
+        substituteFrom:
+        - kind: Secret
+          name: management-cluster-secrets 
+        
 ## stuff related to the 'cluster' component
 
 cluster:

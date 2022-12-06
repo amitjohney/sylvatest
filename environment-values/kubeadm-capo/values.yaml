@@ -16,6 +16,8 @@ components:
           ingressClassName: nginx
   k8s-gateway:
     enabled: management-only
+  monitoring:
+    enabled: management-only
   capi-rancher-import:
     enabled: management-only
   ingress-nginx:
@@ -49,6 +51,7 @@ components:
       postBuild:
         substitute:
           CLUSTER_NAME: "first-workload-cluster"
+          ENABLE_MONITORING: "yes"
 
 cluster:
   image: capo-ubuntu-2004-kube-v1.23.6-calico-3.23.1
