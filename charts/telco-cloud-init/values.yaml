@@ -393,7 +393,6 @@ components:
           config:
             use-forwarded-headers: true
           kind: DaemonSet
-          hostNetwork: true
           service:
             externalIPs:
             - "{{ .Values.cluster.capo.kube_vip_ip }}"
