@@ -51,7 +51,7 @@ trap exit_trap EXIT
 function force_reconcile_and_wait() {
   local kinds=$1
   local name_or_selector=$2
-  echo "force reconcialiation of $1 $2"
+  echo "force reconciliation of $1 $2"
   kubectl annotate --overwrite $kinds $name_or_selector reconcile.fluxcd.io/requestedAt=$(date +%s) | sed -e 's/^/  /'
   echo "waiting for $1 $2 ..."
   kubectl wait --for condition=Ready --timeout=90s $kinds $name_or_selector | sed -e 's/^/  /'
