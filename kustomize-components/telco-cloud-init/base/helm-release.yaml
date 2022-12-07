@@ -33,13 +33,19 @@ spec:
         - charts/telco-cloud-init/values.yaml
   interval: 10m0s
   valuesFrom:
-  - kind: ConfigMap
-    name: management-cluster-values
-    valuesKey: values
+  - kind: Secret
+    name: management-cluster-secrets
+    valuesKey: username
+    targetPath: git_auth_default.username
     optional: true
   - kind: Secret
     name: management-cluster-secrets
-    valuesKey: secrets
+    valuesKey: password
+    targetPath: git_auth_default.password
+    optional: true
+  - kind: ConfigMap
+    name: management-cluster-values
+    valuesKey: values
     optional: true
   - kind: Secret
     name: management-cluster-infra-secrets
