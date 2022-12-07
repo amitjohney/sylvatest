@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Secret
 metadata:
-    name: git-repo-auth-fleet-deployments
-    namespace: fleet-local
+  name: git-repo-auth-fleet-deployments
+  namespace: fleet-local
 type: kubernetes.io/basic-auth
 stringData:
-   username: ${username}
-   password: ${password}
+  username: ${username}
+  password: ${password}
 ---
 kind: GitRepo
 apiVersion: fleet.cattle.io/v1alpha1
@@ -18,8 +18,8 @@ spec:
   branch: monitoring-stack
   clientSecretName: git-repo-auth-fleet-deployments
   paths:
-  - infrastructure/monitoring-stack/monitoring-crd/
-  - infrastructure/monitoring-stack/monitoring/
+    - infrastructure/monitoring-stack/monitoring-crd/
+    - infrastructure/monitoring-stack/monitoring/
   targets:
-  - clusterName: local
+    - clusterName: local
 
