@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Secret
 metadata:
-    name: git-repo-auth-fleet-deployments
-    namespace: default
+  name: git-repo-auth-fleet-deployments
+  namespace: default
 type: kubernetes.io/basic-auth
 stringData:
-   username: ${username}
-   password: ${password}
+  username: ${username}
+  password: ${password}
 ---
 kind: GitRepo
 apiVersion: fleet.cattle.io/v1alpha1

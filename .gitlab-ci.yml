@@ -1,6 +1,7 @@
 stages:
   - generate
   - test
+  - deploy
 
 image: docker:latest
 
@@ -56,7 +57,7 @@ yamllint:
     - merge_requests
 
 .test-capd:
-  stage: test
+  stage: deploy
   before_script:
     # FIXME: build an image with following tools (+clusterctl)
     - apk add --no-cache curl bash git gettext # for envsubst
