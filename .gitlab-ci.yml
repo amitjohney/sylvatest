@@ -106,8 +106,8 @@ test-rke2-capd:
   script:
     - ./bootstrap.sh environment-values/rke2-capd
   rules:
-    #FIXME(feleouet) Run it only manually in MRs for now untill we fix it
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    #FIXME(feleouet) Run it only manually, for now untill we fix it, but not in MRs otherwise they'd be blocked
+    - if: $CI_PIPELINE_SOURCE != 'merge_request_event'
       when: manual
 
 test-kubeadm-capd:
