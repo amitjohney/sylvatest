@@ -509,8 +509,8 @@ components:
       postBuild:
         substituteFrom:
         - kind: Secret
-          name: management-cluster-secrets 
-        
+          name: management-cluster-secrets
+
 ## stuff related to the 'cluster' component
 
 cluster:
