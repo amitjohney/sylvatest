@@ -26,6 +26,7 @@ if [[ -z ${GITLAB_USER} || -z ${GITLAB_TOKEN} ]]; then
 fi
 
 set -eu
+set -o pipefail
 
 # Source env-specific scripts to perform ad-hoc tasks if required
 [[ -f ${ENV_PATH}/hacks.sh ]] && source ${ENV_PATH}/hacks.sh
