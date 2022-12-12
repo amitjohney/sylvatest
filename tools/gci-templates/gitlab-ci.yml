@@ -14,3 +14,8 @@ default:
 .helm-yamllint:
   script:
     - yamllint charts/${HELM_NAME} -d "$(cat < tools/gci-templates/yamllint.yaml) $(cat < tools/gci-templates/yamllint-helm-exclude-chart-templates.yaml)"
+
+.helm-template-yamllint:
+  script:
+    - helm dependency build charts/${HELM_NAME}
+    - helm template ${HELM_NAME} charts/${HELM_NAME} | yamllint - -d "$(cat < tools/gci-templates/yamllint.yaml) $(cat < tools/gci-templates/yamllint-helm-template-rules)"

@@ -32,6 +32,7 @@ chart-generator:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       changes:
         - charts/**/*
+        - tools/gci-templates/**/*
 
 chart-jobs:
   stage: generate
@@ -46,6 +47,7 @@ chart-jobs:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       changes:
         - charts/**/*
+        - tools/gci-templates/**/*
 
 yamllint:
   stage: test
