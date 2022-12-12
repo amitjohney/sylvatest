@@ -18,7 +18,8 @@ this chart does not do this at all, it instantiates only Flux resources that tel
 to deploy our components.
 
 These resources are:
-* Kustomization resources, pointing to git repositories in which kustomize `kustomization.yaml` and Kubernetes manifest files are defined describing how to deploy a component
+
+* Kustomization resources, pointing to Git repositories in which kustomize `kustomization.yaml` and Kubernetes manifest files are defined describing how to deploy a component
 * HelmRelease resources, which contain definitions of Helm releases for Helm charts hosted for instance on Git (or in Helm repos) with the wanted overridden Helm values.
 
 ## What this chart does
@@ -56,7 +57,7 @@ Flux is already installed on the cluster on which the chart is being installed.
 
 * ensure that FluxCD is installed on the local cluster
 
-* prepare a file having the credentials needed to access git repos (and gitlab docker registry):
+* prepare a file having the credentials needed to access Git repos (and GitLab Docker registry):
 
 ```terminal
 $ cat < EOF > secrets.yaml
@@ -64,6 +65,7 @@ git_auth_default:
   username: $GITLAB_USER
   password: $GITLAB_TOKEN
 ```
+
 * prepare the file(s) with the Helm overrides that you want:
 
 ```terminal
@@ -87,6 +89,7 @@ components:
         branch: mydevbranch
 
 ```
+
 * install the Helm release (from this directory):
 
 ```
@@ -100,14 +103,14 @@ Helm overrides, to allow deploying and maintaining different flavors/specializat
 of TelcoCloud, relying on kustomize overlays carrying the different layers that inject Helm
 overrides into a FluxCD HelmRelease.
 
-This is how this chart is used [in the context of this git repository](../../kustomize-components/telco-cloud-init/).
+This is how this chart is used [in the context of this Git repository](../../kustomize-components/telco-cloud-init/).
 
 ## Component definitions examples
 
 To define a new component, an entry can be added under `components` in values (either in `values.yaml` in the chart,
 or in the values of the chart overriden for a given deployment flavor or for a given deployment).
 
-### Component using a kustomization defined in capi-boostrap repo
+### Component using a Kustomization defined in capi-boostrap repo
 
 ```yaml
 components:
@@ -120,7 +123,7 @@ components:
       - name: my-other-component  # my-component will not be deployed before my-other-component is ready
 ```
 
-### Component using a kustomization defined in another repository
+### Component using a Kustomization defined in another repository
 
 ```yaml
 git_repo_templates:
@@ -136,7 +139,7 @@ components:
       path: ./kustomize  # this will point to https://gitlab.com/t6306/components/foo.git / kustomize
 ```
 
-### Component using a Helm chart defined in a git repository
+### Component using a Helm chart defined in a Git repository
 
 ```yaml
 git_repo_templates:
@@ -157,7 +160,7 @@ components:
 ```
 
 With this type of component definition, Flux will reconciliate the HelmRelease based
-on the git revision (ignoring version field in the Helm chart `Chart.yaml` file).
+on the Git revision (ignoring version field in the Helm chart `Chart.yaml` file).
 
 ### Component using a Helm chart defined in a Helm repository
 
@@ -206,14 +209,14 @@ components:
 
 ```
 
-(watch out for limitations, as explained in (`_helpers.tpl`)[templates/_helpers.tpl] in `interpret-inner-gotpl`)
+(watch out for limitations, as explained in [`_helpers.tpl`](templates/_helpers.tpl) in `interpret-inner-gotpl`)
 
 ## Design notes
 
 * no use case is identified to instantiate this chart multiple times in a
   given namespace, so this isn't supported (resource names aren't prefixed with the release name)
 
-## TODO:
+## TODO
 
 * to allow the `telco-cloud-init` release on the management cluster to be handled via GitOps, we need
   to generate it via a Kustomization (or HelmRelease) defined in the management cluster itself (instead of via a
@@ -224,5 +227,5 @@ components:
 
 * allow use of `{{ .Values.xxx }}` in  some or all values (requires passing values into gotpl interpreter)  (?)
 
-* add gitlab CI for the chart:
+* add GitLab CI for the chart:
   * play `helm template` on a set of test `values.yaml` files

@@ -20,7 +20,9 @@ $ helm upgrade --install --namespace cluster-test --create-namespace \
     --set vsphere.password="test" \
     cluster-test chart/cluster-api-vsphere
 ```
-This command upgrades or installs (if not installed) this helm repository. if --install is set, --create-namespace creates the release namespace if not present. 
+
+This command upgrades or installs (if not installed) this helm repository. if --install is set, --create-namespace creates the release namespace if not present.
+
 ### --set values
 
 | Key | Example value | Description |
@@ -114,13 +116,12 @@ Replace the values in --set fields with your specific values. Replace "cluster-t
 | storageClass.storagePolicy | string | `""` | VSphere Storage policy |
 | cni.calico.enabled | bool | `false` | Installs cni calico on the cluster |
 
-
-
 ### Worker pools configuration
 
 You can configure as many worker pools as desired, the value `machines.workers` takes a map in which each key is the worker pool name :
 
 __exemple__:
+
 ```yaml
 # -- Name of the worker pool, you can define as many others pools as desired
 worker-md-0:
@@ -183,7 +184,6 @@ worker-md-0:
     unhealthyRange: ""
 ```
 
-
 ### Client x509 authentication
 
 To configure client x509 authentication, you need to specify `kubernetes.additionnalClientCaFile` to the client ca as a PEM encoded certificate :
@@ -209,4 +209,3 @@ cluster:
     - kind: ConfigMap
       name: your_configmap
 ```
-

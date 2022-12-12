@@ -1,0 +1,33 @@
+---
+# Base Markdownlint configuration
+# Extended Markdownlint configuration in doc/.markdownlint/
+default: true
+fenced-code-language: false
+first-line-h1: false
+line-length: false
+no-duplicate-header:
+  allow_different_nesting: true
+no-bare-urls: false
+no-inline-html: false
+proper-names:
+  names: [
+    "ClusterAPI",
+    "DevOps",
+    "Docker",
+    "DockerSlim",
+    "Git",
+    "GitLab",
+    "Gitleaks",
+    "Kustomization",
+    "Markdown",
+    "OAuth",
+    "OAuth 2",
+    "OpenStack",
+    "Python",
+    "Rancher",
+    "SSH",
+    "Tiller",
+    "URL"
+  ]
+  code_blocks: false
+  html_elements: false
