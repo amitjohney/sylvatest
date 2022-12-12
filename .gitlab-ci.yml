@@ -56,6 +56,18 @@ yamllint:
   only:
     - merge_requests
 
+check-docs-markdown:
+  image: registry.gitlab.com/gitlab-org/gitlab-docs/lint-markdown:alpine-3.16-vale-2.20.2-markdownlint-0.32.2-markdownlint2-0.5.1
+  stage: test
+  script:
+    - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+    - 'markdownlint-cli2-config tools/gci-templates/.markdownlint.yml $(git diff --name-only $CI_COMMIT_SHA origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME | grep .md)'
+  only:
+    refs:
+      - merge_requests
+    changes:
+      - "**/*.md"
+
 .test-capd:
   stage: deploy
   before_script:
