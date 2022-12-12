@@ -20,6 +20,7 @@ do
   rules:
     - changes:
         - ${f}/**/*
+        - tools/gci-templates/**/*
 
 '${f##*/}:helm-yamllint':
   stage: test
@@ -29,7 +30,17 @@ do
   rules:
     - changes:
         - ${f}/**/*
+        - tools/gci-templates/**/*
 
+'${f##*/}:helm-template-yamllint':
+  stage: test
+  extends: .helm-template-yamllint
+  variables:
+    HELM_NAME: "${f##*/}"
+  rules:
+    - changes:
+        - ${f}/**/*
+        - tools/gci-templates/**/*
 EOF
 
 done
