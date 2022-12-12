@@ -435,7 +435,7 @@ components:
             template:
               spec:
                 containers:
-                - name: pivot
+                - name: run-script
                   env:
                   - name: RANCHER_EXTERNAL_URL
                     value: https://{{ .Values.cluster.rancher.external_hostname }}/
