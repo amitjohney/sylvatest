@@ -90,7 +90,8 @@ yamllint:
     - export GITLAB_TOKEN=$CI_JOB_TOKEN
     - export DEBUG_ON_EXIT=1
   artifacts:
-    expire_in: 1 hour
+    when: on_failure
+    expire_in: 6 hour
     paths:
       - debug-on-exit.log
   rules:
