@@ -262,7 +262,7 @@ components:
   cinder-csi:
     enabled: '{{ and (.Values.cluster.flavor.infra_provider | eq "capo") (.Values.phase | eq "management") }}'
     helm_repo_url: https://kubernetes.github.io/cloud-provider-openstack
-    helm_release_spec:
+    helmrelease_spec:
       chart:
         spec:
           chart: openstack-cinder-csi
