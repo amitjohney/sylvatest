@@ -10,6 +10,8 @@ components:
     enabled: management-only
   capi-rancher-import:
     enabled: management-only
+  cinder-csi:
+    enabled: management-only
 
 cluster:
   image: Ubuntu 20.04 Pack
@@ -20,6 +22,10 @@ cluster:
     ssh_key_name: # put the name of your nova SSH keypair here
     network_id: c314d52c-80fe-42b6-9092-55be383d1951
     kube_vip_ip: 1.2.3.4  # replace me
+    ## If cinder CSI is used, provide a name for the storage class and the storage type from OpenStack
+    storageClass:
+      name: "cinder-ceph-ssd"
+      type: "ceph_ssd"
 
 proxies:
   # put your own proxy settings here if you need

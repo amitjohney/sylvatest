@@ -259,6 +259,56 @@ components:
           name: management-cluster
           namespace: default
 
+  cinder-csi:
+    enabled: '{{ and (.Values.cluster.flavor.infra_provider | eq "capo") (.Values.phase | eq "management") }}'
+    helm_repo_url: https://kubernetes.github.io/cloud-provider-openstack
+    helm_release_spec:
+      chart:
+        spec:
+          chart: openstack-cinder-csi
+          sourceRef:
+            namespace: default
+      targetNamespace: cinder-csi
+      install:
+        createNamespace: true
+      values:
+        storageClass:
+          enabled: false
+          delete:
+            isDefault: false
+            allowVolumeExpansion: true
+          retain:
+            isDefault: false
+            allowVolumeExpansion: true
+          custom: |-
+            ---
+            apiVersion: storage.k8s.io/v1
+            kind: StorageClass
+            metadata:
+              name: "{{ .Values.cluster.capo.storageClass.name }}"
+            provisioner: cinder.csi.openstack.org
+            volumeBindingMode: Immediate
+            reclaimPolicy: Delete
+            allowVolumeExpansion: true
+            parameters:
+              type: "{{ .Values.cluster.capo.storageClass.type }}"
+    helm_secret_values:
+      secret:
+        enabled: "true"
+        create: "true"
+        data:
+          cloud.conf: |-
+            [Global]
+            auth-url = "{{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.auth_url }}"
+            tenant-name = "{{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.project_name }}"
+            domain-name = "{{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.user_domain_name }}"
+            username = "{{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.username }}"
+            password = "{{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.password }}"
+            region = "{{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.region }}"
+            tls-insecure = "{{ not .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.verify }}"
+            [BlockStorage]
+            ignore-volume-az = true
+
   rancher:
     enabled: no
     repo: capi-bootstrap
@@ -542,6 +592,9 @@ cluster:
           verify: # e.g. false
     #cacert: # cert used to validate CA of OpenStack APIs
     kube_vip_ip: 55.55.55.55
+    storageClass:
+      name: foo  # name of the storageClass to be created
+      type: xxx  # this is a cinder volume type e.g. 'ceph_sas' (must exist in openstack)
 
   flux_webui:
     admin_user: admin
