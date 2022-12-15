@@ -24,8 +24,6 @@ components:
     enabled: management-only
   cabpr:  # RKE2
     enabled: management-only
-  cluster-resource-sets:  # for now only needed for kubeadm
-    enabled: true
 
   # TODO: do not share with egate
   flux-system:

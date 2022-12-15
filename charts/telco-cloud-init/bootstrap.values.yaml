@@ -23,6 +23,16 @@ components:
   capi:
     enabled: yes
 
+  calico:
+    # overload calico definition in bootstrap context to deploy in the management cluster
+    enabled: '{{ eq .Values.cluster.flavor.bootstrap_provider "cabpk" }}'
+    helmrelease_spec:
+      kubeConfig:
+        secretRef:
+          name: management-cluster-kubeconfig
+    labels:
+      suspend-on-pivot: "yes"  # this component must be suspended before pivot
+
   management-cluster-flux:
     enabled: yes
     depends_on:

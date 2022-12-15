@@ -3,8 +3,6 @@ kind: Cluster
 metadata:
   name: ${CLUSTER_NAME}
   namespace: default
-  labels:
-    cni: calico
 spec:
   clusterNetwork:
     services:
@@ -36,21 +34,6 @@ spec:
   disableAPIServerFloatingIP: true
   apiServerLoadBalancer:
     enabled: false
----
-apiVersion: addons.cluster.x-k8s.io/v1alpha4
-kind: ClusterResourceSet
-metadata:
-  annotations:
-  name: calico-rs
-  namespace: default
-spec:
-  clusterSelector:
-    matchLabels:
-      cni: calico
-  resources:
-  - kind: ConfigMap
-    name: calico-cm
-  strategy: ApplyOnce
 ---
 apiVersion: controlplane.cluster.x-k8s.io/v1beta1
 kind: KubeadmControlPlane
