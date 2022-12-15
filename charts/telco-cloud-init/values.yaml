@@ -227,15 +227,6 @@ components:
       path: ./kustomize-components/cabpr
       wait: true
 
-  cluster-resource-sets:
-    enabled: '{{ eq .Values.cluster.flavor.bootstrap_provider "cabpk" }}'  ## we'll turn this to false once we deploy calico with Flux
-    repo: capi-bootstrap
-    depends_on:
-      - name: capi  # is this the right dependency ?
-    kustomization_spec:
-      path: ./kustomize-components/cluster-resource-sets
-      wait: true
-
   cluster:
     enabled: yes
     repo: capi-bootstrap
@@ -258,6 +249,20 @@ components:
           kind: Cluster
           name: management-cluster
           namespace: default
+
+  calico:
+    enabled: '{{ eq .Values.cluster.flavor.bootstrap_provider "cabpk" }}'
+    depends_on:
+      - name: cluster
+    helm_repo_url: https://projectcalico.docs.tigera.io/charts
+    helmrelease_spec:
+      targetNamespace: tigera-operator
+      install:
+        createNamespace: true
+      chart:
+        spec:
+          chart: tigera-operator
+          version: v3.24.5
 
   cinder-csi:
     enabled: '{{ and (.Values.cluster.flavor.infra_provider | eq "capo") (.Values.phase | eq "management") }}'

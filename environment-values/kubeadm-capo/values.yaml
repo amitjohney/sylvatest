@@ -4,8 +4,6 @@ components:
   cluster:
     kustomization_spec:
       path: ./kustomize-components/cluster-manifests/kubeadm-capo/orange-falcon
-  cluster-resource-sets:
-    enabled: true
   rancher:
     enabled: management-only
     depends_on:
