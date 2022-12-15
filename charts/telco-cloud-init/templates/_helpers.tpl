@@ -78,6 +78,7 @@ Usage:
       {{- fail (printf "phase='%s' is neither 'bootstrap' or 'management'" $phase) -}}
     {{- end -}}
     {{- if (or (eq $component_enabled "true")
+               $envAll.Values.test_all_components_enabled
                (and (eq $component_enabled "management-only") (eq $phase "management")))
     -}}
 true
