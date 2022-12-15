@@ -18,4 +18,4 @@ default:
 .helm-template-yamllint:
   script:
     - helm dependency build charts/${HELM_NAME}
-    - helm template ${HELM_NAME} charts/${HELM_NAME} | yamllint - -d "$(cat < tools/gci-templates/yamllint.yaml) $(cat < tools/gci-templates/yamllint-helm-template-rules)"
+    - helm template ${HELM_NAME} charts/${HELM_NAME} --set test_all_components_enabled=true | yamllint - -d "$(cat < tools/gci-templates/yamllint.yaml) $(cat < tools/gci-templates/yamllint-helm-template-rules)"
