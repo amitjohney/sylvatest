@@ -159,7 +159,7 @@ Note well that there are a few limitations:
     {{ $kind := kindOf $data }}
     {{ $result := 0 }}
     {{ if (eq $kind "string") }}
-        {{ if contains "{{" $data }}
+        {{ if regexMatch ".*{{.*}}.*" $data }}
             {{/* This is where we actually trigger GoTPL interpretation */}}
             {{ $tpl_res := tpl $data $envAll }}
             {{ if (hasPrefix "{\"encapsulated-result\":" $tpl_res) }}
