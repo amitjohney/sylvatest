@@ -160,6 +160,42 @@ components:
       values:
         installCRDs: true
 
+  cis-operator-crd:
+    enabled: '{{ and (.Values.cluster.flavor.bootstrap_provider | eq "cabpr") (.Values.phase | eq "management") }}'
+    helm_repo_url: https://charts.rancher.io
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: rancher-cis-benchmark-crd
+          version: v3.0.0
+      targetNamespace: cis-operator-system
+      install:
+        createNamespace: true
+
+  cis-operator:
+    enabled: '{{ and (.Values.cluster.flavor.bootstrap_provider | eq "cabpr") (.Values.phase | eq "management") }}'
+    depends_on:
+      - name: cis-operator-crd
+    helm_repo_url: https://charts.rancher.io
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: rancher-cis-benchmark
+          version: v3.0.0
+      targetNamespace: cis-operator-system
+
+  cis-operator-scan:
+    enabled: '{{ and (.Values.cluster.flavor.bootstrap_provider | eq "cabpr") (.Values.phase | eq "management") }}'
+    depends_on:
+      - name: cis-operator
+    repo: capi-bootstrap
+    kustomization_spec:
+      path: ./kustomize-components/cis-operator
+      postBuild:
+        substitute:
+          SCAN_PROFILE: '{{ .Values.cluster.cis_benchmark_scan_profile }}'
+
+
   capi:
     # ref_override:  # test
     #   branch: i-really-need-dev-branch-foo
@@ -578,6 +614,10 @@ cluster:
   flavor:
     infra_provider: please-file-me     # capd or capo
     bootstrap_provider: please-file-me # cabpr (RKE2) or cabpk (kubeadm)
+
+  # cis benchmark is only for rke2 so far, e.g. rke2-cis-1.23-profile-hardened
+
+  cis_benchmark_scan_profile: '{{ eq .Values.cluster.flavor.bootstrap_provider "cabpr" | ternary "rke2-cis-1.23-profile-hardened" "no-scan-profile-defined-for-kubeadm-cluster" }}'
 
   capo:
     ssh_key_name:
