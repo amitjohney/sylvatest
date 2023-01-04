@@ -1,4 +1,4 @@
 bootstrap-data
 *-kubeconfig
-*secrets.yaml
+*secrets.*
 

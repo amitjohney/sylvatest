@@ -4,7 +4,6 @@ kind: ConfigMap
 metadata:
   name: proxy-env-vars
   labels:
-    copy-from-bootstrap-to-management: ""
 {{ include "telco-cloud-init.labels" $envAll | indent 4 }}
 data:
 {{- range tuple "http_proxy" "https_proxy" "no_proxy" }}

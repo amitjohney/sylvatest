@@ -4,6 +4,10 @@ kind: Kustomization
 resources:
   - ../base
 
+components:
+  #- ssh://git@openstack-git-stg.itn.ftgroup/caas/caas-ci.git/environment-values/ermes-proxy?ref=add-falcon-env
+  - ../components/rancher
+
 commonLabels:
   copy-from-bootstrap-to-management: ""
 
@@ -14,3 +18,13 @@ configMapGenerator:
     disableNameSuffixHash: true
   files:
   - values=values.yaml
+
+secretGenerator:
+- name: management-cluster-secrets
+  behavior: merge
+  options:
+    disableNameSuffixHash: true
+  envs:
+  - git-secrets.env
+  files:
+  - secrets=secrets.yaml

@@ -106,9 +106,10 @@ check-docs-markdown:
     - ip route add $KIND_PREFIX via $DOCKER_IP
 
     - export DOCKER_HOST=tcp://$DOCKER_IP:2375
-    - export GITLAB_USER=$CI_REGISTRY_USER
-    - export GITLAB_TOKEN=$CI_JOB_TOKEN
     - export DEBUG_ON_EXIT=1
+
+    - find environment-values/ -name git-secrets.env -exec sed -i "s/GIT_USERNAME/$CI_REGISTRY_USER/;s/GIT_TOKEN/$CI_JOB_TOKEN/" {} \;
+    - find environment-values/ -name values.yaml -exec sed -i "s|unix:///var/run/docker.sock|$DOCKER_HOST|" {} \;
   artifacts:
     when: on_failure
     expire_in: 6 hour

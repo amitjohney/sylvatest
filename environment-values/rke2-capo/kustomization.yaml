@@ -4,6 +4,10 @@ kind: Kustomization
 resources:
   - ../base
 
+components:
+  #- ssh://git@openstack-git-stg.itn.ftgroup/caas/caas-ci.git/environment-values/falcon-rke2?ref=add-falcon-env  # this kustomize component specifies CAPO network id and Glance image name, and sets components.cluster.kustomization_spec.path to CAPI/CAPO manifests working in this Orange specific environment (`kustomize-components/cluster-manifests/rke2-capo/orange-falcon`)
+  - ../components/rancher
+
 commonLabels:
   copy-from-bootstrap-to-management: ""
 
@@ -16,9 +20,11 @@ configMapGenerator:
   - values=values.yaml
 
 secretGenerator:
-- name: management-cluster-infra-secrets
+- name: management-cluster-secrets
+  behavior: merge
   options:
     disableNameSuffixHash: true
+  envs:
+  - git-secrets.env
   files:
-  - infra-secrets=infra-secrets.yaml
-
+  - secrets=secrets.yaml

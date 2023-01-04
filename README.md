@@ -60,17 +60,27 @@ nodes:
 EOF
 ```
 
-And provide your GitLab username and a GitLab token with read access to repository and registry.
+Create your copy of environment-values, and provide your GitLab username and a GitLab token with read access to repository and registry:
 
 ```
-GITLAB_USER=your_name GITLAB_TOKEN=glpat-XXXXXXX ./bootstrap.sh environment-values/rke2-capd
+cp environment-values/rke2-capd environment-values/my-rke2-capd
+cat <<EOF > environment-values/my-rke2-capd/git-secrets.env
+username=your_name
+password=glpat-xxxxxxxxxxxxxx
+EOF
 ```
 
-In the above command, we're just instructing the bootstrap script to use sample configuration provided in [environment-values/rke2-capd/](environment-values/rke2-capd/) directory. You will probably want to modify these values to adapt to your needs and environment (for example, you may want to change the management-cluster kustomisation path in [values.yaml](environment-values/rke2-capd/values.yaml)).
+Then you can launch the bootstrap process using provided configuration:
 
-You can also deploy cluster using the kubeadm infrastructure provider by using the corresponding `environment-values/kubeadm-capd` directory
+```
+./bootstrap.sh environment-values/my-rke2-capd
+```
 
-For now it will only deploy a single-node RKE2 cluster, but it's a starting point to add more stuff (Rancher, [capi-Rancher-import](https://gitlab.com/t6306/components/capi-rancher-import), workload-clusters...)
+In the above command, we're just using the default configuration, but you will probably want to modify these values to adapt to your needs and environment (for example, you may want to change the management-cluster kustomisation path in [values.yaml](environment-values/rke2-capd/values.yaml)). You can also deploy cluster using the kubeadm infrastructure provider by using the corresponding `environment-values/kubeadm-capd` directory.
+
+In order to add components in your cluster, you can enable some [configuration components](environment-values/components) that are provided to add more components in your cluster (like Rancher, workload-clusters, a monitoring stack, aso...). For that purpose, add the reference to the targeted configuration component int your [environment-value's kustomization](environment-values/rke2-capd/kustomization.yaml)
+
+For more details on environment-values generation you can have a look at the [dedicated README](environment-values/README.md).
 
 ### Deploying clusters in OpenStack
 
@@ -85,7 +95,7 @@ However, if the management cluster and the workload cluster nodes would not shar
 To provide these rule in OpenStack, the tenant admin can run:
 
 ```console
-openstack security group rule create --ethertype IPv4 --ingress --protocol udp --dst-port 53 --remote-ip 0.0.0.0/0 
+openstack security group rule create --ethertype IPv4 --ingress --protocol udp --dst-port 53 --remote-ip 0.0.0.0/0
 --description "For k8s-gateway DNS resolving of Rancher" default
 openstack security group rule create --ethertype IPv4 --ingress --protocol tcp --dst-port 443 --remote-ip 0.0.0.0/0 --description "For Rancher importing" default
 ```

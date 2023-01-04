@@ -1,14 +1,21 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-# NOTE: we can't use secretGenerator, otherwise data would be base64-encoded,
-# and we wouldn't be able to perform post-build substitutions
 resources:
-  - secrets.yaml
+- helm-release.yaml
+
+buildMetadata:
+- originAnnotations
+
+
+# Generate empty secret & configmap to let kustomize overlays & descendants add data with 'behavior: merge'
 
 configMapGenerator:
 - name: management-cluster-values
   options:
     disableNameSuffixHash: true
-  literals:
-  # empty, just here to let overlay replace values in this map with 'behavior: merge'
+
+secretGenerator:
+- name: management-cluster-secrets
+  options:
+    disableNameSuffixHash: true

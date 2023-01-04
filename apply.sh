@@ -29,10 +29,7 @@ if ! (kubectl get namespace flux-system >/dev/null); then
 fi
 
 echo_b "\U0001F512 Create or update management cluster secrets and configmaps"
-kubectl kustomize ${ENV_PATH} | envsubst | kubectl apply -f -
-
-echo_b "\U0001F4DC Install or update telco-cloud-init Helm release"
-kubectl kustomize kustomize-components/telco-cloud-init/base | envsubst | kubectl apply -f -
+kubectl kustomize ${ENV_PATH} | sed "s/CURRENT_COMMIT/${CURRENT_COMMIT}/" | kubectl apply -f -
 
 echo_b "\U0001F3AF Trigger reconciliation of Flux components"
 

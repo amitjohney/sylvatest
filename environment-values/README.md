@@ -1,19 +1,125 @@
+This directory contains some Kustomizations to install a flux HelmRelease of the telco-cloud-init chart.
 
-This directory contains values that users must provide to control the deployment of the cluster.
+It is not the only way to instanciate the chart, neither the simplest one, but it enables to merge several layers of values that correspond to various environemnts. At the end, it will help to limit the amount of variables that users have provide for a specific deployment.
 
-It uses kustomisations to generate ConfigMaps and Secrets that will be passed to telco-cloud-init Helm chart [helm-release.yaml](../kustomize-components/telco-cloud-init/base/helm-release.yaml) as override values over default chart [values.yaml](../charts/telco-cloud-init/values.yaml). These kustomisations are just provided as samples to help users to build resources that follow the expected format, feel free to build them to see how they look like (you can use `kubectl kustomize environment-values/kubeadm-capd` for example)
+# Managing telco-cloud-init helmrelease values
 
-Various samples are provided for some supported environments, but they can be easily modified to adapt to your needs. Just keep in mind that these values will be merged by Helm over default values of the chart (as in json-merge, not strategic merge) so list/arrays will be overriden, for example:
+We use [Kustomize](https://kubectl.docs.kubernetes.io/references/kustomize/kustomization/) to generate ConfigMaps and Secrets that are used to instantiate the `telco-cloud-init` Helm chart [helm-release.yaml](../kustomize-components/telco-cloud-init/base/helm-release.yaml) as override values over the chart default values [values.yaml](../charts/telco-cloud-init/values.yaml). These kustomisations are just provided as samples to help users build resources that follow the expected format, feel free to build them to see how they look like (you can use `kubectl kustomize environment-values/kubeadm-capd` for example)
+
+The typical pattern used to inject values consists in creating a ConfigMap or a Secret, and append it to the list of values used by the chart, for example:
+
+```
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../kustomize-components/telco-cloud-init/base
+
+configMapGenerator:
+- name: management-cluster-values
+  options:
+    disableNameSuffixHash: true
+  files:
+  - values=values.yaml
+
+patches:
+- target:
+    kind: HelmRelease
+    name: telco-cloud-init
+  patch: |
+    - op: add
+      path: /spec/valuesFrom/-
+      value:
+        kind: ConfigMap
+        name: management-cluster-values
+        valuesKey: values
+```
+
+where `values.yaml` is a plain yaml file that will be merged over charts defaults, for example, it could override the default image:
+
+```
+cluster:
+  image: registry.gitlab.com/t6306/components/capi-bootstrap/kindest/node:v1.24.4-cni
+```
+
+# Sharing configurations
+
+This mechanism can be extended to provide a convenient way to add various layers of specialisation for the chart. For example, you can override chart defaults with your company default, and another layer of values that corresponds to the environment. Kustomize components are very convenient for that purpose, as they'll allow to define various sets of parameters that can be appended to the values.
+
+For example, your could host your company proxy definition in some internal repository, containing the following kustomization.yaml:
+
+```
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+configMapGenerator:
+- name: acme-corp-proxy
+  options:
+    disableNameSuffixHash: true
+  files:
+  - proxy-values=values.yaml
+
+patches:
+- target:
+    kind: HelmRelease
+    name: telco-cloud-init
+  patch: |
+    - op: add
+      path: /spec/valuesFrom/-
+      value:
+        kind: ConfigMap
+        name: acme-corp-proxy
+        valuesKey: proxy-values
+```
+
+And the associated values.yaml containing proxy definitions:
+
+```
+proxies:
+  http_proxy: http_proxy=http://acme.corp.proxy.com
+  https_proxy: http_proxy=http://acme.corp.proxy.com
+  no_proxy=localhost,127.0.0.1,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8
+```
+
+These configuration values can then be easely consumed by any deployment that just has to reference this component in its environment-value's kustomization:
+
+```
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../kustomize-components/telco-cloud-init/base
+
+components:
+  - ssh://git@acme.git.repo.com/repo.git/environment-values/proxy?ref=main
+
+configMapGenerator:
+[...] # Some additionnal values relative to the deployment
+```
+
+# How values are merged
+
+All the provided values will be applied by Flux to the chart, in the following order of precedence (an item appearing later in the following list overrides the same item if it was specified earlier, see https://fluxcd.io/flux/components/helm/helmreleases/#values-overrides):
+
+- `spec.chart.spec.valuesFiles`
+- items in `spec.valuesFrom` (in the specified order)
+- `spec.values`
+- items in spec.valuesFrom (in the specified order)
+- spec.values
+
+Keep in mind that these values will be merged by helm over default values of the chart (as in json-merge, not strategic merge) so list/arrays will be overriden, for example:
 
 ```
 CHART VALUES.YAML:
 ports_list:
   - 80
   - 443
+
 USER-SUPPLIED VALUES:
 ports_list:
   - 8080
   - 8443
+
 COMPUTED VALUES:
 ports_list:
   - 8080
@@ -27,17 +133,14 @@ CHART VALUES.YAML:
 proxies:
   http_proxy: ""
   https_proxy: ""
+
 USER-SUPPLIED VALUES:
 proxies:
   http_proxy:
   https_proxy:
+
 COMPUTED VALUES:
 proxies: {}
 ```
 
-Once generated, these manifests will be evaluated with envsubst by [bootstrap script](../bootstrap.sh) prior to being saved in configmap/management-cluster-values and secret/management-cluster-secrets resources. This substitution is just provided by convenience for some variables that may be substituted in several places in the context of bootstrap, but it is not intended to be used extensively, you are instead encouraged to provide values directly in these files.
-
-The following variables will be substituted:
-
-- `GITLAB_USER`
-- `GITLAB_TOKEN`
+As the values may be defined and overwritten by several ConfigMaps and Secrets, it may be hard to figure out how the final merge will look like. In order to enable users to preview how the final chart value will look like, the `preview.sh` enables to instanciate the telco-cloud-init chart in a specific namespace, with all flux child resources suspended. This way, you'll be able to test if chart works properly with provided values, how user-values will be merged, and the result of values go-templating rendering.
