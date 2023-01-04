@@ -17,7 +17,7 @@ if openstack ${OS_ARGS} endpoint list &> /dev/null; then
     exit 1
 fi
 
-openstack ${OS_ARGS} server list -f value | awk '$4~/^k8s-clusterapi/ {print $1}' | xargs -r openstack ${OS_ARGS} server delete --wait
+openstack ${OS_ARGS} server list -f value | awk '$2~/^(management|first-workload)-cluster-/ {print $1}' | xargs -r openstack ${OS_ARGS} server delete --wait
 
 openstack ${OS_ARGS} floating ip list --long -f value |awk '/cluster-api-provider-openstack/ {print $1}' | xargs -r openstack ${OS_ARGS} floating ip delete
 
