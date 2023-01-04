@@ -2,19 +2,25 @@
 
 source tools/shell-lib/common.sh
 
-echo_b "\U0001F512 Create management cluster secrets and configmaps"
-kubectl kustomize ${ENV_PATH} | envsubst | kubectl apply -f -
-
 echo_b "\U0001F5D8 Bootstraping flux"
 kubectl kustomize kustomize-components/flux-system | envsubst | kubectl apply -f -
 
 echo_b "\U000023F3 Wait for Flux to be ready..."
 kubectl wait --for condition=Available --timeout 600s --all-namespaces --all deployment
 
-background_watch bootstrap gitrepositories kustomizations helmreleases helmcharts
+echo_b "\U0001F4DD Create bootstrap configmap"
+# NOTE(feleouet): as use the same kustomisation for bootstrap and management cluster, pass bootstrap environment values as configmap
+# as it won't be labelled with copy-from-bootstrap-to-management, it won't be copied to management-cluster
+kubectl create configmap management-cluster-bootstrap-values --from-file=${BASE_DIR}/charts/telco-cloud-init/bootstrap.values.yaml --dry-run=client -o yaml | kubectl apply -f -
 
 echo_b "\U0001F4DC Install telco-cloud-init Helm release"
-kubectl kustomize kustomize-components/telco-cloud-init/bootstrap | envsubst | kubectl apply -f -
+kubectl kustomize ${ENV_PATH} | sed "s/CURRENT_COMMIT/${CURRENT_COMMIT}/" | kubectl apply -f -
+
+# An alternative to the previous 2 commands could be to patch kustomization on the fly using yq:
+#kubectl kustomize . | yq 'select(.kind == "HelmRelease").spec.valuesFiles += ["charts/telco-cloud-init/bootstrap.values.yaml"] | \
+#                          select(.kind == "GitRepository").spec.ref = {"commit": "'${CURRENT_COMMIT}'"}' | kubectl apply -f -
+
+background_watch bootstrap gitrepositories kustomizations helmreleases helmcharts
 
 # this is just to force-refresh in a dev environment with a new commit (or refreshed parameters)
 kubectl annotate --overwrite gitrepository/telco-cloud-init reconcile.fluxcd.io/requestedAt="$(date +%s)"

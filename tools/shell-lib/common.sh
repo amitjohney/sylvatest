@@ -1,3 +1,9 @@
+
+set -eu
+set -o pipefail
+
+BASE_DIR="$(realpath $(dirname $0))"
+
 echo_b() {
   echo -e "\e[1m$@\e[0m"
 }
@@ -20,34 +26,23 @@ fi
 
 export CURRENT_COMMIT=${CI_COMMIT_SHA:-$(git rev-parse HEAD)}
 
-if [[ -z ${GITLAB_USER} || -z ${GITLAB_TOKEN} ]]; then
-    echo "GITLAB_USER and GITLAB_TOKEN variables must be defined (token must grant read access to repositories and regitries)"
-    exit 1
-fi
-
-set -eu
-set -o pipefail
-
 # Source env-specific scripts to perform ad-hoc tasks if required
 [[ -f ${ENV_PATH}/hacks.sh ]] && source ${ENV_PATH}/hacks.sh
 
-trap 'pids="$(jobs -rp)"; [ -n "$pids" ] && kill $pids' EXIT
-
-BASE_DIR="$(realpath $(dirname $0))"
-
 function exit_trap() {
+    EXIT_CODE=$?
     # Call debug script if needed
-    if [[ $? -ne 0 && ${DEBUG_ON_EXIT:-"0"} -eq 1 ]]; then
+    if [[ $EXIT_CODE -ne 0 && ${DEBUG_ON_EXIT:-"0"} -eq 1 ]]; then
         echo_b "gathering debugging logs in debug-on-exit.log file"
         ${BASE_DIR}/tools/shell-lib/debug-on-exit.sh > debug-on-exit.log
     fi
 
     # Kill all child processes (kubectl watches) on exit
     pids="$(jobs -rp)"
-    [ -n "$pids" ] && kill $pids
+    [ -n "$pids" ] && kill $pids || true
+    exit $EXIT_CODE
 }
 trap exit_trap EXIT
-
 
 function force_reconcile_and_wait() {
   local kinds=$1

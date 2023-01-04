@@ -96,50 +96,43 @@ components:
               echo "-- All done"
 
   # instantiate 'telco-cloud-init' chart again in the management cluster
-  management-telco-cloud-init:
+  telco-cloud-init:
     enabled: yes
     depends_on:
       - name: management-cluster-configs
     repo: capi-bootstrap
+    labels:
+      suspend-on-pivot: "yes"  # this component must be suspended before pivot
+    # Use a kustomization_spec alongside an helmrelease_spec,
+    # this way we'll create the flux helmrelease into the management cluster
     kustomization_spec:
-      path: ./kustomize-components/telco-cloud-init/base
       kubeConfig:
         secretRef:
           name: management-cluster-kubeconfig
-      wait: true
-      patches:
-        # for now we keep the 'cluster' component disabled, it produces CAPI resources
-        # defining the management cluster, which we can't define before having done the pivot
-        # (this value override is reverted after pivot by the pivot job below)
-        - target:
-            kind: HelmRelease
-            name: telco-cloud-init
-          patch: |
-            kind: HelmRelease
-            metadata:
-              name: ignored
-            spec:
-              values:
-                components:
-                  cluster:
-                    enabled: false
-        # we don't need to define the GitRepository because the one from bootstrap cluster is copied into
-        # the management cluster (thanks to copy-from-bootstrap-to-management label)
-        - target:
-            kind: GitRepository
-            name: telco-cloud-init
-          patch: |
-            kind: GitRepository
-            metadata:
-              name: unwanted
-            $patch: delete
-    labels:
-      suspend-on-pivot: "yes"  # this component must be suspended before pivot
+    helmrelease_spec:
+      releaseName: telco-cloud-init
+      chart:
+        spec:
+          #sourceRef:
+          #  namespace: default
+          chart: charts/telco-cloud-init
+          reconcileStrategy: Revision
+      interval: 1m0s
+      # copy values and valuesFrom from current telco-cloud-init HelmRelease
+      # for now we keep the 'cluster' component disabled, it produces CAPI resources
+      # defining the management cluster, which we can't define before having done the pivot
+      # (this value override is reverted after pivot by the pivot job below)
+      values: |
+        {{- $chartValues := (lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "telco-cloud-init").spec.values -}}
+        {{- $disableCluster := dict "components" (dict "cluster" (dict "enabled" false)) -}}
+        {{- $gitRepoSelf := dict "git_repo_templates" (dict "capi-bootstrap" (dict "existing_gitrepository" "telco-cloud-init")) -}}
+        {{- mergeOverwrite $chartValues $disableCluster $gitRepoSelf | include "preserve-type" -}}
+      valuesFrom: '{{ (lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "telco-cloud-init").spec.valuesFrom | include "preserve-type" }}'
 
   pivot:
     enabled: yes
     depends_on:
-      - name: management-telco-cloud-init
+      - name: telco-cloud-init
     repo: capi-bootstrap
     kustomization_spec:
       path: ./kustomize-components/kube-job

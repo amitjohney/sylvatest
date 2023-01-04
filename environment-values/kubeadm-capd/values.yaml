@@ -1,19 +1,8 @@
-debug: true
 
 components:
   cluster:
     kustomization_spec:
       path: ./kustomize-components/cluster-manifests/kubeadm-capd/base
-  # rancher:
-  #   enabled: management-only
-  #   depends_on:
-  #     - name: ingress-nginx
-  # k8s-gateway:
-  #   enabled: management-only
-  # rancher-import:
-  #   enabled: management-only
-  # ingress-nginx:
-  #   enabled: management-only
 
 cluster:
   image: registry.gitlab.com/t6306/components/capi-bootstrap/kindest/node:v1.25.0-cni # just kindest/node with preloaded vlan cni binary
@@ -22,10 +11,4 @@ cluster:
     bootstrap_provider: cabpk
 
 capd:
-  docker_host: $DOCKER_HOST  # dynamically replaced in CI
-
-proxies:
-  # put your own proxy settings here if you need
-  http_proxy:
-  https_proxy:
-  no_proxy:
+  docker_host: unix:///var/run/docker.sock  # dynamically replaced in CI

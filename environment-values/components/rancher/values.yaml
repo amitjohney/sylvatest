@@ -1,0 +1,13 @@
+components:
+  rancher:
+    enabled: management-only
+    depends_on:
+      - name: ingress-nginx
+    helmrelease_spec:
+      values:
+        ingress:
+          ingressClassName: nginx
+  k8s-gateway:
+    enabled: management-only
+  ingress-nginx:
+    enabled: management-only

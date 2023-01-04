@@ -11,7 +11,6 @@ kubectl get secrets telco-cloud-init-values-debug -o template="{{ .data.values }
 
 */}}
 {{- $envAll := set . "Values" (include "interpret-values-gotpl" . | fromJson) -}}
-{{- if $envAll.Values.debug_values  -}}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -22,4 +21,3 @@ type: Opaque
 stringData:
   values: |
 {{ $envAll.Values | toYaml| indent 4 }}
-{{- end -}}
