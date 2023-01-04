@@ -184,13 +184,15 @@ components:
           version: v3.0.0
       targetNamespace: cis-operator-system
 
+  # this allows for running a CIS scan for management cluster
+  # generates a report which can be viewed and downloaded in CSV from the Rancher UI, at https://rancher.sylva/dashboard/c/local/cis/cis.cattle.io.clusterscan
   cis-operator-scan:
     enabled: '{{ and (.Values.cluster.flavor.bootstrap_provider | eq "cabpr") (.Values.phase | eq "management") }}'
     depends_on:
       - name: cis-operator
     repo: capi-bootstrap
     kustomization_spec:
-      path: ./kustomize-components/cis-operator
+      path: ./kustomize-components/cis-operator-scan
       postBuild:
         substitute:
           SCAN_PROFILE: '{{ .Values.cluster.cis_benchmark_scan_profile }}'
