@@ -508,6 +508,9 @@ components:
           - op: replace
             path: /metadata/name
             value: first-login-rancher-job
+          - op: replace
+            path: /spec/backoffLimit
+            value: 10
       - target:
           kind: ConfigMap
           name: job-scripts
