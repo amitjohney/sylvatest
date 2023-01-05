@@ -2,9 +2,9 @@
 
 source tools/shell-lib/common.sh
 
-echo_b "\U0001F5D8 Bootstraping flux"
+echo_b "\U0001F503 Bootstraping flux"
 kubectl kustomize kustomize-components/flux-system | envsubst | kubectl apply -f -
-
+ 
 echo_b "\U000023F3 Wait for Flux to be ready..."
 kubectl wait --for condition=Available --timeout 600s --all-namespaces --all deployment
 
@@ -39,7 +39,7 @@ kubectl wait --for condition=Ready --timeout 300s kustomization cluster
 echo_b "\U000023F3 Wait for management cluster to be ready"
 kubectl wait --for condition=ControlPlaneReady --timeout 1200s cluster management-cluster
 
-# Retrieve maangement cluster secret
+# Retrieve management cluster secret
 orig_umask=$(umask)
 umask og-rw
 kubectl get secret management-cluster-kubeconfig -o jsonpath='{.data.value}' | base64 -d > management-cluster-kubeconfig

@@ -5,7 +5,12 @@ set -o pipefail
 BASE_DIR="$(realpath $(dirname $0))"
 
 echo_b() {
-  echo -e "\e[1m$@\e[0m"
+  if (( ${current_section_number:-0} > 0 )) ; then
+    echo -e "\e[0Ksection_end:`date +%s`:section_$current_section_number\r\e[0K"
+  fi
+
+  current_section_number=$(( ${current_section_number:-0} + 1))
+  echo -e "\e[1m\e[0Ksection_start:`date +%s`:section_$current_section_number[collapsed=true]\r\e[0K$@\e[0m"
 }
 
 function background_watch() {

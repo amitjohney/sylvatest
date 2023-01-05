@@ -9,7 +9,7 @@ set -o xtrace
 OS_ARGS=""
 PLATFORM=$1
 if [ ! -z $PLATFORM ]; then
-  OS_ARGS="--os-cloud $PLATFORM"
+  OS_ARGS="--os-cloud $PLATFORM --insecure"
 fi
 
 if openstack ${OS_ARGS} endpoint list &> /dev/null; then
