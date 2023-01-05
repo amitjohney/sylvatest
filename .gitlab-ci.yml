@@ -79,6 +79,7 @@ check-docs-markdown:
 .test-capd:
   stage: deploy
   before_script:
+    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:before_script_section[collapsed=true]\r\e[0KRunning before_script step\e[0m"
     # FIXME: build an image with following tools (+clusterctl)
     - apk add --no-cache curl bash git gettext # for envsubst
     - curl -Lo /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v0.15.0/kind-linux-amd64
@@ -110,6 +111,8 @@ check-docs-markdown:
 
     - find environment-values/ -name git-secrets.env -exec sed -i "s/GIT_USERNAME/$CI_REGISTRY_USER/;s/GIT_TOKEN/$CI_JOB_TOKEN/" {} \;
     - find environment-values/ -name values.yaml -exec sed -i "s|unix:///var/run/docker.sock|$DOCKER_HOST|" {} \;
+
+    - echo -e "\e[0Ksection_end:`date +%s`:before_script_section\r\e[0K"
   artifacts:
     when: on_failure
     expire_in: 6 hour
