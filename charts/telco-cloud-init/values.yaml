@@ -307,8 +307,7 @@ components:
       chart:
         spec:
           chart: openstack-cinder-csi
-          sourceRef:
-            namespace: default
+          version: 2.3.0
       targetNamespace: cinder-csi
       install:
         createNamespace: true
@@ -337,6 +336,7 @@ components:
       secret:
         enabled: "true"
         create: "true"
+        name: cinder-csi-cloud-config
         data:
           cloud.conf: |-
             [Global]
