@@ -710,7 +710,7 @@ cluster:
   # TODO: derive kubeconfig secret name from this ^
 
   # Admin password that will be configured by default on various components
-  admin_password: '{{ randAscii 64 }}'
+  admin_password: '{{ randAlphaNum 64 }}'
 
   # image reference depends provider
   image: registry.gitlab.com/t6306/components/docker-images/rke2-in-docker:v1-24-4-rke2r1
