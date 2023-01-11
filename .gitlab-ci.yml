@@ -1,10 +1,3 @@
-# included templates
-include:
-  # Gitleaks template
-  - project: "to-be-continuous/gitleaks"
-    ref: "2.1"
-    file: "templates/gitlab-ci-gitleaks.yml"
-
 stages:
   - generate
   - test
@@ -18,12 +11,20 @@ services:
 
 variables:
   DOCKER_TLS_CERTDIR: ""
+  GITLEAKS_ARGS: '--verbose --log-opts=$CI_COMMIT_SHA'
 
 default:
   tags:
     - gitlab-org-docker
     #- docker
     #- o-romania
+
+# included templates
+include:
+  # Gitleaks template
+  - project: "to-be-continuous/gitleaks"
+    ref: "2.1"
+    file: "templates/gitlab-ci-gitleaks.yml"
 
 chart-generator:
   stage: generate
