@@ -41,6 +41,39 @@ sample-value: map[foo:bar]
 preserved-value:
   foo: bar
 
+There is also a special "set-only-if" template that enable to conditionally add an item to a list or dict:
+(note that it also preserves type of non-string outputs like "preserve-type" template described above)
+
+# values:
+
+sample_list:
+- some-value
+- '{{ tuple "skipped" false | include "set-only-if" }}'
+- '{{ tuple "included" true | include "set-only-if" }}'
+sample_dict:
+  some: value
+  skipped: '{{ tuple "this key will not be set" false | include "set-only-if" }}'
+  sample_list: | # note that you can also split template as a multiline string
+    {{- $value := .Values.sample_list -}}
+    {{ tuple $value true | include "set-only-if" }}
+
+# template:
+
+{{- $_ := set . "Values" (include "interpret-values-gotpl" . | fromJson)  -}}
+{{ .Values }}
+
+# result:
+
+sample_list:
+- some-value
+- included
+sample_dict:
+  some: value
+  sample_list:
+  - some-value
+  - included
+
+
 Note well that there are a few limitations:
 
 * there is no error management on templating:
@@ -97,6 +130,26 @@ The result is still a string, but we'll be able to match its signature and deser
 
 {{ define "preserve-type" }}
   {{- dict "encapsulated-result" . | toJson -}}
+{{ end }}
+
+{{/*
+
+set-only-if
+
+This is another utility template that enables to conditionally set an item in a list or dict.
+
+If condition evaluates to false, it will return a very specific value that can be matched in interpret-inner-gotpl to skip the item.
+
+For convenience, it also encaspsulates the result like in 'preserve-type' template in order to properly handle non-string items.
+
+*/}}
+
+{{ define "set-only-if" }}
+  {{- if index . 1 -}}
+    {{- dict "encapsulated-result" (index . 0) | toJson -}}
+  {{- else -}}
+    skip-as-set-only-if-result-was-false
+  {{- end -}}
 {{ end }}
 
 {{/*
@@ -174,13 +227,32 @@ Note well that there are a few limitations:
         {{/* this is a list, recurse on each item */}}
         {{ $result = list }}
         {{ range $data }}
-            {{ $result = append $result (index (tuple $envAll . | include "interpret-inner-gotpl" | fromJson) "result") }}
+            {{ $tpl_item := index (tuple $envAll . | include "interpret-inner-gotpl" | fromJson) "result" }}
+            {{ if (eq (kindOf $tpl_item) "string") }}
+                {{ if (hasPrefix "{\"encapsulated-result\":" $tpl_item) }}
+                    {{ $result = append $result (index (fromJson $tpl_item) "encapsulated-result") }}
+                {{ else if (ne $tpl_item "skip-as-set-only-if-result-was-false") }}
+                    {{ $result = append $result $tpl_item }}
+                {{ end }}
+            {{ else }}
+                {{ $result = append $result $tpl_item }}
+            {{ end }}
         {{ end }}
     {{ else if (eq $kind "map") }}
         {{/* this is a dictionary, recurse on each key-value pair */}}
         {{ $result = dict }}
         {{ range $key,$value := $data }}
-            {{ $_ := set $result (index (tuple $envAll $key | include "interpret-inner-gotpl" | fromJson) "result") (index (tuple $envAll $value | include "interpret-inner-gotpl" | fromJson) "result") }}
+            {{ $tpl_key := index (tuple $envAll $key | include "interpret-inner-gotpl" | fromJson) "result" }}
+            {{ $tpl_value := index (tuple $envAll $value | include "interpret-inner-gotpl" | fromJson) "result" }}
+            {{ if (eq (kindOf $tpl_value) "string") }}
+                {{ if (hasPrefix "{\"encapsulated-result\":" $tpl_value) }}
+                    {{ $_ := set $result $tpl_key (index (fromJson $tpl_value) "encapsulated-result") }}
+                {{ else if (ne $tpl_value "skip-as-set-only-if-result-was-false") }}
+                    {{ $_ := set $result $tpl_key $tpl_value }}
+                {{ end }}
+            {{ else }}
+                {{ $_ := set $result $tpl_key $tpl_value }}
+            {{ end }}
         {{ end }}
     {{ else }}  {{/* bool, int, float64 */}}
         {{ $result = $data }}
