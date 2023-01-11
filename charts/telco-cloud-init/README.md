@@ -178,8 +178,7 @@ components:
 
 ### How to feed settings coming from Helm values into the configuration of components
 
-You can use Helm templating to feed settings coming from values into
-the configuration of your components:
+You can use Helm templating to feed settings coming from values into the configuration of your components:
 
 ```yaml
 mgmt_cluster_domain_name: my-mgmt-cluster.foo.org
@@ -209,7 +208,37 @@ components:
 
 ```
 
-(watch out for limitations, as explained in [`_helpers.tpl`](templates/_helpers.tpl) in `interpret-inner-gotpl`)
+As this feature is implemented using the helm templating function (aka "tpl") that only returns strings, you should pass it to the "preserve-type" template if want to prevent the result from being transformed to a string:
+
+```yaml
+git_auth_default:
+  username: your_user_name
+  password: glpat-XXXXX
+
+git_repo_templates:
+  capi-bootstrap:
+    spec:
+      ...
+    auth: '{{ .Values.git_auth_default | include "preserve-type" }}'
+```
+
+There is also a special "set-only-if" template that enable to conditionally add an item to a list or dict:
+
+```yaml
+
+port_list:
+- 80
+- '{{ tuple 443 .Values.enable_https | include "set-only-if" }}'
+
+components:
+  foo:
+    helmrelease_spec:
+      values:
+        # set proxy value for foo chart only if proxies value contains an http_proxy key with a non-empty value
+        proxy: '{{ tuple .Values.proxies.http_proxy .Values.proxies.http_proxy | include "set-only-if" }}'
+```
+
+For more details on templating features & limitations, refer to [`_interpret-values.tpl`](templates/_interpret-values.tpl)
 
 ## Design notes
 
