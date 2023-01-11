@@ -9,7 +9,7 @@ spec:
     spec:
       sourceRef:
         kind: GitRepository
-        name: component-cluster
+        name: capi-bootstrap
         namespace: default
       chart: charts/cluster-vsphere
       reconcileStrategy: Revision

@@ -6,14 +6,6 @@ git_repo_templates:
       url: https://gitlab.com/t6306/components/capi-bootstrap.git
       ref:
         commit: $CURRENT_COMMIT
-  metal3:
-    auth:
-      username: # replace me
-      password: # replace me
-    spec:
-      url: https://gitlab.com/t6306/components/helm-charts/metal3.git
-      ref:
-        branch: main
 
 components:
   capv:
@@ -41,45 +33,8 @@ components:
   kubed:
     enabled: no
 
-  metallb:
-    enabled: management-only
-    repo: capi-bootstrap
-    depends_on:
-    - name: cert-manager
-    kustomization_spec:
-      path: ./kustomize-components/metallb
-      wait: true
-
-  metal3-metallb-config:
-    enabled: management-only
-    repo: capi-bootstrap
-    depends_on:
-    - name: cert-manager
-    - name: metallb
-    kustomization_spec:
-      path: ./kustomize-components/metal3
-      wait: true
-      postBuild:
-        substitute:
-          IRONIC_IP: # replace me
-
   metal3:
     enabled: management-only
-    repo: metal3
-    depends_on:
-    - name: cert-manager
-    - name: metal3-metallb-config
-    helmrelease_spec:
-      chart:
-        spec:
-          chart: egate/metal3
-      install:
-        createNamespace: true
-      targetNamespace: metal3-system
-      valuesFrom:
-      - kind: Secret
-        name: component-metal3-values
-        valuesKey: values
 
   cluster:
     enabled: yes
@@ -130,6 +85,8 @@ cluster:
     server: # replace me
     # -- VSphere https TLS thumbprint
     tlsThumbprint: # replace me
+  metal3:
+    ironic_ip: $IRONIC_IP
 
 proxies:
   http_proxy: # replace me
