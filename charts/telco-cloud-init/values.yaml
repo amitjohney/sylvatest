@@ -54,6 +54,12 @@ git_repo_templates: # template to generate Flux GitRepository resources
       ref:
         tag: v0.10.2
 
+  metal3:
+    spec:
+      url: https://gitlab.com/t6306/components/helm-charts/metal3.git
+      ref:
+        branch: main
+
 helm_repo_spec_default:
   interval: 60m0s
 
@@ -364,6 +370,38 @@ components:
     kustomization_spec:
       path: ./kustomize-components/cabpr
       wait: true
+
+  metal3:
+    enabled: no
+    depends_on:
+    - name: cert-manager
+    repo: metal3
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: egate/metal3
+      install:
+        createNamespace: true
+      targetNamespace: metal3-system
+      values:  # see https://gitlab.com/t6306/components/helm-charts/metal3/-/blob/main/egate/metal3/values.yaml
+        # global:
+        #   storageClass:
+        # ironicIPADownloaderBaseURI:
+        httpProxy: '{{ .Values.proxies.https_proxy }}'
+        httpsProxy: '{{ .Values.proxies.https_proxy }}'
+        noProxy: '{{ .Values.proxies.no_proxy }}'
+        persistence:
+          ironic:
+            accessMode: "ReadWriteOnce"
+        services:
+          ironic:
+          # Specify the IP address used by Ironic service
+            ironicIP: '{{ .Values.cluster.metal3.ironic_ip }}'
+        mariadb:
+          auth:
+            # if rootPassword is left empty a random one is generated at each installation
+            # setting one is suggested in order for mariadb to be able to reuse an already initialized pvc
+            rootPassword: "changeme"
 
   cluster:
     enabled: yes
@@ -761,6 +799,9 @@ cluster:
 
   vault:
     external_hostname: vault.sylva
+
+  metal3:
+    ironic_ip: 66.66.66.66 # replace me (this IP is the IP at which Ironic is made accessible from BMCs or PXE network)
 
 capd:
   docker_host: unix:///var/run/docker.sock
