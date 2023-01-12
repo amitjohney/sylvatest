@@ -16,9 +16,9 @@ patches:
         permissions: "0644"
         content: |
           [Service]
-          Environment="HTTP_PROXY=http://proxy.rd.francetelecom.fr:8080"
-          Environment="HTTPS_PROXY=http://proxy.rd.francetelecom.fr:8080"
-          Environment="NO_PROXY=localhost,127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+          Environment="HTTP_PROXY=${http_proxy}"
+          Environment="HTTPS_PROXY=${https_proxy}"
+          Environment="NO_PROXY=${no_proxy}"
     - op: add
       path: /spec/kubeadmConfigSpec/files/-
       value:

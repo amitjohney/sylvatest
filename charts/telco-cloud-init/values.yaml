@@ -420,11 +420,18 @@ components:
         substituteFrom:
         - kind: ConfigMap
           name: cluster-vars
+        - kind: ConfigMap
+          name: proxy-env-vars
       healthChecks:
         - apiVersion: cluster.x-k8s.io/v1beta1
           kind: Cluster
           name: management-cluster
           namespace: default
+      components:
+        - '{{ tuple "../../components/proxies/KubeadmControlPlane"
+                    (and .Values.proxies.http_proxy (eq .Values.cluster.flavor.bootstrap_provider "cabpk")) | include "set-only-if" }}'
+        - '{{ tuple "../../components/proxies/RKE2ControlPlane"
+                    (and .Values.proxies.http_proxy (eq .Values.cluster.flavor.bootstrap_provider "cabpr")) | include "set-only-if" }}'
 
   calico:
     enabled: '{{ eq .Values.cluster.flavor.bootstrap_provider "cabpk" }}'
