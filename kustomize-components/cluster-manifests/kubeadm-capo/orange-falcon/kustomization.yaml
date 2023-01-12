@@ -27,6 +27,13 @@ patches:
         clusterConfiguration:
           imageRepository: k8s.gcr.io
         files:
+        - path: /etc/containerd/conf.d/registry.toml
+          owner: root
+          permissions: "0644"
+          content: |
+            [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
+              [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+              endpoint = ["http://172.20.129.142"]
         - path: /etc/systemd/system/containerd.service.d/proxy.conf
           owner: root
           permissions: "0644"
