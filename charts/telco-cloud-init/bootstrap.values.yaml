@@ -3,9 +3,7 @@
 # These value are meant to be used as overrides to the default values from values.yaml
 # when the chart is instantiated in the bootstrap cluster
 
-# set 'phase: bootstrap' so that
-# * components with 'enabled: management-only' are ignored
-# * components with 'enabled: boostrap-only' are enabled
+# set 'phase: bootstrap' so that components with 'enabled: management-only' are ignored
 phase: bootstrap
 
 component_kustomization_spec_default:
