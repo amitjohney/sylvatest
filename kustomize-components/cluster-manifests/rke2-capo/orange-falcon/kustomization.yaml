@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
 - ../base
 components:
-  - ../../components/orange-proxy/RKE2ControlPlane
+- ../../components/proxies/RKE2ControlPlane
 patches:
 - patch: |-
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5

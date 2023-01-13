@@ -1,18 +1,42 @@
+---
+
 components:
-  cinder-csi:
-    enabled: management-only
+  cluster:
+    kustomization_spec:
+      path: ./kustomize-components/cluster-manifests/rke2-capo/orange-falcon
+  workload-cluster:
+    kustomization_spec:
+      path: ./kustomize-components/cluster-manifests/rke2-capo/dns-client-orange-falcon
+      postBuild:
+        substitute:
+          CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
+          CLUSTER_EXTERNAL_IP: # set an IP for your workload cluster kube-api LB VIP here
+          SSH_KEY_NAME: '{{ .Values.cluster.capo.ssh_key_name }}'
+          APT_PROXY: '{{ .Values.proxies.https_proxy }}'
+          CONTAINERD_PROXY: '{{ .Values.proxies.https_proxy }}'
 
 cluster:
-  #image: image name provided by falcon-env component, but can be overwritten
+  image: "Ubuntu 20.04 Pack" # image name provided by falcon-rke2 remote target component, but can be overwritten
   flavor:
     infra_provider: capo
     bootstrap_provider: cabpr
   capo:
     ssh_key_name: # put the name of your nova SSH keypair here
-    #network_id: network id is provided by falcon-env component, but can be overwritten
-    kube_vip_ip: 1.2.3.4  # reserve an IP and replace this sample value
+    network_id: # network id is provided by falcon-rke2 remote target component if Kustomize remote target is used, but can be overwritten
     ## If cinder CSI is used, provide a name for the storage class and the storage type from OpenStack
     storageClass:
       name: "cinder-ceph-ssd"
       type: "ceph_ssd"
 
+  cluster_external_ip: 1.2.3.4  # reserve an IP and replace this sample value
+
+  test_workload_cluster_name: "first-workload-cluster"
+
+proxies:
+  # put your own proxy settings here if you need
+  http_proxy: ""
+  https_proxy: ""
+  no_proxy: ""
+
+# add your local docker.io registry mirror to avoid rate limitting if required
+dockerio_registry_mirror: ""

@@ -16,8 +16,7 @@ variables:
 default:
   tags:
     - gitlab-org-docker
-    #- docker
-    #- o-romania
+    # - docker
 
 # included templates
 include:
@@ -98,6 +97,8 @@ check-docs-markdown:
     - chmod +x /usr/local/bin/kubetail
     - curl -L https://get.helm.sh/helm-v3.10.1-linux-amd64.tar.gz | tar xz
     - mv linux-amd64/helm /usr/local/bin/
+    - curl -Lo /usr/bin/yq https://github.com/mikefarah/yq/releases/download/v4.30.6/yq_linux_amd64
+    - chmod +x /usr/bin/yq
 
     - DOCKER_IP=$(getent hosts docker | awk '{print $1}')
     - |
@@ -115,10 +116,11 @@ check-docs-markdown:
     - ip route add $KIND_PREFIX via $DOCKER_IP
 
     - export DOCKER_HOST=tcp://$DOCKER_IP:2375
+    - find environment-values/*-capd/ -name git-secrets.env -exec sed -i "s/GIT_USERNAME/$CI_REGISTRY_USER/;s/GIT_TOKEN/$CI_JOB_TOKEN/" {} \;
+    - find environment-values/*-capd/ -name values.yaml -exec yq -i '.cluster.capd.docker_host = strenv(DOCKER_HOST)' {} \;
+    - export CLUSTER_EXTERNAL_IP=$(echo $KIND_PREFIX | awk -F"." '{print $1"."$2"."$3".100"}')
+    - find environment-values/*-capd/ -name values.yaml -exec yq -i '.cluster.cluster_external_ip = strenv(CLUSTER_EXTERNAL_IP)' {} \;
     - export DEBUG_ON_EXIT=1
-
-    - find environment-values/ -name git-secrets.env -exec sed -i "s/GIT_USERNAME/$CI_REGISTRY_USER/;s/GIT_TOKEN/$CI_JOB_TOKEN/" {} \;
-    - find environment-values/ -name values.yaml -exec sed -i "s|unix:///var/run/docker.sock|$DOCKER_HOST|" {} \;
 
     - echo -e "\e[0Ksection_end:`date +%s`:before_script_section\r\e[0K"
   artifacts:
@@ -132,19 +134,23 @@ check-docs-markdown:
     - if: $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
       when: manual
+  tags:
+    - o-romania
 
 test-rke2-capd:
-  timeout: 45min
+  timeout: 60min
   extends: .test-capd
   script:
     - ./bootstrap.sh environment-values/rke2-capd
+    - kubectl --kubeconfig management-cluster-kubeconfig logs $(kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}')
   rules:
-    #FIXME(feleouet) Run it only manually, for now untill we fix it, but not in MRs otherwise they'd be blocked
+    #FIXME(feleouet) Run it only manually, for now until we fix it, but not in MRs otherwise they'd be blocked
     - if: $CI_PIPELINE_SOURCE != 'merge_request_event'
       when: manual
 
 test-kubeadm-capd:
-  timeout: 30min
+  timeout: 45min
   extends: .test-capd
   script:
     - ./bootstrap.sh environment-values/kubeadm-capd
+    - kubectl --kubeconfig management-cluster-kubeconfig logs $(kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}')

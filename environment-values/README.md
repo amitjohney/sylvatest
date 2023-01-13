@@ -97,6 +97,24 @@ configMapGenerator:
 [...] # Some additionnal values relative to the deployment
 ```
 
+:::note
+In environments where the bootstrap cluster host is behind a forward proxy, usage of [Kustomize remote targets](https://github.com/kubernetes-sigs/kustomize/blob/master/examples/remoteBuild.md) in environment-value's kustomization is dependent on Git reachability over SSH or HTTPS.
+To ensure that is provided, running `kustomize build` for the remote build target should be done prior to running `bootstrap.sh`.
+For HTTPS transport, this would mean:
+
+```console
+
+export GIT_SSL_NO_VERIFY=true    # disable git TLS cert validation if needed
+git config --global http.proxy $HTTP_PROXY    # set a proxy for git
+git config --global credential.helper cache    # enable credentials storage in git, if preferred. Attention, this method saves credentials in plaintext on disk
+git config --global credential.helper "cache --timeout=604800"    # enable git credentials caching for 1 week
+git clone https://openstack-git-stg.itn.ftgroup/caas/caas-ci.git    # run some operation to set git credentials
+kustomize build git::https://openstack-git-stg.itn.ftgroup/caas/caas-ci.git/environment-values/falcon-base/?ref=master    # kustomize build should then work and bootstrap.sh would fetch remote targets
+
+```
+
+:::
+
 # How values are merged
 
 All the provided values will be applied by Flux to the chart, in the following order of precedence (an item appearing later in the following list overrides the same item if it was specified earlier, see https://fluxcd.io/flux/components/helm/helmreleases/#values-overrides):

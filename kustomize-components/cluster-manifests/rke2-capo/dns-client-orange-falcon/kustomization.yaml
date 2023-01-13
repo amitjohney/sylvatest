@@ -12,37 +12,37 @@ patches:
     spec:
       dnsNameservers:
       - 172.20.115.54
-      allowAllInClusterTraffic: true
       network:
         id: ${CAPO_NETWORK_ID}
       apiServerFixedIP: ${CLUSTER_EXTERNAL_IP}
 - patch: |-
-    apiVersion: controlplane.cluster.x-k8s.io/v1beta1
-    kind: KubeadmControlPlane
+    apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
+    kind: RKE2ControlPlane
     metadata:
       name: ${CLUSTER_NAME}-control-plane
       namespace: default
     spec:
-      kubeadmConfigSpec:
-        clusterConfiguration:
-          imageRepository: k8s.gcr.io
+      rke2ConfigSpec:
         files:
-        - path: /etc/containerd/conf.d/registry.toml
+        - path: /etc/resolvconf/resolv.conf.d/head
           owner: root
           permissions: "0644"
           content: |
-            [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
-              [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
-              endpoint = ["http://172.20.129.142"]
-        - path: /etc/systemd/system/containerd.service.d/proxy.conf
+            nameserver ${K8SGATEWAY_LB_IP}
+        - path: /etc/apt/apt.conf.d/proxy.conf
           owner: root
           permissions: "0644"
           content: |
-            [Service]
-            Environment="HTTP_PROXY=http://proxy.rd.francetelecom.fr:8080"
-            Environment="HTTPS_PROXY=http://proxy.rd.francetelecom.fr:8080"
-            Environment="NO_PROXY=localhost,127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
-        - path: /etc/kubernetes/manifests/kube-vip.yaml
+            Acquire::http::Proxy "${APT_PROXY}";
+        - path: /usr/local/lib/systemd/system/rke2-server.env
+          owner: root
+          permissions: "0644"
+          content: |
+            HOME=/root
+            CONTAINERD_HTTP_PROXY=${CONTAINERD_PROXY}
+            CONTAINERD_HTTPS_PROXY=${CONTAINERD_PROXY}
+            CONTAINERD_NO_PROXY=172.20.129.0/24,127.0.0.1,10.43.0.0/16,10.42.0.0/16
+        - path: /var/lib/rancher/rke2/server/manifests/kube-vip.yaml
           owner: root:root
           permissions: "0644"
           content: |
@@ -102,19 +102,26 @@ patches:
               hostNetwork: true
               volumes:
               - hostPath:
-                  path: /etc/kubernetes/admin.conf
+                  path: /etc/rancher/rke2/rke2.yaml
                 name: kubeconfig
-        preKubeadmCommands:
+        deployRKE2Commands:
+        - sudo apt update
+        - sudo apt -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confnew install resolvconf
+        - sudo systemctl start resolvconf.service
+        - sudo systemctl enable resolvconf.service
+        - sudo systemctl restart resolvconf.service
+        - sudo systemctl restart systemd-resolved.service
+        - "echo 'cni: calico' >> /etc/rancher/rke2/config.yaml"
         - systemctl daemon-reload
-        - systemctl restart containerd.service
-        postKubeadmCommands:
-        - export KUBECONFIG=/etc/kubernetes/admin.conf
-        - kubectl taint nodes --all node-role.kubernetes.io/master-
+        - systemctl enable rke2-server.service
+        - systemctl start rke2-server.service
+        - ln -s /var/lib/rancher/rke2/bin/kubectl /usr/local/bin/kubectl
+      replicas: 1
 - patch: |-
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
     kind: OpenStackMachineTemplate
     metadata:
-      name: ${CLUSTER_NAME}-control-plane
+      name: ${CLUSTER_NAME}-cp-template
       namespace: default
     spec:
       template:

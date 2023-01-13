@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+patches:
+- target:
+    kind: RKE2ControlPlane
+  patch: |
+    - op: add
+      path: /spec/rke2ConfigSpec/files/-
+      value:
+        path: /etc/rancher/rke2/registries.yaml
+        owner: root:root
+        permissions: "0644"
+        content: |
+          mirrors:
+            docker.io:
+              endpoint:
+                - "${REGISTRY_MIRROR}"

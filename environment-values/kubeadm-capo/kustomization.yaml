@@ -5,8 +5,9 @@ resources:
   - ../base
 
 components:
-  #- ssh://git@openstack-git-stg.itn.ftgroup/caas/caas-ci.git/environment-values/falcon-kubeadm?ref=add-falcon-env # This kustomize component specifies CAPO network id and Glance image name, and sets components.cluster.kustomization_spec.path to CAPI/CAPO manifests working in this Orange specific environment (`kustomize-components/cluster-manifests/kubeadm-capo/orange-falcon`)
-  #- ../components/rancher
+  # - ssh://git@openstack-git-stg.itn.ftgroup/caas/caas-ci.git/environment-values/falcon-kubeadm?ref=master  # this kustomize component specifies management cluster proxies, CAPO network id and Glance image name, and sets components.cluster.kustomization_spec.path to CAPI/CAPO manifests working in this Orange specific environment (`kustomize-components/cluster-manifests/kubeadm-capo/orange-falcon`)
+  # - https://openstack-git-stg.itn.ftgroup/caas/caas-ci//environment-values/falcon-kubeadm/?ref=master  # this kustomize component specifies management cluster proxies, CAPO network id and Glance image name, and sets components.cluster.kustomization_spec.path to CAPI/CAPO manifests working in this Orange specific environment (`kustomize-components/cluster-manifests/kubeadm-capo/orange-falcon`)
+  - ../components/test-workload-cluster
 
 commonLabels:
   copy-from-bootstrap-to-management: ""

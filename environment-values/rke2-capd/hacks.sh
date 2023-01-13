@@ -9,4 +9,3 @@ source $(dirname ${BASH_SOURCE[0]})/git-secrets.env
 
 echo ${password} | docker login -u ${username} --password-stdin registry.gitlab.com
 docker pull ${MACHINE_IMAGE}
-
