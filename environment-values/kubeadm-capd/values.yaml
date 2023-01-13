@@ -1,14 +1,32 @@
+---
 
 components:
   cluster:
     kustomization_spec:
       path: ./kustomize-components/cluster-manifests/kubeadm-capd/base
+  workload-cluster:
+    kustomization_spec:
+      path: ./kustomize-components/cluster-manifests/kubeadm-capd/base
 
 cluster:
-  image: registry.gitlab.com/t6306/components/capi-bootstrap/kindest/node:v1.25.0-cni # just kindest/node with preloaded vlan cni binary
+  image: registry.gitlab.com/t6306/components/docker-images/kind-with-cni:v1-24-4 # just kindest/node with preloaded vlan cni binary
   flavor:
     infra_provider: capd
     bootstrap_provider: cabpk
+  capd:
+    docker_host: unix:///var/run/docker.sock  # dynamically replaced in CI
 
-capd:
-  docker_host: unix:///var/run/docker.sock  # dynamically replaced in CI
+  cluster_external_ip: # use the .100 (or any other that woudn't be assigned by Docker) IP from the local kind subnet, returned by: docker network inspect -f '{{json .}}' kind | jq -r .IPAM.Config[0].Subnet
+
+  test_workload_cluster_name: "first-workload-cluster"
+
+proxies:
+  # put your own proxy settings here if you need
+  http_proxy: ""
+  https_proxy: ""
+  no_proxy: ""
+
+# add your local docker.io registry mirror to avoid rate limitting if required
+dockerio_registry_mirror: ""
+
+env_type_ci: true

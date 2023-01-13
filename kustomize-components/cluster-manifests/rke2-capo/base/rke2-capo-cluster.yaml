@@ -38,7 +38,7 @@ spec:
     enabled: false
   network:
     id: ${CAPO_NETWORK_ID}
-  apiServerFixedIP: ${KUBE_VIP_IP}
+  apiServerFixedIP: ${CLUSTER_EXTERNAL_IP}
 ---
 apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
 kind: RKE2ControlPlane
@@ -71,9 +71,9 @@ spec:
                 hostNetwork: false
                 service:
                   enabled: true
-                  loadBalancerIP: "${KUBE_VIP_IP}"
+                  loadBalancerIP: "${CLUSTER_EXTERNAL_IP}"
                   annotations:
-                    metallb.universe.tf/allow-shared-ip: "share-vip-${KUBE_VIP_IP}"
+                    metallb.universe.tf/allow-shared-ip: "${CLUSTER_EXTERNAL_IP}"
     - path: /var/lib/rancher/rke2/server/manifests/metallb.yaml
       owner: "root:root"
       permissions: "0644"
@@ -126,7 +126,7 @@ spec:
             namespace: metallb-system
           spec:
             addresses:
-              - ${KUBE_VIP_IP}/32
+              - ${CLUSTER_EXTERNAL_IP}/32
           ---
           apiVersion: metallb.io/v1beta1
           kind: L2Advertisement
@@ -143,10 +143,10 @@ spec:
             name: kubernetes-vip
             namespace: kube-system
             annotations:
-              metallb.universe.tf/allow-shared-ip: "share-vip-${KUBE_VIP_IP}"
+              metallb.universe.tf/allow-shared-ip: "${CLUSTER_EXTERNAL_IP}"
           spec:
             type: LoadBalancer
-            loadBalancerIP: ${KUBE_VIP_IP}
+            loadBalancerIP: ${CLUSTER_EXTERNAL_IP}
             ports:
             - name: https
               port: 6443
@@ -196,5 +196,5 @@ spec:
       - network:
           id: ${CAPO_NETWORK_ID}
         allowedAddressPairs:
-          - ipAddress: ${KUBE_VIP_IP}
+          - ipAddress: ${CLUSTER_EXTERNAL_IP}
 

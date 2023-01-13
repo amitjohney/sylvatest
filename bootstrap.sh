@@ -4,7 +4,7 @@ source tools/shell-lib/common.sh
 
 echo_b "\U0001F503 Bootstraping flux"
 kubectl kustomize kustomize-components/flux-system | envsubst | kubectl apply -f -
- 
+
 echo_b "\U000023F3 Wait for Flux to be ready..."
 kubectl wait --for condition=Available --timeout 600s --all-namespaces --all deployment
 
@@ -51,12 +51,15 @@ kubectl wait --for condition=Ready --timeout 1200s kustomization management-clus
 kubectl_additional_args="--kubeconfig management-cluster-kubeconfig" background_watch management gitrepositories kustomizations helmreleases helmcharts
 
 echo_b "\U000023F3 Wait for remaining components to be installed on management cluster and pivot"
-kubectl wait --for condition=Ready --timeout 1200s --all kustomizations
+kubectl wait --for condition=Ready --timeout 1800s --all kustomizations
 
 echo_b "\U000023F3 Wait for components installed on management cluster to be ready"
-kubectl --kubeconfig management-cluster-kubeconfig wait --for condition=Ready --timeout 1200s --all kustomizations
+kubectl --kubeconfig management-cluster-kubeconfig wait --for condition=Ready --timeout 1800s --all kustomizations
 
 echo_b "\U00002714 Management cluster is ready"
 kubectl --kubeconfig management-cluster-kubeconfig get nodes
+
+echo_b "\U0001F331 You can access following UIs"
+kubectl --kubeconfig management-cluster-kubeconfig get ingress --all-namespaces
 
 echo_b "\U0001F389 All done"

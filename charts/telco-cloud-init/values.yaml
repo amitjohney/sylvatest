@@ -303,7 +303,6 @@ components:
         substitute:
           SCAN_PROFILE: '{{ .Values.cluster.cis_benchmark_scan_profile }}'
 
-
   capi:
     # ref_override:  # test
     #   branch: i-really-need-dev-branch-foo
@@ -323,7 +322,7 @@ components:
       path: ./kustomize-components/capd
       postBuild:
         substitute:
-          DOCKER_HOST: '{{ .Values.capd.docker_host }}'
+          DOCKER_HOST: '{{ .Values.cluster.capd.docker_host }}'
       wait: true
 
   capo:
@@ -417,6 +416,8 @@ components:
       # the choice made here, for now, requires setting other values consistently under .cluster.xxx
       path: ./kustomize-components/cluster-manifests/_override_me_/base
       postBuild:
+        substitute:
+          REGISTRY_MIRROR: '{{ .Values.dockerio_registry_mirror }}'
         substituteFrom:
         - kind: ConfigMap
           name: cluster-vars
@@ -432,6 +433,10 @@ components:
                     (and .Values.proxies.http_proxy (eq .Values.cluster.flavor.bootstrap_provider "cabpk")) | include "set-only-if" }}'
         - '{{ tuple "../../components/proxies/RKE2ControlPlane"
                     (and .Values.proxies.http_proxy (eq .Values.cluster.flavor.bootstrap_provider "cabpr")) | include "set-only-if" }}'
+        - '{{ tuple "../../components/registry-mirror/KubeadmControlPlane"
+                    (and .Values.dockerio_registry_mirror (eq .Values.cluster.flavor.bootstrap_provider "cabpk")) | include "set-only-if" }}'
+        - '{{ tuple "../../components/registry-mirror/RKE2ControlPlane"
+                    (and .Values.dockerio_registry_mirror (eq .Values.cluster.flavor.bootstrap_provider "cabpr")) | include "set-only-if" }}'
 
   calico:
     enabled: '{{ eq .Values.cluster.flavor.bootstrap_provider "cabpk" }}'
@@ -497,24 +502,33 @@ components:
             [BlockStorage]
             ignore-volume-az = true
 
+  imageswap-webhook:
+    enabled: '{{ include "is-component-enabled" (tuple . "rancher") | eq "true" }}'
+    repo: capi-bootstrap
+    depends_on:
+      - name: cert-manager
+    kustomization_spec:
+      path: ./kustomize-components/imageswap-webhook
+      wait: true
+
   rancher:
-    enabled: no
+    enabled: management-only
     repo: capi-bootstrap
     depends_on:
       - name: cert-manager
       - name: k8s-gateway
+      - name: imageswap-webhook   # cattle-system ns created by imageswap-webhook
+      - '{{ tuple (dict "name" "ingress-nginx") (eq .Values.cluster.flavor.bootstrap_provider "cabpk") | include "set-only-if" }}'
     helm_repo_url: https://releases.rancher.com/server-charts/stable
     helmrelease_spec:
       chart:
         spec:
           chart: rancher
-          version: "2.6.9"
-          sourceRef:
-            namespace: default
+          version: 2.6.9
       targetNamespace: cattle-system
       interval: 10m0s
       install:
-        createNamespace: true
+        createNamespace: false    # cattle-system ns created by imageswap-webhook
         remediation:
           retries: 3
           remediateLastFailure: false
@@ -522,11 +536,12 @@ components:
         remediation:
           retries: 3
       values:
-        bootstrapPassword: "{{ .Values.cluster.admin_password }}"
+        bootstrapPassword: '{{ .Values.cluster.admin_password }}'
         useBundledSystemChart: true
         hostname: '{{ .Values.cluster.rancher.external_hostname }}'
         ingress:
           enabled: true
+          ingressClassName: nginx
         # restrictedAdmin: true
         # negative value will deploy 1 to abs(replicas) depending on available number of nodes
         replicas: -3
@@ -534,6 +549,10 @@ components:
         debug: true
         proxy: '{{ get .Values.proxies "https_proxy" }}'
         noProxy: '{{ get .Values.proxies "no_proxy" }}'
+        postDelete:
+          namespaceList:
+            - cattle-fleet-system
+            - rancher-operator-system
       postRenderers:
         - kustomize:
             patches:
@@ -567,36 +586,55 @@ components:
       path: ./kustomize-components/rancher-webhook
 
   k8s-gateway:
-    enabled: no
+    enabled: management-only
     repo: capi-bootstrap
+    depends_on:
+    - '{{ tuple (dict "name" "metallb-config") (eq .Values.cluster.flavor.infra_provider "capd") | include "set-only-if" }}'
     helm_repo_url: https://ori-edge.github.io/k8s_gateway/
     helmrelease_spec:
       chart:
         spec:
           chart: k8s-gateway
-          version: "2.0.0"
-          sourceRef:
-            namespace: default
+          version: 2.0.0
       interval: 1m0s
       values:
         domain: "sylva"
         replicaCount: 3
         service:
-          loadBalancerIP: "{{ .Values.cluster.capo.kube_vip_ip }}"
+          loadBalancerIP: '{{ .Values.cluster.cluster_external_ip }}'
           annotations:
-            metallb.universe.tf/allow-shared-ip: "share-vip-{{ .Values.cluster.capo.kube_vip_ip }}"
+            metallb.universe.tf/allow-shared-ip: '{{ tuple (.Values.cluster.cluster_external_ip) (or (.Values.cluster.flavor.bootstrap_provider | eq "cabpr") (.Values.cluster.flavor.infra_provider | eq "capd")) | include "set-only-if" }}'
+
+  metallb:
+    enabled: '{{ and (.Values.cluster.flavor.infra_provider | eq "capd") (.Values.phase | eq "management") }}'
+    repo: capi-bootstrap
+    depends_on:
+    - name: cert-manager
+    kustomization_spec:
+      path: ./kustomize-components/metallb
+      wait: true
+
+  metallb-config:
+    enabled: '{{ and (.Values.cluster.flavor.infra_provider | eq "capd") (.Values.phase | eq "management") }}'
+    repo: capi-bootstrap
+    depends_on:
+    - name: metallb
+    kustomization_spec:
+      path: ./kustomize-components/metallb-config
+      wait: true
+      postBuild:
+        substitute:
+          CLUSTER_EXTERNAL_IP: '{{ .Values.cluster.cluster_external_ip }}'
 
   capi-rancher-import:
     enabled: '{{ include "is-component-enabled" (tuple . "rancher") | eq "true" }}'
     repo: capi-rancher-import
     depends_on:
-      - name: rancher
+      - name: first-login-rancher    # FIXME: this is temporary while issue https://gitlab.com/t6306/components/capi-rancher-import/-/issues/2 is addressed to have the capi-rancher-import controller check the CRD existence on startup and fail if it's not there yet
       - name: k8s-gateway
     helmrelease_spec:
       chart:
         spec:
-          sourceRef:
-            namespace: default
           chart: charts/capi-rancher-import
           reconcileStrategy: Revision
           valuesFiles:
@@ -616,16 +654,16 @@ components:
           cattle_agent_kustomize_path: ./cattle-kustomize
 
   ingress-nginx:
-    enabled: no
+    enabled: '{{ and (.Values.cluster.flavor.bootstrap_provider | eq "cabpk") (.Values.phase | eq "management") }}'
     repo: capi-bootstrap
+    depends_on:
+    - '{{ tuple (dict "name" "metallb-config") (eq .Values.cluster.flavor.infra_provider "capd") | include "set-only-if" }}'
     helm_repo_url: https://kubernetes.github.io/ingress-nginx
     helmrelease_spec:
       chart:
         spec:
           chart: ingress-nginx
-          version: "4.4.0"
-          sourceRef:
-            namespace: default
+          version: 4.4.0
       interval: 1m0s
       values:
         controller:
@@ -634,7 +672,9 @@ components:
           kind: DaemonSet
           service:
             externalIPs:
-            - "{{ .Values.cluster.capo.kube_vip_ip }}"
+            - '{{ .Values.cluster.cluster_external_ip }}'
+            annotations:
+              metallb.universe.tf/allow-shared-ip: '{{ tuple (.Values.cluster.cluster_external_ip) (eq .Values.cluster.flavor.infra_provider "capd") | include "set-only-if" }}'
 
   first-login-rancher:
     enabled: '{{ include "is-component-enabled" (tuple . "rancher") | eq "true" }}'
@@ -679,7 +719,7 @@ components:
                 - name: run-script
                   env:
                   - name: RANCHER_EXTERNAL_URL
-                    value: https://{{ .Values.cluster.rancher.external_hostname }}/
+                    value: https://{{ .Values.cluster.rancher.external_hostname }}
 
   flux-webui:
     depends_on:
@@ -723,20 +763,23 @@ components:
 
   # this is an example, still incomplete
   # it would be used along with a definition of a 'workload-cluster' component
-  # and it would need to have proper customization of ${CLUSTER_NAME} and ${ENABLE_MONITORING}
+  # and it would need to have proper customization of ${CLUSTER_NAME} and ${CLUSTER_MONITORING}
   cluster-import:
-    enabled: no
+    enabled: '{{ include "is-component-enabled" (tuple . "workload-cluster") | eq "true" }}'
     repo: capi-bootstrap
     depends_on:
       - name: first-login-rancher
+      - name: workload-cluster
     kustomization_spec:
       path: ./kustomize-components/cluster-import
       postBuild:
         substitute:
-          CLUSTER_FLAVOR: "{{ upper .Values.cluster.flavor.bootstrap_provider }} {{ upper .Values.cluster.flavor.infra_provider }}"
+          CLUSTER_FLAVOR: '{{ upper .Values.cluster.flavor.bootstrap_provider }} {{ upper .Values.cluster.flavor.infra_provider }}'
+          CLUSTER_MONITORING: "enabled"
+          CLUSTER_NAME: '{{ .Values.cluster.test_workload_cluster_name }}'
 
   monitoring:
-    enabled: no
+    enabled: '{{ include "is-component-enabled" (tuple . "rancher") | eq "true" }}'
     repo: capi-bootstrap
     wait: true
     depends_on:
@@ -747,6 +790,54 @@ components:
         substituteFrom:
         - kind: Secret
           name: management-cluster-secrets
+
+  # this is a Job attempt to check successful import of a CAPI workload clusters in Rancher, still incomplete
+  # it would be used along with a definition of a 'workload-cluster' component
+  # and is conditioned by a boolean flag .Values.env_type_ci
+  check-rancher-clusters:
+    enabled: '{{ .Values.env_type_ci | ternary "management-only" false }}'
+    repo: capi-bootstrap
+    depends_on:
+      - name: cluster-import
+    kustomization_spec:
+      path: ./kustomize-components/kube-job
+      wait: true
+      force: true
+      patches:
+      - target:
+          kind: Job
+          name: kube-job
+        patch: |
+          - op: replace
+            path: /metadata/name
+            value: check-rancher-clusters-job
+          - op: replace
+            path: /spec/backoffLimit
+            value: 10
+      - target:
+          kind: ConfigMap
+          name: job-scripts
+        patch: |
+          - op: replace
+            path: /data/kube-job.sh
+            value: |
+          {{ .Files.Get "scripts/check-rancher-clusters.sh" | indent 4 }}
+      - target:
+          kind: Job
+          name: kube-job
+        patch: |
+          apiVersion: batch/v1
+          kind: Job
+          metadata:
+            name: ignored
+          spec:
+            template:
+              spec:
+                containers:
+                - name: run-script
+                  env:
+                  - name: CLUSTER_NAME
+                    value: '{{ .Values.cluster.test_workload_cluster_name }}'
 
 ## stuff related to the 'cluster' component
 
@@ -769,13 +860,12 @@ cluster:
     bootstrap_provider: please-file-me # cabpr (RKE2) or cabpk (kubeadm)
 
   # cis benchmark is only for rke2 so far, e.g. rke2-cis-1.23-profile-hardened
-
   cis_benchmark_scan_profile: '{{ eq .Values.cluster.flavor.bootstrap_provider "cabpr" | ternary "rke2-cis-1.23-profile-hardened" "no-scan-profile-defined-for-kubeadm-cluster" }}'
 
   capo:
-    ssh_key_name:
-    image: capo-ubuntu-2004-kube-v1.23.6-calico-3.23.1
-    network_id:  # openstack network to use as external network
+    ssh_key_name: # OpenStack VM SSH key
+    image: # Glance image name
+    network_id:  # OpenStack network to use as external network
     clouds_yaml: # (this is a dict, not a YAML string)
       clouds:
         capo_cloud:
@@ -789,10 +879,14 @@ cluster:
             region: # optional
           verify: # e.g. false
     #cacert: # cert used to validate CA of OpenStack APIs
-    kube_vip_ip: 55.55.55.55
     storageClass:
       name: foo  # name of the storageClass to be created
-      type: xxx  # this is a cinder volume type e.g. 'ceph_sas' (must exist in openstack)
+      type: xxx  # this is a cinder volume type e.g. 'ceph_sas' (must exist in OpenStack)
+
+  cluster_external_ip: 55.55.55.55
+
+  capd:
+    docker_host: unix:///var/run/docker.sock
 
   flux_webui:
     admin_user: admin
@@ -810,14 +904,15 @@ cluster:
   metal3:
     ironic_ip: 66.66.66.66 # replace me (this IP is the IP at which Ironic is made accessible from BMCs or PXE network)
 
-capd:
-  docker_host: unix:///var/run/docker.sock
 
 # add your proxy settings if required
 proxies:
   https_proxy: ""
   http_proxy: ""
   no_proxy: ""
+
+# add your local docker.io registry mirror to avoid rate limitting if required
+dockerio_registry_mirror: ""
 
 # 'phase' determines whether we are instantiating this chart
 # on the bootstrap cluster or on the management cluster
@@ -828,3 +923,6 @@ proxies:
 phase: management
 
 component_default_enable: management-only  # this simply ensures that adding a component in this file under components does not implicitly enable it for "bootstrap"
+
+# boolean conditioning run of 'check-rancher-clusters' Job
+env_type_ci: false

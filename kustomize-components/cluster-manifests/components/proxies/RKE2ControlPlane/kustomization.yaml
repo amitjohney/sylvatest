@@ -25,14 +25,3 @@ patches:
           HTTP_PROXY=${http_proxy}
           HTTPS_PROXY=${https_proxy}
           NO_PROXY=${no_proxy}
-    - op: add
-      path: /spec/rke2ConfigSpec/files/-
-      value:
-        path: /etc/rancher/rke2/registries.yaml
-        owner: root:root
-        permissions: "0644"
-        content: |
-          mirrors:
-            docker.io:
-              endpoint:
-                - "http://172.20.129.142"

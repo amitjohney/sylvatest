@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+patches:
+- target:
+    kind: KubeadmControlPlane
+  patch: |-
+    - op: add
+      path: /spec/kubeadmConfigSpec/files/-
+      value:
+        path: /etc/containerd/conf.d/registry.toml
+        owner: root
+        permissions: "0644"
+        content: |
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
+            [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+              endpoint = ["${REGISTRY_MIRROR}"]
+    - op: add
+      path: /spec/kubeadmConfigSpec/preKubeadmCommands
+      value:
+        - systemctl daemon-reload
+        - systemctl restart containerd.service

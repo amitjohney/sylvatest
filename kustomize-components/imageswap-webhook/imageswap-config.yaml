@@ -1,0 +1,11 @@
+apiVersion: v1
+data:
+  maps: |
+    # exact image mapping (full docker image name)
+    # this is to temporarily address https://gitlab.com/t6306/components/capi-bootstrap/-/issues/38
+    # until the upstream issue is fixed (https://github.com/rancher/webhook/issues/158)
+    [EXACT]rancher/rancher-webhook:v0.2.7::tmorinorange/rancher-webhook:dev
+kind: ConfigMap
+metadata:
+  name: imageswap-maps
+  namespace: imageswap-system

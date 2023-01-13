@@ -2,11 +2,11 @@ apiVersion: kustomize.config.k8s.io/v1alpha1
 kind: Component
 
 configMapGenerator:
-- name: management-cluster-rancher-values
+- name: management-cluster-test-workload-cluster-values
   options:
     disableNameSuffixHash: true
   files:
-  - rancher-values=values.yaml
+  - test-workload-cluster-values=values.yaml
 
 patches:
 - target:
@@ -17,5 +17,5 @@ patches:
       path: /spec/valuesFrom/-
       value:
         kind: ConfigMap
-        name: management-cluster-rancher-values
-        valuesKey: rancher-values
+        name: management-cluster-test-workload-cluster-values
+        valuesKey: test-workload-cluster-values

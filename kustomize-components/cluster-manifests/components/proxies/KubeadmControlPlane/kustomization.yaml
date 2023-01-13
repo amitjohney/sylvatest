@@ -3,7 +3,7 @@ kind: Component
 
 # KubeadmControlPlane is missing a patchMergeKey so we can't use strategic merge for files
 # (see https://github.com/kubernetes-sigs/cluster-api/issues/6147)
-# Us a json patch merge ans assume that files list will be defines
+# Use a json patch merge and assume that files list will be defined
 patches:
 - target:
     kind: KubeadmControlPlane
@@ -19,16 +19,6 @@ patches:
           Environment="HTTP_PROXY=${http_proxy}"
           Environment="HTTPS_PROXY=${https_proxy}"
           Environment="NO_PROXY=${no_proxy}"
-    - op: add
-      path: /spec/kubeadmConfigSpec/files/-
-      value:
-        path: /etc/containerd/conf.d/registry.toml
-        owner: root
-        permissions: "0644"
-        content: |
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
-            [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
-              endpoint = ["http://172.20.129.142"]
     - op: add
       path: /spec/kubeadmConfigSpec/preKubeadmCommands
       value:

@@ -4,52 +4,14 @@ components:
   cluster:
     kustomization_spec:
       path: ./kustomize-components/cluster-manifests/kubeadm-capo/orange-falcon
-  rancher:
-    enabled: management-only
-    depends_on:
-      - name: ingress-nginx
-    helmrelease_spec:
-      values:
-        ingress:
-          ingressClassName: nginx
-  k8s-gateway:
-    enabled: management-only
-  monitoring:
-    enabled: management-only
-  capi-rancher-import:
-    enabled: management-only
-  ingress-nginx:
-    enabled: management-only
-  first-login-rancher:
-    enabled: management-only
   workload-cluster:
-    enabled: management-only
-    repo: capi-bootstrap
-    depends_on:
-      - name: capi
-      - name: capo
-      - name: cabpk
-      - name: rancher
-      - name: first-login-rancher
     kustomization_spec:
-      path: ./kustomize-components/cluster-manifests/kubeadm-capo/orange-falcon-single-node
+      path: ./kustomize-components/cluster-manifests/kubeadm-capo/dns-client-orange-falcon
       postBuild:
         substitute:
-          CAPO_NETWORK_ID: "{{ .Values.cluster.capo.network_id }}"
-          CLUSTER_NAME: "first-workload-cluster"
-          K8SGATEWAY_LB_IP: "{{ .Values.cluster.capo.kube_vip_ip }}"   # NOTE: same as KUBE_VIP_IP var for management cluster, exposing its k8s-gateway DNS svc
-          KUBE_VIP_IP: # set an IP for your workload cluster kube-api LB VIP here
-          MACHINE_IMAGE: "{{ .Values.cluster.capo.image }}"
-          SSH_KEY_NAME: "{{ .Values.cluster.capo.ssh_key_name }}"
-  cluster-import:
-    enabled: management-only
-    depends_on:
-      - name: workload-cluster
-    kustomization_spec:
-      postBuild:
-        substitute:
-          CLUSTER_NAME: "first-workload-cluster"
-          ENABLE_MONITORING: "yes"
+          CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
+          CLUSTER_EXTERNAL_IP: # set an IP for your workload cluster kube-api LB VIP here
+          SSH_KEY_NAME: '{{ .Values.cluster.capo.ssh_key_name }}'
 
 cluster:
   image: capo-ubuntu-2004-kube-v1.23.6-calico-3.23.1
@@ -59,10 +21,20 @@ cluster:
   capo:
     ssh_key_name: # put the name of your nova SSH keypair here
     network_id: c314d52c-80fe-42b6-9092-55be383d1951
-    kube_vip_ip: 1.2.3.4  # replace me
+    ## If cinder CSI is used, provide a name for the storage class and the storage type from OpenStack
+    storageClass:
+      name: "cinder-ceph-ssd"
+      type: "ceph_ssd"
+
+  cluster_external_ip: 1.2.3.4  # replace me
+
+  test_workload_cluster_name: "first-workload-cluster"
 
 proxies:
   # put your own proxy settings here if you need
-  http_proxy:
-  https_proxy:
-  no_proxy:
+  http_proxy: ""
+  https_proxy: ""
+  no_proxy: ""
+
+# add your local docker.io registry mirror to avoid rate limitting if required
+dockerio_registry_mirror: ""

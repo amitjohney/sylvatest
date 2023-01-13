@@ -44,6 +44,7 @@ spec:
   kubeadmConfigSpec:
     clusterConfiguration:
       imageRepository: k8s.gcr.io
+    files: []
     initConfiguration:
       nodeRegistration:
         kubeletExtraArgs:

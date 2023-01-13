@@ -1,0 +1,26 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - https://github.com/phenixblue/imageswap-webhook//deploy/manifests/?ref=v1.5.1
+  - imageswap-config.yaml
+  - imageswap-mwc-selected-ns.yaml
+patches:
+  - target:
+      group: admissionregistration.k8s.io
+      version: v1
+      kind: MutatingWebhookConfiguration
+    patch: |-
+      - op: remove
+        path: /webhooks/0/clientConfig/caBundle
+      - op: add
+        path: /metadata/annotations/cert-manager.io~1inject-ca-from
+        value: imageswap-system/imageswap-serving-cert
+  - target:
+      group: ""
+      version: v1
+      kind: ConfigMap
+      name: imageswap-mwc-template
+    patch: |-
+      - op: replace
+        path: /metadata/namespace
+        value: imageswap-system
