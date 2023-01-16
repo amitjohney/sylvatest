@@ -3,7 +3,7 @@
 # This script can be used to:
 # * install the system on an already existing k8s cluster built in an ad-hoc way
 #   (in that case, Flux will be installed if not already present)
-# * update the system on an cluster where it is already installed with the boostrap mechanim
+# * update the system on a cluster where it is already installed with the bootstrap mechanism
 #
 # This script will act on whatever is the current kubectl config unless
 # the 'management-cluster-kubeconfig' file is found, in which case it will use it.

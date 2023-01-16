@@ -110,7 +110,7 @@ This is how this chart is used [in the context of this Git repository](../../kus
 To define a new component, an entry can be added under `components` in values (either in `values.yaml` in the chart,
 or in the values of the chart overriden for a given deployment flavor or for a given deployment).
 
-### Component using a Kustomization defined in capi-boostrap repo
+### Component using a Kustomization defined in capi-bootstrap repo
 
 ```yaml
 components:
