@@ -9,7 +9,7 @@ from copy import deepcopy
 import sys
 import yaml
 import json
-
+import jsonpointer  # py3-jsonpointer
 
 def recursive_dict_combine(base_dict, additional_dict, debug_fn):
     _base_dict = deepcopy(base_dict)
@@ -62,10 +62,18 @@ and output result in stdout as JSON or YAML
 
     (options, args) = parser.parse_args()
 
-    input_data = []
-    for filename in args:
+    merged_input_data = []
+
+    for input in args:
+        if ':' in input:
+            (filename, pointer) = input.split(':', 2)
+        else:
+            filename = input
+            pointer = "/"
+
         with open(filename, 'r') as file:
-            input_data.append(yaml.safe_load(file))
+            input_data = yaml.safe_load(file)
+            merged_input_data.append(jsonpointer.resolve_pointer(input_data, pointer))
 
     if options.debug:
         debug_fn = print
@@ -73,8 +81,8 @@ and output result in stdout as JSON or YAML
         debug_fn = do_nothing
 
     # merge
-    result = input_data.pop(0)
-    while input_data:
+    result = merged_input_data.pop(0)
+    while merged_input_data:
         result = recursive_dict_combine(result, input_data.pop(0), debug_fn)
 
     if options.output == "yaml":
