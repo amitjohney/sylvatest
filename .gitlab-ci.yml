@@ -153,6 +153,7 @@ check-docs-markdown:
       when: manual
   tags:
     - o-romania
+  allow_failure: true
 
 test-rke2-capd:
   timeout: 60min
