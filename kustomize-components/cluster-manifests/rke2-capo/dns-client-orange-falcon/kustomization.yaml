@@ -121,7 +121,7 @@ patches:
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
     kind: OpenStackMachineTemplate
     metadata:
-      name: ${CLUSTER_NAME}-cp-template
+      name: ${CLUSTER_NAME}-control-plane
       namespace: default
     spec:
       template:
@@ -129,8 +129,3 @@ patches:
           rootVolume:
             diskSize: 80
             volumeType: ceph_sas
-          ports:
-            - network:
-                id: ${CAPO_NETWORK_ID}
-              allowedAddressPairs:
-                - ipAddress: ${CLUSTER_EXTERNAL_IP}

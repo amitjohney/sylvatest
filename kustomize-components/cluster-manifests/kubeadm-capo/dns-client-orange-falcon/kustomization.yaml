@@ -126,8 +126,3 @@ patches:
           rootVolume:
             diskSize: 80
             volumeType: ceph_sas
-          ports:
-            - network:
-                id: ${CAPO_NETWORK_ID}
-              allowedAddressPairs:
-                - ipAddress: ${CLUSTER_EXTERNAL_IP}
