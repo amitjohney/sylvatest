@@ -143,7 +143,7 @@ test-rke2-capd:
   extends: .test-capd
   script:
     - ./bootstrap.sh environment-values/rke2-capd
-    - kubectl --kubeconfig management-cluster-kubeconfig logs $(kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}')
+    - kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}' | xargs --no-run-if-empty -n1 kubectl --kubeconfig management-cluster-kubeconfig logs || true
   rules:
     #NOTE: rke2-capd is resource intensive (~140GB disk), so test it only when needed by adding label `run-e2e-tests` to MR
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
@@ -156,14 +156,14 @@ test-kubeadm-capd:
   extends: .test-capd
   script:
     - ./bootstrap.sh environment-values/kubeadm-capd
-    - kubectl --kubeconfig management-cluster-kubeconfig logs $(kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}')
+    - kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}' | xargs --no-run-if-empty -n1 kubectl --kubeconfig management-cluster-kubeconfig logs || true
 
 test-kubeadm-capd-bm:
   timeout: 45min
   extends: .test-capd
   script:
     - ./bootstrap.sh environment-values/kubeadm-capd
-    - kubectl --kubeconfig management-cluster-kubeconfig logs $(kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}')
+    - kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}' | xargs --no-run-if-empty -n1 kubectl --kubeconfig management-cluster-kubeconfig logs || true
   rules:
     #NOTE: testing kubeadm-capd stack on managed runner by adding label `run-e2e-tests` to MR
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
