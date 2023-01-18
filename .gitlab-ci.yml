@@ -151,8 +151,6 @@ check-docs-markdown:
     - if: $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
       when: manual
-  tags:
-    - o-romania
   allow_failure: true
 
 test-rke2-capd:
@@ -162,9 +160,11 @@ test-rke2-capd:
     - ./bootstrap.sh environment-values/rke2-capd
     - kubectl --kubeconfig management-cluster-kubeconfig logs $(kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}')
   rules:
-    #FIXME(feleouet) Run it only manually, for now until we fix it, but not in MRs otherwise they'd be blocked
-    - if: $CI_PIPELINE_SOURCE != 'merge_request_event'
+    #NOTE: rke2-capd is resource intensive (~140GB disk), so test it only when needed by adding label `run-e2e-tests` to MR
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
       when: manual
+  tags:
+    - o-romania-bm
 
 test-kubeadm-capd:
   timeout: 45min
@@ -172,3 +172,16 @@ test-kubeadm-capd:
   script:
     - ./bootstrap.sh environment-values/kubeadm-capd
     - kubectl --kubeconfig management-cluster-kubeconfig logs $(kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}')
+
+test-kubeadm-capd-bm:
+  timeout: 45min
+  extends: .test-capd
+  script:
+    - ./bootstrap.sh environment-values/kubeadm-capd
+    - kubectl --kubeconfig management-cluster-kubeconfig logs $(kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}')
+  rules:
+    #NOTE: testing kubeadm-capd stack on managed runner by adding label `run-e2e-tests` to MR
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
+      when: manual
+  tags:
+    - o-romania-bm
