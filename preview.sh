@@ -32,7 +32,7 @@ rm -Rf ${PREVIEW_DIR}
 kubectl annotate --overwrite -n telco-cloud-init-preview gitrepository/telco-cloud-init reconcile.fluxcd.io/requestedAt="$(date +%s)"
 kubectl annotate --overwrite -n telco-cloud-init-preview helmrelease/telco-cloud-init reconcile.fluxcd.io/requestedAt="$(date +%s)"
 
-echo_b "\U000023F3 Wait for Helm chart to be ready"
+echo_b "\U000023F3 Wait for Helm release to be ready"
 for flux_resource in gitrepository/telco-cloud-init helmchart/telco-cloud-init-preview-telco-cloud-init helmrelease/telco-cloud-init; do
     if ! kubectl wait --for condition=Ready --timeout 100s -n telco-cloud-init-preview $flux_resource; then
         echo_b "\U0001F4A5 Resource $flux_resource did not become ready in time"

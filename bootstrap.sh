@@ -28,7 +28,7 @@ kubectl annotate --overwrite helmrelease/telco-cloud-init reconcile.fluxcd.io/re
 
 # Starting from here, the script will just be following components & cluster deployment :)
 
-echo_b "\U000023F3 Wait for Helm chart to be ready"
+echo_b "\U000023F3 Wait for Helm release to be ready"
 
 kubectl wait --for condition=Ready --timeout 300s --all gitrepositories,helmcharts,helmrelease
 
