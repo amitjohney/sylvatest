@@ -1,11 +1,5 @@
 ---
-image: docker:latest
-
-default:
-  before_script:
-    - apk add --no-cache curl bash git yamllint
-    - curl -L https://get.helm.sh/helm-v3.10.1-linux-amd64.tar.gz | tar xz
-    - mv linux-amd64/helm /usr/local/bin/
+image: registry.gitlab.com/t6306/components/docker-images/ci-image:v1-0-0
 
 .helm-lint:
   script:

@@ -3,7 +3,7 @@ stages:
   - test
   - deploy
 
-image: docker:latest
+image: registry.gitlab.com/t6306/components/docker-images/ci-image:v1-0-0
 
 services:
   - name: docker:dind
@@ -27,7 +27,6 @@ include:
 
 chart-generator:
   stage: generate
-  image: alpine:latest
   script:
     - echo "Generate a job for each modified charts"
     - ./tools/gci-templates/scripts/generate-pipeline.sh > generated-pipeline.yml
@@ -58,8 +57,6 @@ chart-jobs:
 
 yamllint:
   stage: test
-  before_script:
-    - apk add --no-cache yamllint
   script:
     - 'yamllint . -d "$(cat < tools/gci-templates/yamllint.yaml) $(cat < tools/gci-templates/yamllint-helm-exclude-charts.yaml)"'
   only:
@@ -104,18 +101,6 @@ check-docs-markdown:
   stage: deploy
   before_script:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:before_script_section[collapsed=true]\r\e[0KRunning before_script step\e[0m"
-    # FIXME: build an image with following tools (+clusterctl)
-    - apk add --no-cache curl bash git gettext # for envsubst
-    - curl -Lo /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v0.15.0/kind-linux-amd64
-    - chmod +x /usr/local/bin/kind
-    - curl -Lo /usr/local/bin/kubectl https://dl.k8s.io/release/v1.25.0/bin/linux/amd64/kubectl
-    - chmod +x /usr/local/bin/kubectl
-    - curl -Lo /usr/local/bin/kubetail https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail
-    - chmod +x /usr/local/bin/kubetail
-    - curl -L https://get.helm.sh/helm-v3.10.1-linux-amd64.tar.gz | tar xz
-    - mv linux-amd64/helm /usr/local/bin/
-    - curl -Lo /usr/bin/yq https://github.com/mikefarah/yq/releases/download/v4.30.6/yq_linux_amd64
-    - chmod +x /usr/bin/yq
 
     - DOCKER_IP=$(getent hosts docker | awk '{print $1}')
     - |
