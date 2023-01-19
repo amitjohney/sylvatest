@@ -4,8 +4,8 @@ components:
     repo: capi-bootstrap
     depends_on:
       - name: capi
-      - name: '{{ .Values.cluster.flavor.infra_provider }}'
-      - name: '{{ .Values.cluster.flavor.bootstrap_provider }}'
+      - name: '{{ .Values.cluster.capi_providers.infra_provider }}'
+      - name: '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
       - name: rancher
       - name: first-login-rancher
     kustomization_spec:
@@ -16,20 +16,20 @@ components:
           K8SGATEWAY_LB_IP: '{{ .Values.cluster.cluster_external_ip }}'   # NOTE: same is used for k8s-gateway DNS svc in management cluster
       components:
         - '{{ tuple "../../components/dns-client/kind/KubeadmControlPlane"
-                    (and (eq .Values.cluster.flavor.infra_provider "capd") (eq .Values.cluster.flavor.bootstrap_provider "cabpk")) | include "set-only-if" }}'
+                    (and (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
         - '{{ tuple "../../components/dns-client/kind/RKE2ControlPlane"
-                    (and (eq .Values.cluster.flavor.infra_provider "capd") (eq .Values.cluster.flavor.bootstrap_provider "cabpr")) | include "set-only-if" }}'
+                    (and (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
         - '{{ tuple "../../components/proxies/KubeadmControlPlane"
-                    (and .Values.proxies.http_proxy (eq .Values.cluster.flavor.infra_provider "capd") (eq .Values.cluster.flavor.bootstrap_provider "cabpk")) | include "set-only-if" }}'
+                    (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
         - '{{ tuple "../../components/proxies/RKE2ControlPlane"
-                    (and .Values.proxies.http_proxy (eq .Values.cluster.flavor.infra_provider "capd") (eq .Values.cluster.flavor.bootstrap_provider "cabpr")) | include "set-only-if" }}'
+                    (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
         - '{{ tuple "../../components/registry-mirror/KubeadmControlPlane"
-                    (and .Values.dockerio_registry_mirror (eq .Values.cluster.flavor.bootstrap_provider "cabpk")) | include "set-only-if" }}'
+                    (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
         - '{{ tuple "../../components/registry-mirror/RKE2ControlPlane"
-                    (and .Values.dockerio_registry_mirror (eq .Values.cluster.flavor.bootstrap_provider "cabpr")) | include "set-only-if" }}'
+                    (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
 
   workload-cluster-calico:
-    enabled: '{{ and (.Values.cluster.flavor.bootstrap_provider | eq "cabpk") (.Values.phase | eq "management") }}'
+    enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") (.Values.phase | eq "management") }}'
     depends_on:
       - name: workload-cluster
     helm_repo_url: https://projectcalico.docs.tigera.io/charts

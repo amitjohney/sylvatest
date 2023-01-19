@@ -11,7 +11,7 @@ components:
 
 cluster:
   image: registry.gitlab.com/t6306/components/docker-images/kind-with-cni:v1-24-4 # just kindest/node with preloaded vlan cni binary
-  flavor:
+  capi_providers:
     infra_provider: capd
     bootstrap_provider: cabpk
   capd:

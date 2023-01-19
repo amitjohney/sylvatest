@@ -19,7 +19,7 @@ components:
 
 cluster:
   image: "Ubuntu 20.04 Pack" # image name provided by falcon-rke2 remote target component, but can be overwritten
-  flavor:
+  capi_providers:
     infra_provider: capo
     bootstrap_provider: cabpr
   capo:

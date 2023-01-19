@@ -15,7 +15,7 @@ components:
 
 cluster:
   image: registry.gitlab.com/t6306/components/docker-images/rke2-in-docker:v1-24-4-rke2r1  # NOTE: pre-pulled in environment-values/rke2-capd/hacks.sh
-  flavor:
+  capi_providers:
     infra_provider: capd
     bootstrap_provider: cabpr
   capd:
