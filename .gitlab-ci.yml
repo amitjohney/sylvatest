@@ -78,6 +78,8 @@ avoid-typo-on-bootstrap:
         echo "-----------------"
         exit 1
       fi
+  only:
+    - merge_requests
 
 check-docs-markdown:
   image: registry.gitlab.com/gitlab-org/gitlab-docs/lint-markdown:alpine-3.16-vale-2.20.2-markdownlint-0.32.2-markdownlint2-0.5.1
