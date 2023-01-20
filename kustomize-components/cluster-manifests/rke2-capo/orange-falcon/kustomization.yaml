@@ -18,7 +18,7 @@ patches:
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
     kind: OpenStackMachineTemplate
     metadata:
-      name: ${CLUSTER_NAME}-cp-template
+      name: ${CLUSTER_NAME}-control-plane
       namespace: default
     spec:
       template:

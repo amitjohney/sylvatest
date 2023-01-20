@@ -1,0 +1,23 @@
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+kind: OpenStackMachineTemplate
+metadata:
+  name: ${CLUSTER_NAME}-control-plane
+  namespace: default
+spec:
+  template:
+    spec:
+      cloudName: capo_cloud
+      flavor: m1.large
+      identityRef:
+        kind: Secret
+        name: management-cluster-cloud-config
+      image: ${MACHINE_IMAGE}
+      sshKeyName: ${SSH_KEY_NAME}
+      securityGroups:
+        - name: default
+      ports:
+        - network:
+            id: ${CAPO_NETWORK_ID}
+          allowedAddressPairs:
+            - ipAddress: ${CLUSTER_EXTERNAL_IP}
