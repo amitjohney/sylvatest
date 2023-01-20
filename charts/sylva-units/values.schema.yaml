@@ -9,13 +9,13 @@
 # The values.schema.json file is the file actually used by the Helm chart
 # and MUST BE RECREATED after each modification of this file:
 #
-#   tools/yaml2json.py < charts/telco-cloud-init/values.schema.yaml > charts/telco-cloud-init/values.schema.json
+#   tools/yaml2json.py < charts/sylva-units/values.schema.yaml > charts/sylva-units/values.schema.json
 #
 # (a CI job is here to check that)
 #
 # You can test that this file is a valid JSONSchema with:
 #
-#   tools/yaml2json.py < charts/telco-cloud-init/values.schema.yaml > charts/telco-cloud-init/values.schema.json && python -m jsonschema -o pretty /usr/lib/python3/dist-packages/jsonschema/schemas/draft2020-12.json -i charts/telco-cloud-init/values.schema.json
+#   tools/yaml2json.py < charts/sylva-units/values.schema.yaml > charts/sylva-units/values.schema.json && python -m jsonschema -o pretty /usr/lib/python3/dist-packages/jsonschema/schemas/draft2020-12.json -i charts/sylva-units/values.schema.json
 #
 # (a CI job is here to check the same thing)
 #
@@ -23,17 +23,17 @@
 #
 # Helm template will do this validation:
 #
-#   tools/yaml2json.py < charts/telco-cloud-init/values.schema.yaml > charts/telco-cloud-init/values.schema.json && helm template charts/telco-cloud-init --values foo.yaml
+#   tools/yaml2json.py < charts/sylva-units/values.schema.yaml > charts/sylva-units/values.schema.json && helm template charts/sylva-units --values foo.yaml
 #
 # You can also use another JSONSchema validation tool (it's useful to have more detailed answers than what Helm produces):
 #
 #   To test the chart default values.yaml:
 #
-#      tools/yaml2json.py < charts/telco-cloud-init/values.yaml | python -m jsonschema -o pretty charts/telco-cloud-init/values.schema.json -i /dev/stdin
+#      tools/yaml2json.py < charts/sylva-units/values.yaml | python -m jsonschema -o pretty charts/sylva-units/values.schema.json -i /dev/stdin
 #
 #   To test the combination of the default values.yaml and another chart:
 #
-#      tools/yaml-merge.py -o json charts/telco-cloud-init/values.yaml foo.yaml | python -m jsonschema -o pretty charts/telco-cloud-init/values.schema.json -i /dev/stdin
+#      tools/yaml-merge.py -o json charts/sylva-units/values.yaml foo.yaml | python -m jsonschema -o pretty charts/sylva-units/values.schema.json -i /dev/stdin
 #
 
 
@@ -42,7 +42,7 @@
 
 $schema: https://json-schema.org/draft/2020-12/schema#
 
-title: Schema for telco-cloud-init chart values
+title: Schema for sylva-units chart values
 
 # this description is formatted so that it will appear very clearly
 # in the JSON counterpart that the JSON isn't meant to be edited
@@ -322,7 +322,7 @@ properties:
                 - helm_repo_url
 
           # require kustomization_spec.path, but only if helmrelease_spec
-          # is not defined (see example where we need that under bootstrap.values.yaml:components.telco-cloud-init)
+          # is not defined (see example where we need that under bootstrap.values.yaml:components.sylva-units)
           - if:
               not:
                 required:
