@@ -4,8 +4,8 @@
     {{/*********** Prepare labels used in all generated objects */}}
 
     {{- $labels := deepCopy ($component_def.labels | default dict) -}}
-    {{- $_ := set $labels "telco-cloud-init.component" $component_name -}}
-    {{- $_ := mergeOverwrite $labels (include "telco-cloud-init.labels" $envAll | fromYaml) }}
+    {{- $_ := set $labels "sylva-units.component" $component_name -}}
+    {{- $_ := mergeOverwrite $labels (include "sylva-units.labels" $envAll | fromYaml) }}
 
     {{/************ Sanity checks */}}
 
@@ -73,7 +73,7 @@ kind: GitRepository
 metadata:
   name: {{ $git_repo_name }}
   labels:
-    telco-cloud-init.repo: {{ $repo_name }}
+    sylva-units.repo: {{ $repo_name }}
 {{ $labels | toYaml | indent 4 }}
 spec: {{ $git_repo_spec | toYaml | nindent 2 }}
 

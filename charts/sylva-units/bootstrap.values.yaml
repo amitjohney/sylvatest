@@ -1,4 +1,4 @@
-# Bootstrap values for telco-cloud-init.
+# Bootstrap values for sylva-units.
 #
 # These value are meant to be used as overrides to the default values from values.yaml
 # when the chart is instantiated in the bootstrap cluster
@@ -93,8 +93,8 @@ components:
 
               echo "-- All done"
 
-  # instantiate 'telco-cloud-init' chart again in the management cluster
-  telco-cloud-init:
+  # instantiate 'sylva-units' chart again in the management cluster
+  sylva-units:
     enabled: yes
     depends_on:
       - name: management-cluster-configs
@@ -108,29 +108,29 @@ components:
         secretRef:
           name: management-cluster-kubeconfig
     helmrelease_spec:
-      releaseName: telco-cloud-init
+      releaseName: sylva-units
       chart:
         spec:
           #sourceRef:
           #  namespace: default
-          chart: charts/telco-cloud-init
+          chart: charts/sylva-units
           reconcileStrategy: Revision
       interval: 1m0s
-      # copy values and valuesFrom from current telco-cloud-init HelmRelease
+      # copy values and valuesFrom from current sylva-units HelmRelease
       # for now we keep the 'cluster' component disabled, it produces CAPI resources
       # defining the management cluster, which we can't define before having done the pivot
       # (this value override is reverted after pivot by the pivot job below)
       values: |
-        {{- $chartValues := (lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "telco-cloud-init").spec.values -}}
+        {{- $chartValues := (lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units").spec.values -}}
         {{- $disableCluster := dict "components" (dict "cluster" (dict "enabled" false)) -}}
-        {{- $gitRepoSelf := dict "git_repo_templates" (dict "capi-bootstrap" (dict "existing_gitrepository" "telco-cloud-init")) -}}
+        {{- $gitRepoSelf := dict "git_repo_templates" (dict "capi-bootstrap" (dict "existing_gitrepository" "sylva-units")) -}}
         {{- mergeOverwrite $chartValues $disableCluster $gitRepoSelf | include "preserve-type" -}}
-      valuesFrom: '{{ (lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "telco-cloud-init").spec.valuesFrom | include "preserve-type" }}'
+      valuesFrom: '{{ (lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units").spec.valuesFrom | include "preserve-type" }}'
 
   pivot:
     enabled: yes
     depends_on:
-      - name: telco-cloud-init
+      - name: sylva-units
     repo: capi-bootstrap
     kustomization_spec:
       path: ./kustomize-components/kube-job
@@ -177,20 +177,20 @@ components:
               echo "-- Move cluster definitions from source to target cluster"
               clusterctl move --kubeconfig $KUBECONFIG --to-kubeconfig management-cluster-kubeconfig -v 3
 
-              echo "-- Patch the telco-cloud-init HelmRelease to allow the Flux cluster redefinition to happen in the management cluster"
+              echo "-- Patch the sylva-units HelmRelease to allow the Flux cluster redefinition to happen in the management cluster"
               kubectl --kubeconfig management-cluster-kubeconfig \
-                  patch helmrelease telco-cloud-init --type=json --patch='[{"op":"remove","path":"/spec/values/components/cluster/enabled"}]'
+                  patch helmrelease sylva-units --type=json --patch='[{"op":"remove","path":"/spec/values/components/cluster/enabled"}]'
 
               # NOTE: here we could add a reference to another valueFile that would deploy components specific to the management cluster
-              # '[{"op":"add","path":"/spec/chart/spec/valuesFiles/-","value":"charts/telco-cloud-init/management.values.yaml"}]'
-              # and/or create a kustomisation on management-cluster to manage telco-cloud-init helmRelease from git
+              # '[{"op":"add","path":"/spec/chart/spec/valuesFiles/-","value":"charts/sylva-units/management.values.yaml"}]'
+              # and/or create a kustomisation on management-cluster to manage sylva-units helmRelease from git
 
               echo "-- Freeze reconciliation of current job Kustomisation in source cluster as we're done"
               kubectl annotate kustomizations pivot kustomize.toolkit.fluxcd.io/reconcile=disabled --overwrite
 
-              echo "-- Accelerate reconciliation of the telco-cloud-init HelmRelease"
+              echo "-- Accelerate reconciliation of the sylva-units HelmRelease"
               kubectl --kubeconfig management-cluster-kubeconfig \
-                  annotate --overwrite helmrelease/telco-cloud-init reconcile.fluxcd.io/requestedAt="$(date +%s)"
+                  annotate --overwrite helmrelease/sylva-units reconcile.fluxcd.io/requestedAt="$(date +%s)"
 
               echo "-- All done"
 

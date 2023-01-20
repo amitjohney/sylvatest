@@ -11,20 +11,20 @@ kubectl wait --for condition=Available --timeout 600s --all-namespaces --all dep
 echo_b "\U0001F4DD Create bootstrap configmap"
 # NOTE(feleouet): as use the same kustomisation for bootstrap and management cluster, pass bootstrap environment values as configmap
 # as it won't be labelled with copy-from-bootstrap-to-management, it won't be copied to management-cluster
-kubectl create configmap management-cluster-bootstrap-values --from-file=${BASE_DIR}/charts/telco-cloud-init/bootstrap.values.yaml --dry-run=client -o yaml | kubectl apply -f -
+kubectl create configmap management-cluster-bootstrap-values --from-file=${BASE_DIR}/charts/sylva-units/bootstrap.values.yaml --dry-run=client -o yaml | kubectl apply -f -
 
-echo_b "\U0001F4DC Install telco-cloud-init Helm release"
+echo_b "\U0001F4DC Install sylva-units Helm release"
 kubectl kustomize ${ENV_PATH} | sed "s/CURRENT_COMMIT/${CURRENT_COMMIT}/" | kubectl apply -f -
 
 # An alternative to the previous 2 commands could be to patch kustomization on the fly using yq:
-#kubectl kustomize . | yq 'select(.kind == "HelmRelease").spec.valuesFiles += ["charts/telco-cloud-init/bootstrap.values.yaml"] | \
+#kubectl kustomize . | yq 'select(.kind == "HelmRelease").spec.valuesFiles += ["charts/sylva-units/bootstrap.values.yaml"] | \
 #                          select(.kind == "GitRepository").spec.ref = {"commit": "'${CURRENT_COMMIT}'"}' | kubectl apply -f -
 
 background_watch bootstrap gitrepositories kustomizations helmreleases helmcharts
 
 # this is just to force-refresh in a dev environment with a new commit (or refreshed parameters)
-kubectl annotate --overwrite gitrepository/telco-cloud-init reconcile.fluxcd.io/requestedAt="$(date +%s)"
-kubectl annotate --overwrite helmrelease/telco-cloud-init reconcile.fluxcd.io/requestedAt="$(date +%s)"
+kubectl annotate --overwrite gitrepository/sylva-units reconcile.fluxcd.io/requestedAt="$(date +%s)"
+kubectl annotate --overwrite helmrelease/sylva-units reconcile.fluxcd.io/requestedAt="$(date +%s)"
 
 # Starting from here, the script will just be following components & cluster deployment :)
 

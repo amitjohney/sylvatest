@@ -7,8 +7,8 @@ kind: Secret
 metadata:
   name: git-repo-auth-{{ $repo_name }}
   labels:
-    telco-cloud-init.repo: {{ $repo_name }}
-{{ include "telco-cloud-init.labels" $envAll | indent 4 }}
+    sylva-units.repo: {{ $repo_name }}
+{{ include "sylva-units.labels" $envAll | indent 4 }}
 stringData: {{ $repo_def.auth | toYaml | nindent 2 }}
 {{ end -}}
 {{ end }}

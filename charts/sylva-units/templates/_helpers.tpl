@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "telco-cloud-init.name" -}}
+{{- define "sylva-units.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "telco-cloud-init.fullname" -}}
+{{- define "sylva-units.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,7 +26,7 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "telco-cloud-init.chart" -}}
+{{- define "sylva-units.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -34,17 +34,17 @@ Create chart name and version as used by the chart label.
 {{/*
 Selector labels
 */}}
-{{- define "telco-cloud-init.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "telco-cloud-init.name" . }}
+{{- define "sylva-units.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "sylva-units.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "telco-cloud-init.labels" -}}
-helm.sh/chart: {{ include "telco-cloud-init.chart" . }}
-{{ include "telco-cloud-init.selectorLabels" . }}
+{{- define "sylva-units.labels" -}}
+helm.sh/chart: {{ include "sylva-units.chart" . }}
+{{ include "sylva-units.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}

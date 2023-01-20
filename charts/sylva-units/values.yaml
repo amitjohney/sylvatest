@@ -1,4 +1,4 @@
-# Default values for telco-cloud-init.
+# Default values for sylva-units.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -12,7 +12,7 @@ registry_secret:
   registry.gitlab.com: '{{ .Values.git_auth_default | include "preserve-type" }}'
 
 # repository secrets
-# (when this chart is instantiated with a Flux HelmRelease following the definition in `kustomize-components/telco-cloud-init/base/helm-release.yaml` `git_auth_default` will be copied from the Secret used for the corresponding Flux GitRepository, but it can be overwritten)
+# (when this chart is instantiated with a Flux HelmRelease following the definition in `kustomize-components/sylva-units/base/helm-release.yaml` `git_auth_default` will be copied from the Secret used for the corresponding Flux GitRepository, but it can be overwritten)
 git_auth_default:
   username: your_user_name
   password: glpat-XXXXX

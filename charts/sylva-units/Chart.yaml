@@ -1,5 +1,5 @@
 apiVersion: v2
-name: telco-cloud-init
+name: sylva-units
 description: Chart to coordinate the installation of components common to the bootstrap cluster and the management cluster thanks to FluxCD resources
 type: application
 version: 0.1.0

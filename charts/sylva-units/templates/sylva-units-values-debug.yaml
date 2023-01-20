@@ -7,16 +7,16 @@ valuesFrom, PostRenderer) when this chart is deployed as a flux HelmRelease.
 
 the chart using following command:
 
-kubectl get secrets telco-cloud-init-values-debug -o template="{{ .data.values }}" | base64 -d
+kubectl get secrets sylva-units-values-debug -o template="{{ .data.values }}" | base64 -d
 
 */}}
 {{- $envAll := set . "Values" (include "interpret-values-gotpl" . | fromJson) -}}
 apiVersion: v1
 kind: Secret
 metadata:
-  name: telco-cloud-init-values-debug
+  name: sylva-units-values-debug
   labels:
-{{ include "telco-cloud-init.labels" . | indent 4 }}
+{{ include "sylva-units.labels" . | indent 4 }}
 type: Opaque
 stringData:
   values: |
