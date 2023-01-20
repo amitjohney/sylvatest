@@ -10,6 +10,7 @@ data:
   CLUSTER_NAME: {{ .Values.cluster.name }}
   MACHINE_IMAGE: {{ .Values.cluster.image }}
 {{ if eq .Values.cluster.flavor.infra_provider "capo" }}
+  FLAVOR_NAME: {{ .Values.cluster.capo.flavor_name }}
   SSH_KEY_NAME: {{ .Values.cluster.capo.ssh_key_name }}
   CAPO_NETWORK_ID: {{ .Values.cluster.capo.network_id }}
   CLUSTER_EXTERNAL_IP: {{ .Values.cluster.cluster_external_ip }}
