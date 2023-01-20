@@ -12,6 +12,7 @@ components:
         substitute:
           CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
           CLUSTER_EXTERNAL_IP: # set an IP for your workload cluster kube-api LB VIP here
+          FLAVOR_NAME: '{{ .Values.cluster.capo.flavor_name }}'
           SSH_KEY_NAME: '{{ .Values.cluster.capo.ssh_key_name }}'
           APT_PROXY: '{{ .Values.proxies.https_proxy }}'
           CONTAINERD_PROXY: '{{ .Values.proxies.https_proxy }}'
