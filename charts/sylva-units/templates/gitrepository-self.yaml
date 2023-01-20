@@ -10,7 +10,7 @@ kind: GitRepository
 metadata:
   name: capi-bootstrap
   labels:
-{{ include "telco-cloud-init.labels" $envAll | indent 4 }}
+{{ include "sylva-units.labels" $envAll | indent 4 }}
 spec:
 {{ $secret_ref := dict "secretRef" (dict "name" "git-repo-auth-capi-bootstrap") -}}
 {{- $spec := dict -}}

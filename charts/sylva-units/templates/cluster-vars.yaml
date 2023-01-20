@@ -5,7 +5,7 @@ kind: ConfigMap
 metadata:
   name: cluster-vars
   labels:
-{{ include "telco-cloud-init.labels" $envAll | indent 4 }}
+{{ include "sylva-units.labels" $envAll | indent 4 }}
 data:
   CLUSTER_NAME: {{ .Values.cluster.name }}
   MACHINE_IMAGE: {{ .Values.cluster.image }}

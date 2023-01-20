@@ -1,10 +1,10 @@
-This directory contains some Kustomizations to install a flux HelmRelease of the telco-cloud-init chart.
+This directory contains some Kustomizations to install a flux HelmRelease of the sylva-units chart.
 
 It is not the only way to instanciate the chart, neither the simplest one, but it enables to merge several layers of values that correspond to various environemnts. At the end, it will help to limit the amount of variables that users have provide for a specific deployment.
 
-# Managing telco-cloud-init helmrelease values
+# Managing sylva-units helmrelease values
 
-We use [Kustomize](https://kubectl.docs.kubernetes.io/references/kustomize/kustomization/) to generate ConfigMaps and Secrets that are used to instantiate the `telco-cloud-init` Helm chart [helm-release.yaml](../kustomize-components/telco-cloud-init/base/helm-release.yaml) as override values over the chart default values [values.yaml](../charts/telco-cloud-init/values.yaml). These kustomisations are just provided as samples to help users build resources that follow the expected format, feel free to build them to see how they look like (you can use `kubectl kustomize environment-values/kubeadm-capd` for example)
+We use [Kustomize](https://kubectl.docs.kubernetes.io/references/kustomize/kustomization/) to generate ConfigMaps and Secrets that are used to instantiate the `sylva-units` Helm chart [helm-release.yaml](../kustomize-components/sylva-units/base/helm-release.yaml) as override values over the chart default values [values.yaml](../charts/sylva-units/values.yaml). These kustomisations are just provided as samples to help users build resources that follow the expected format, feel free to build them to see how they look like (you can use `kubectl kustomize environment-values/kubeadm-capd` for example)
 
 The typical pattern used to inject values consists in creating a ConfigMap or a Secret, and append it to the list of values used by the chart, for example:
 
@@ -13,7 +13,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ../../kustomize-components/telco-cloud-init/base
+  - ../../kustomize-components/sylva-units/base
 
 configMapGenerator:
 - name: management-cluster-values
@@ -25,7 +25,7 @@ configMapGenerator:
 patches:
 - target:
     kind: HelmRelease
-    name: telco-cloud-init
+    name: sylva-units
   patch: |
     - op: add
       path: /spec/valuesFrom/-
@@ -62,7 +62,7 @@ configMapGenerator:
 patches:
 - target:
     kind: HelmRelease
-    name: telco-cloud-init
+    name: sylva-units
   patch: |
     - op: add
       path: /spec/valuesFrom/-
@@ -88,7 +88,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ../../kustomize-components/telco-cloud-init/base
+  - ../../kustomize-components/sylva-units/base
 
 components:
   - ssh://git@acme.git.repo.com/repo.git/environment-values/proxy?ref=main
@@ -161,4 +161,4 @@ COMPUTED VALUES:
 proxies: {}
 ```
 
-As the values may be defined and overwritten by several ConfigMaps and Secrets, it may be hard to figure out how the final merge will look like. In order to enable users to preview how the final chart value will look like, the `preview.sh` enables to instanciate the telco-cloud-init chart in a specific namespace, with all flux child resources suspended. This way, you'll be able to test if chart works properly with provided values, how user-values will be merged, and the result of values go-templating rendering.
+As the values may be defined and overwritten by several ConfigMaps and Secrets, it may be hard to figure out how the final merge will look like. In order to enable users to preview how the final chart value will look like, the `preview.sh` enables to instanciate the sylva-units chart in a specific namespace, with all flux child resources suspended. This way, you'll be able to test if chart works properly with provided values, how user-values will be merged, and the result of values go-templating rendering.

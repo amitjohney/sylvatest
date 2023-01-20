@@ -11,7 +11,7 @@ configMapGenerator:
 patches:
 - target:
     kind: HelmRelease
-    name: telco-cloud-init
+    name: sylva-units
   patch: |
     - op: add
       path: /spec/valuesFrom/-

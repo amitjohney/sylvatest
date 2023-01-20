@@ -20,6 +20,16 @@ patches:
           Environment="HTTPS_PROXY=${https_proxy}"
           Environment="NO_PROXY=${no_proxy}"
     - op: add
+      path: /spec/kubeadmConfigSpec/files/-
+      value:
+        path: /etc/containerd/conf.d/registry.toml
+        owner: root
+        permissions: "0644"
+        content: |
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
+            [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+              endpoint = ["http://172.20.129.142"]
+    - op: add
       path: /spec/kubeadmConfigSpec/preKubeadmCommands
       value:
         - systemctl daemon-reload

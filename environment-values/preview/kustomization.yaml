@@ -4,7 +4,7 @@ kind: Component
 resources:
 - preview-namespace.yaml
 
-namespace: telco-cloud-init-preview
+namespace: sylva-units-preview
 
 patches:
 - path: helm-release.yaml

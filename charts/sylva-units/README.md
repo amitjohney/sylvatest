@@ -1,4 +1,4 @@
-# telco-cloud-init Helm charts
+# sylva-units Helm charts
 
 ## Purpose
 
@@ -93,17 +93,17 @@ components:
 * install the Helm release (from this directory):
 
 ```
-helm install telco-cloud-init chart --values secrets.yaml --values myoverrides.yaml
+helm install sylva-units chart --values secrets.yaml --values myoverrides.yaml
 ```
 
 ### Use of a FluxCD HelmRelease
 
 We have a convenient way of deploying this chart with a form of inheritance of "layers" of
 Helm overrides, to allow deploying and maintaining different flavors/specialization/parametrizations
-of TelcoCloud, relying on kustomize overlays carrying the different layers that inject Helm
+of Sylva, relying on kustomize overlays carrying the different layers that inject Helm
 overrides into a FluxCD HelmRelease.
 
-This is how this chart is used [in the context of this Git repository](../../kustomize-components/telco-cloud-init/).
+This is how this chart is used [in the context of this Git repository](../../kustomize-components/sylva-units/).
 
 ## Component definitions examples
 
@@ -250,7 +250,7 @@ For more details on templating features & limitations, refer to [`_interpret-val
 
 ## TODO
 
-* to allow the `telco-cloud-init` release on the management cluster to be handled via GitOps, we need
+* to allow the `sylva-units` release on the management cluster to be handled via GitOps, we need
   to generate it via a Kustomization (or HelmRelease) defined in the management cluster itself (instead of via a
   Kustomization defined in the bootstrap cluster with a kubeConfig pointing to mgmt cluster) - this will require
   adding an intermediate Kustomization to do that

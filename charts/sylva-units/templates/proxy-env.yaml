@@ -4,7 +4,7 @@ kind: ConfigMap
 metadata:
   name: proxy-env-vars
   labels:
-{{ include "telco-cloud-init.labels" $envAll | indent 4 }}
+{{ include "sylva-units.labels" $envAll | indent 4 }}
 data:
 {{- range tuple "http_proxy" "https_proxy" "no_proxy" }}
   {{ . }}: {{ get $envAll.Values.proxies . | quote }}

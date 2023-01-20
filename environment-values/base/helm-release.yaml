@@ -2,7 +2,7 @@
 apiVersion: source.toolkit.fluxcd.io/v1beta1
 kind: GitRepository
 metadata:
-  name: telco-cloud-init
+  name: sylva-units
   namespace: default
   labels:
     copy-from-bootstrap-to-management: ""
@@ -18,18 +18,18 @@ spec:
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: telco-cloud-init
+  name: sylva-units
   namespace: default
 spec:
   chart:
     spec:
       sourceRef:
         kind: GitRepository
-        name: telco-cloud-init
-      chart: charts/telco-cloud-init
+        name: sylva-units
+      chart: charts/sylva-units
       reconcileStrategy: Revision
       valuesFiles:
-        - charts/telco-cloud-init/values.yaml
+        - charts/sylva-units/values.yaml
   interval: 10m0s
   valuesFrom:
     # NOTE: this configmap will only be created in bootstrap cluster
@@ -54,4 +54,4 @@ spec:
   values:
     git_repo_templates:
       capi-bootstrap:
-        existing_gitrepository: telco-cloud-init
+        existing_gitrepository: sylva-units

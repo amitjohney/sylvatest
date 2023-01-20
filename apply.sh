@@ -35,13 +35,13 @@ echo_b "\U0001F3AF Trigger reconciliation of Flux components"
 
 # this is just to force-refresh with a new commit (or refreshed parameters)
 
-force_reconcile_and_wait gitrepository telco-cloud-init
+force_reconcile_and_wait gitrepository sylva-units
 
-force_reconcile_and_wait helmrelease telco-cloud-init
+force_reconcile_and_wait helmrelease sylva-units
 
-force_reconcile_and_wait gitrepositories             "-l app.kubernetes.io/instance=telco-cloud-init"
+force_reconcile_and_wait gitrepositories             "-l app.kubernetes.io/instance=sylva-units"
 
-force_reconcile_and_wait kustomizations,helmreleases "-l app.kubernetes.io/instance=telco-cloud-init"
+force_reconcile_and_wait kustomizations,helmreleases "-l app.kubernetes.io/instance=sylva-units"
 
 # Starting from here, the script will just be following Flux components
 
