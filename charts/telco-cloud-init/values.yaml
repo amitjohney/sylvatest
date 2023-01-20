@@ -122,7 +122,7 @@ components:
 
     repo: capi-bootstrap
     kustomization_spec:
-      path: ./kustomize-components/flux-system
+      path: ./kustomize-components/flux-system/base
       targetNamespace: flux-system
       wait: true
       postBuild:
