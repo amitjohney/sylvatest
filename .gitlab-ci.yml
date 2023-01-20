@@ -99,6 +99,34 @@ check-docs-markdown:
     changes:
       - "**/*.md"
 
+telco-cloud-init-schema:
+  stage: test
+  script:
+    - RED='\033[0;31m'
+    - NC='\033[0m'
+    - echo -e "\e[0Ksection_start:`date +%s`:my_first_section\r\e[0K--------------- Lint Schema YAML file"
+    - echo "Lint charts/telco-cloud-init/values.schema.yaml ..."
+    - yamllint --no-warnings -c tools/gci-templates/yamllint.yaml charts/telco-cloud-init/values.schema.yaml
+    - echo "   DONE"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:my_first_section\r\e[0K--------------- Check that telco-cloud-init/values.schema.json was regenerated from values.schema.yaml ..."
+    - tools/yaml2json.py < charts/telco-cloud-init/values.schema.yaml > values.schema.json
+    - |
+      if ! cmp -s values.schema.json charts/telco-cloud-init/values.schema.json ; then
+        echo "${RED}charts/telco-cloud-init/values.schema.json wasn't generated with charts/telco-cloud-init/values.schema.yaml${NC}"
+        exit 1
+      fi
+    - echo "   DONE"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:my_first_section\r\e[0K--------------- Validate that the chart values schema contains a valid JSON Schema ..."
+    - python3 -m jsonschema -o pretty /usr/lib/python3.10/site-packages/jsonschema/schemas/draft2020-12.json -i values.schema.json
+    - echo "   DONE"
+  rules:
+    - changes:
+        - charts/telco-cloud-init/values.schema.json
+        - charts/telco-cloud-init/values.schema.yaml
+        - tools/yaml2json.py
+
 .test-capd:
   stage: deploy
   before_script:

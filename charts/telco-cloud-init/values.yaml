@@ -99,7 +99,8 @@ component_helmrelease_kustomization_spec_default:
 components:
   # <component-name>:
   #   enabled: yes/no/management-only
-  #   repo: <name of the repo under 'git_repo_templates', defaults to 'default'>
+  #   repo: <name of the repo under 'git_repo_templates'> (for use with kustomization_spec)
+  #   helm_repo_url: URL of the Helm repo to use (for use with helmrelease_spec, but not mandatory, 'repo' can be used as well to use a git repo)
   #   labels: (optional) dict holding labels to add to the resources for this component
   #   ref_override: optional, if defined, this dict will be used for the GitRepository overriding spec.ref (not used if some helm_repo_* is set)
   #   depends_on: list of '{name: component}' maps defining the dependencies of this component (this is injected in the component Kustomization as dependsOn field)
@@ -414,7 +415,7 @@ components:
     kustomization_spec:
       # see note below under .cluster
       # the choice made here, for now, requires setting other values consistently under .cluster.xxx
-      path: ./kustomize-components/cluster-manifests/_override_me_/base
+      path: ./kustomize-components/cluster-manifests/kubeadm-capd/base
       postBuild:
         substitute:
           REGISTRY_MIRROR: '{{ .Values.dockerio_registry_mirror }}'
@@ -513,7 +514,6 @@ components:
 
   rancher:
     enabled: management-only
-    repo: capi-bootstrap
     depends_on:
       - name: cert-manager
       - name: k8s-gateway
@@ -587,7 +587,6 @@ components:
 
   k8s-gateway:
     enabled: management-only
-    repo: capi-bootstrap
     depends_on:
     - '{{ tuple (dict "name" "metallb-config") (eq .Values.cluster.flavor.infra_provider "capd") | include "set-only-if" }}'
     helm_repo_url: https://ori-edge.github.io/k8s_gateway/
@@ -655,7 +654,6 @@ components:
 
   ingress-nginx:
     enabled: '{{ and (.Values.cluster.flavor.bootstrap_provider | eq "cabpk") (.Values.phase | eq "management") }}'
-    repo: capi-bootstrap
     depends_on:
     - '{{ tuple (dict "name" "metallb-config") (eq .Values.cluster.flavor.infra_provider "capd") | include "set-only-if" }}'
     helm_repo_url: https://kubernetes.github.io/ingress-nginx
@@ -781,11 +779,11 @@ components:
   monitoring:
     enabled: '{{ include "is-component-enabled" (tuple . "rancher") | eq "true" }}'
     repo: capi-bootstrap
-    wait: true
     depends_on:
       - name: rancher
     kustomization_spec:
       path: ./kustomize-components/monitoring
+      wait: true
       postBuild:
         substituteFrom:
         - kind: Secret
@@ -856,15 +854,14 @@ cluster:
   # for the 'cluster' component
   # e.g. you can use ./management-cluster-def/rke2-capd
   flavor:
-    infra_provider: please-file-me     # capd or capo
-    bootstrap_provider: please-file-me # cabpr (RKE2) or cabpk (kubeadm)
+    infra_provider: capd      # capd, capo, capm3 or capv
+    bootstrap_provider: cabpk # cabpr (RKE2) or cabpk (kubeadm)
 
   # cis benchmark is only for rke2 so far, e.g. rke2-cis-1.23-profile-hardened
   cis_benchmark_scan_profile: '{{ eq .Values.cluster.flavor.bootstrap_provider "cabpr" | ternary "rke2-cis-1.23-profile-hardened" "no-scan-profile-defined-for-kubeadm-cluster" }}'
 
   capo:
     ssh_key_name: # OpenStack VM SSH key
-    image: # Glance image name
     network_id:  # OpenStack network to use as external network
     clouds_yaml: # (this is a dict, not a YAML string)
       clouds:

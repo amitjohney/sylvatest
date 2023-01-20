@@ -5,6 +5,7 @@ components:
     kustomization_spec:
       path: ./kustomize-components/cluster-manifests/rke2-capd/base
   workload-cluster:
+    repo: capi-bootstrap
     kustomization_spec:
       path: ./kustomize-components/cluster-manifests/rke2-capd/base
 
