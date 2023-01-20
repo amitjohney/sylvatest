@@ -17,7 +17,7 @@ function background_watch() {
   local output_prefix=$1
   shift
   for kind in $@; do
-    kubectl ${kubectl_additional_args:-} get $kind --show-kind --no-headers -A -w | sed "s/^/$output_prefix /" &
+    kubectl ${kubectl_additional_args:-} get $kind --show-kind --no-headers -A -w | grep -Ev "(Reconciliation in progress|Health check failed after|dependency .* is not ready| 0s *$)" | sed "s/^/$output_prefix /" &
   done
 }
 

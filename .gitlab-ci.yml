@@ -132,6 +132,9 @@ check-docs-markdown:
     expire_in: 6 hour
     paths:
       - debug-on-exit.log
+      - bootstrap-cluster-dump/
+      - management-cluster-dump/
+
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_TAG
