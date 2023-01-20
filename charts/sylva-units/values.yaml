@@ -192,6 +192,7 @@ components:
   vault:
     depends_on:
     - name: vault-tls
+    - '{{ tuple (dict "name" "ingress-nginx") (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | include "set-only-if" }}'
     helm_repo_url: https://helm.releases.hashicorp.com
     helmrelease_spec:
       chart:
@@ -518,7 +519,7 @@ components:
       - name: cert-manager
       - name: k8s-gateway
       - name: imageswap-webhook   # cattle-system ns created by imageswap-webhook
-      - '{{ tuple (dict "name" "ingress-nginx") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") | include "set-only-if" }}'
+      - '{{ tuple (dict "name" "ingress-nginx") (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | include "set-only-if" }}'
     helm_repo_url: https://releases.rancher.com/server-charts/stable
     helmrelease_spec:
       chart:
@@ -722,6 +723,7 @@ components:
   flux-webui:
     depends_on:
       - name: flux-system
+      - '{{ tuple (dict "name" "ingress-nginx") (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | include "set-only-if" }}'
     repo: weave-gitops
     helmrelease_spec:
       chart:
