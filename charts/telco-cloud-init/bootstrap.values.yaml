@@ -40,7 +40,7 @@ components:
       # maybe cluster CRD is not compatible with kstatus? (see https://fluxcd.io/flux/components/kustomize/kustomization/#health-assessment)
     repo: capi-bootstrap
     kustomization_spec:
-      path: ./kustomize-components/flux-system
+      path: ./kustomize-components/flux-system/base
       kubeConfig:
         secretRef:
           name: management-cluster-kubeconfig
