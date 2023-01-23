@@ -8,7 +8,7 @@ if ! command -v helm &>/dev/null; then
 fi
 
 echo_b "\U0001F5D8 Bootstraping flux"
-kubectl kustomize kustomize-components/flux-system | envsubst | kubectl apply -f -
+kubectl kustomize kustomize-components/flux-system/bootstrap | envsubst | kubectl apply -f -
 
 echo_b "\U000023F3 Wait for Flux to be ready..."
 kubectl wait --for condition=Available --timeout 600s --all-namespaces --all deployment
