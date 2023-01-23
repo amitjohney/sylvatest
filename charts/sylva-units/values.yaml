@@ -135,7 +135,7 @@ components:
           optional: true
 
   kubed:
-    enabled: '{{ eq .Values.cluster.flavor.infra_provider "capd" }}'
+    enabled: '{{ eq .Values.cluster.capi_providers.infra_provider "capd" }}'
     # FIXME: maybe is isn't required any more with this helm chart, and we could create secrets in components namespaces?
     # We need kubed to copy secrets from namespace to namespace for the 'capd' provider
     # Unfortunately, it doesn't seems to be possible to pass registry secrets from default namespace to others without the use of an additionnal tool like this one:
@@ -268,7 +268,7 @@ components:
             readOnly: true
 
   cis-operator-crd:
-    enabled: '{{ and (.Values.cluster.flavor.bootstrap_provider | eq "cabpr") (.Values.phase | eq "management") }}'
+    enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.phase | eq "management") }}'
     helm_repo_url: https://charts.rancher.io
     helmrelease_spec:
       chart:
@@ -280,7 +280,7 @@ components:
         createNamespace: true
 
   cis-operator:
-    enabled: '{{ and (.Values.cluster.flavor.bootstrap_provider | eq "cabpr") (.Values.phase | eq "management") }}'
+    enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.phase | eq "management") }}'
     depends_on:
       - name: cis-operator-crd
     helm_repo_url: https://charts.rancher.io
@@ -294,7 +294,7 @@ components:
   # this allows for running a CIS scan for management cluster
   # generates a report which can be viewed and downloaded in CSV from the Rancher UI, at https://rancher.sylva/dashboard/c/local/cis/cis.cattle.io.clusterscan
   cis-operator-scan:
-    enabled: '{{ and (.Values.cluster.flavor.bootstrap_provider | eq "cabpr") (.Values.phase | eq "management") }}'
+    enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.phase | eq "management") }}'
     depends_on:
       - name: cis-operator
     repo: capi-bootstrap
@@ -315,7 +315,7 @@ components:
       wait: true
 
   capd:
-    enabled: '{{ eq .Values.cluster.flavor.infra_provider "capd" }}'
+    enabled: '{{ eq .Values.cluster.capi_providers.infra_provider "capd" }}'
     repo: capi-bootstrap
     depends_on:
       - name: cert-manager
@@ -327,7 +327,7 @@ components:
       wait: true
 
   capo:
-    enabled: '{{ eq .Values.cluster.flavor.infra_provider "capo" }}'
+    enabled: '{{ eq .Values.cluster.capi_providers.infra_provider "capo" }}'
     repo: capi-bootstrap
     depends_on:
       - name: cert-manager
@@ -336,7 +336,7 @@ components:
       wait: true
 
   capm3:
-    enabled: '{{ eq .Values.cluster.flavor.infra_provider "capm3" }}'
+    enabled: '{{ eq .Values.cluster.capi_providers.infra_provider "capm3" }}'
     repo: capi-bootstrap
     depends_on:
       - name: cert-manager
@@ -345,7 +345,7 @@ components:
       wait: true
 
   capv:
-    enabled: '{{ eq .Values.cluster.flavor.infra_provider "capv" }}'
+    enabled: '{{ eq .Values.cluster.capi_providers.infra_provider "capv" }}'
     repo: capi-bootstrap
     depends_on:
       - name: cert-manager
@@ -354,7 +354,7 @@ components:
       wait: true
 
   cabpk:  # kubeadm
-    enabled: '{{ eq .Values.cluster.flavor.bootstrap_provider "cabpk" }}'
+    enabled: '{{ eq .Values.cluster.capi_providers.bootstrap_provider "cabpk" }}'
     repo: capi-bootstrap
     depends_on:
       - name: cert-manager
@@ -363,7 +363,7 @@ components:
       wait: true
 
   cabpr:  # RKE2
-    enabled: '{{ eq .Values.cluster.flavor.bootstrap_provider "cabpr" }}'
+    enabled: '{{ eq .Values.cluster.capi_providers.bootstrap_provider "cabpr" }}'
     repo: capi-bootstrap
     depends_on:
       - name: cert-manager
@@ -408,8 +408,8 @@ components:
     repo: capi-bootstrap
     depends_on:
       - name: capi
-      - name: '{{ .Values.cluster.flavor.infra_provider }}'
-      - name: '{{ .Values.cluster.flavor.bootstrap_provider }}'
+      - name: '{{ .Values.cluster.capi_providers.infra_provider }}'
+      - name: '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
     labels:
       suspend-on-pivot: "yes"  # this component must be suspended before pivot
     kustomization_spec:
@@ -431,16 +431,16 @@ components:
           namespace: default
       components:
         - '{{ tuple "../../components/proxies/KubeadmControlPlane"
-                    (and .Values.proxies.http_proxy (eq .Values.cluster.flavor.bootstrap_provider "cabpk")) | include "set-only-if" }}'
+                    (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
         - '{{ tuple "../../components/proxies/RKE2ControlPlane"
-                    (and .Values.proxies.http_proxy (eq .Values.cluster.flavor.bootstrap_provider "cabpr")) | include "set-only-if" }}'
+                    (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
         - '{{ tuple "../../components/registry-mirror/KubeadmControlPlane"
-                    (and .Values.dockerio_registry_mirror (eq .Values.cluster.flavor.bootstrap_provider "cabpk")) | include "set-only-if" }}'
+                    (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
         - '{{ tuple "../../components/registry-mirror/RKE2ControlPlane"
-                    (and .Values.dockerio_registry_mirror (eq .Values.cluster.flavor.bootstrap_provider "cabpr")) | include "set-only-if" }}'
+                    (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
 
   calico:
-    enabled: '{{ eq .Values.cluster.flavor.bootstrap_provider "cabpk" }}'
+    enabled: '{{ eq .Values.cluster.capi_providers.bootstrap_provider "cabpk" }}'
     depends_on:
       - name: cluster
     helm_repo_url: https://projectcalico.docs.tigera.io/charts
@@ -454,7 +454,7 @@ components:
           version: v3.24.5
 
   cinder-csi:
-    enabled: '{{ and (.Values.cluster.flavor.infra_provider | eq "capo") (.Values.phase | eq "management") }}'
+    enabled: '{{ and (.Values.cluster.capi_providers.infra_provider | eq "capo") (.Values.phase | eq "management") }}'
     helm_repo_url: https://kubernetes.github.io/cloud-provider-openstack
     helmrelease_spec:
       chart:
@@ -518,7 +518,7 @@ components:
       - name: cert-manager
       - name: k8s-gateway
       - name: imageswap-webhook   # cattle-system ns created by imageswap-webhook
-      - '{{ tuple (dict "name" "ingress-nginx") (eq .Values.cluster.flavor.bootstrap_provider "cabpk") | include "set-only-if" }}'
+      - '{{ tuple (dict "name" "ingress-nginx") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") | include "set-only-if" }}'
     helm_repo_url: https://releases.rancher.com/server-charts/stable
     helmrelease_spec:
       chart:
@@ -588,7 +588,7 @@ components:
   k8s-gateway:
     enabled: management-only
     depends_on:
-    - '{{ tuple (dict "name" "metallb-config") (eq .Values.cluster.flavor.infra_provider "capd") | include "set-only-if" }}'
+    - '{{ tuple (dict "name" "metallb-config") (eq .Values.cluster.capi_providers.infra_provider "capd") | include "set-only-if" }}'
     helm_repo_url: https://ori-edge.github.io/k8s_gateway/
     helmrelease_spec:
       chart:
@@ -602,10 +602,10 @@ components:
         service:
           loadBalancerIP: '{{ .Values.cluster.cluster_external_ip }}'
           annotations:
-            metallb.universe.tf/allow-shared-ip: '{{ tuple (.Values.cluster.cluster_external_ip) (or (.Values.cluster.flavor.bootstrap_provider | eq "cabpr") (.Values.cluster.flavor.infra_provider | eq "capd")) | include "set-only-if" }}'
+            metallb.universe.tf/allow-shared-ip: '{{ tuple (.Values.cluster.cluster_external_ip) (or (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.capi_providers.infra_provider | eq "capd")) | include "set-only-if" }}'
 
   metallb:
-    enabled: '{{ and (.Values.cluster.flavor.infra_provider | eq "capd") (.Values.phase | eq "management") }}'
+    enabled: '{{ and (.Values.cluster.capi_providers.infra_provider | eq "capd") (.Values.phase | eq "management") }}'
     repo: capi-bootstrap
     depends_on:
     - name: cert-manager
@@ -614,7 +614,7 @@ components:
       wait: true
 
   metallb-config:
-    enabled: '{{ and (.Values.cluster.flavor.infra_provider | eq "capd") (.Values.phase | eq "management") }}'
+    enabled: '{{ and (.Values.cluster.capi_providers.infra_provider | eq "capd") (.Values.phase | eq "management") }}'
     repo: capi-bootstrap
     depends_on:
     - name: metallb
@@ -653,9 +653,9 @@ components:
           cattle_agent_kustomize_path: ./cattle-kustomize
 
   ingress-nginx:
-    enabled: '{{ and (.Values.cluster.flavor.bootstrap_provider | eq "cabpk") (.Values.phase | eq "management") }}'
+    enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") (.Values.phase | eq "management") }}'
     depends_on:
-    - '{{ tuple (dict "name" "metallb-config") (eq .Values.cluster.flavor.infra_provider "capd") | include "set-only-if" }}'
+    - '{{ tuple (dict "name" "metallb-config") (eq .Values.cluster.capi_providers.infra_provider "capd") | include "set-only-if" }}'
     helm_repo_url: https://kubernetes.github.io/ingress-nginx
     helmrelease_spec:
       chart:
@@ -672,7 +672,7 @@ components:
             externalIPs:
             - '{{ .Values.cluster.cluster_external_ip }}'
             annotations:
-              metallb.universe.tf/allow-shared-ip: '{{ tuple (.Values.cluster.cluster_external_ip) (eq .Values.cluster.flavor.infra_provider "capd") | include "set-only-if" }}'
+              metallb.universe.tf/allow-shared-ip: '{{ tuple (.Values.cluster.cluster_external_ip) (eq .Values.cluster.capi_providers.infra_provider "capd") | include "set-only-if" }}'
 
   first-login-rancher:
     enabled: '{{ include "is-component-enabled" (tuple . "rancher") | eq "true" }}'
@@ -772,7 +772,7 @@ components:
       path: ./kustomize-components/cluster-import
       postBuild:
         substitute:
-          CLUSTER_FLAVOR: '{{ upper .Values.cluster.flavor.bootstrap_provider }} {{ upper .Values.cluster.flavor.infra_provider }}'
+          CLUSTER_FLAVOR: '{{ upper .Values.cluster.capi_providers.bootstrap_provider }} {{ upper .Values.cluster.capi_providers.infra_provider }}'
           CLUSTER_MONITORING: "enabled"
           CLUSTER_NAME: '{{ .Values.cluster.test_workload_cluster_name }}'
 
@@ -853,12 +853,12 @@ cluster:
   # consistently with the choice of a matching kustomization path
   # for the 'cluster' component
   # e.g. you can use ./management-cluster-def/rke2-capd
-  flavor:
+  capi_providers:
     infra_provider: capd      # capd, capo, capm3 or capv
     bootstrap_provider: cabpk # cabpr (RKE2) or cabpk (kubeadm)
 
   # cis benchmark is only for rke2 so far, e.g. rke2-cis-1.23-profile-hardened
-  cis_benchmark_scan_profile: '{{ eq .Values.cluster.flavor.bootstrap_provider "cabpr" | ternary "rke2-cis-1.23-profile-hardened" "no-scan-profile-defined-for-kubeadm-cluster" }}'
+  cis_benchmark_scan_profile: '{{ eq .Values.cluster.capi_providers.bootstrap_provider "cabpr" | ternary "rke2-cis-1.23-profile-hardened" "no-scan-profile-defined-for-kubeadm-cluster" }}'
 
   capo:
     flavor_name: m1.large # Openstack flavor name

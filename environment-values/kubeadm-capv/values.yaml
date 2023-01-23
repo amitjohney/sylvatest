@@ -72,7 +72,7 @@ cluster:
   # consistently with the choice of a matching kustomization path
   # for the 'cluster' component
   # e.g. you can use ./management-cluster-def/rke2-capd
-  flavor:
+  capi_providers:
     infra_provider: capv   # capv
     bootstrap_provider: cabpk  # RKE2 or kubeadm
 

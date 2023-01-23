@@ -71,7 +71,7 @@ git_auth_default:
 ```terminal
 $ cat < EOF > myoverrides.yaml
 cluster:
-  flavor:
+  capi_providers:
     infra_provider: capd
     bootstrap_provider: cabpr
 
@@ -234,7 +234,7 @@ components:
   foo:
     # example of a conditional dependency
     depends_on:
-    - '{{ tuple (dict "name" "bar") (eq .Values.cluster.flavor.bootstrap_provider "cabpk") | include "set-only-if" }}'
+    - '{{ tuple (dict "name" "bar") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") | include "set-only-if" }}'
     helmrelease_spec:
       values:
         # set proxy value for foo chart only if proxies value contains an http_proxy key with a non-empty value

@@ -23,7 +23,7 @@ components:
 
   calico:
     # overload calico definition in bootstrap context to deploy in the management cluster
-    enabled: '{{ eq .Values.cluster.flavor.bootstrap_provider "cabpk" }}'
+    enabled: '{{ eq .Values.cluster.capi_providers.bootstrap_provider "cabpk" }}'
     helmrelease_spec:
       kubeConfig:
         secretRef:

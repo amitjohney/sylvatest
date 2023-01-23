@@ -17,7 +17,7 @@ components:
 
 cluster:
   image: capo-ubuntu-2004-kube-v1.23.6-calico-3.23.1
-  flavor:
+  capi_providers:
     infra_provider: capo
     bootstrap_provider: cabpk
   capo:
