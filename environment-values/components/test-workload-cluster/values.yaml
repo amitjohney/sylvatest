@@ -14,6 +14,7 @@ units:
           CLUSTER_NAME: '{{ .Values.cluster.test_workload_cluster_name }}'
           MACHINE_IMAGE: '{{ .Values.cluster.image }}'
           K8SGATEWAY_LB_IP: '{{ .Values.cluster.cluster_external_ip }}'   # NOTE: same is used for k8s-gateway DNS svc in management cluster
+      wait: true
       components:
         - '{{ tuple "../../units/dns-client/kind/KubeadmControlPlane"
                     (and (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
