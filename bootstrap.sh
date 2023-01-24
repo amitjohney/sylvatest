@@ -3,7 +3,7 @@
 source tools/shell-lib/common.sh
 
 echo_b "\U0001F503 Bootstraping flux"
-kubectl kustomize kustomize-components/flux-system/bootstrap | envsubst | kubectl apply -f -
+kubectl kustomize kustomize-units/flux-system/bootstrap | envsubst | kubectl apply -f -
 
 echo_b "\U000023F3 Wait for Flux to be ready..."
 kubectl wait --for condition=Available --timeout 600s --all-namespaces --all deployment
@@ -26,7 +26,7 @@ background_watch bootstrap gitrepositories kustomizations helmreleases helmchart
 kubectl annotate --overwrite gitrepository/sylva-units reconcile.fluxcd.io/requestedAt="$(date +%s)"
 kubectl annotate --overwrite helmrelease/sylva-units reconcile.fluxcd.io/requestedAt="$(date +%s)"
 
-# Starting from here, the script will just be following components & cluster deployment :)
+# Starting from here, the script will just be following units & cluster deployment :)
 
 echo_b "\U000023F3 Wait for Helm release to be ready"
 
@@ -50,10 +50,10 @@ kubectl wait --for condition=Ready --timeout 1200s kustomization management-clus
 
 kubectl_additional_args="--kubeconfig management-cluster-kubeconfig" background_watch management gitrepositories kustomizations helmreleases helmcharts
 
-echo_b "\U000023F3 Wait for remaining components to be installed on management cluster and pivot"
+echo_b "\U000023F3 Wait for remaining units to be installed on management cluster and pivot"
 kubectl wait --for condition=Ready --timeout 1800s --all kustomizations
 
-echo_b "\U000023F3 Wait for components installed on management cluster to be ready"
+echo_b "\U000023F3 Wait for units installed on management cluster to be ready"
 kubectl --kubeconfig management-cluster-kubeconfig wait --for condition=Ready --timeout 1800s --all kustomizations
 
 echo_b "\U00002714 Management cluster is ready"

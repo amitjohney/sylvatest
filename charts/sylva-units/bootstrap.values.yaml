@@ -3,17 +3,17 @@
 # These value are meant to be used as overrides to the default values from values.yaml
 # when the chart is instantiated in the bootstrap cluster
 
-# set 'phase: bootstrap' so that components with 'enabled: management-only' are ignored
+# set 'phase: bootstrap' so that units with 'enabled: management-only' are ignored
 phase: bootstrap
 
-component_kustomization_spec_default:
+unit_kustomization_spec_default:
   interval: 100000m   # for bootstrap, we don't care about having flux update things on the longterm
   retryInterval: 30s  # but we want it to retry quickly so that the system converges faster (quicker reaction when a dependency is met)
 
-component_helmrelease_spec_default:
+unit_helmrelease_spec_default:
   interval: 100000m
 
-components:
+units:
 
   cert-manager:
     enabled: yes
@@ -29,7 +29,7 @@ components:
         secretRef:
           name: management-cluster-kubeconfig
     labels:
-      suspend-on-pivot: "yes"  # this component must be suspended before pivot
+      suspend-on-pivot: "yes"  # this unit must be suspended before pivot
 
   management-cluster-flux:
     enabled: yes
@@ -37,10 +37,10 @@ components:
       - name: cluster
       # FIXME; Flux wait/healthcheck on management cluster does not work as expected, it becomes ready as soon as manifests are applied
       # cluster readyness will actually be ensured by the retries on installations of this kustomization for now.
-      # maybe cluster CRD is not compatible with kstatus? (see https://fluxcd.io/flux/components/kustomize/kustomization/#health-assessment)
+      # maybe cluster CRD is not compatible with kstatus? (see https://fluxcd.io/flux/units/kustomize/kustomization/#health-assessment)
     repo: capi-bootstrap
     kustomization_spec:
-      path: ./kustomize-components/flux-system/base
+      path: ./kustomize-units/flux-system/base
       kubeConfig:
         secretRef:
           name: management-cluster-kubeconfig
@@ -51,7 +51,7 @@ components:
         - kind: ConfigMap
           name: proxy-env-vars
     labels:
-      suspend-on-pivot: "yes"  # this component must be suspended before pivot
+      suspend-on-pivot: "yes"  # this unit must be suspended before pivot
 
   management-cluster-configs:
     enabled: yes
@@ -60,7 +60,7 @@ components:
     repo: capi-bootstrap
     kustomization_spec:
       # FIXME: This is very hacky, we should use an ad-hoc kustomisation instead of this job to re-create configmap and secrets on maangement cluster
-      path: ./kustomize-components/kube-job
+      path: ./kustomize-units/kube-job
       wait: true
       force: true
       patches:
@@ -100,7 +100,7 @@ components:
       - name: management-cluster-configs
     repo: capi-bootstrap
     labels:
-      suspend-on-pivot: "yes"  # this component must be suspended before pivot
+      suspend-on-pivot: "yes"  # this unit must be suspended before pivot
     # Use a kustomization_spec alongside an helmrelease_spec,
     # this way we'll create the flux helmrelease into the management cluster
     kustomization_spec:
@@ -117,12 +117,12 @@ components:
           reconcileStrategy: Revision
       interval: 1m0s
       # copy values and valuesFrom from current sylva-units HelmRelease
-      # for now we keep the 'cluster' component disabled, it produces CAPI resources
+      # for now we keep the 'cluster' unit disabled, it produces CAPI resources
       # defining the management cluster, which we can't define before having done the pivot
       # (this value override is reverted after pivot by the pivot job below)
       values: |
         {{- $chartValues := (lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units").spec.values -}}
-        {{- $disableCluster := dict "components" (dict "cluster" (dict "enabled" false)) -}}
+        {{- $disableCluster := dict "units" (dict "cluster" (dict "enabled" false)) -}}
         {{- $gitRepoSelf := dict "git_repo_templates" (dict "capi-bootstrap" (dict "existing_gitrepository" "sylva-units")) -}}
         {{- mergeOverwrite $chartValues $disableCluster $gitRepoSelf | include "preserve-type" -}}
       valuesFrom: '{{ (lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units").spec.valuesFrom | include "preserve-type" }}'
@@ -133,7 +133,7 @@ components:
       - name: sylva-units
     repo: capi-bootstrap
     kustomization_spec:
-      path: ./kustomize-components/kube-job
+      path: ./kustomize-units/kube-job
       wait: true
       force: true
       patches:
@@ -179,9 +179,9 @@ components:
 
               echo "-- Patch the sylva-units HelmRelease to allow the Flux cluster redefinition to happen in the management cluster"
               kubectl --kubeconfig management-cluster-kubeconfig \
-                  patch helmrelease sylva-units --type=json --patch='[{"op":"remove","path":"/spec/values/components/cluster/enabled"}]'
+                  patch helmrelease sylva-units --type=json --patch='[{"op":"remove","path":"/spec/values/units/cluster/enabled"}]'
 
-              # NOTE: here we could add a reference to another valueFile that would deploy components specific to the management cluster
+              # NOTE: here we could add a reference to another valueFile that would deploy units specific to the management cluster
               # '[{"op":"add","path":"/spec/chart/spec/valuesFiles/-","value":"charts/sylva-units/management.values.yaml"}]'
               # and/or create a kustomisation on management-cluster to manage sylva-units helmRelease from git
 

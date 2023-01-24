@@ -2,18 +2,18 @@
 
 This project provides the tools and configuration to deploy a ClusterAPI management cluster and associated infrastructure in a declarative way, using Flux to keep some Kustomizations & Helm releases in sync with Git repos.
 
-It is build around the sylva-units helm chart that creates flux objects used to deploy various components depending on the capi bootstrap and infrastructure providers that you intend to use.
+It is build around the sylva-units helm chart that creates flux objects used to deploy various units depending on the capi bootstrap and infrastructure providers that you intend to use.
 
-You can use it to deploy Cluster API and aditionnal components in an existing Kubernetes cluster, or you can use an intermediate temporary/disposable bootstrap cluster that will be used to provision the management cluster using cluster API, which will enable you to manage the lifecycle of the management cluster itself in the future. See [Bootstrap process](#bootstrap-process) for more details on that process.
+You can use it to deploy Cluster API and aditionnal units in an existing Kubernetes cluster, or you can use an intermediate temporary/disposable bootstrap cluster that will be used to provision the management cluster using cluster API, which will enable you to manage the lifecycle of the management cluster itself in the future. See [Bootstrap process](#bootstrap-process) for more details on that process.
 
 ## Repository structure
 
-- [kustomize-components](kustomize-components) contains the manifests used to deploy various cluster-api & infrastructure components, they will be deployed as flux Kustomizations, and must contain some Kustomizations.yaml for that purpose. Note that such components could also live in external Git repositories.
+- [kustomize-units](kustomize-units) contains the manifests used to deploy various cluster-api & infrastructure units, they will be deployed as flux Kustomizations, and must contain some Kustomizations.yaml for that purpose. Note that such units could also live in external Git repositories.
 - [charts/sylva-units](charts/sylva-units/README.md) is the main helm chart that controls the installation of selected/relevant flux Kustomizations in the cluster, as well as HelmReleases, depending on the context (bootstrap, management, workload cluster) and the type of cluster-api infrastructure/bootstrap providers that are used.
 - [environment-values](environment-values) contains user-provided values to control the deployment of the cluster. They attempt to provide default parameters for various deployment scenarios, but may be modified to adapt  to deployment scenarios. They will be rendered locally using kustomize tool to generate values (and secrets for security-sensitive data) that will control the behavior of the helm chart.
 - [tools](tools) contains some helper scripts for the bootstrap script, as well as some other utilities
 - [bootstrap.sh](bootstrap.sh) scripts will bootstrap the management cluster using a temporary cluster as described below.
-- [apply.sh](apply.sh) enables to install or update the components of the management cluster. It can be used on a pre-existing cluster installed manually, or on a cluster that has been bootstrapped with this project.
+- [apply.sh](apply.sh) enables to install or update the units of the management cluster. It can be used on a pre-existing cluster installed manually, or on a cluster that has been bootstrapped with this project.
 
 ## Bootstrap process
 
@@ -21,9 +21,9 @@ This project enables to bootstrap a ClusterAPI management cluster in a declarati
 
 - Use `kind` to build a temporary bootstrap cluster
 - Install Flux on that cluster
-- Use a Flux HelmRelease to control the deployment of various Flux Kustomizations that will successively deploy cluster-api & infrastructure components
+- Use a Flux HelmRelease to control the deployment of various Flux Kustomizations that will successively deploy cluster-api & infrastructure units
 - Other dependent Kustomizations will also be deployed to install management cluster definitions, that will be used by cluster-api to deploy the management cluster
-- Once the management cluster is deployed, Flux will be installed in it, as well as the sylva-units HelmRelease that will deploy again cluster-api & infrastructure components in the management cluster
+- Once the management cluster is deployed, Flux will be installed in it, as well as the sylva-units HelmRelease that will deploy again cluster-api & infrastructure units in the management cluster
 - Management cluster definitions are moved (aka. pivoted) to management cluster, that will become independent and self-managed
 - At this stage, bootstrap cluster can be deleted
 
@@ -33,12 +33,12 @@ For now, we support and test in CI Docker (capd) and OpenStack (capo) infrastruc
 
 ## Configuration management
 
-As explained above, all component manifests (cluster-api & infrastructure components, cluster definitions, jobs...) are controlled by Flux Kustomizations or HelmReleases managed by the sylva-units Helm chart. As this chart produces manifests for all components, it enables to easily share and reuse variables between various parts of the system. For that purpose, it also enables the use of go templates expressions in values, this way various expressions may be used to build values depending on other ones.
+As explained above, all unit manifests (cluster-api & infrastructure units, cluster definitions, jobs...) are controlled by Flux Kustomizations or HelmReleases managed by the sylva-units Helm chart. As this chart produces manifests for all units, it enables to easily share and reuse variables between various parts of the system. For that purpose, it also enables the use of go templates expressions in values, this way various expressions may be used to build values depending on other ones.
 
 This chart can be installed using the helm tool, but we encourage to deploy it using a [flux HelmRelease](https://fluxcd.io/flux/components/helm/helmreleases/). One of the main advantage of this approach is that it enables us to merge several layers of values over the [charts defaults](charts/sylva-units/values.yaml) using kubernetes ConfigMaps and Secrets. All these values are typically created using Kustomizations provided in [environment-values](environment-values) directory. For example, the chart could be deployed with following values:
 
 - [default values](charts/sylva-units/values.yaml) from the chart
-- [bootstrap values](charts/sylva-units/bootstrap.values.yaml) that will overloads defaults with some components that are specific to the bootstrap process (copy config to management cluster, install Flux and sylva-units chart on it, pivot)
+- [bootstrap values](charts/sylva-units/bootstrap.values.yaml) that will overloads defaults with some units that are specific to the bootstrap process (copy config to management cluster, install Flux and sylva-units chart on it, pivot)
 - various layers of values relative to the deployment context can then be merged over default one, these are typically parameters that are shared inside a company (like an internal repository, or proxy URL). These values can be hosted in external repositories that will be fetched by the kustomize tool. This mechanism enables to efficiently share common values, and help minimizing the amount of parameters that users have to provide.
 - finally, user values will provide secrets and parameters that are specific to a deployment
 
@@ -95,7 +95,7 @@ proxies:
   no_proxy: 127.0.0.1,localhost,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8
 ```
 
-> You should pay attention and make sure that cluster_cidr (defaulting to 10.96.0.0/12) will be properly excluded by no_proxy, otherwise some components will attempt to use proxy for intra-cluster communications, and fail
+> You should pay attention and make sure that cluster_cidr (defaulting to 10.96.0.0/12) will be properly excluded by no_proxy, otherwise some units will attempt to use proxy for intra-cluster communications, and fail
 
 Then you can launch the bootstrap process using provided configuration:
 
@@ -103,13 +103,13 @@ Then you can launch the bootstrap process using provided configuration:
 ./bootstrap.sh environment-values/my-rke2-capd
 ```
 
-In the above command, we're just using the default configuration, but you will probably want to modify these values to adapt to your needs and environment. In order to add components in your cluster, you can enable some [configuration components](environment-values/components) that are provided to add more components in your cluster (like Rancher, workload-clusters, a monitoring stack, aso...). For that purpose, add the reference to the targeted configuration component int your [environment-value's kustomization](environment-values/rke2-capd/kustomization.yaml)
+In the above command, we're just using the default configuration, but you will probably want to modify these values to adapt to your needs and environment. In order to add units in your cluster, you can enable some [configuration components](environment-values/components) that are provided to add more units in your cluster (like Rancher, workload-clusters, a monitoring stack, aso...). For that purpose, add the reference to the targeted configuration component int your [environment-value's kustomization](environment-values/rke2-capd/kustomization.yaml)
 
 For more details on environment-values generation you can have a look at the [dedicated README](environment-values/README.md).
 
-> For environments where the CAPD host is behind a forward proxy (i.e. `proxies.http_proxy` in environment-values is not an empty string), the nodes of the single-node management and workload clusters will be automatically configured with the proper enviroment settings for the [containerd service](kustomize-components/cluster-manifests/components/proxies/KubeadmControlPlane/kustomization.yaml) (in CAPBK flavor) and [rke2-server and rke2-agent services](kustomize-components/cluster-manifests/components/proxies/RKE2ControlPlane/kustomization.yaml) (CAPBR falvor) respectively, by applying the proxies defined under `proxies`. <br/>
-Also, the workload cluster's control plane node' /etc/resolv.conf for either [CAPBK](kustomize-components/cluster-manifests/components/dns-client/kind/KubeadmControlPlane/kustomization.yaml) or [CAPBR](kustomize-components/cluster-manifests/components/dns-client/kind/RKE2ControlPlane/kustomization.yaml) bootstrap flavors will be populated with the management cluster's k8s-gateway LoadBalancer service External IP (set by the `CLUSTER_EXTERNAL_IP` var of management cluster) to allow for resolving the Rancher FQDN. <br/>
-Lastly, the management cluster's single-node Container Runtime will be configured with a container registry mirror endpoint for `docker.io` (to avoid Docker Hub rate limitting issues), the one defined by `dockerio_registry_mirror` in environment-values if this is not an empty string, for both the [CAPBK](kustomize-components/cluster-manifests/components/registry-mirror/KubeadmControlPlane/kustomization.yaml) and the [CAPBR](kustomize-components/cluster-manifests/components/registry-mirror/RKE2ControlPlane/kustomization.yaml) bootstrap flavors.
+> For environments where the CAPD host is behind a forward proxy (i.e. `proxies.http_proxy` in environment-values is not an empty string), the nodes of the single-node management and workload clusters will be automatically configured with the proper enviroment settings for the [containerd service](kustomize-units/cluster-manifests/components/proxies/KubeadmControlPlane/kustomization.yaml) (in CAPBK flavor) and [rke2-server and rke2-agent services](kustomize-units/cluster-manifests/components/proxies/RKE2ControlPlane/kustomization.yaml) (CAPBR falvor) respectively, by applying the proxies defined under `proxies`. <br/>
+Also, the workload cluster's control plane node' /etc/resolv.conf for either [CAPBK](kustomize-units/cluster-manifests/components/dns-client/kind/KubeadmControlPlane/kustomization.yaml) or [CAPBR](kustomize-units/cluster-manifests/components/dns-client/kind/RKE2ControlPlane/kustomization.yaml) bootstrap flavors will be populated with the management cluster's k8s-gateway LoadBalancer service External IP (set by the `CLUSTER_EXTERNAL_IP` var of management cluster) to allow for resolving the Rancher FQDN. <br/>
+Lastly, the management cluster's single-node Container Runtime will be configured with a container registry mirror endpoint for `docker.io` (to avoid Docker Hub rate limitting issues), the one defined by `dockerio_registry_mirror` in environment-values if this is not an empty string, for both the [CAPBK](kustomize-units/cluster-manifests/components/registry-mirror/KubeadmControlPlane/kustomization.yaml) and the [CAPBR](kustomize-units/cluster-manifests/components/registry-mirror/RKE2ControlPlane/kustomization.yaml) bootstrap flavors.
 
 #### Accessing Rancher UI
 
@@ -181,11 +181,11 @@ Once this is done, you just need to run the bootstrap script:
 
 > For environments where an automatic creation of a workload cluster and its importing in Rancher server (deployed in the management cluster) workflow is triggered (like for _kubeadm-capo_) we have some traffic flow requirements:
 >
-> 1. since the [workload cluster's /etc/resolv.conf](./kustomize-components/cluster-manifests/kubeadm-capo/orange-falcon-single-node/kustomization.yaml#L99-115) would be configured with the management cluster's k8s-gateway LoadBalancer service External IP (set by the `KUBE_VIP_IP` var of management cluster) to allow for resolving the Rancher FQDN, we will need to also permit DNS traffic (UDP port 53) for the management cluster ingress direction.
+> 1. since the [workload cluster's /etc/resolv.conf](./kustomize-units/cluster-manifests/kubeadm-capo/orange-falcon-single-node/kustomization.yaml#L99-115) would be configured with the management cluster's k8s-gateway LoadBalancer service External IP (set by the `KUBE_VIP_IP` var of management cluster) to allow for resolving the Rancher FQDN, we will need to also permit DNS traffic (UDP port 53) for the management cluster ingress direction.
 > 2. since the workload cluster's [cattle-cluster-agent](https://docs.ranchermanager.rancher.io/v2.6/how-to-guides/new-user-guides/launch-kubernetes-with-rancher/about-rancher-agents#cattle-cluster-agent) will connect to the Rancher server FQDN (Ingress service External IP set by the `KUBE_VIP_IP` var of management cluster), we will need to also permit TLS traffic (TCP port 443) for the management cluster ingress direction, as per [Rancher downstream nodes port requirements](https://docs.ranchermanager.rancher.io/v2.6/getting-started/installation-and-upgrade/installation-requirements/port-requirements#downstream-kubernetes-cluster-nodes). Such traffic flow would also be needed for connecting to Rancher webUI.
 If we are deploying both the management cluster and the workload cluster on the same Neutron network, like having all nodes attached to the same VLAN-based Provider Network, then these flows are permitted by default due to the fact that traffic internal to a Neutron network is not subject to Security Group-based filtering.
 >
-> However, if the management cluster and the workload cluster nodes would not share the same network (like using different Provider Networks), we can meet these requirements by setting the proper rules for the `default` SG of the OpenStack tenant in which the management cluster is deployed, since in the manifest of the _kubeadm-capo_ management cluster we're adding this [pre-existing SG to the spec of an OpenStackMachineTemplate](./kustomize-components/cluster-manifests/kubeadm-capo/base/management-cluster.yaml#L100-101).
+> However, if the management cluster and the workload cluster nodes would not share the same network (like using different Provider Networks), we can meet these requirements by setting the proper rules for the `default` SG of the OpenStack tenant in which the management cluster is deployed, since in the manifest of the _kubeadm-capo_ management cluster we're adding this [pre-existing SG to the spec of an OpenStackMachineTemplate](./kustomize-units/cluster-manifests/kubeadm-capo/base/management-cluster.yaml#L100-101).
 To provide these rule in OpenStack, the tenant admin can run:
 >
 > ```console

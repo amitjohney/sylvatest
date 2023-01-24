@@ -81,7 +81,7 @@ Note well that there are a few limitations:
     x: "{{ .Values.fooo }}" -> x after processing by this template will give "" (nothing complains about 'fooo' not being defined)
 
 * everything looking like "{{ }}" will be interpreted, even non-gotpl stuff
-  that you might want to try to put in your manifest because a given component
+  that you might want to try to put in your manifest because a given unit
   would need that
 
 * templates that use "preserve-type" must define the whole key or value field, it can't be compound inline with a string:
@@ -201,7 +201,7 @@ Note well that there are a few limitations:
     y: '{{ .Values.bar | include "preserve-type }}' -> will produce the expected content
 
 * everything looking like "{{ }}" will be interpreted, even non-gotpl stuff
-  that you might want to try to put in your manifest because a given component
+  that you might want to try to put in your manifest because a given unit
   would need that
 
 */}}

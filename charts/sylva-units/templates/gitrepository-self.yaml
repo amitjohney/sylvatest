@@ -1,8 +1,8 @@
-{{/* This GitRepository is referred to from 'component_helmrelease_kustomization_spec_default' */}}
+{{/* This GitRepository is referred to from 'unit_helmrelease_kustomization_spec_default' */}}
 {{- $envAll := set . "Values" (include "interpret-values-gotpl" . | fromJson) -}}
 {{- $repo_name := "capi-bootstrap" -}}
 {{- if not (hasKey (index .Values.git_repo_templates "capi-bootstrap") "existing_gitrepository") -}}
-    {{- $component_name := "capi-bootstrap" -}}
+    {{- $unit_name := "capi-bootstrap" -}}
     {{- $repo_def := deepCopy (index $envAll.Values.git_repo_templates $repo_name) -}}
     {{- $auth := $repo_def.auth | default $envAll.Values.git_auth_default -}}
 ---
@@ -20,7 +20,7 @@ spec:
         {{- if not (hasKey $repo_def "base_url") -}}
             {{- fail (printf "repository template '%s' has neither '.spec.url' nor '.base_url' defined" $repo_name) -}}
         {{- end -}}
-        {{- $_ := set $spec "url" (printf "%s/%s.git" $repo_def.base_url $component_name) -}}
+        {{- $_ := set $spec "url" (printf "%s/%s.git" $repo_def.base_url $unit_name) -}}
     {{- else if hasKey $repo_def "base_url" -}}
         {{- fail (printf "repository template '%s' has both '.spec.url' and '.base_url' defined" $repo_name) -}}
     {{- end }}

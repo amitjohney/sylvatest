@@ -93,13 +93,13 @@ required:
   - git_repo_spec_default
   - git_repo_templates
   - helm_repo_spec_default
-  - component_kustomization_spec_default
-  - component_helmrelease_spec_default
-  - component_helmrelease_kustomization_spec_default
-  - components
+  - unit_kustomization_spec_default
+  - unit_helmrelease_spec_default
+  - unit_helmrelease_kustomization_spec_default
+  - units
   - cluster
   - proxies
-  - component_default_enable
+  - unit_default_enable
   - env_type_ci
 
 properties:
@@ -182,19 +182,19 @@ properties:
     type: object
     # this is a spec of a GitRepository Flux resource
 
-  component_kustomization_spec_default:  # -------------------------------
+  unit_kustomization_spec_default:  # -------------------------------
     type: object
     # TODO: detail more
 
-  component_helmrelease_spec_default:  # -------------------------------
+  unit_helmrelease_spec_default:  # -------------------------------
     type: object
     # TODO: detail more
 
-  component_helmrelease_kustomization_spec_default:  # -------------------------------
+  unit_helmrelease_kustomization_spec_default:  # -------------------------------
     type: object
     # TODO: detail more
 
-  components:  # -------------------------------
+  units:  # -------------------------------
     type: object
     patternProperties:
 
@@ -310,7 +310,7 @@ properties:
             - helmrelease_spec
           - required:
             - kustomization_spec
-          - properties:  # for a component which is forced disabled, we don't mandate anything
+          - properties:  # for a unit which is forced disabled, we don't mandate anything
               enabled:
                 const: false
 
@@ -322,7 +322,7 @@ properties:
                 - helm_repo_url
 
           # require kustomization_spec.path, but only if helmrelease_spec
-          # is not defined (see example where we need that under bootstrap.values.yaml:components.sylva-units)
+          # is not defined (see example where we need that under bootstrap.values.yaml:units.sylva-units)
           - if:
               not:
                 required:
@@ -534,10 +534,10 @@ properties:
       - management
       - bootstrap
 
-  component_default_enable:  # -------------------------------
+  unit_default_enable:  # -------------------------------
     $ref: "#/$defs/enabled"
 
-  test_all_components_enabled:  # -------------------------------
+  test_all_units_enabled:  # -------------------------------
     anyOf:
       - type: boolean
       - type: "null"

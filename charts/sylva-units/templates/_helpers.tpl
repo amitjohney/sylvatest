@@ -54,38 +54,38 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 
 {{/*
 
-Function used to determine if a component in 'components' (.Values.components dict) is
-enabled based on the 'phase' and the .enabled value of the component
+Function used to determine if a unit in 'units' (.Values.units dict) is
+enabled based on the 'phase' and the .enabled value of the unit
 (yes/no/management-only)
 
-The default for <component>.enabled is .Values.component_default_enable .
+The default for <unit>.enabled is .Values.unit_default_enable .
 
 Usage:
 
-  tuple $envAll "componentFoo" | include "is-component-enabled"
+  tuple $envAll "unitFoo" | include "is-unit-enabled"
 
 */}}
-{{- define "is-component-enabled" -}}
+{{- define "is-unit-enabled" -}}
     {{- $envAll := index . 0 -}}
-    {{- $component_name := index . 1 -}}
-    {{- $component_def := index $envAll.Values.components $component_name -}}
-    {{- $component_enabled := toString $envAll.Values.component_default_enable -}}
-    {{- if hasKey $component_def "enabled" -}}
-      {{- $component_enabled = toString $component_def.enabled -}}
+    {{- $unit_name := index . 1 -}}
+    {{- $unit_def := index $envAll.Values.units $unit_name -}}
+    {{- $unit_enabled := toString $envAll.Values.unit_default_enable -}}
+    {{- if hasKey $unit_def "enabled" -}}
+      {{- $unit_enabled = toString $unit_def.enabled -}}
     {{- end -}}
     {{- $phase := $envAll.Values.phase -}}
     {{- if not (or (eq $phase "bootstrap") (eq $phase "management")) -}}
       {{- fail (printf "phase='%s' is neither 'bootstrap' or 'management'" $phase) -}}
     {{- end -}}
-    {{- if (or (eq $component_enabled "true")
-               $envAll.Values.test_all_components_enabled
-               (and (eq $component_enabled "management-only") (eq $phase "management")))
+    {{- if (or (eq $unit_enabled "true")
+               $envAll.Values.test_all_units_enabled
+               (and (eq $unit_enabled "management-only") (eq $phase "management")))
     -}}
 true
-    {{- else if (or (eq ($component_enabled) "false")
-                    (and (eq $component_enabled "management-only") (eq $phase "bootstrap"))) -}}{{/* we return an empty string to mean "false", this is a well-known trick for gotpl... */}}
+    {{- else if (or (eq ($unit_enabled) "false")
+                    (and (eq $unit_enabled "management-only") (eq $phase "bootstrap"))) -}}{{/* we return an empty string to mean "false", this is a well-known trick for gotpl... */}}
     {{- else -}}
-      {{- fail (printf "components.%s.enabled=%s is neither a boolean or 'management-only'" $component_name $component_enabled) -}}
+      {{- fail (printf "units.%s.enabled=%s is neither a boolean or 'management-only'" $unit_name $unit_enabled) -}}
     {{- end -}}
 {{- end -}}
 
@@ -93,13 +93,13 @@ true
 
 {{/*
 
-This is used by components.yaml to patch the HelmRelease
-resource produced when the kustomization from kustomize-components/helmrelease-generic
+This is used by units.yaml to patch the HelmRelease
+resource produced when the kustomization from kustomize-units/helmrelease-generic
 which is used to create a Flux Kustomization that generates a HelmRelease.
 
 */}}
 {{ define "helmrelease-kustomization-patch-template" }}
-{{- $component_name := index . 0 -}}
+{{- $unit_name := index . 0 -}}
 {{- $helmrelease_spec := index . 1 -}}
 {{- $labels := index . 2 -}}
 target:
@@ -109,7 +109,7 @@ patch: |
     path: /metadata
     value:
       namespace: default
-      name: {{ $component_name }}
+      name: {{ $unit_name }}
       labels:
 {{ $labels | toYaml | indent 8 }}
   - op: replace

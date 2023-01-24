@@ -22,7 +22,7 @@ fi
 
 if ! (kubectl get namespace flux-system >/dev/null); then
     echo_b "\U0001F5D8 Bootstraping flux"
-    kubectl kustomize kustomize-components/flux-system | envsubst | kubectl apply -f -
+    kubectl kustomize kustomize-units/flux-system | envsubst | kubectl apply -f -
 
     echo_b "\U000023F3 Wait for Flux to be ready..."
     kubectl wait --for condition=Available --timeout 600s --all-namespaces --all deployment
@@ -31,7 +31,7 @@ fi
 echo_b "\U0001F512 Create or update management cluster secrets and configmaps"
 kubectl kustomize ${ENV_PATH} | sed "s/CURRENT_COMMIT/${CURRENT_COMMIT}/" | kubectl apply -f -
 
-echo_b "\U0001F3AF Trigger reconciliation of Flux components"
+echo_b "\U0001F3AF Trigger reconciliation of Flux units"
 
 # this is just to force-refresh with a new commit (or refreshed parameters)
 
@@ -43,9 +43,9 @@ force_reconcile_and_wait gitrepositories             "-l app.kubernetes.io/insta
 
 force_reconcile_and_wait kustomizations,helmreleases "-l app.kubernetes.io/instance=sylva-units"
 
-# Starting from here, the script will just be following Flux components
+# Starting from here, the script will just be following Flux units
 
-echo_b "\U000023F3 Wait for Flux components becoming ready"
+echo_b "\U000023F3 Wait for Flux units becoming ready"
 
 background_watch "    " gitrepositories kustomizations helmreleases helmcharts
 kubectl wait --for condition=Ready --timeout 1200s --all kustomizations,helmreleases

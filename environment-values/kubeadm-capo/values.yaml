@@ -1,13 +1,13 @@
 ---
 
-components:
+units:
   cluster:
     kustomization_spec:
-      path: ./kustomize-components/cluster-manifests/kubeadm-capo/orange-falcon
+      path: ./kustomize-units/cluster-manifests/kubeadm-capo/orange-falcon
   workload-cluster:
     repo: capi-bootstrap
     kustomization_spec:
-      path: ./kustomize-components/cluster-manifests/kubeadm-capo/dns-client-orange-falcon
+      path: ./kustomize-units/cluster-manifests/kubeadm-capo/dns-client-orange-falcon
       postBuild:
         substitute:
           CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'

@@ -12,4 +12,4 @@ image: registry.gitlab.com/t6306/components/docker-images/ci-image:v1-0-0
 .helm-template-yamllint:
   script:
     - helm dependency build charts/${HELM_NAME}
-    - helm template ${HELM_NAME} charts/${HELM_NAME} --set test_all_components_enabled=true | yamllint - -d "$(cat < tools/gci-templates/yamllint.yaml) $(cat < tools/gci-templates/yamllint-helm-template-rules)"
+    - helm template ${HELM_NAME} charts/${HELM_NAME} --set test_all_units_enabled=true | yamllint - -d "$(cat < tools/gci-templates/yamllint.yaml) $(cat < tools/gci-templates/yamllint-helm-template-rules)"

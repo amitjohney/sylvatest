@@ -4,7 +4,7 @@ It is not the only way to instanciate the chart, neither the simplest one, but i
 
 # Managing sylva-units helmrelease values
 
-We use [Kustomize](https://kubectl.docs.kubernetes.io/references/kustomize/kustomization/) to generate ConfigMaps and Secrets that are used to instantiate the `sylva-units` Helm chart [helm-release.yaml](../kustomize-components/sylva-units/base/helm-release.yaml) as override values over the chart default values [values.yaml](../charts/sylva-units/values.yaml). These kustomisations are just provided as samples to help users build resources that follow the expected format, feel free to build them to see how they look like (you can use `kubectl kustomize environment-values/kubeadm-capd` for example)
+We use [Kustomize](https://kubectl.docs.kubernetes.io/references/kustomize/kustomization/) to generate ConfigMaps and Secrets that are used to instantiate the `sylva-units` Helm chart [helm-release.yaml](../kustomize-units/sylva-units/base/helm-release.yaml) as override values over the chart default values [values.yaml](../charts/sylva-units/values.yaml). These kustomisations are just provided as samples to help users build resources that follow the expected format, feel free to build them to see how they look like (you can use `kubectl kustomize environment-values/kubeadm-capd` for example)
 
 The typical pattern used to inject values consists in creating a ConfigMap or a Secret, and append it to the list of values used by the chart, for example:
 
@@ -13,7 +13,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ../../kustomize-components/sylva-units/base
+  - ../../kustomize-units/sylva-units/base
 
 configMapGenerator:
 - name: management-cluster-values
@@ -44,7 +44,7 @@ cluster:
 
 # Sharing configurations
 
-This mechanism can be extended to provide a convenient way to add various layers of specialisation for the chart. For example, you can override chart defaults with your company default, and another layer of values that corresponds to the environment. Kustomize components are very convenient for that purpose, as they'll allow to define various sets of parameters that can be appended to the values.
+This mechanism can be extended to provide a convenient way to add various layers of specialisation for the chart. For example, you can override chart defaults with your company default, and another layer of values that corresponds to the environment. Kustomize units are very convenient for that purpose, as they'll allow to define various sets of parameters that can be appended to the values.
 
 For example, your could host your company proxy definition in some internal repository, containing the following kustomization.yaml:
 
@@ -81,16 +81,16 @@ proxies:
   no_proxy=localhost,127.0.0.1,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8
 ```
 
-These configuration values can then be easely consumed by any deployment that just has to reference this component in its environment-value's kustomization:
+These configuration values can then be easely consumed by any deployment that just has to reference this unit in its environment-value's kustomization:
 
 ```
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ../../kustomize-components/sylva-units/base
+  - ../../kustomize-units/sylva-units/base
 
-components:
+units:
   - ssh://git@acme.git.repo.com/repo.git/environment-values/proxy?ref=main
 
 configMapGenerator:
@@ -117,7 +117,7 @@ kustomize build git::https://openstack-git-stg.itn.ftgroup/caas/caas-ci.git/envi
 
 # How values are merged
 
-All the provided values will be applied by Flux to the chart, in the following order of precedence (an item appearing later in the following list overrides the same item if it was specified earlier, see https://fluxcd.io/flux/components/helm/helmreleases/#values-overrides):
+All the provided values will be applied by Flux to the chart, in the following order of precedence (an item appearing later in the following list overrides the same item if it was specified earlier, see https://fluxcd.io/flux/units/helm/helmreleases/#values-overrides):
 
 - `spec.chart.spec.valuesFiles`
 - items in `spec.valuesFrom` (in the specified order)

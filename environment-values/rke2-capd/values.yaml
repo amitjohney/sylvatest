@@ -1,13 +1,13 @@
 ---
 
-components:
+units:
   cluster:
     kustomization_spec:
-      path: ./kustomize-components/cluster-manifests/rke2-capd/base
+      path: ./kustomize-units/cluster-manifests/rke2-capd/base
   workload-cluster:
     repo: capi-bootstrap
     kustomization_spec:
-      path: ./kustomize-components/cluster-manifests/rke2-capd/base
+      path: ./kustomize-units/cluster-manifests/rke2-capd/base
 
   #FIXME: figure out why pivot works locally and not in gitlab ci... (whereas pivot work with kubadm-capd in ci)
   pivot:
