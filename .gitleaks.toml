@@ -16,6 +16,7 @@ paths = [
     '''node_modules''',
     '''vendor''',
     '''environment-values/base/secrets.yaml''',
+    '''sops-howto.md'''
 ]
 commits = [ "98e43a9925e12295027f18fe3f94f773a1e3d487", 
             "7e9319dbd6f9535fb8dcd5079d275e717fb9288d",
