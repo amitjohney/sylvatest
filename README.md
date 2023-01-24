@@ -82,6 +82,8 @@ password=glpat-xxxxxxxxxxxxxx
 EOF
 ```
 
+> **_NOTE:_** obviously, the files  `git-secrets.env` are sensitive and are meant to be ignored by Git  (see `.gitignore`). However, for the sake of security, it can be good idea to [secure these files with SOPS](./sops-howto.md) to mitigate the risk of leakage.
+
 (You can also deploy cluster using the kubeadm infrastructure provider by using the corresponding `environment-values/kubeadm-capd` directory.)
 
 If you are using a corporate proxy, you should also provide proxy URL in the values files `environment-values/my-rke2-capd/values.yaml`:
@@ -146,6 +148,8 @@ username=your_name
 password=glpat-xxxxxxxxxxxxxx
 EOF
 ```
+
+> **_NOTE:_** obviously, the files  `git-secrets.env` are sensitive and are meant to be ignored by Git  (see `.gitignore`). However, for the sake of security, it can be good idea to [secure these files with SOPS](./sops-howto.md) to mitigate the risk of leakage.
 
 You will also have to provide yourOopenStack credentials in `environment-values/my-capo-env/secrets.yaml`
 
