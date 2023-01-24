@@ -13,3 +13,30 @@ image: registry.gitlab.com/t6306/components/docker-images/ci-image:v1-0-0
   script:
     - helm dependency build charts/${HELM_NAME}
     - helm template ${HELM_NAME} charts/${HELM_NAME} --set test_all_units_enabled=true | yamllint - -d "$(cat < tools/gci-templates/yamllint.yaml) $(cat < tools/gci-templates/yamllint-helm-template-rules)"
+
+.helm-schema-validation:
+  script:
+    - |
+      RED='\033[0;31m'
+      NC='\033[0m'
+      echo -e "\e[0Ksection_start:`date +%s`:lint_schema\r\e[0K--------------- Lint Schema YAML file"
+      echo "Lint charts/${HELM_NAME}/values.schema.yaml ..."
+      yamllint --no-warnings -c tools/gci-templates/yamllint.yaml charts/${HELM_NAME}/values.schema.yaml
+      echo "   DONE"
+      echo -e "\e[0Ksection_end:`date +%s`:lint_schema\r\e[0K"
+
+      echo -e "\e[0Ksection_start:`date +%s`:check_generation\r\e[0K--------------- Check that ${HELM_NAME}/values.schema.json was regenerated from values.schema.yaml ..."
+      tools/yaml2json.py < charts/${HELM_NAME}/values.schema.yaml > values.schema.json
+      if ! cmp -s values.schema.json charts/${HELM_NAME}/values.schema.json ; then
+        echo "${RED}charts/${HELM_NAME}/values.schema.json wasn't generated with charts/${HELM_NAME}/values.schema.yaml${NC}"
+        exit 1
+      fi
+      echo "   DONE"
+      echo -e "\e[0Ksection_end:`date +%s`:check_generation\r\e[0K"
+
+      echo -e "\e[0Ksection_start:`date +%s`:validate_schema\r\e[0K--------------- Validate that the chart values schema contains a valid JSON Schema ..."
+      python3 -m jsonschema -o pretty /usr/lib/python3.10/site-packages/jsonschema/schemas/draft2020-12.json -i values.schema.json
+      echo "   DONE"
+      echo -e "\e[0Ksection_end:`date +%s`:validate_schema\r\e[0K"
+
+
