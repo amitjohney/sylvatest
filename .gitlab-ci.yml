@@ -152,6 +152,7 @@ sylva-units-schema:
     - find environment-values/*-capd/ -name values.yaml -exec yq -i '.cluster.capd.docker_host = strenv(DOCKER_HOST)' {} \;
     - export CLUSTER_EXTERNAL_IP=$(echo $KIND_PREFIX | awk -F"." '{print $1"."$2"."$3".100"}')
     - find environment-values/*-capd/ -name values.yaml -exec yq -i '.cluster.cluster_external_ip = strenv(CLUSTER_EXTERNAL_IP)' {} \;
+    - if [[ -n $DOCKERIO_REGISTRY_MIRROR ]]; then find environment-values/*-capd/ -name values.yaml -exec yq -i '.dockerio_registry_mirror = strenv(DOCKERIO_REGISTRY_MIRROR)' {} \;; fi
     - export DEBUG_ON_EXIT=1
 
     - echo -e "\e[0Ksection_end:`date +%s`:before_script_section\r\e[0K"
