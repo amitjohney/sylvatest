@@ -431,14 +431,14 @@ units:
           kind: Cluster
           name: management-cluster
           namespace: default
-      units:
-        - '{{ tuple "../../units/proxies/KubeadmControlPlane"
+      components:
+        - '{{ tuple "../../components/proxies/KubeadmControlPlane"
                     (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
-        - '{{ tuple "../../units/proxies/RKE2ControlPlane"
+        - '{{ tuple "../../components/proxies/RKE2ControlPlane"
                     (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
-        - '{{ tuple "../../units/registry-mirror/KubeadmControlPlane"
+        - '{{ tuple "../../components/registry-mirror/KubeadmControlPlane"
                     (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
-        - '{{ tuple "../../units/registry-mirror/RKE2ControlPlane"
+        - '{{ tuple "../../components/registry-mirror/RKE2ControlPlane"
                     (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
 
   calico:
