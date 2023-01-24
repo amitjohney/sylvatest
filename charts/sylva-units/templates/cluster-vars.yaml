@@ -1,5 +1,5 @@
 {{- $envAll := set . "Values" (include "interpret-values-gotpl" . | fromJson) -}}
-{{- if (tuple $envAll "cluster" | include "is-component-enabled") -}}
+{{- if (tuple $envAll "cluster" | include "is-unit-enabled") -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:

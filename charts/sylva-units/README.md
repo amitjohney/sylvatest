@@ -3,23 +3,23 @@
 ## Purpose
 
 The key purpose of this chart is to facilitate the creation of the bootstrap cluster and the
-follow-up with the creation with the management cluster, both sharing many commmon components.
+follow-up with the creation with the management cluster, both sharing many commmon units.
 
-The installation of the components is done thanks to FluxCD resources. And the dependency
-resolution built-in Flux is used to orchestrate the creation of the management cluster after installing the base components on the bootstrap cluster, which is then followed by
-the deployments of components in the management cluster.
+The installation of the units is done thanks to FluxCD resources. And the dependency
+resolution built-in Flux is used to orchestrate the creation of the management cluster after installing the base units on the bootstrap cluster, which is then followed by
+the deployments of units in the management cluster.
 
-This chart also acts as the place where we handle "meta-release" aspect; ie. where we determine the different versions to use for the different components.
+This chart also acts as the place where we handle "meta-release" aspect; ie. where we determine the different versions to use for the different units.
 
 ## Not a typical Helm chart
 
 While most Helm charts create Deployments/ConfigMaps/Service/etc to deploy a given service,
 this chart does not do this at all, it instantiates only Flux resources that tell Flux how
-to deploy our components.
+to deploy our units.
 
 These resources are:
 
-* Kustomization resources, pointing to Git repositories in which kustomize `kustomization.yaml` and Kubernetes manifest files are defined describing how to deploy a component
+* Kustomization resources, pointing to Git repositories in which kustomize `kustomization.yaml` and Kubernetes manifest files are defined describing how to deploy a unit
 * HelmRelease resources, which contain definitions of Helm releases for Helm charts hosted for instance on Git (or in Helm repos) with the wanted overridden Helm values.
 
 ## What this chart does
@@ -35,13 +35,13 @@ When instantiating this chart on the management cluster, this chart will:
 
 * install Flux resources for the management of Flux itself (to allow managing Flux itself via GitOps)
 * install CAPI and the desired providers (and their dependencies)
-* Flux definitions for any other component to deploy on the management cluster (Rancher, security tools, monitoring tools, etc.)
+* Flux definitions for any other unit to deploy on the management cluster (Rancher, security tools, monitoring tools, etc.)
 
 When a "pivot" setup is wanted, where the management cluster manages its own ClusterAPI
 lifecycle with GitOps, the following additional actions are done:
 
 * the installation of the chart on the bootstrap cluster triggers a pivot operation once
-  CAPI components are installed on the management cluster
+  CAPI units are installed on the management cluster
 * the installation of the chart on the management cluster install Flux resources
   for the ClusterAPI definitions describing itself
 
@@ -75,15 +75,15 @@ cluster:
     infra_provider: capd
     bootstrap_provider: cabpr
 
-components:
+units:
   capbr:
     enabled: true
   cappbr:
     enabled: true
 
   # this declares an override to deploy 'mydevbranch' branch
-  # of https://gitlab.com/t6306/components/mycomponent.git/
-  mycomponent:
+  # of https://gitlab.com/t6306/components/myunit.git/
+  myunit:
     spec:
       ref:
         branch: mydevbranch
@@ -103,24 +103,24 @@ Helm overrides, to allow deploying and maintaining different flavors/specializat
 of Sylva, relying on kustomize overlays carrying the different layers that inject Helm
 overrides into a FluxCD HelmRelease.
 
-This is how this chart is used [in the context of this Git repository](../../kustomize-components/sylva-units/).
+This is how this chart is used [in the context of this Git repository](../../kustomize-units/sylva-units/).
 
 ## Component definitions examples
 
-To define a new component, an entry can be added under `components` in values (either in `values.yaml` in the chart,
+To define a new unit, an entry can be added under `units` in values (either in `values.yaml` in the chart,
 or in the values of the chart overriden for a given deployment flavor or for a given deployment).
 
 ### Component using a Kustomization defined in capi-bootstrap repo
 
 ```yaml
-components:
+units:
 
-  my-component:
+  my-unit:
     repo: capi-bootstrap   # this refers to .git_repo_templates.capi-bootstrap (defined in default values)
     kustomization_spec:
-      path: ./kustomize-component/myComponent
+      path: ./kustomize-unit/myComponent
     depends_on:
-      - name: my-other-component  # my-component will not be deployed before my-other-component is ready
+      - name: my-other-unit  # my-unit will not be deployed before my-other-unit is ready
 ```
 
 ### Component using a Kustomization defined in another repository
@@ -131,9 +131,9 @@ git_repo_templates:
     spec:
       url: https://gitlab.com/t6306/components/foo.git
 
-components:
+units:
 
-  my-component:
+  my-unit:
     repo: project-foo
     kustomization_spec:
       path: ./kustomize  # this will point to https://gitlab.com/t6306/components/foo.git / kustomize
@@ -149,9 +149,9 @@ git_repo_templates:
       ref:
         tag: v1.0.3
 
-components:
+units:
 
-  my-component:
+  my-unit:
     repo: helm-chart-bar
     helmrelease_spec:
       chart:
@@ -159,13 +159,13 @@ components:
           chart: ./my-chart   # this will point to https://gitlab.com/t6306/helm-charts/bar.git / my-chart  on tag v1.0.3
 ```
 
-With this type of component definition, Flux will reconciliate the HelmRelease based
+With this type of unit definition, Flux will reconciliate the HelmRelease based
 on the Git revision (ignoring version field in the Helm chart `Chart.yaml` file).
 
 ### Component using a Helm chart defined in a Helm repository
 
 ```yaml
-components:
+units:
 
   cert-manager:
     helm_repo_url: https://charts.jetstack.io
@@ -176,14 +176,14 @@ components:
           version: v1.8.2
 ```
 
-### How to feed settings coming from Helm values into the configuration of components
+### How to feed settings coming from Helm values into the configuration of units
 
-You can use Helm templating to feed settings coming from values into the configuration of your components:
+You can use Helm templating to feed settings coming from values into the configuration of your units:
 
 ```yaml
 mgmt_cluster_domain_name: my-mgmt-cluster.foo.org
 
-components:
+units:
 
   foo:
     ...
@@ -230,7 +230,7 @@ port_list:
 - 80
 - '{{ tuple 443 .Values.enable_https | include "set-only-if" }}'
 
-components:
+units:
   foo:
     # example of a conditional dependency
     depends_on:

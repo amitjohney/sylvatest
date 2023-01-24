@@ -1,4 +1,4 @@
-components:
+units:
   workload-cluster:
     enabled: management-only
     repo: capi-bootstrap
@@ -15,17 +15,17 @@ components:
           MACHINE_IMAGE: '{{ .Values.cluster.image }}'
           K8SGATEWAY_LB_IP: '{{ .Values.cluster.cluster_external_ip }}'   # NOTE: same is used for k8s-gateway DNS svc in management cluster
       components:
-        - '{{ tuple "../../components/dns-client/kind/KubeadmControlPlane"
+        - '{{ tuple "../../units/dns-client/kind/KubeadmControlPlane"
                     (and (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/dns-client/kind/RKE2ControlPlane"
+        - '{{ tuple "../../units/dns-client/kind/RKE2ControlPlane"
                     (and (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/proxies/KubeadmControlPlane"
+        - '{{ tuple "../../units/proxies/KubeadmControlPlane"
                     (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/proxies/RKE2ControlPlane"
+        - '{{ tuple "../../units/proxies/RKE2ControlPlane"
                     (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/registry-mirror/KubeadmControlPlane"
+        - '{{ tuple "../../units/registry-mirror/KubeadmControlPlane"
                     (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/registry-mirror/RKE2ControlPlane"
+        - '{{ tuple "../../units/registry-mirror/RKE2ControlPlane"
                     (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
 
   workload-cluster-calico:

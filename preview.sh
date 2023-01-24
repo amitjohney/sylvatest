@@ -8,7 +8,7 @@ if ! command -v helm &>/dev/null; then
 fi
 
 echo_b "\U0001F5D8 Bootstraping flux"
-kubectl kustomize kustomize-components/flux-system/bootstrap | envsubst | kubectl apply -f -
+kubectl kustomize kustomize-units/flux-system/bootstrap | envsubst | kubectl apply -f -
 
 echo_b "\U000023F3 Wait for Flux to be ready..."
 kubectl wait --for condition=Available --timeout 600s --all-namespaces --all deployment
@@ -22,7 +22,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
 - $(realpath --relative-to=${PREVIEW_DIR} ${ENV_PATH})
-components:
+units:
 - $(realpath --relative-to=${PREVIEW_DIR} ./environment-values/preview)
 EOF
 kubectl kustomize ${PREVIEW_DIR} | sed "s/CURRENT_COMMIT/${CURRENT_COMMIT}/" | kubectl apply -f -

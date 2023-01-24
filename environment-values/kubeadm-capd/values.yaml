@@ -1,13 +1,13 @@
 ---
 
-components:
+units:
   cluster:
     kustomization_spec:
-      path: ./kustomize-components/cluster-manifests/kubeadm-capd/base
+      path: ./kustomize-units/cluster-manifests/kubeadm-capd/base
   workload-cluster:
     repo: capi-bootstrap
     kustomization_spec:
-      path: ./kustomize-components/cluster-manifests/kubeadm-capd/base
+      path: ./kustomize-units/cluster-manifests/kubeadm-capd/base
 
 cluster:
   image: registry.gitlab.com/t6306/components/docker-images/kind-with-cni:v1-24-4 # just kindest/node with preloaded vlan cni binary
