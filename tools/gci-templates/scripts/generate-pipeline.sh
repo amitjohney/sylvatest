@@ -21,6 +21,10 @@ do
     - changes:
         - ${f}/**/*
         - tools/gci-templates/**/*
+        - tools/gci-templates/**/*
+  needs:
+    - job: '${f##*/}:helm-schema-validation'
+      optional: true
 
 '${f##*/}:helm-yamllint':
   stage: test
@@ -41,6 +45,24 @@ do
     - changes:
         - ${f}/**/*
         - tools/gci-templates/**/*
+  needs:
+    - job: '${f##*/}:helm-schema-validation'
+      optional: true
+
+'${f##*/}:helm-schema-validation':
+  stage: test
+  extends: .helm-schema-validation
+  variables:
+    HELM_NAME: "${f##*/}"
+  rules:
+    - exists:
+        - charts/${f##*/}/values.schema.yaml
+        - charts/${f##*/}/values.schema.json
+      changes:
+        - tools/gci-templates/**/*
+        - charts/${f##*/}/values.schema.json
+        - charts/${f##*/}/values.schema.yaml
+        - tools/yaml2json.py
 EOF
 
 done
