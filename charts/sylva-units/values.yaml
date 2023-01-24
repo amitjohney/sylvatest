@@ -89,7 +89,8 @@ component_helmrelease_kustomization_spec_default:
   path: ./kustomize-components/helmrelease-generic
   sourceRef:
     kind: GitRepository
-    name: capi-bootstrap  # GitRepository created by templates/gitrepository-self.yaml
+    # GitRepository created by templates/gitrepository-self.yaml unless an existing repository is used
+    name: '{{ hasKey (index .Values.git_repo_templates "capi-bootstrap") "existing_gitrepository" | ternary (index .Values.git_repo_templates "capi-bootstrap").existing_gitrepository "capi-bootstrap" }}'
 
   wait: true
 
