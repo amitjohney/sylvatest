@@ -176,6 +176,7 @@ units:
     kustomization_spec:
       path: ./kustomize-units/sylva-ca
       targetNamespace: cert-manager
+      wait: true
 
 #  vault-tls issues certificates, meant to be used by Vault, from sylva-ca
   vault-tls:
@@ -185,6 +186,7 @@ units:
     kustomization_spec:
       path: ./kustomize-units/vault-tls
       targetNamespace: vault
+      wait: true
       postBuild:
         substitute:
           VAULT_DNS: '{{ .Values.cluster.vault.external_hostname }}'
@@ -302,6 +304,7 @@ units:
     repo: capi-bootstrap
     kustomization_spec:
       path: ./kustomize-units/cis-operator-scan
+      wait: true
       postBuild:
         substitute:
           SCAN_PROFILE: '{{ .Values.cluster.cis_benchmark_scan_profile }}'
@@ -586,6 +589,7 @@ units:
       - name: rancher
     kustomization_spec:
       path: ./kustomize-units/rancher-webhook
+      wait: true
 
   k8s-gateway:
     enabled: management-only
@@ -778,6 +782,7 @@ units:
           CLUSTER_FLAVOR: '{{ upper .Values.cluster.capi_providers.bootstrap_provider }} {{ upper .Values.cluster.capi_providers.infra_provider }}'
           CLUSTER_MONITORING: "enabled"
           CLUSTER_NAME: '{{ .Values.cluster.test_workload_cluster_name }}'
+      wait: true
 
   monitoring:
     enabled: '{{ include "is-unit-enabled" (tuple . "rancher") | eq "true" }}'
