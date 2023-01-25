@@ -2,9 +2,9 @@
 
 This project provides the tools and configuration to deploy a ClusterAPI management cluster and associated infrastructure in a declarative way, using Flux to keep some Kustomizations & Helm releases in sync with Git repos.
 
-It is build around the sylva-units helm chart that creates flux objects used to deploy various units depending on the capi bootstrap and infrastructure providers that you intend to use.
+It is build around the `sylva-units` helm chart that creates FluxCD objects used to deploy various software components, called "units", following the specific settings defined for the deployment.
 
-You can use it to deploy Cluster API and aditionnal units in an existing Kubernetes cluster, or you can use an intermediate temporary/disposable bootstrap cluster that will be used to provision the management cluster using cluster API, which will enable you to manage the lifecycle of the management cluster itself in the future. See [Bootstrap process](#bootstrap-process) for more details on that process.
+You can use it to deploy Cluster API and aditionnal units in an existing Kubernetes cluster, or you can use an intermediate temporary/disposable bootstrap cluster that will be used to provision the management cluster using Cluster API, which will enable you to manage the lifecycle of the management cluster itself in the future. See [Bootstrap process](#bootstrap-process) for more details on that process.
 
 ## Repository structure
 
@@ -23,7 +23,7 @@ This project enables to bootstrap a ClusterAPI management cluster in a declarati
 - Install Flux on that cluster
 - Use a Flux HelmRelease to control the deployment of various Flux Kustomizations that will successively deploy cluster-api & infrastructure units
 - Other dependent Kustomizations will also be deployed to install management cluster definitions, that will be used by cluster-api to deploy the management cluster
-- Once the management cluster is deployed, Flux will be installed in it, as well as the sylva-units HelmRelease that will deploy again cluster-api & infrastructure units in the management cluster
+- Once the management cluster is deployed, Flux will be installed in it, as well as the `sylva-units` HelmRelease that will deploy again cluster-api & infrastructure units in the management cluster
 - Management cluster definitions are moved (aka. pivoted) to management cluster, that will become independent and self-managed
 - At this stage, bootstrap cluster can be deleted
 
@@ -38,7 +38,7 @@ As explained above, all unit manifests (cluster-api & infrastructure units, clus
 This chart can be installed using the helm tool, but we encourage to deploy it using a [flux HelmRelease](https://fluxcd.io/flux/components/helm/helmreleases/). One of the main advantage of this approach is that it enables us to merge several layers of values over the [charts defaults](charts/sylva-units/values.yaml) using kubernetes ConfigMaps and Secrets. All these values are typically created using Kustomizations provided in [environment-values](environment-values) directory. For example, the chart could be deployed with following values:
 
 - [default values](charts/sylva-units/values.yaml) from the chart
-- [bootstrap values](charts/sylva-units/bootstrap.values.yaml) that will overloads defaults with some units that are specific to the bootstrap process (copy config to management cluster, install Flux and sylva-units chart on it, pivot)
+- [bootstrap values](charts/sylva-units/bootstrap.values.yaml) that will overloads defaults with some units that are specific to the bootstrap process (copy config to management cluster, install Flux and `sylva-units` chart on it, pivot)
 - various layers of values relative to the deployment context can then be merged over default one, these are typically parameters that are shared inside a company (like an internal repository, or proxy URL). These values can be hosted in external repositories that will be fetched by the kustomize tool. This mechanism enables to efficiently share common values, and help minimizing the amount of parameters that users have to provide.
 - finally, user values will provide secrets and parameters that are specific to a deployment
 
@@ -103,7 +103,7 @@ Then you can launch the bootstrap process using provided configuration:
 ./bootstrap.sh environment-values/my-rke2-capd
 ```
 
-In the above command, we're just using the default configuration, but you will probably want to modify these values to adapt to your needs and environment. In order to add units in your cluster, you can enable some [configuration components](environment-values/components) that are provided to add more units in your cluster (like Rancher, workload-clusters, a monitoring stack, aso...). For that purpose, add the reference to the targeted configuration component int your [environment-value's kustomization](environment-values/rke2-capd/kustomization.yaml)
+In the above command, we're just using the default configuration, but you will probably want to modify these values to adapt to your needs and environment. In order to add units to your cluster, you can enable some [configuration components](environment-values/components) that are provided to add more units in your cluster. For that purpose, add the reference to the targeted configuration component int your [environment-value's kustomization](environment-values/rke2-capd/kustomization.yaml)
 
 For more details on environment-values generation you can have a look at the [dedicated README](environment-values/README.md).
 
