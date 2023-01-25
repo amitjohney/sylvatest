@@ -309,6 +309,19 @@ units:
         substitute:
           SCAN_PROFILE: '{{ .Values.cluster.cis_benchmark_scan_profile }}'
 
+  keycloak:
+    depends_on:
+    - name: sylva-ca
+    - '{{ tuple (dict "name" "ingress-nginx") (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | include "set-only-if" }}'
+    repo: capi-bootstrap
+    kustomization_spec:
+      path: ./kustomize-units/keycloak
+      targetNamespace: keycloak
+      postBuild:
+        substitute:
+          KEYCLOAK_DNS: '{{ .Values.cluster.keycloak.external_hostname }}'
+      wait: true
+
   capi:
     # ref_override:  # test
     #   branch: i-really-need-dev-branch-foo
@@ -906,6 +919,9 @@ cluster:
 
   vault:
     external_hostname: vault.sylva
+
+  keycloak:
+    external_hostname: keycloak.sylva
 
   metal3:
     ironic_ip: 66.66.66.66 # replace me (this IP is the IP at which Ironic is made accessible from BMCs or PXE network)
