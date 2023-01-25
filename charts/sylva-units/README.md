@@ -2,14 +2,21 @@
 
 ## Purpose
 
-The key purpose of this chart is to facilitate the creation of the bootstrap cluster and the
-follow-up with the creation with the management cluster, both sharing many commmon units.
+This chart deploys a set of sofware components called "units" on the current cluster.
 
-The installation of the units is done thanks to FluxCD resources. And the dependency
-resolution built-in Flux is used to orchestrate the creation of the management cluster after installing the base units on the bootstrap cluster, which is then followed by
+The installation of those units is done thanks to FluxCD resources.
+
+This chart key purpose in the Sylva stack is to coordinate the deployment of the software units
+making up the Sylva stack, and to handle the instantiation of the management cluster thanks to
+ClusterAPI.
+
+The dependency resolution built-in FluxCD is used to orchestrate the creation of the management
+cluster after installing the base units on the bootstrap cluster, which is then followed by
 the deployments of units in the management cluster.
 
-This chart also acts as the place where we handle "meta-release" aspect; ie. where we determine the different versions to use for the different units.
+This chart also acts as the place where we handle "meta-release" aspect (ie. where we
+determine the different versions to use))
+and as a single entry point where the settings of a given Sylva deployment are defined.
 
 ## Not a typical Helm chart
 
@@ -26,22 +33,22 @@ These resources are:
 
 When instantiating this chart on the bootstrap cluster, this chart will:
 
-* install CAPI and the desired providers, and their dependencies (e.g. cert-manager)
-* install CAPI definitions for the management cluster
+* install ClusterAPI and the desired providers, and their dependencies (e.g. cert-manager)
+* install ClusterAPI definitions for the management cluster
 * install Flux on the management cluster
 * instantiate itself on the management cluster (step 2 below)
 
 When instantiating this chart on the management cluster, this chart will:
 
 * install Flux resources for the management of Flux itself (to allow managing Flux itself via GitOps)
-* install CAPI and the desired providers (and their dependencies)
+* install ClusterAPI and the desired providers (and their dependencies)
 * Flux definitions for any other unit to deploy on the management cluster (Rancher, security tools, monitoring tools, etc.)
 
 When a "pivot" setup is wanted, where the management cluster manages its own ClusterAPI
 lifecycle with GitOps, the following additional actions are done:
 
 * the installation of the chart on the bootstrap cluster triggers a pivot operation once
-  CAPI units are installed on the management cluster
+  ClusterAPI units are installed on the management cluster
 * the installation of the chart on the management cluster install Flux resources
   for the ClusterAPI definitions describing itself
 
@@ -247,17 +254,3 @@ For more details on templating features & limitations, refer to [`_interpret-val
 
 * no use case is identified to instantiate this chart multiple times in a
   given namespace, so this isn't supported (resource names aren't prefixed with the release name)
-
-## TODO
-
-* to allow the `sylva-units` release on the management cluster to be handled via GitOps, we need
-  to generate it via a Kustomization (or HelmRelease) defined in the management cluster itself (instead of via a
-  Kustomization defined in the bootstrap cluster with a kubeConfig pointing to mgmt cluster) - this will require
-  adding an intermediate Kustomization to do that
-
-* have flux handle itself in the management cluster (currently broken when a proxy is needed)
-
-* allow use of `{{ .Values.xxx }}` in  some or all values (requires passing values into gotpl interpreter)  (?)
-
-* add GitLab CI for the chart:
-  * play `helm template` on a set of test `values.yaml` files
