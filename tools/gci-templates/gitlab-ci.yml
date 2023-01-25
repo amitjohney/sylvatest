@@ -1,18 +1,49 @@
 ---
 image: registry.gitlab.com/t6306/components/docker-images/ci-image:v1-0-0
 
+default:
+  before_script:
+    - chart_dir=charts/${HELM_NAME}
+    # we replace 'helm' by a wrapper ignoring the warnings about symlinks
+    - |
+      function helm() { $(which helm) $@ 2> >(grep -v 'found symbolic link' >&2); }
+
 .helm-lint:
   script:
-    - helm lint charts/${HELM_NAME}
+    - helm lint $chart_dir
 
 .helm-yamllint:
   script:
-    - yamllint charts/${HELM_NAME} -d "$(cat < tools/gci-templates/yamllint.yaml) $(cat < tools/gci-templates/yamllint-helm-exclude-chart-templates.yaml)"
+    - yamllint $chart_dir -d "$(cat < tools/gci-templates/yamllint.yaml) $(cat < tools/gci-templates/yamllint-helm-exclude-chart-templates.yaml)"
 
 .helm-template-yamllint:
   script:
-    - helm dependency build charts/${HELM_NAME}
-    - helm template ${HELM_NAME} charts/${HELM_NAME} --set test_all_units_enabled=true | yamllint - -d "$(cat < tools/gci-templates/yamllint.yaml) $(cat < tools/gci-templates/yamllint-helm-template-rules)"
+    - |
+      echo -e "\e[0Ksection_start:`date +%s`:helm_dependency_build\r\e[0K--------------- helm dependency build"
+
+      helm dependency build $chart_dir
+
+      echo -e "\e[0Ksection_end:`date +%s`:helm_dependency_build\r\e[0K"
+
+      echo -e "\e[0Ksection_start:`date +%s`:helm_base_values\r\e[0K--------------- Checking default values with 'helm template' and 'yamllint' (all units enabled) ..."
+
+      helm template ${HELM_NAME} $chart_dir --set test_all_units_enabled=true \
+        | yamllint - -d "$(cat < tools/gci-templates/yamllint.yaml) $(cat < tools/gci-templates/yamllint-helm-template-rules)"
+
+      echo OK
+      echo -e "\e[0Ksection_end:`date +%s`:helm_base_values\r\e[0K"
+
+      if [ -d $chart_dir/test-values ] && [ -n "$(find $chart_dir/test-values -mindepth 1 -maxdepth 1 -type d)" ] ; then
+        for dir in $chart_dir/test-values/*/ ; do
+          echo -e "\e[0Ksection_start:`date +%s`:helm_more_values\r\e[0K--------------- Checking values from test-values/$(basename $dir) with 'helm template' and 'yamllint' ..."
+
+          helm template ${HELM_NAME} $chart_dir $(ls $dir/*.y*ml | sed -e 's/^/--values /') \
+            | yamllint - -d "$(cat < tools/gci-templates/yamllint.yaml) $(cat < tools/gci-templates/yamllint-helm-template-rules)"
+
+          echo OK
+          echo -e "\e[0Ksection_end:`date +%s`:helm_more_values\r\e[0K"
+        done
+      fi
 
 .helm-schema-validation:
   script:
@@ -20,15 +51,15 @@ image: registry.gitlab.com/t6306/components/docker-images/ci-image:v1-0-0
       RED='\033[0;31m'
       NC='\033[0m'
       echo -e "\e[0Ksection_start:`date +%s`:lint_schema\r\e[0K--------------- Lint Schema YAML file"
-      echo "Lint charts/${HELM_NAME}/values.schema.yaml ..."
-      yamllint --no-warnings -c tools/gci-templates/yamllint.yaml charts/${HELM_NAME}/values.schema.yaml
+      echo "Lint $chart_dir/values.schema.yaml ..."
+      yamllint --no-warnings -c tools/gci-templates/yamllint.yaml $chart_dir/values.schema.yaml
       echo "   DONE"
       echo -e "\e[0Ksection_end:`date +%s`:lint_schema\r\e[0K"
 
       echo -e "\e[0Ksection_start:`date +%s`:check_generation\r\e[0K--------------- Check that ${HELM_NAME}/values.schema.json was regenerated from values.schema.yaml ..."
-      tools/yaml2json.py < charts/${HELM_NAME}/values.schema.yaml > values.schema.json
-      if ! cmp -s values.schema.json charts/${HELM_NAME}/values.schema.json ; then
-        echo "${RED}charts/${HELM_NAME}/values.schema.json wasn't generated with charts/${HELM_NAME}/values.schema.yaml${NC}"
+      tools/yaml2json.py < $chart_dir/values.schema.yaml > values.schema.json
+      if ! cmp -s values.schema.json $chart_dir/values.schema.json ; then
+        echo "${RED}$chart_dir/values.schema.json wasn't generated with $chart_dir/values.schema.yaml${NC}"
         exit 1
       fi
       echo "   DONE"
@@ -38,5 +69,3 @@ image: registry.gitlab.com/t6306/components/docker-images/ci-image:v1-0-0
       python3 -m jsonschema -o pretty /usr/lib/python3.10/site-packages/jsonschema/schemas/draft2020-12.json -i values.schema.json
       echo "   DONE"
       echo -e "\e[0Ksection_end:`date +%s`:validate_schema\r\e[0K"
-
-
