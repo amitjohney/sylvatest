@@ -9,7 +9,7 @@
 # The values.schema.json file is the file actually used by the Helm chart
 # and MUST BE RECREATED after each modification of this file:
 #
-#   tools/yaml2json.py < charts/sylva-units/values.schema.yaml > charts/sylva-units/values.schema.json
+#   ./tools/yaml2json.py < charts/sylva-units/values.schema.yaml > charts/sylva-units/values.schema.json
 #
 # (a CI job is here to check that)
 #
@@ -398,6 +398,15 @@ properties:
             format: hostname
 
       vault: # -------------------------------
+        type: object
+        additionalProperties: false
+        properties:
+
+          external_hostname:  # -------------------------------
+            type: string
+            format: hostname
+
+      keycloak: # -------------------------------
         type: object
         additionalProperties: false
         properties:
