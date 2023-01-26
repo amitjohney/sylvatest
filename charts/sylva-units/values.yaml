@@ -764,7 +764,7 @@ units:
           additionalRules:
             - apiGroups: ["*"]
               resources: ["*"]
-              verbs: [ "get", "list", "wacth" ]
+              verbs: [ "get", "list", "watch" ]
         ingress:
           enabled: true
           className: nginx
