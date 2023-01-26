@@ -218,7 +218,7 @@ kubectl get kustomizations
 If you don't have any kustomization in your cluster, it means that the sylva-units chart has not been properly instantiated. In that case you should have a look at the resources that are managing that chart:
 
 ```shell
-kubectl get gitrepositories.source.toolkit.fluxcd.io sylva-units
+kubectl get gitrepositories.source.toolkit.fluxcd.io sylva-core
 kubectl get helmcharts.source.toolkit.fluxcd.io default-sylva-units
 kubectl get helmreleases.helm.toolkit.fluxcd.io sylva-units
 ```

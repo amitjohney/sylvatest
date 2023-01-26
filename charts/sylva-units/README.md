@@ -110,20 +110,20 @@ Helm overrides, to allow deploying and maintaining different flavors/specializat
 of Sylva, relying on kustomize overlays carrying the different layers that inject Helm
 overrides into a FluxCD HelmRelease.
 
-This is how this chart is used [in the context of this Git repository](../../kustomize-units/sylva-units/).
+This is how this chart is used [in the context of this Git repository](../../environment-values/base/helm-release.yaml).
 
 ## Component definitions examples
 
 To define a new unit, an entry can be added under `units` in values (either in `values.yaml` in the chart,
 or in the values of the chart overriden for a given deployment flavor or for a given deployment).
 
-### Component using a Kustomization defined in capi-bootstrap repo
+### Component using a Kustomization defined in sylva-core repo
 
 ```yaml
 units:
 
   my-unit:
-    repo: capi-bootstrap   # this refers to .git_repo_templates.capi-bootstrap (defined in default values)
+    repo: sylva-core   # this refers to .git_repo_templates.sylva-core (defined in default values)
     kustomization_spec:
       path: ./kustomize-unit/myComponent
     depends_on:
@@ -223,7 +223,7 @@ git_auth_default:
   password: glpat-XXXXX
 
 git_repo_templates:
-  capi-bootstrap:
+  sylva-core:
     spec:
       ...
     auth: '{{ .Values.git_auth_default | include "preserve-type" }}'

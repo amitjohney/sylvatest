@@ -29,11 +29,11 @@ kubectl kustomize ${PREVIEW_DIR} | sed "s/CURRENT_COMMIT/${CURRENT_COMMIT}/" | k
 rm -Rf ${PREVIEW_DIR}
 
 # this is just to force-refresh in a dev environment with a new commit (or refreshed parameters)
-kubectl annotate --overwrite -n sylva-units-preview gitrepository/sylva-units reconcile.fluxcd.io/requestedAt="$(date +%s)"
+kubectl annotate --overwrite -n sylva-units-preview gitrepository/sylva-core reconcile.fluxcd.io/requestedAt="$(date +%s)"
 kubectl annotate --overwrite -n sylva-units-preview helmrelease/sylva-units reconcile.fluxcd.io/requestedAt="$(date +%s)"
 
 echo_b "\U000023F3 Wait for Helm release to be ready"
-for flux_resource in gitrepository/sylva-units helmchart/sylva-units-preview-sylva-units helmrelease/sylva-units; do
+for flux_resource in gitrepository/sylva-core helmchart/sylva-units-preview-sylva-units helmrelease/sylva-units; do
     if ! kubectl wait --for condition=Ready --timeout 100s -n sylva-units-preview $flux_resource; then
         echo_b "\U0001F4A5 Resource $flux_resource did not become ready in time"
         kubectl get -n sylva-units-preview $flux_resource -o yaml
@@ -48,5 +48,5 @@ echo_b "\U000023F3 Retrieve the final set of values (after gotpl rendering)"
 kubectl get secrets -n sylva-units-preview sylva-units-values-debug -o template="{{ .data.values }}" | base64 -d
 
 echo_b "\U000023F3 Delete preview chart and namespace"
-kubectl delete -n sylva-units-preview helmrelease/sylva-units gitrepository/sylva-units
+kubectl delete -n sylva-units-preview helmrelease/sylva-units gitrepository/sylva-core
 kubectl delete namespace sylva-units-preview

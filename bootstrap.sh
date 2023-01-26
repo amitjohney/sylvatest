@@ -23,7 +23,7 @@ kubectl kustomize ${ENV_PATH} | sed "s/CURRENT_COMMIT/${CURRENT_COMMIT}/" | kube
 background_watch bootstrap gitrepositories kustomizations helmreleases helmcharts
 
 # this is just to force-refresh in a dev environment with a new commit (or refreshed parameters)
-kubectl annotate --overwrite gitrepository/sylva-units reconcile.fluxcd.io/requestedAt="$(date +%s)"
+kubectl annotate --overwrite gitrepository/sylva-core reconcile.fluxcd.io/requestedAt="$(date +%s)"
 kubectl annotate --overwrite helmrelease/sylva-units reconcile.fluxcd.io/requestedAt="$(date +%s)"
 
 # Starting from here, the script will just be following units & cluster deployment :)

@@ -83,7 +83,7 @@ spec: {{ $git_repo_spec | toYaml | nindent 2 }}
         {{/*
         if helm_release_spec is used then we inject our GitRepository in it as sourceRef
         (the Kustomization will in that case, see in 'unit_helmrelease_kustomization_spec_default',
-         use capi-bootstrap defined in 'gitrepository-self.yaml' as the GitRepo)
+         use sylva-core defined in 'gitrepository-self.yaml' as the GitRepo)
         */}}
         {{- $helmrelease_spec_overrides = dict "chart" (dict "spec" (dict "sourceRef" (dict "kind" "GitRepository" "name" $git_repo_name) "reconcileStrategy" "Revision")) -}}
       {{- else -}}{{/* if 'helmrelease_spec' isn't used, then the GitRepository is used for the Kustomization */}}

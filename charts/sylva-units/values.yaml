@@ -12,7 +12,7 @@ registry_secret:
   registry.gitlab.com: '{{ .Values.git_auth_default | include "preserve-type" }}'
 
 # repository secrets
-# (when this chart is instantiated with a Flux HelmRelease following the definition in `kustomize-units/sylva-units/base/helm-release.yaml` `git_auth_default` will be copied from the Secret used for the corresponding Flux GitRepository, but it can be overwritten)
+# (when this chart is instantiated with a Flux HelmRelease following the definition in `environment-values/base/helm-release.yaml` `git_auth_default` will be copied from the Secret used for the corresponding Flux GitRepository, but it can be overwritten)
 git_auth_default:
   username: your_user_name
   password: glpat-XXXXX
@@ -33,7 +33,7 @@ git_repo_templates: # template to generate Flux GitRepository resources
   #       branch: main
   #   existing_gitrepository: optional, when this value is set the specified GitRepository will be used instead of creating one based on 'spec'
 
-  capi-bootstrap:
+  sylva-core:
     spec:
       url: https://gitlab.com/t6306/components/capi-bootstrap.git
       ref:
@@ -90,7 +90,7 @@ unit_helmrelease_kustomization_spec_default:
   sourceRef:
     kind: GitRepository
     # GitRepository created by templates/gitrepository-self.yaml unless an existing repository is used
-    name: '{{ hasKey (index .Values.git_repo_templates "capi-bootstrap") "existing_gitrepository" | ternary (index .Values.git_repo_templates "capi-bootstrap").existing_gitrepository "capi-bootstrap" }}'
+    name: '{{ hasKey (index .Values.git_repo_templates "sylva-core") "existing_gitrepository" | ternary (index .Values.git_repo_templates "sylva-core").existing_gitrepository "sylva-core" }}'
 
   wait: true
 
@@ -122,7 +122,7 @@ units:
     # note that Flux is always installed on the current cluster as a pre-requisite to installing the chart
     # this units contains Flux definitions *to manage the Flux system itself via gitops*
 
-    repo: capi-bootstrap
+    repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/flux-system/base
       targetNamespace: flux-system
@@ -172,7 +172,7 @@ units:
   sylva-ca:
     depends_on:
     - name: cert-manager
-    repo: capi-bootstrap
+    repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/sylva-ca
       targetNamespace: cert-manager
@@ -182,7 +182,7 @@ units:
   vault-tls:
     depends_on:
     - name: sylva-ca
-    repo: capi-bootstrap
+    repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/vault-tls
       targetNamespace: vault
@@ -301,7 +301,7 @@ units:
     enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.phase | eq "management") }}'
     depends_on:
       - name: cis-operator
-    repo: capi-bootstrap
+    repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/cis-operator-scan
       wait: true
@@ -313,7 +313,7 @@ units:
     depends_on:
     - name: sylva-ca
     - '{{ tuple (dict "name" "ingress-nginx") (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | include "set-only-if" }}'
-    repo: capi-bootstrap
+    repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/keycloak
       targetNamespace: keycloak
@@ -325,7 +325,7 @@ units:
   capi:
     # ref_override:  # test
     #   branch: i-really-need-dev-branch-foo
-    repo: capi-bootstrap
+    repo: sylva-core
     depends_on:
       - name: cert-manager
     kustomization_spec:
@@ -334,7 +334,7 @@ units:
 
   capd:
     enabled: '{{ eq .Values.cluster.capi_providers.infra_provider "capd" }}'
-    repo: capi-bootstrap
+    repo: sylva-core
     depends_on:
       - name: cert-manager
     kustomization_spec:
@@ -346,7 +346,7 @@ units:
 
   capo:
     enabled: '{{ eq .Values.cluster.capi_providers.infra_provider "capo" }}'
-    repo: capi-bootstrap
+    repo: sylva-core
     depends_on:
       - name: cert-manager
     kustomization_spec:
@@ -355,7 +355,7 @@ units:
 
   capm3:
     enabled: '{{ eq .Values.cluster.capi_providers.infra_provider "capm3" }}'
-    repo: capi-bootstrap
+    repo: sylva-core
     depends_on:
       - name: cert-manager
     kustomization_spec:
@@ -364,7 +364,7 @@ units:
 
   capv:
     enabled: '{{ eq .Values.cluster.capi_providers.infra_provider "capv" }}'
-    repo: capi-bootstrap
+    repo: sylva-core
     depends_on:
       - name: cert-manager
     kustomization_spec:
@@ -373,7 +373,7 @@ units:
 
   cabpk:  # kubeadm
     enabled: '{{ eq .Values.cluster.capi_providers.bootstrap_provider "cabpk" }}'
-    repo: capi-bootstrap
+    repo: sylva-core
     depends_on:
       - name: cert-manager
     kustomization_spec:
@@ -382,7 +382,7 @@ units:
 
   cabpr:  # RKE2
     enabled: '{{ eq .Values.cluster.capi_providers.bootstrap_provider "cabpr" }}'
-    repo: capi-bootstrap
+    repo: sylva-core
     depends_on:
       - name: cert-manager
     kustomization_spec:
@@ -423,7 +423,7 @@ units:
 
   cluster:
     enabled: yes
-    repo: capi-bootstrap
+    repo: sylva-core
     depends_on:
       - name: capi
       - name: '{{ .Values.cluster.capi_providers.infra_provider }}'
@@ -523,7 +523,7 @@ units:
 
   imageswap-webhook:
     enabled: '{{ include "is-unit-enabled" (tuple . "rancher") | eq "true" }}'
-    repo: capi-bootstrap
+    repo: sylva-core
     depends_on:
       - name: cert-manager
     kustomization_spec:
@@ -597,7 +597,7 @@ units:
 
   rancher-webhook-service:
     enabled: '{{ include "is-unit-enabled" (tuple . "rancher") | eq "true" }}'
-    repo: capi-bootstrap
+    repo: sylva-core
     depends_on:
       - name: rancher
     kustomization_spec:
@@ -625,7 +625,7 @@ units:
 
   metallb:
     enabled: '{{ and (.Values.cluster.capi_providers.infra_provider | eq "capd") (.Values.phase | eq "management") }}'
-    repo: capi-bootstrap
+    repo: sylva-core
     depends_on:
     - name: cert-manager
     kustomization_spec:
@@ -634,7 +634,7 @@ units:
 
   metallb-config:
     enabled: '{{ and (.Values.cluster.capi_providers.infra_provider | eq "capd") (.Values.phase | eq "management") }}'
-    repo: capi-bootstrap
+    repo: sylva-core
     depends_on:
     - name: metallb
     kustomization_spec:
@@ -695,7 +695,7 @@ units:
 
   first-login-rancher:
     enabled: '{{ include "is-unit-enabled" (tuple . "rancher") | eq "true" }}'
-    repo: capi-bootstrap
+    repo: sylva-core
     depends_on:
       - name: rancher
     kustomization_spec:
@@ -784,7 +784,7 @@ units:
   # and it would need to have proper customization of ${CLUSTER_NAME} and ${CLUSTER_MONITORING}
   cluster-import:
     enabled: '{{ include "is-unit-enabled" (tuple . "workload-cluster") | eq "true" }}'
-    repo: capi-bootstrap
+    repo: sylva-core
     depends_on:
       - name: first-login-rancher
       - name: workload-cluster
@@ -799,7 +799,7 @@ units:
 
   monitoring:
     enabled: '{{ include "is-unit-enabled" (tuple . "rancher") | eq "true" }}'
-    repo: capi-bootstrap
+    repo: sylva-core
     depends_on:
       - name: rancher
     kustomization_spec:
@@ -815,7 +815,7 @@ units:
   # and is conditioned by a boolean flag .Values.env_type_ci
   check-rancher-clusters:
     enabled: '{{ .Values.env_type_ci | ternary "management-only" false }}'
-    repo: capi-bootstrap
+    repo: sylva-core
     depends_on:
       - name: cluster-import
     kustomization_spec:

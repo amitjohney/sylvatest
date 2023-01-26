@@ -9,7 +9,7 @@ spec:
     spec:
       sourceRef:
         kind: GitRepository
-        name: capi-bootstrap
+        name: sylva-core
         namespace: default
       chart: charts/cluster-vsphere
       reconcileStrategy: Revision
