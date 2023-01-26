@@ -22,7 +22,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
 - $(realpath --relative-to=${PREVIEW_DIR} ${ENV_PATH})
-units:
+components:
 - $(realpath --relative-to=${PREVIEW_DIR} ./environment-values/preview)
 EOF
 kubectl kustomize ${PREVIEW_DIR} | sed "s/CURRENT_COMMIT/${CURRENT_COMMIT}/" | kubectl apply -f -
