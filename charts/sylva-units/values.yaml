@@ -320,7 +320,7 @@ units:
       postBuild:
         substitute:
           KEYCLOAK_DNS: '{{ .Values.cluster.keycloak.external_hostname }}'
-      wait: true
+      wait: false
 
   capi:
     # ref_override:  # test
