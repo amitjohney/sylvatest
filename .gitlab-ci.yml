@@ -3,20 +3,18 @@ stages:
   - test
   - deploy
 
-image: registry.gitlab.com/t6306/components/docker-images/ci-image:v1-0-0
-
-services:
-  - name: docker:dind
-    alias: docker
-
-variables:
-  DOCKER_TLS_CERTDIR: ""
-  GITLEAKS_ARGS: '--verbose --log-opts=$CI_COMMIT_SHA'
-
 default:
   tags:
     - gitlab-org-docker
     # - docker
+  image: registry.gitlab.com/t6306/components/docker-images/ci-image:v1-0-0
+  services:
+    - name: docker:dind
+      alias: docker
+
+variables:
+  DOCKER_TLS_CERTDIR: ""
+  GITLEAKS_ARGS: '--verbose --log-opts=$CI_COMMIT_SHA'
 
 # included templates
 include:
