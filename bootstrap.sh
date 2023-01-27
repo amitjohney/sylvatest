@@ -2,6 +2,8 @@
 
 source tools/shell-lib/common.sh
 
+check_pivot_has_ran
+
 echo_b "\U0001F503 Bootstraping flux"
 kubectl kustomize kustomize-units/flux-system/bootstrap | envsubst | kubectl apply -f -
 
@@ -50,10 +52,23 @@ kubectl wait --for condition=Ready --timeout 1200s kustomization management-clus
 
 kubectl_additional_args="--kubeconfig management-cluster-kubeconfig" background_watch management gitrepositories kustomizations helmreleases helmcharts
 
-echo_b "\U000023F3 Wait for remaining units to be installed on management cluster and pivot"
-kubectl wait --for condition=Ready --timeout 1800s --all kustomizations
+echo_b "\U000023F3 Wait for base units to be installed on management cluster"
+kubectl wait --for condition=Ready --timeout 1800s kustomization sylva-units
 
-echo_b "\U000023F3 Wait for units installed on management cluster to be ready"
+echo_b "\U000023F3 Wait for pivot job to start"
+attempts=0
+max_attempts=50
+until kubectl get job pivot-job >/dev/null 2>&1
+do
+  sleep 10
+  echo "Waiting for pivot job to start ($attempts/$max_attempts)"
+  ((attempts++)) && ((attempts==max_attempts)) && echo "Timeout waiting for pivot job" && break
+done
+
+echo_b "\U000023F3 Wait for pivot to be done"
+kubectl wait job pivot-job --for=condition=Complete --timeout 600s
+
+echo_b "\U000023F3 Wait for remaining units installed on management cluster to be ready"
 kubectl --kubeconfig management-cluster-kubeconfig wait --for condition=Ready --timeout 1800s --all kustomizations
 
 echo_b "\U00002714 Management cluster is ready"
