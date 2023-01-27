@@ -70,12 +70,16 @@ fi
 
 export CURRENT_COMMIT=${CI_COMMIT_SHA:-$(git rev-parse HEAD)}
 
+function debug_on_exit() {
+    echo_b "gathering debugging logs in debug-on-exit.log file"
+    ${BASE_DIR}/tools/shell-lib/debug-on-exit.sh > debug-on-exit.log
+}
+
 function exit_trap() {
     EXIT_CODE=$?
     # Call debug script if needed
     if [[ $EXIT_CODE -ne 0 && ${DEBUG_ON_EXIT:-"0"} -eq 1 ]]; then
-        echo_b "gathering debugging logs in debug-on-exit.log file"
-        ${BASE_DIR}/tools/shell-lib/debug-on-exit.sh > debug-on-exit.log
+        debug_on_exit
     fi
 
     # Kill all child processes (kubectl watches) on exit
@@ -93,3 +97,35 @@ function force_reconcile_and_wait() {
   echo "waiting for $1 $2 ..."
   kubectl wait --for condition=Ready --timeout=90s $kinds $name_or_selector | sed -e 's/^/  /'
 }
+
+# for Gitlab CI:
+# this function is meant to be ran in the background
+# to trigger right before the Gitlab CI job timeout triggers
+# to run debug_on_exit
+#
+debug_on_exit_trigger_margin=120  # debug_on_exit will trigger xxxx seconds before timeout
+debug_on_exit_cancel=0
+debug_on_exit_background_pid=0
+function debug_on_exit_trigger() {
+    env | grep CI_
+    env | grep CI_ |grep -i tim
+    if [[ -n ${CI_JOB_TIMEOUT+x} && -n ${DEBUG_ON_EXIT+x} ]]; then
+        timeout_time=$(date +'%s' -d"${CI_JOB_STARTED_AT} + ${CI_JOB_TIMEOUT} seconds")
+        now=$(date +'%s')
+        sleeptime=$((timeout_time-now-debug_on_exit_trigger_margin))
+        echo "Sleeping ${sleeptime}s before triggering debug_on_exit_trigger"
+        debug_on_exit_background_pid=$$
+        sleep $sleeptime
+        if [[ $debug_on_exit_cancel -eq 1 ]]; then
+            echo "Exit, cancelling background debug-on-exit"
+        else
+            debug_on_exit
+        fi
+    fi
+}
+function debug_on_exit_trigger_cancel() {
+    echo "cancelling background debug-on-exit trigger"
+    debug_on_exit_cancel=1
+    pkill -P $debug_on_exit_background_pid
+}
+trap debug_on_exit_trigger_cancel EXIT

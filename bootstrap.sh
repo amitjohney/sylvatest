@@ -2,6 +2,8 @@
 
 source tools/shell-lib/common.sh
 
+debug_on_exit_trigger
+
 check_pivot_has_ran
 
 echo_b "\U0001F503 Bootstraping flux"

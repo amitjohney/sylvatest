@@ -170,13 +170,13 @@ test-rke2-capd:
     - o-romania-bm
 
 test-kubeadm-capd:
-  timeout: 45min
+  timeout: 10min
   extends: .test-capd
   variables:
     ENV_NAME: kubeadm-capd
 
 test-kubeadm-capd-bm:
-  timeout: 45min
+  timeout: 10min
   extends: .test-capd
   rules:
     #NOTE: testing kubeadm-capd stack on managed runner by adding label `run-e2e-tests` to MR
