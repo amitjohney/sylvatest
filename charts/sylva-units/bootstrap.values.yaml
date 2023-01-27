@@ -38,7 +38,7 @@ units:
       # FIXME; Flux wait/healthcheck on management cluster does not work as expected, it becomes ready as soon as manifests are applied
       # cluster readyness will actually be ensured by the retries on installations of this kustomization for now.
       # maybe cluster CRD is not compatible with kstatus? (see https://fluxcd.io/flux/units/kustomize/kustomization/#health-assessment)
-    repo: capi-bootstrap
+    repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/flux-system/base
       kubeConfig:
@@ -57,7 +57,7 @@ units:
     enabled: yes
     depends_on:
       - name: management-cluster-flux
-    repo: capi-bootstrap
+    repo: sylva-core
     kustomization_spec:
       # FIXME: This is very hacky, we should use an ad-hoc kustomisation instead of this job to re-create configmap and secrets on maangement cluster
       path: ./kustomize-units/kube-job
@@ -98,7 +98,7 @@ units:
     enabled: yes
     depends_on:
       - name: management-cluster-configs
-    repo: capi-bootstrap
+    repo: sylva-core
     labels:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
     # Use a kustomization_spec alongside an helmrelease_spec,
@@ -123,7 +123,7 @@ units:
       values: |
         {{- $chartValues := (lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units").spec.values -}}
         {{- $disableCluster := dict "units" (dict "cluster" (dict "enabled" false)) -}}
-        {{- $gitRepoSelf := dict "git_repo_templates" (dict "capi-bootstrap" (dict "existing_gitrepository" "sylva-units")) -}}
+        {{- $gitRepoSelf := dict "git_repo_templates" (dict "sylva-core" (dict "existing_gitrepository" "sylva-core")) -}}
         {{- mergeOverwrite $chartValues $disableCluster $gitRepoSelf | include "preserve-type" -}}
       valuesFrom: '{{ (lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units").spec.valuesFrom | include "preserve-type" }}'
 
@@ -131,7 +131,7 @@ units:
     enabled: yes
     depends_on:
       - name: sylva-units
-    repo: capi-bootstrap
+    repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kube-job
       wait: true

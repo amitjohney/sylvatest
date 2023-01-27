@@ -5,7 +5,7 @@ units:
     kustomization_spec:
       path: ./kustomize-units/cluster-manifests/rke2-capo/orange-falcon
   workload-cluster:
-    repo: capi-bootstrap
+    repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/cluster-manifests/rke2-capo/dns-client-orange-falcon
       postBuild:

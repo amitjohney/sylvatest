@@ -1,19 +1,19 @@
 {{/* This GitRepository is referred to from 'unit_helmrelease_kustomization_spec_default' */}}
 {{- $envAll := set . "Values" (include "interpret-values-gotpl" . | fromJson) -}}
-{{- $repo_name := "capi-bootstrap" -}}
-{{- if not (hasKey (index .Values.git_repo_templates "capi-bootstrap") "existing_gitrepository") -}}
-    {{- $unit_name := "capi-bootstrap" -}}
+{{- $repo_name := "sylva-core" -}}
+{{- if not (hasKey (index .Values.git_repo_templates "sylva-core") "existing_gitrepository") -}}
+    {{- $unit_name := "sylva-core" -}}
     {{- $repo_def := deepCopy (index $envAll.Values.git_repo_templates $repo_name) -}}
     {{- $auth := $repo_def.auth | default $envAll.Values.git_auth_default -}}
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: GitRepository
 metadata:
-  name: capi-bootstrap
+  name: sylva-core
   labels:
 {{ include "sylva-units.labels" $envAll | indent 4 }}
 spec:
-    {{ $secret_ref := dict "secretRef" (dict "name" "git-repo-auth-capi-bootstrap") -}}
+    {{ $secret_ref := dict "secretRef" (dict "name" "git-repo-auth-sylva-core") -}}
     {{- $spec := dict -}}
     {{- $spec = mergeOverwrite $spec $envAll.Values.git_repo_spec_default $repo_def.spec $secret_ref -}}
     {{- if not (hasKey $spec "url") -}}

@@ -35,7 +35,7 @@ echo_b "\U0001F3AF Trigger reconciliation of Flux units"
 
 # this is just to force-refresh with a new commit (or refreshed parameters)
 
-force_reconcile_and_wait gitrepository sylva-units
+force_reconcile_and_wait gitrepository sylva-core
 
 force_reconcile_and_wait helmrelease sylva-units
 

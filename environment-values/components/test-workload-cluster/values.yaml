@@ -1,7 +1,7 @@
 units:
   workload-cluster:
     enabled: management-only
-    repo: capi-bootstrap
+    repo: sylva-core
     depends_on:
       - name: capi
       - name: '{{ .Values.cluster.capi_providers.infra_provider }}'
