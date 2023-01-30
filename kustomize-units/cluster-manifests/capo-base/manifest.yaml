@@ -8,7 +8,7 @@ spec:
   template:
     spec:
       cloudName: capo_cloud
-      flavor: ${FLAVOR_NAME}
+      flavor: ${FLAVOR_NAME:=m1.large}
       identityRef:
         kind: Secret
         name: management-cluster-cloud-config
