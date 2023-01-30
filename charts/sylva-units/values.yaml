@@ -59,6 +59,7 @@ git_repo_templates: # template to generate Flux GitRepository resources
       url: https://gitlab.com/t6306/components/helm-charts/metal3.git
       ref:
         branch: main
+    auth: '{{ .Values.git_auth_default | include "preserve-type" }}'
 
 helm_repo_spec_default:
   interval: 60m0s
