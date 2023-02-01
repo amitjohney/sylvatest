@@ -38,6 +38,8 @@ spec:
           - args:
             - manager
             env:
+            - name: svc_enable
+              value: "true"
             - name: vip_arp
               value: "true"
             - name: vip_leaderelection
