@@ -13,7 +13,6 @@ data:
   FLAVOR_NAME: {{ .Values.cluster.capo.flavor_name }}
   SSH_KEY_NAME: {{ .Values.cluster.capo.ssh_key_name }}
   CAPO_NETWORK_ID: {{ .Values.cluster.capo.network_id }}
-  CLUSTER_EXTERNAL_IP: {{ .Values.cluster.cluster_external_ip }}
 {{ end }}
 {{ if eq .Values.cluster.capi_providers.infra_provider "capv" }}
   VS_DC_NAME: {{ .Values.cluster.capv.dataCenter }}
@@ -21,4 +20,5 @@ data:
   VS_SERVER: {{ .Values.cluster.capv.server }}
   VS_TLS_THUMBPRINT: {{ .Values.cluster.capv.tlsThumbprint }}
 {{ end }}
+  CLUSTER_EXTERNAL_IP: {{ .Values.cluster.cluster_external_ip }}
 {{ end }}

@@ -1,69 +1,24 @@
 ---
 
-git_repo_templates:
-  sylva-core:
-    spec:
-      url: https://gitlab.com/t6306/components/capi-bootstrap.git
-      ref:
-        commit: $CURRENT_COMMIT
-
 units:
-  capv:
-    enabled: true
-  cabpk:
-    enabled: true
   capm3:
     enabled: management-only
+
   cabpr:  # RKE2
     enabled: management-only
-
-  # TODO: do not share with egate
-  flux-system:
-    enabled: management-only
-
-  management-cluster-flux:
-    enabled: yes
-    repo: sylva-core
-    kustomization_spec:
-      path: ./kustomize-units/flux-system
-      targetNamespace: flux-system
-    labels:
-      suspend-on-pivot: "yes"
-
-  kubed:
-    enabled: no
 
   metal3:
     enabled: management-only
 
   cluster:
-    enabled: yes
-    repo: sylva-core
-    labels:
-      suspend-on-pivot: "yes"  # this unit must be suspended before pivot
-    depends_on:
-    - name: capi
-    - name: capv
-    - name: cabpk
     kustomization_spec:
-      # see note below under .cluster
-      # the choice made here, for now, requires setting other values consistently under .cluster.xxx
       path: ./kustomize-units/cluster-manifests/kubeadm-capv/tim-lab
-      postBuild:
-        substituteFrom:
-        - kind: ConfigMap
-          name: cluster-vars
-        - kind: Secret
-          name: management-cluster-credentials
-      healthChecks:
-        - apiVersion: cluster.x-k8s.io/v1beta1
-          kind: Cluster
-          name: management-cluster
-          namespace: default
+    kustomization_substitute_secrets:
+      VS_USERNAME: '{{ .Values.cluster.capv.username }}'
+      VS_PASSWORD: '{{ .Values.cluster.capv.password }}'
 
 cluster:
   name: management-cluster
-  # TODO: derive kubeconfig secret name from this ^
 
   # image reference depends provider
   image: "ubuntu-2004-kube-v1.22.8"
@@ -85,8 +40,12 @@ cluster:
     server: # replace me
     # -- VSphere https TLS thumbprint
     tlsThumbprint: # replace me
+
+  cluster_external_ip: # replace me
+
   metal3:
-    ironic_ip: $IRONIC_IP
+    # -- cluster_external_ip may be reused to expose ironic too
+    ironic_ip: # replace me
 
 proxies:
   http_proxy: # replace me
