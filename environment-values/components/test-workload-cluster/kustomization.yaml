@@ -14,7 +14,7 @@ patches:
     name: sylva-units
   patch: |
     - op: add
-      path: /spec/valuesFrom/-
+      path: /spec/valuesFrom/0
       value:
         kind: ConfigMap
         name: management-cluster-test-workload-cluster-values

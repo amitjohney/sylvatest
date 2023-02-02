@@ -69,7 +69,7 @@ echo_b "\U000023F3 Wait for pivot to be done"
 kubectl wait job pivot-job --for=condition=Complete --timeout 600s
 
 echo_b "\U000023F3 Wait for remaining units installed on management cluster to be ready"
-kubectl --kubeconfig management-cluster-kubeconfig wait --for condition=Ready --timeout 1800s --all kustomizations
+sylva_units_kustomizations_wait_loop management 2200 --kubeconfig management-cluster-kubeconfig
 
 echo_b "\U00002714 Management cluster is ready"
 kubectl --kubeconfig management-cluster-kubeconfig get nodes

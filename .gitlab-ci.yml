@@ -124,6 +124,18 @@ check-docs-markdown:
     - export CLUSTER_EXTERNAL_IP=$(echo $KIND_PREFIX | awk -F"." '{print $1"."$2"."$3".100"}')
     - find environment-values/*-capd/ -name values.yaml -exec yq -i '.cluster.cluster_external_ip = strenv(CLUSTER_EXTERNAL_IP)' {} \;
     - if [[ -n $DOCKERIO_REGISTRY_MIRROR ]]; then find environment-values/*-capd/ -name values.yaml -exec yq -i '.dockerio_registry_mirror = strenv(DOCKERIO_REGISTRY_MIRROR)' {} \;; fi
+    # for now, some units don't work on generic workers
+    # (see https://gitlab.com/t6306/components/capi-bootstrap/-/issues/106)
+    - |
+      if [[ ! $CI_RUNNER_TAGS =~ ".*o-romania.*" ]]; then
+        echo "disable some units to allow capd jobs to run on generic gitlab runners"
+        find environment-values/*-capd/ -name values.yaml -exec yq -i '.units.workload-cluster.enabled=false' {} \;
+        find environment-values/*-capd/ -name values.yaml -exec yq -i '.units.workload-cluster-calico.enabled=false' {} \;
+        find environment-values/*-capd/ -name values.yaml -exec yq -i '.units.monitoring.enabled=false' {} \;
+        find environment-values/*-capd/ -name values.yaml -exec yq -i '.units.keycloak.enabled=false' {} \;
+        find environment-values/*-capd/ -name values.yaml -exec yq -i '.units.flux-webui.enabled=false' {} \;
+        find environment-values/*-capd/ -name values.yaml -exec yq -i '.units.capi-rancher-import.enabled=false' {} \;
+      fi
     - export DEBUG_ON_EXIT=1
 
     - echo -e "\e[0Ksection_end:`date +%s`:before_script_section\r\e[0K"

@@ -790,7 +790,7 @@ units:
   # it would be used along with a definition of a 'workload-cluster' unit
   # and it would need to have proper customization of ${CLUSTER_NAME} and ${CLUSTER_MONITORING}
   cluster-import:
-    enabled: '{{ dig "workload-cluster" "enabled" false .Values.units | include "preserve-type" }}'
+    enabled: '{{ .Values.units | dig "workload-cluster" "enabled" false  | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
       - name: first-login-rancher
@@ -821,7 +821,7 @@ units:
   # it would be used along with a definition of a 'workload-cluster' unit
   # and is conditioned by a boolean flag .Values.env_type_ci
   check-rancher-clusters:
-    enabled: '{{ .Values.env_type_ci | include "preserve-type" }}'
+    enabled: '{{ and .Values.env_type_ci (.Values.units | dig "workload-cluster" "enabled" false) | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
       - name: cluster-import
