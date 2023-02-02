@@ -14,6 +14,10 @@ units:
           CLUSTER_NAME: '{{ .Values.cluster.test_workload_cluster_name }}'
           MACHINE_IMAGE: '{{ .Values.cluster.image }}'
           K8SGATEWAY_LB_IP: '{{ .Values.cluster.cluster_external_ip }}'   # NOTE: same is used for k8s-gateway DNS svc in management cluster
+        substituteFrom:
+          - kind: ConfigMap
+            name: proxy-env-vars
+            optional: true
       wait: true
       components:
         - '{{ tuple "../../components/dns-client/kind/KubeadmControlPlane"
