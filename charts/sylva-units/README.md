@@ -83,9 +83,8 @@ cluster:
     bootstrap_provider: cabpr
 
 units:
-  capbr:
-    enabled: true
-  cappbr:
+
+  cabpr:
     enabled: true
 
   # this declares an override to deploy 'mydevbranch' branch
