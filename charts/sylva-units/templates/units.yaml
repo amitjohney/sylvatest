@@ -1,6 +1,24 @@
 {{- $envAll := set . "Values" (include "interpret-values-gotpl" . | fromJson) -}}
 {{ range $unit_name, $unit_def := .Values.units }}
-  {{- if (tuple $envAll $unit_name | include "is-unit-enabled") -}}
+
+  {{/********* test if the unit should be enabled */}}
+  {{- $unit_enabled := false -}}
+  {{- if get $envAll.Values "test_all_units_enabled" | toString | eq "true" -}}
+      {{- $unit_enabled = true -}}
+  {{- else if hasKey $envAll.Values "units_override_enabled" -}}
+      {{- $unit_enabled = has $unit_name $envAll.Values.units_override_enabled -}}
+  {{- else -}}
+      {{- $unit_def := index $envAll.Values.units $unit_name -}}
+      {{- if $unit_def -}}
+          {{- $unit_enabled = dig "enabled" true $unit_def -}}
+      {{- end -}}
+  {{- end -}}
+
+  {{- if not (kindIs "bool" $unit_enabled) -}}
+    {{- fail (printf "units.%s.enabled is not a boolean (is a %s: %s)" $unit_name (kindOf $unit_enabled) $unit_enabled) -}}
+  {{- end -}}
+
+  {{- if $unit_enabled -}}
     {{/*********** Prepare labels used in all generated objects */}}
 
     {{- $labels := deepCopy ($unit_def.labels | default dict) -}}

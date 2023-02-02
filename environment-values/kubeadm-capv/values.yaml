@@ -2,13 +2,13 @@
 
 units:
   capm3:
-    enabled: management-only
+    enabled: yes
 
   cabpr:  # RKE2
-    enabled: management-only
+    enabled: yes
 
   metal3:
-    enabled: management-only
+    enabled: yes
 
   cluster:
     kustomization_spec:

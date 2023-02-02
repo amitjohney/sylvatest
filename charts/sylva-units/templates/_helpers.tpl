@@ -54,45 +54,6 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 
 {{/*
 
-Function used to determine if a unit in 'units' (.Values.units dict) is
-enabled based on the 'phase' and the .enabled value of the unit
-(yes/no/management-only)
-
-The default for <unit>.enabled is .Values.unit_default_enable .
-
-Usage:
-
-  tuple $envAll "unitFoo" | include "is-unit-enabled"
-
-*/}}
-{{- define "is-unit-enabled" -}}
-    {{- $envAll := index . 0 -}}
-    {{- $unit_name := index . 1 -}}
-    {{- $unit_def := index $envAll.Values.units $unit_name -}}
-    {{- $unit_enabled := toString $envAll.Values.unit_default_enable -}}
-    {{- if hasKey $unit_def "enabled" -}}
-      {{- $unit_enabled = toString $unit_def.enabled -}}
-    {{- end -}}
-    {{- $phase := $envAll.Values.phase -}}
-    {{- if not (or (eq $phase "bootstrap") (eq $phase "management")) -}}
-      {{- fail (printf "phase='%s' is neither 'bootstrap' or 'management'" $phase) -}}
-    {{- end -}}
-    {{- if (or (eq $unit_enabled "true")
-               $envAll.Values.test_all_units_enabled
-               (and (eq $unit_enabled "management-only") (eq $phase "management")))
-    -}}
-true
-    {{- else if (or (eq ($unit_enabled) "false")
-                    (and (eq $unit_enabled "management-only") (eq $phase "bootstrap"))) -}}{{/* we return an empty string to mean "false", this is a well-known trick for gotpl... */}}
-    {{- else -}}
-      {{- fail (printf "units.%s.enabled=%s is neither a boolean or 'management-only'" $unit_name $unit_enabled) -}}
-    {{- end -}}
-{{- end -}}
-
-
-
-{{/*
-
 This is used by units.yaml to patch the HelmRelease
 resource produced when the kustomization from kustomize-units/helmrelease-generic
 which is used to create a Flux Kustomization that generates a HelmRelease.

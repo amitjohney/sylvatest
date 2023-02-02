@@ -1,5 +1,4 @@
 {{- $envAll := set . "Values" (include "interpret-values-gotpl" . | fromJson) -}}
-{{- if (tuple $envAll "cluster" | include "is-unit-enabled") -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -21,4 +20,3 @@ data:
   VS_TLS_THUMBPRINT: {{ .Values.cluster.capv.tlsThumbprint }}
 {{ end }}
   CLUSTER_EXTERNAL_IP: {{ .Values.cluster.cluster_external_ip }}
-{{ end }}

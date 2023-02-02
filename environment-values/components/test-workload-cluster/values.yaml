@@ -1,6 +1,6 @@
 units:
   workload-cluster:
-    enabled: management-only
+    enabled: yes
     repo: sylva-core
     depends_on:
       - name: capi
@@ -30,7 +30,7 @@ units:
                     (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
 
   workload-cluster-calico:
-    enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") (.Values.phase | eq "management") }}'
+    enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
     depends_on:
       - name: workload-cluster
     helm_repo_url: https://projectcalico.docs.tigera.io/charts

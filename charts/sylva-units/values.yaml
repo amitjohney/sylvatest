@@ -100,7 +100,7 @@ unit_helmrelease_kustomization_spec_default:
 # a corresponding GitRepository (and Secret, TODO: the Secret don't need to be generated for each unit)
 units:
   # <unit-name>:
-  #   enabled: yes/no/management-only
+  #   enabled: boolean
   #   repo: <name of the repo under 'git_repo_templates'> (for use with kustomization_spec)
   #   helm_repo_url: URL of the Helm repo to use (for use with helmrelease_spec, but not mandatory, 'repo' can be used as well to use a git repo)
   #   labels: (optional) dict holding labels to add to the resources for this unit
@@ -122,7 +122,7 @@ units:
   flux-system:
     # note that Flux is always installed on the current cluster as a pre-requisite to installing the chart
     # this units contains Flux definitions *to manage the Flux system itself via gitops*
-
+    enabled: yes
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/flux-system/base
@@ -137,7 +137,7 @@ units:
           optional: true
 
   kubed:
-    enabled: '{{ eq .Values.cluster.capi_providers.infra_provider "capd" }}'
+    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" | include "preserve-type" }}'
     # FIXME: maybe is isn't required any more with this helm chart, and we could create secrets in units namespaces?
     # We need kubed to copy secrets from namespace to namespace for the 'capd' provider
     # Unfortunately, it doesn't seems to be possible to pass registry secrets from default namespace to others without the use of an additionnal tool like this one:
@@ -157,6 +157,7 @@ units:
         installCRDs: true
 
   cert-manager:
+    enabled: yes
     helm_repo_url: https://charts.jetstack.io
     helmrelease_spec:
       chart:
@@ -171,6 +172,7 @@ units:
 
 # sylva-ca provides a Certificate Authority for Components of the management cluster
   sylva-ca:
+    enabled: yes
     depends_on:
     - name: cert-manager
     repo: sylva-core
@@ -181,6 +183,7 @@ units:
 
 #  vault-tls issues certificates, meant to be used by Vault, from sylva-ca
   vault-tls:
+    enabled: yes
     depends_on:
     - name: sylva-ca
     repo: sylva-core
@@ -194,6 +197,7 @@ units:
 
 # Vault assumes that the certificates vault-tls have been issued
   vault:
+    enabled: yes
     depends_on:
     - name: vault-tls
     - '{{ tuple (dict "name" "ingress-nginx") (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | include "set-only-if" }}'
@@ -273,7 +277,7 @@ units:
             readOnly: true
 
   cis-operator-crd:
-    enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.phase | eq "management") }}'
+    enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | include "preserve-type" }}'
     helm_repo_url: https://charts.rancher.io
     helmrelease_spec:
       chart:
@@ -285,7 +289,7 @@ units:
         createNamespace: true
 
   cis-operator:
-    enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.phase | eq "management") }}'
+    enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | include "preserve-type" }}'
     depends_on:
       - name: cis-operator-crd
     helm_repo_url: https://charts.rancher.io
@@ -299,7 +303,7 @@ units:
   # this allows for running a CIS scan for management cluster
   # generates a report which can be viewed and downloaded in CSV from the Rancher UI, at https://rancher.sylva/dashboard/c/local/cis/cis.cattle.io.clusterscan
   cis-operator-scan:
-    enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.phase | eq "management") }}'
+    enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | include "preserve-type" }}'
     depends_on:
       - name: cis-operator
     repo: sylva-core
@@ -311,6 +315,7 @@ units:
           SCAN_PROFILE: '{{ .Values.cluster.cis_benchmark_scan_profile }}'
 
   keycloak:
+    enabled: yes
     depends_on:
     - name: sylva-ca
     - '{{ tuple (dict "name" "ingress-nginx") (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | include "set-only-if" }}'
@@ -324,8 +329,7 @@ units:
       wait: false
 
   capi:
-    # ref_override:  # test
-    #   branch: i-really-need-dev-branch-foo
+    enabled: yes
     repo: sylva-core
     depends_on:
       - name: cert-manager
@@ -334,7 +338,7 @@ units:
       wait: true
 
   capd:
-    enabled: '{{ eq .Values.cluster.capi_providers.infra_provider "capd" }}'
+    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
       - name: cert-manager
@@ -346,7 +350,7 @@ units:
       wait: true
 
   capo:
-    enabled: '{{ eq .Values.cluster.capi_providers.infra_provider "capo" }}'
+    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
       - name: cert-manager
@@ -355,7 +359,7 @@ units:
       wait: true
 
   capm3:
-    enabled: '{{ eq .Values.cluster.capi_providers.infra_provider "capm3" }}'
+    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
       - name: cert-manager
@@ -364,7 +368,7 @@ units:
       wait: true
 
   capv:
-    enabled: '{{ eq .Values.cluster.capi_providers.infra_provider "capv" }}'
+    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capv" | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
       - name: cert-manager
@@ -373,7 +377,7 @@ units:
       wait: true
 
   cabpk:  # kubeadm
-    enabled: '{{ eq .Values.cluster.capi_providers.bootstrap_provider "cabpk" }}'
+    enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
       - name: cert-manager
@@ -382,7 +386,7 @@ units:
       wait: true
 
   cabpr:  # RKE2
-    enabled: '{{ eq .Values.cluster.capi_providers.bootstrap_provider "cabpr" }}'
+    enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
       - name: cert-manager
@@ -459,7 +463,7 @@ units:
                     (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
 
   calico:
-    enabled: '{{ eq .Values.cluster.capi_providers.bootstrap_provider "cabpk" }}'
+    enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
     depends_on:
       - name: cluster
     helm_repo_url: https://projectcalico.docs.tigera.io/charts
@@ -473,7 +477,7 @@ units:
           version: v3.24.5
 
   cinder-csi:
-    enabled: '{{ and (.Values.cluster.capi_providers.infra_provider | eq "capo") (.Values.phase | eq "management") }}'
+    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'
     helm_repo_url: https://kubernetes.github.io/cloud-provider-openstack
     helmrelease_spec:
       chart:
@@ -523,7 +527,8 @@ units:
             ignore-volume-az = true
 
   imageswap-webhook:
-    enabled: '{{ include "is-unit-enabled" (tuple . "rancher") | eq "true" }}'
+    # today, only the rancher-webhook fix requires the use of imageswap-webhook
+    enabled: '{{ .Values.units.rancher.enabled | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
       - name: cert-manager
@@ -532,7 +537,7 @@ units:
       wait: true
 
   rancher:
-    enabled: management-only
+    enabled: yes
     depends_on:
       - name: cert-manager
       - name: k8s-gateway
@@ -597,7 +602,7 @@ units:
                   namespace: cattle-system
 
   rancher-webhook-service:
-    enabled: '{{ include "is-unit-enabled" (tuple . "rancher") | eq "true" }}'
+    enabled: '{{ .Values.units.rancher.enabled | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
       - name: rancher
@@ -606,7 +611,7 @@ units:
       wait: true
 
   k8s-gateway:
-    enabled: management-only
+    enabled: yes
     depends_on:
     - '{{ tuple (dict "name" "metallb-config") (eq .Values.cluster.capi_providers.infra_provider "capd") | include "set-only-if" }}'
     helm_repo_url: https://ori-edge.github.io/k8s_gateway/
@@ -625,7 +630,7 @@ units:
             metallb.universe.tf/allow-shared-ip: '{{ tuple (.Values.cluster.cluster_external_ip) (or (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.capi_providers.infra_provider | eq "capd")) | include "set-only-if" }}'
 
   metallb:
-    enabled: '{{ and (.Values.cluster.capi_providers.infra_provider | eq "capd") (.Values.phase | eq "management") }}'
+    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
     - name: cert-manager
@@ -634,7 +639,7 @@ units:
       wait: true
 
   metallb-config:
-    enabled: '{{ and (.Values.cluster.capi_providers.infra_provider | eq "capd") (.Values.phase | eq "management") }}'
+    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
     - name: metallb
@@ -646,7 +651,7 @@ units:
           CLUSTER_EXTERNAL_IP: '{{ .Values.cluster.cluster_external_ip }}'
 
   capi-rancher-import:
-    enabled: '{{ include "is-unit-enabled" (tuple . "rancher") | eq "true" }}'
+    enabled: '{{ .Values.units.rancher.enabled | include "preserve-type" }}'
     repo: capi-rancher-import
     depends_on:
       - name: first-login-rancher    # FIXME: this is temporary while issue https://gitlab.com/t6306/components/capi-rancher-import/-/issues/2 is addressed to have the capi-rancher-import controller check the CRD existence on startup and fail if it's not there yet
@@ -673,7 +678,7 @@ units:
           cattle_agent_kustomize_path: ./cattle-kustomize
 
   ingress-nginx:
-    enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") (.Values.phase | eq "management") }}'
+    enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
     depends_on:
     - '{{ tuple (dict "name" "metallb-config") (eq .Values.cluster.capi_providers.infra_provider "capd") | include "set-only-if" }}'
     helm_repo_url: https://kubernetes.github.io/ingress-nginx
@@ -695,7 +700,7 @@ units:
               metallb.universe.tf/allow-shared-ip: '{{ tuple (.Values.cluster.cluster_external_ip) (eq .Values.cluster.capi_providers.infra_provider "capd") | include "set-only-if" }}'
 
   first-login-rancher:
-    enabled: '{{ include "is-unit-enabled" (tuple . "rancher") | eq "true" }}'
+    enabled: '{{ .Values.units.rancher.enabled | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
       - name: rancher
@@ -740,6 +745,7 @@ units:
                     value: https://{{ .Values.cluster.rancher.external_hostname }}
 
   flux-webui:
+    enabled: yes
     depends_on:
       - name: flux-system
       - '{{ tuple (dict "name" "ingress-nginx") (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | include "set-only-if" }}'
@@ -784,7 +790,7 @@ units:
   # it would be used along with a definition of a 'workload-cluster' unit
   # and it would need to have proper customization of ${CLUSTER_NAME} and ${CLUSTER_MONITORING}
   cluster-import:
-    enabled: '{{ include "is-unit-enabled" (tuple . "workload-cluster") | eq "true" }}'
+    enabled: '{{ dig "workload-cluster" "enabled" false .Values.units | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
       - name: first-login-rancher
@@ -799,7 +805,7 @@ units:
       wait: true
 
   monitoring:
-    enabled: '{{ include "is-unit-enabled" (tuple . "rancher") | eq "true" }}'
+    enabled: '{{ .Values.units.rancher.enabled | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
       - name: rancher
@@ -815,7 +821,7 @@ units:
   # it would be used along with a definition of a 'workload-cluster' unit
   # and is conditioned by a boolean flag .Values.env_type_ci
   check-rancher-clusters:
-    enabled: '{{ .Values.env_type_ci | ternary "management-only" false }}'
+    enabled: '{{ .Values.env_type_ci | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
       - name: cluster-import
@@ -936,16 +942,6 @@ proxies:
 
 # add your local docker.io registry mirror to avoid rate limitting if required
 dockerio_registry_mirror: ""
-
-# 'phase' determines whether we are instantiating this chart
-# on the bootstrap cluster or on the management cluster
-#
-# this is used to determine which unit manifests to generate
-# for a given item under 'units':
-# if 'enabled' is set to 'management-only' then the unit is enabled only if 'phase: management'
-phase: management
-
-unit_default_enable: management-only  # this simply ensures that adding a unit in this file under units does not implicitly enable it for "bootstrap"
 
 # boolean conditioning run of 'check-rancher-clusters' Job
 env_type_ci: false
