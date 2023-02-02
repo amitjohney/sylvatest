@@ -67,13 +67,10 @@ $defs:
 
   enabled:
     anyOf:
-      - enum:
-        - true
-        - false
-        - "yes"
-        - "no"
-        - "management-only"
-      - $ref: "#/$defs/gotpl"
+      - type: boolean
+      - type: string
+        pattern:
+          ^{{ .*\| *include ["']preserve-type['"] }}$
 
 
 # lines with '# -------------------------------' correspond to keys in values.yaml
@@ -86,7 +83,6 @@ additionalProperties: false
 # cover the case where a user would mistakenly remove one of them by "nulling" it
 # (e.g. by setting `proxies:` without any subdict in override values)
 required:
-  - phase
   - registry_secret
   - git_auth_default
   - git_repo_spec_default
@@ -98,7 +94,6 @@ required:
   - units
   - cluster
   - proxies
-  - unit_default_enable
   - env_type_ci
 
 properties:
@@ -288,6 +283,9 @@ properties:
             patternProperties:
               "^.*$":
                 type: string
+
+        required:
+          - enabled
 
         dependentRequired:
           kustomization_substitute_secrets:
@@ -570,14 +568,10 @@ properties:
       - https_proxy
       - no_proxy
 
-  phase:  # -------------------------------
-    type: string
-    enum:
-      - management
-      - bootstrap
-
-  unit_default_enable:  # -------------------------------
-    $ref: "#/$defs/enabled"
+  units_override_enabled:  # -------------------------------
+    type: array
+    items:
+      type: string
 
   test_all_units_enabled:  # -------------------------------
     anyOf:

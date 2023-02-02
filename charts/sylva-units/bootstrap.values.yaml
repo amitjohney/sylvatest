@@ -3,9 +3,6 @@
 # These value are meant to be used as overrides to the default values from values.yaml
 # when the chart is instantiated in the bootstrap cluster
 
-# set 'phase: bootstrap' so that units with 'enabled: management-only' are ignored
-phase: bootstrap
-
 unit_kustomization_spec_default:
   interval: 100000m   # for bootstrap, we don't care about having flux update things on the longterm
   retryInterval: 30s  # but we want it to retry quickly so that the system converges faster (quicker reaction when a dependency is met)
@@ -15,15 +12,8 @@ unit_helmrelease_spec_default:
 
 units:
 
-  cert-manager:
-    enabled: yes
-
-  capi:
-    enabled: yes
-
   calico:
     # overload calico definition in bootstrap context to deploy in the management cluster
-    enabled: '{{ eq .Values.cluster.capi_providers.bootstrap_provider "cabpk" }}'
     helmrelease_spec:
       kubeConfig:
         secretRef:
@@ -204,3 +194,18 @@ units:
 
               echo "-- All done"
 
+
+# only those components will be enabled on bootstrap cluster (this overrides 'units.<component>.enabled')
+units_override_enabled:
+  - cert-manager
+  - capi
+  - '{{ .Values.cluster.capi_providers.infra_provider }}'
+  - '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
+  - '{{ tuple "kubed" (.Values.cluster.capi_providers.infra_provider | eq "capd") | include "set-only-if" }}'
+  - '{{ tuple "metal3" (.Values.cluster.capi_providers.infra_provider | eq "capm3") | include "set-only-if" }}'
+  - cluster
+  - calico
+  - management-cluster-flux
+  - management-cluster-configs
+  - sylva-units
+  - pivot
