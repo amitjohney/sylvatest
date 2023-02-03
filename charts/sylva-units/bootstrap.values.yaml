@@ -146,7 +146,7 @@ units:
               set -e
 
               echo "-- Signal that the pivot job has started. This is used in bootstrap.sh to prevent accidental re-runs"
-              kubectl annotate kustomizations.kustomize.toolkit.fluxcd.io cluster pivot/started=true
+              kubectl annotate --overwrite kustomizations.kustomize.toolkit.fluxcd.io cluster pivot/started=true
 
               echo "-- Retrieve target cluster kubeconfig"
               kubectl get secret management-cluster-kubeconfig -o jsonpath='{.data.value}' | base64 -d > management-cluster-kubeconfig
@@ -190,7 +190,7 @@ units:
                   annotate --overwrite helmrelease/sylva-units reconcile.fluxcd.io/requestedAt="$(date +%s)"
 
               echo "-- Signal to bootstrap.sh that the pivot job has ended"
-              kubectl annotate kustomizations.kustomize.toolkit.fluxcd.io cluster pivot/started-
+              kubectl annotate --overwrite kustomizations.kustomize.toolkit.fluxcd.io cluster pivot/started-
 
               echo "-- All done"
 
