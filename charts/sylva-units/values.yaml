@@ -193,6 +193,22 @@ units:
         createNamespace: true
       values:
         installCRDs: true
+    kustomization_spec:
+      # these healthChecks are here to ensure that the unit is not considered
+      # as Ready prematurely for Kustomization dependsOn resolution
+      healthChecks:
+        - namespace: cert-manager
+          apiVersion: apps/v1
+          kind: Deployment
+          name: cert-manager
+        - namespace: cert-manager
+          apiVersion: apps/v1
+          kind: Deployment
+          name: cert-manager-webhook
+        - namespace: cert-manager
+          apiVersion: apps/v1
+          kind: Deployment
+          name: cert-manager-cainjector
 
   trivy-operator:
     enabled: yes
@@ -527,6 +543,26 @@ units:
         spec:
           chart: tigera-operator
           version: v3.24.5
+    kustomization_spec:
+      # these healthChecks are here to ensure that the unit is not considered
+      # as Ready prematurely for Kustomization dependsOn resolution
+      healthChecks:
+        - namespace: calico-system
+          apiVersion: apps/v1
+          kind: Deployment
+          name: calico-apiserver
+        - namespace: calico-system
+          apiVersion: apps/v1
+          kind: Deployment
+          name: calico-kube-controllers
+        - namespace: calico-system
+          apiVersion: apps/v1
+          kind: Deployment
+          name: calico-typha
+        - namespace: calico-system
+          apiVersion: apps/v1
+          kind: DaemonSet
+          name: calico-node
 
   cinder-csi:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'
@@ -676,12 +712,20 @@ units:
                             initialDelaySeconds: 120
                             periodSeconds: 30
                             failureThreshold: 20
+    kustomization_spec:
+      # these healthChecks are here to ensure that the unit is not considered
+      # as Ready prematurely for Kustomization dependsOn resolution
+      healthChecks:
+        - namespace: cattle-system
+          apiVersion: apps/v1
+          kind: Deployment
+          name: rancher
 
   rancher-webhook-service:
     enabled: '{{ .Values.units.rancher.enabled | include "preserve-type" }}'
     repo: sylva-core
-    depends_on:
-      - name: rancher
+    # depends_on:
+    #   - name: rancher  # FIXME
     kustomization_spec:
       path: ./kustomize-units/rancher-webhook
       wait: true
@@ -752,6 +796,14 @@ units:
             name: unit-capi-rancher-import
             namespace: default
           cattle_agent_kustomize_path: ./cattle-kustomize
+    kustomization_spec:
+      # these healthChecks are here to ensure that the unit is not considered
+      # as Ready prematurely for Kustomization dependsOn resolution
+      healthChecks:
+        - namespace: default
+          apiVersion: apps/v1
+          kind: Deployment
+          name: capi-rancher-import
 
   ingress-nginx:
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
@@ -774,6 +826,10 @@ units:
             - '{{ .Values.cluster.cluster_external_ip }}'
             annotations:
               metallb.universe.tf/allow-shared-ip: '{{ tuple (.Values.cluster.cluster_external_ip) (eq .Values.cluster.capi_providers.infra_provider "capd") | include "set-only-if" }}'
+    #kustomization_spec:
+      # these healthChecks are here to ensure that the unit is not considered
+      # as Ready prematurely for Kustomization dependsOn resolution
+    #FIXME
 
   first-login-rancher:
     enabled: '{{ .Values.units.rancher.enabled | include "preserve-type" }}'
