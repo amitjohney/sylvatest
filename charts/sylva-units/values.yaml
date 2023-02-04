@@ -536,12 +536,26 @@ units:
       path: ./kustomize-units/imageswap-webhook
       wait: true
 
+  sylva-ca-certs:
+    enabled: yes
+    depends_on:
+      - name: cert-manager
+      - name: sylva-ca
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/sylva-ca-certs
+      postBuild:
+        substitute:
+          RANCHER_DNS: '{{ .Values.cluster.rancher.external_hostname }}'
+      wait: true
+
   rancher:
     enabled: yes
     depends_on:
       - name: cert-manager
       - name: k8s-gateway
       - name: imageswap-webhook   # cattle-system ns created by imageswap-webhook
+      - name: sylva-ca-certs
       - '{{ tuple (dict "name" "ingress-nginx") (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | include "set-only-if" }}'
     helm_repo_url: https://releases.rancher.com/server-charts/stable
     helmrelease_spec:
@@ -560,12 +574,16 @@ units:
         remediation:
           retries: 3
       values:
+        privateCA: true
         bootstrapPassword: '{{ .Values.cluster.admin_password }}'
         useBundledSystemChart: true
         hostname: '{{ .Values.cluster.rancher.external_hostname }}'
         ingress:
           enabled: true
           ingressClassName: nginx
+          tls:
+            source: secret
+            secretName: rancher-tls
         # restrictedAdmin: true
         # negative value will deploy 1 to abs(replicas) depending on available number of nodes
         replicas: -3
@@ -579,27 +597,30 @@ units:
             - rancher-operator-system
       postRenderers:
         - kustomize:
-            patches:
-              # this is to avoid that the too-short default liveness probe
-              # prevents the Rancher installation from finishing before the pod is killed
-              - patch: |-
-                  apiVersion: apps/v1
-                  kind: Deployment
-                  metadata:
-                    name: rancher
-                  spec:
-                    template:
-                      spec:
-                        containers:
-                          - name: rancher
-                            livenessProbe:
-                              initialDelaySeconds: 120
-                              periodSeconds: 30
-                              failureThreshold: 20
-                target:
-                  kind: Deployment
+            patchesStrategicMerge:
+              - kind: Deployment
+                apiVersion: apps/v1
+                metadata:
                   name: rancher
-                  namespace: cattle-system
+                spec:
+                  template:
+                    spec:
+                      volumes:
+                        - name: tls-ca-volume
+                          secret:
+                            defaultMode: 256
+                            secretName: rancher-tls
+                            items:
+                              - key: ca.crt
+                                path: cacerts.pem
+                      # this is to avoid that the too-short default liveness probe
+                      # prevents the Rancher installation from finishing before the pod is killed:
+                      containers:
+                        - name: rancher
+                          livenessProbe:
+                            initialDelaySeconds: 120
+                            periodSeconds: 30
+                            failureThreshold: 20
 
   rancher-webhook-service:
     enabled: '{{ .Values.units.rancher.enabled | include "preserve-type" }}'
