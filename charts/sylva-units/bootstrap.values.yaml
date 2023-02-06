@@ -155,14 +155,16 @@ units:
               kubectl wait --for condition=ControlPlaneReady --timeout 600s --all cluster
               kubectl wait --for condition=NodeHealthy --timeout 600s --all machine
 
-              echo "-- Wait for capi CRD to be installed on management cluster"
-              attempts=0
-              max_attempts=60
-              until kubectl --kubeconfig management-cluster-kubeconfig get customresourcedefinitions clusters.cluster.x-k8s.io; do
-                sleep 5
-                ((attempts++)) && ((attempts==max_attempts)) && exit -1
+              echo "-- Wait for all Kustomizations related to Cluster API to be installed on management cluster"
+              # instead of looking at Ready condition (which temporarily become False if a reconciliation is ongoing)
+              # we check that the observed generation is the same as the target
+              for unit in capi {{ .Values.cluster.capi_providers.infra_provider }} {{ .Values.cluster.capi_providers.bootstrap_provider }}; do
+                echo "------ ... waiting for $unit unit to be applied"
+                generation=$(kubectl --kubeconfig management-cluster-kubeconfig get kustomizations.kustomize.toolkit.fluxcd.io capi -o jsonpath='{.metadata.generation}')
+                kubectl --kubeconfig management-cluster-kubeconfig wait kustomization $unit \
+                  "--for=jsonpath={status.observedGeneration}=$generation" \
+                  --timeout=300s
               done
-              # FIXME: use "until clusterctl move --dry-run" instead of checking conditions one by one above?
 
               echo "-- Suspend Kustomizations and HelmReleases in bootstrap cluster that relate to the management cluster"
               kubectl patch $(kubectl get helmreleases.helm.toolkit.fluxcd.io,kustomizations.kustomize.toolkit.fluxcd.io \
