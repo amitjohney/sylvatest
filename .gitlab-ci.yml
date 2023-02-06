@@ -86,7 +86,7 @@ check-docs-markdown:
   script:
     - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
     - |
-      md_files=$(git diff --name-only $CI_COMMIT_SHA origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME | grep "\.md$")
+      md_files=$(git diff --name-only $CI_COMMIT_SHA origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME | grep "\.md$" || true)
       if [ -n "$md_files" ] ; then
         markdownlint-cli2-config tools/gci-templates/.markdownlint.yml $md_files
       else
