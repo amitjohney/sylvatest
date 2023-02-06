@@ -100,8 +100,8 @@ check-docs-markdown:
 
 .test-capd:
   stage: deploy
-  before_script:
-    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:before_script_section[collapsed=true]\r\e[0KRunning before_script step\e[0m"
+  script:
+    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_prepare[collapsed=true]\r\e[0KRunning .gitlab-ci script step\e[0m"
 
     - DOCKER_IP=$(getent hosts docker | awk '{print $1}')
     - |
@@ -119,26 +119,28 @@ check-docs-markdown:
     - ip route add $KIND_PREFIX via $DOCKER_IP
 
     - export DOCKER_HOST=tcp://$DOCKER_IP:2375
-    - find environment-values/*-capd/ -name git-secrets.env -exec sed -i "s/GIT_USERNAME/$CI_REGISTRY_USER/;s/GIT_TOKEN/$CI_JOB_TOKEN/" {} \;
-    - find environment-values/*-capd/ -name values.yaml -exec yq -i '.cluster.capd.docker_host = strenv(DOCKER_HOST)' {} \;
+    - sed -i "s/GIT_USERNAME/$CI_REGISTRY_USER/;s/GIT_TOKEN/$CI_JOB_TOKEN/" environment-values/${ENV_NAME}/git-secrets.env
+    - values_file=environment-values/${ENV_NAME}/values.yaml
+    - yq -i '.cluster.capd.docker_host = strenv(DOCKER_HOST)' $values_file
     - export CLUSTER_EXTERNAL_IP=$(echo $KIND_PREFIX | awk -F"." '{print $1"."$2"."$3".100"}')
-    - find environment-values/*-capd/ -name values.yaml -exec yq -i '.cluster.cluster_external_ip = strenv(CLUSTER_EXTERNAL_IP)' {} \;
-    - if [[ -n $DOCKERIO_REGISTRY_MIRROR ]]; then find environment-values/*-capd/ -name values.yaml -exec yq -i '.dockerio_registry_mirror = strenv(DOCKERIO_REGISTRY_MIRROR)' {} \;; fi
+    - yq -i '.cluster.cluster_external_ip = strenv(CLUSTER_EXTERNAL_IP)' $values_file
+    - if [[ -n $DOCKERIO_REGISTRY_MIRROR ]]; then yq -i '.dockerio_registry_mirror = strenv(DOCKERIO_REGISTRY_MIRROR)' $values_file; fi
     # for now, some units don't work on generic workers
     # (see https://gitlab.com/t6306/components/capi-bootstrap/-/issues/106)
     - |
       if [[ ! $CI_RUNNER_TAGS =~ ".*o-romania.*" ]]; then
         echo "disable some units to allow capd jobs to run on generic gitlab runners"
-        find environment-values/*-capd/ -name values.yaml -exec yq -i '.units.workload-cluster.enabled=false' {} \;
-        find environment-values/*-capd/ -name values.yaml -exec yq -i '.units.workload-cluster-calico.enabled=false' {} \;
-        find environment-values/*-capd/ -name values.yaml -exec yq -i '.units.monitoring.enabled=false' {} \;
-        find environment-values/*-capd/ -name values.yaml -exec yq -i '.units.keycloak.enabled=false' {} \;
-        find environment-values/*-capd/ -name values.yaml -exec yq -i '.units.flux-webui.enabled=false' {} \;
-        find environment-values/*-capd/ -name values.yaml -exec yq -i '.units.capi-rancher-import.enabled=false' {} \;
+        yq -i '.units.workload-cluster.enabled=false' $values_file
+        yq -i '.units.workload-cluster-calico.enabled=false' $values_file
+        yq -i '.units.monitoring.enabled=false' $values_file
+        yq -i '.units.keycloak.enabled=false' $values_file
+        yq -i '.units.flux-webui.enabled=false' $values_file
+        yq -i '.units.capi-rancher-import.enabled=false' $values_file
       fi
     - export DEBUG_ON_EXIT=1
-
-    - echo -e "\e[0Ksection_end:`date +%s`:before_script_section\r\e[0K"
+    - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_prepare\r\e[0K"
+    - ./bootstrap.sh environment-values/${ENV_NAME}
+    - kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}' | xargs --no-run-if-empty -n1 kubectl --kubeconfig management-cluster-kubeconfig logs || true
   artifacts:
     when: on_failure
     expire_in: 6 hour
@@ -158,9 +160,8 @@ check-docs-markdown:
 test-rke2-capd:
   timeout: 60min
   extends: .test-capd
-  script:
-    - ./bootstrap.sh environment-values/rke2-capd
-    - kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}' | xargs --no-run-if-empty -n1 kubectl --kubeconfig management-cluster-kubeconfig logs || true
+  variables:
+    ENV_NAME: rke2-capd
   rules:
     #NOTE: rke2-capd is resource intensive (~140GB disk), so test it only when needed by adding label `run-e2e-tests` to MR
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
@@ -171,16 +172,12 @@ test-rke2-capd:
 test-kubeadm-capd:
   timeout: 45min
   extends: .test-capd
-  script:
-    - ./bootstrap.sh environment-values/kubeadm-capd
-    - kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}' | xargs --no-run-if-empty -n1 kubectl --kubeconfig management-cluster-kubeconfig logs || true
+  variables:
+    ENV_NAME: kubeadm-capd
 
 test-kubeadm-capd-bm:
   timeout: 45min
   extends: .test-capd
-  script:
-    - ./bootstrap.sh environment-values/kubeadm-capd
-    - kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}' | xargs --no-run-if-empty -n1 kubectl --kubeconfig management-cluster-kubeconfig logs || true
   rules:
     #NOTE: testing kubeadm-capd stack on managed runner by adding label `run-e2e-tests` to MR
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
