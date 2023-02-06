@@ -45,7 +45,7 @@ git_repo_templates: # template to generate Flux GitRepository resources
     spec:
       url: https://gitlab.com/t6306/components/capi-rancher-import.git
       ref:
-        branch: main
+        tag: 0.1.0
     auth: '{{ .Values.git_auth_default | include "preserve-type" }}'
 
   weave-gitops:
