@@ -5,6 +5,7 @@ units:
     kustomization_spec:
       path: ./kustomize-units/cluster-manifests/kubeadm-capo/orange-falcon
   workload-cluster:
+    enabled: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/cluster-manifests/kubeadm-capo/dns-client-orange-falcon

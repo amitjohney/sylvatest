@@ -7,7 +7,6 @@ resources:
 components:
   # - ssh://git@openstack-git-stg.itn.ftgroup/caas/caas-ci.git/environment-values/falcon-rke2/?ref=master  # this kustomize component specifies management cluster proxies, CAPO network id and Glance image name, and sets components.cluster.kustomization_spec.path to CAPI/CAPO manifests working in this Orange specific environment (`kustomize-units/cluster-manifests/rke2-capo/orange-falcon`)
   # - https://openstack-git-stg.itn.ftgroup/caas/caas-ci//environment-values/falcon-rke2/?ref=master  # this kustomize component specifies management cluster proxies, CAPO network id and Glance image name, and sets components.cluster.kustomization_spec.path to CAPI/CAPO manifests working in this Orange specific environment (`kustomize-units/cluster-manifests/rke2-capo/orange-falcon`)
-  - ../components/test-workload-cluster
 
 commonLabels:
   copy-from-bootstrap-to-management: ""

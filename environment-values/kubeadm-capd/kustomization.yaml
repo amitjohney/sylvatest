@@ -6,7 +6,6 @@ resources:
 
 components:
   # - https://openstack-git-stg.itn.ftgroup/caas/caas-ci//environment-values/falcon-base/?ref=master  # this kustomize component specifies the management cluster proxies used in this Orange specific environment
-  - ../components/test-workload-cluster
 
 commonLabels:
   copy-from-bootstrap-to-management: ""

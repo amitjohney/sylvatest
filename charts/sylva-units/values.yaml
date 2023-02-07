@@ -886,6 +886,58 @@ units:
                   - name: CLUSTER_NAME
                     value: '{{ .Values.cluster.test_workload_cluster_name }}'
 
+  workload-cluster:
+    enabled: false
+    repo: sylva-core
+    depends_on:
+      - name: capi
+      - name: '{{ .Values.cluster.capi_providers.infra_provider }}'
+      - name: '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
+      - name: rancher
+      - name: first-login-rancher
+    kustomization_spec:
+      path: to_override
+      postBuild:
+        substitute:
+          CLUSTER_NAME: '{{ .Values.cluster.test_workload_cluster_name }}'
+          MACHINE_IMAGE: '{{ .Values.cluster.image }}'
+          K8SGATEWAY_LB_IP: '{{ .Values.cluster.cluster_external_ip }}'   # NOTE: same is used for k8s-gateway DNS svc in management cluster
+        substituteFrom:
+          - kind: ConfigMap
+            name: proxy-env-vars
+            optional: true
+      wait: true
+      components:
+        - '{{ tuple "../../components/dns-client/kind/KubeadmControlPlane"
+                    (and (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
+        - '{{ tuple "../../components/dns-client/kind/RKE2ControlPlane"
+                    (and (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
+        - '{{ tuple "../../components/proxies/KubeadmControlPlane"
+                    (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
+        - '{{ tuple "../../components/proxies/RKE2ControlPlane"
+                    (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
+        - '{{ tuple "../../components/registry-mirror/KubeadmControlPlane"
+                    (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
+        - '{{ tuple "../../components/registry-mirror/RKE2ControlPlane"
+                    (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
+
+  workload-cluster-calico:
+    enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
+    depends_on:
+      - name: workload-cluster
+    helm_repo_url: https://projectcalico.docs.tigera.io/charts
+    helmrelease_spec:
+      targetNamespace: tigera-operator
+      install:
+        createNamespace: true
+      chart:
+        spec:
+          chart: tigera-operator
+          version: v3.24.5
+      kubeConfig:
+        secretRef:
+          name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
+
 ## stuff related to the 'cluster' unit
 
 cluster:
