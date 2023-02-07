@@ -887,7 +887,6 @@ units:
       - name: rancher
       - name: first-login-rancher
     kustomization_spec:
-      path: to_override
       postBuild:
         substitute:
           CLUSTER_NAME: '{{ .Values.cluster.test_workload_cluster_name }}'
