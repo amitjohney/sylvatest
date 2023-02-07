@@ -2,5 +2,35 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:base"
+  ],
+  "regexManagers": [
+    {
+      "fileMatch": "kustomization.yaml",
+      "matchStrings": ["https:\/\/github\.com\/(?<depName>.*\/.*?)\/releases\/download\/(?<currentValue>.*?)\/"],
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "fileMatch": "kustomization.yaml",
+      "matchStrings": ["https:\/\/raw.githubusercontent.com\/(?<depName>[^\/]*\/[^\/]*)\/(?<currentValue>.*?)\/"],
+      "datasourceTemplate": "github-tags"
+    },
+    {
+      "fileMatch": "values.yaml",
+      "matchStringsStrategy": "recursive",
+      "matchStrings": [
+        "units:[\\w\\W]*[ ]+",
+        "helm_repo_url:(?<registryUrl>.*)\\n[\\w\\W]*?chart: (?<depName>.*)\\n[\\w\\W]*?version: (?<currentValue>.*)\\n"
+      ],
+      "datasourceTemplate": "helm"
+    },
+    {
+      "fileMatch": "values.yaml",
+      "matchStringsStrategy": "recursive",
+      "matchStrings": [
+        "git_repo_templates:[\\w\\W]*[ ]+",
+        "url:(?<depName>.*)\\n[\\w\\W]*?(branch:|tag:) (?<currentValue>.*)\\n"
+      ],
+      "datasourceTemplate": "git-tags"
+    }
   ]
 }
