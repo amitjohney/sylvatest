@@ -12,10 +12,25 @@ units:
 
   cluster:
     kustomization_spec:
-      path: ./kustomize-units/cluster-manifests/kubeadm-capv/tim-lab
-    kustomization_substitute_secrets:
-      VS_USERNAME: '{{ .Values.cluster.capv.username }}'
-      VS_PASSWORD: '{{ .Values.cluster.capv.password }}'
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: charts/cluster-vsphere
+      interval: 10m0s
+      releaseName: management-cluster
+      targetNamespace: default
+      valuesFrom:
+        - kind: Secret
+          name: management-cluster-secrets
+          valuesKey: values
+    helm_secret_values:
+      vsphere:
+        username: '{{ .Values.cluster.capv.username }}'
+        password: '{{ .Values.cluster.capv.password }}'
+        datacenter: '{{ .Values.cluster.capv.dataCenter }}'
+        network: '{{ .Values.cluster.capv.network }}'
+        server: '{{ .Values.cluster.capv.server }}'
+        tlsThumbprint: '{{ .Values.cluster.capv.tlsThumbprint }}'
 
 cluster:
   name: management-cluster

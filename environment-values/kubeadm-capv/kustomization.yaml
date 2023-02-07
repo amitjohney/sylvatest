@@ -4,9 +4,6 @@ kind: Kustomization
 resources:
   - ../base
 
-components:
-  #- ../components/rancher
-
 commonLabels:
   copy-from-bootstrap-to-management: ""
 
@@ -27,3 +24,4 @@ secretGenerator:
   - git-secrets.env
   files:
   - secrets=secrets.yaml
+  - values=management-cluster-capv-values.yaml
