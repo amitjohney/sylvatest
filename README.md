@@ -14,8 +14,6 @@ Helm has indeed several features that can be advantageously leveraged to fullfil
 
 In following readme, we assume that the reader is familiar with [cluster-api](https://cluster-api.sigs.k8s.io/) technology, as well as [flux](https://fluxcd.io/flux/) gitops tool (that is in turn heavily relying on [kustomize](https://kubectl.docs.kubernetes.io/references/kustomize/) and [helm](https://helm.sh/docs/))
 
-- sylva high-level design (REF REQUIRED)
-
 ![sylva-units charts](docs/img/Sylva-core-simple.png)
 
 ## Repository structure
@@ -285,7 +283,7 @@ In previous deployment examples we use an intermediate temporary/disposable boot
 - Management cluster definitions are moved (aka. pivoted) to management cluster, that will become independent and self-managed
 - At this stage, bootstrap cluster can be deleted
 
-## Deploying workload clusters
+### Deploying workload clusters
 
 Deploying a workload cluster the gitops way means that some specific kustomizations defining the workload clusters have to be defined. A unit is named [test-workload-cluster](./environment-values/components/test-workload-cluster/) is used to define it. If this unit is part of units defined in the user values given to the sylva-units helm chart, then a workload cluster will be deployed. You'll be able to see it from the Rancher Web UI.
 
