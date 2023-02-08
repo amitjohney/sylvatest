@@ -39,7 +39,7 @@ where `values.yaml` is a plain yaml file that will be merged over charts default
 
 ```
 cluster:
-  image: registry.gitlab.com/t6306/components/capi-bootstrap/kindest/node:v1.24.4-cni
+  image: registry.gitlab.com/sylva-projects/sylva-core/kindest/node:v1.24.4-cni
 ```
 
 # Sharing configurations
