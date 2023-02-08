@@ -1,0 +1,98 @@
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: ${CLUSTER_NAME}
+  namespace: default
+spec:
+  clusterNetwork:
+    services:
+      cidrBlocks: ["10.96.0.0/12"]
+    pods:
+      cidrBlocks: ["192.168.0.0/16"]
+    serviceDomain: cluster.local
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+    kind: KubeadmControlPlane
+    name: ${CLUSTER_NAME}-control-plane
+    namespace: default
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: DockerCluster
+    name: ${CLUSTER_NAME}
+    namespace: default
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: DockerCluster
+metadata:
+  name: ${CLUSTER_NAME}
+  namespace: default
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+kind: KubeadmControlPlane
+metadata:
+  name: ${CLUSTER_NAME}-control-plane
+  namespace: default
+spec:
+  replicas: 1
+  version: v1.25.0
+  machineTemplate:
+    infrastructureRef:
+      apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+      kind: DockerMachineTemplate
+      name: ${CLUSTER_NAME}-cp-template
+      namespace: default
+  kubeadmConfigSpec:
+    files:
+    - path: /etc/cni/net.d/10-bridge.conf
+      owner: root:root
+      permissions: "0644"
+      content: |
+        {
+            "cniVersion": "0.3.1",
+            "name": "localnet",
+            "type": "bridge",
+            "bridge": "bridge0",
+            "isDefaultGateway": true,
+            "forceAddress": false,
+            "ipMasq": true,
+            "hairpinMode": true,
+            "ipam": {
+                "type": "host-local",
+                "subnet": "192.168.0.0/16"
+            }
+        }
+    clusterConfiguration:
+      apiServer:
+        certSANs:
+        - localhost
+        - 127.0.0.1
+        - 0.0.0.0
+      controllerManager:
+        extraArgs:
+          enable-hostpath-provisioner: "true"
+    initConfiguration:
+      nodeRegistration:
+        taints: []
+        kubeletExtraArgs:
+          eviction-hard: nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%
+          register-with-taints: ""
+    joinConfiguration:
+      nodeRegistration:
+        taints: []
+        kubeletExtraArgs:
+          eviction-hard: nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%
+          register-with-taints: ""
+    postKubeadmCommands:
+      # FIXME: figure out why initConfiguration.nodeRegistration.taints does not work...
+      - kubectl --kubeconfig /etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/control-plane-
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: DockerMachineTemplate
+metadata:
+  name: ${CLUSTER_NAME}-cp-template
+  namespace: default
+spec:
+  template:
+    spec:
+      customImage: ${MACHINE_IMAGE}

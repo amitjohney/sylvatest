@@ -1,0 +1,25 @@
+{{/*
+
+Save chart values as secret to ease debugging, when enabled.
+
+It enable to inspect how values are merged from various inputs (valueFiles, values,
+valuesFrom, PostRenderer) when this chart is deployed as a flux HelmRelease.
+
+the chart using following command:
+
+kubectl get secrets telco-cloud-init-values-debug -o template="{{ .data.values }}" | base64 -d
+
+*/}}
+{{- $envAll := . -}}
+{{- if $envAll.Values.debug_values  -}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: telco-cloud-init-values-debug
+  labels:
+{{ include "telco-cloud-init.labels" . | indent 4 }}
+type: Opaque
+stringData:
+  values: |
+{{ $envAll.Values | toYaml| indent 4 }}
+{{- end -}}

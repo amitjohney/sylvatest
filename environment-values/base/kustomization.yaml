@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# NOTE: we can't use secretGenerator, otherwise data would be base64-encoded,
+# and we wouldn't be able to perform post-build substitutions
+resources:
+  - secrets.yaml
+
+configMapGenerator:
+- name: management-cluster-values
+  options:
+    disableNameSuffixHash: true
+  literals:
+  # This variable will be used by GitRepository of the telco-cloud-init HelmRelease
+  - CURRENT_COMMIT=$CURRENT_COMMIT

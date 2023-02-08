@@ -1,0 +1,75 @@
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: ${CLUSTER_NAME}
+  namespace: default
+spec:
+  clusterNetwork:
+    services:
+      cidrBlocks: ["10.96.0.0/12"]
+    pods:
+      cidrBlocks: ["192.168.0.0/16"]
+    serviceDomain: cluster.local
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
+    kind: RKE2ControlPlane
+    name: ${CLUSTER_NAME}-control-plane
+    namespace: default
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: DockerCluster
+    name: ${CLUSTER_NAME}
+    namespace: default
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: DockerCluster
+metadata:
+  name: ${CLUSTER_NAME}
+  namespace: default
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
+kind: RKE2ControlPlane
+metadata:
+  name: ${CLUSTER_NAME}-control-plane
+  namespace: default
+spec:
+  infrastructureTemplate:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: DockerMachineTemplate
+    name: ${CLUSTER_NAME}-cp-template
+    namespace: default
+  rke2ConfigSpec:
+    files: []
+    serverConfig:
+      tlsSan:
+      - localhost
+      - 127.0.0.1
+      - 0.0.0.0
+    agentConfig:
+      #nodeName: "{{ ds.meta_data.local_hostname }}"
+      kubeletArgs:
+        - "eviction-hard=nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%"
+    # NOTE: Commands are executed sequentially in container by capd manager,
+    # environment won't be preserved between successive commands
+    deployRKE2Commands:
+      - "sed -i '1i snapshotter: native' /etc/rancher/rke2/config.yaml"
+      - systemctl daemon-reload
+      - systemctl enable rke2-server.service
+      - systemctl start rke2-server.service
+      # Mimics kubeadm bootstrap output as capd is watching that file to set BootstrapExecSucceededCondition condition
+      - "mkdir -p /run/cluster-api;  touch /run/cluster-api/bootstrap-success.complete"
+      # SetNodeProviderID issues a "kubectl --kubeconfig /etc/kubernetes/kubelet.conf" command to set providerID
+      - ln -s /etc/rancher/rke2/rke2.yaml /etc/kubernetes/kubelet.conf
+      - ln -s /var/lib/rancher/rke2/bin/kubectl /usr/local/bin/kubectl
+  replicas: 1
+  version: v1.24.4+rke2r1
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: DockerMachineTemplate
+metadata:
+  name: ${CLUSTER_NAME}-cp-template
+  namespace: default
+spec:
+  template:
+    spec:
+      customImage: ${MACHINE_IMAGE}

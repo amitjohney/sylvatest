@@ -1,0 +1,66 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta1
+kind: HelmRepository
+metadata:
+  name: metal3-gitlab-repo
+  namespace: flux-system
+spec:
+  interval: 10m
+  timeout: 1m0s
+  url: https://gitlab.com/api/v4/projects/39639339/packages/helm/stable
+  secretRef:
+    name: gitlab-repo-secret
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: metal3
+  namespace: flux-system
+spec:
+  targetNamespace: metal3
+  releaseName: metal3
+  chart:
+    spec:
+      chart: metal3
+      sourceRef:
+        kind: HelmRepository
+        name: metal3-gitlab-repo
+        namespace: flux-system
+  interval: 1m0s
+  install:
+    createNamespace: true
+  valuesFrom:
+  - kind: ConfigMap
+    name: metal3-values
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gitlab-repo-secret
+  namespace: flux-system
+stringData:
+  username: gitlab+deploy-token-1367618
+  password: kkN6cjrPrSxqstktWGzo
+---
+apiVersion: v1
+data:
+  values.yaml: |
+#    global:
+#      storageClass: metal3-mariadb-sc
+#    ironicIPADownloaderBaseURI: "http://163.162.196.34:8080"
+#    httpProxy: http://163.162.8.137:9966
+#    httpsProxy: http://163.162.8.137:9966
+#    noProxy: localhost
+#    persistence:
+#      ironic:
+#        accessMode: "ReadWriteOnce"
+    services:
+      ironic:
+# Specify the IP address used by Ironic service
+        ironicIP: 163.162.114.139
+        annotations:
+          metallb.universe.tf/address-pool: ironic-pool
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: metal3-values
+  namespace: flux-system

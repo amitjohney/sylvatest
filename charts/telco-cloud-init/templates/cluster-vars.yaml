@@ -1,0 +1,19 @@
+{{- $envAll := . -}}
+{{- if (tuple $envAll "cluster" | include "is-component-enabled") -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-vars
+  labels:
+{{ include "telco-cloud-init.labels" $envAll | indent 4 }}
+data:
+  CLUSTER_NAME: {{ .Values.cluster.name }}
+  MACHINE_IMAGE: {{ .Values.cluster.image }}
+{{ if eq .Values.cluster.flavor.infra_provider "capo" }}
+  SSH_KEY_NAME: {{ .Values.cluster.capo.ssh_key_name }}
+  CAPO_NETWORK_ID: {{ .Values.cluster.capo.network_id }}
+{{ end }}
+{{ if eq .Values.cluster.flavor.infra_provider "capd" }}
+  DOCKER_HOST: {{ .Values.capd.docker_host }}
+{{ end }}
+{{ end }}

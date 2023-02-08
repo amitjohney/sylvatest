@@ -1,0 +1,69 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ../base
+patches:
+- patch: |-
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+    kind: OpenStackCluster
+    metadata:
+      name: ${CLUSTER_NAME}
+      namespace: default
+    spec:
+      dnsNameservers:
+      - 172.20.115.54
+- patch: |-
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+    kind: KubeadmControlPlane
+    metadata:
+      name: ${CLUSTER_NAME}-control-plane
+      namespace: default
+    spec:
+      kubeadmConfigSpec:
+        clusterConfiguration:
+          imageRepository: k8s.gcr.io
+        files:
+        - path: /etc/cni/net.d/10-bridge.conf
+          owner: root:root
+          permissions: "0644"
+          content: |
+            {
+                "cniVersion": "0.3.1",
+                "name": "localnet",
+                "type": "bridge",
+                "bridge": "bridge0",
+                "isDefaultGateway": true,
+                "forceAddress": false,
+                "ipMasq": true,
+                "hairpinMode": true,
+                "ipam": {
+                    "type": "host-local",
+                    "subnet": "192.168.0.0/16"
+                }
+            }
+        - content: |
+            [Service]
+            Environment="HTTP_PROXY=http://proxy.rd.francetelecom.fr:8080"
+            Environment="HTTPS_PROXY=http://proxy.rd.francetelecom.fr:8080"
+            Environment="NO_PROXY=localhost,127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+          path: /etc/systemd/system/containerd.service.d/proxy.conf
+          owner: root
+          permissions: "0644"
+        preKubeadmCommands:
+          - systemctl daemon-reload
+          - systemctl restart containerd.service
+        postKubeadmCommands:
+          # FIXME: figure out why initConfiguration.nodeRegistration.taints does not work...
+          - kubectl --kubeconfig /etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/master-
+- patch: |-
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+    kind: OpenStackMachineTemplate
+    metadata:
+      name: ${CLUSTER_NAME}-control-plane
+      namespace: default
+    spec:
+      template:
+        spec:
+          rootVolume:
+            diskSize: 20
+            volumeType: ceph_sas

@@ -1,0 +1,46 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta1
+kind: GitRepository
+metadata:
+  name: telco-cloud-init
+  namespace: default
+spec:
+  gitImplementation: libgit2
+  interval: 120m
+  ref:
+    commit: ${CURRENT_COMMIT}
+  secretRef:
+    name: management-cluster-secrets
+  url: https://gitlab.com/t6306/components/capi-bootstrap.git
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: telco-cloud-init
+  namespace: default
+spec:
+  chart:
+    spec:
+      sourceRef:
+        kind: GitRepository
+        name: telco-cloud-init
+        namespace: default
+      chart: charts/telco-cloud-init
+      reconcileStrategy: Revision
+      valuesFiles:
+        - charts/telco-cloud-init/values.yaml
+  interval: 10m0s
+  valuesFrom:
+  - kind: ConfigMap
+    name: management-cluster-values
+    valuesKey: values
+    optional: true
+  - kind: Secret
+    name: management-cluster-secrets
+    valuesKey: secrets
+    optional: true
+  - kind: Secret
+    name: management-cluster-infra-secrets
+    valuesKey: infra-secrets
+    optional: true
+  values: {}

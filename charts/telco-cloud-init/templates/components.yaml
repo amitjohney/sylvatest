@@ -1,0 +1,61 @@
+{{- $envAll := . -}}
+{{ range $component_name, $component_def := .Values.components }}
+  {{- if (tuple $envAll $component_name | include "is-component-enabled") -}}
+    {{- $repo_name := $component_def.repo | default "default" -}}
+    {{- $labels := deepCopy ($component_def.labels | default dict) -}}
+    {{- $_ := set $labels "telco-cloud-init.component" $component_name -}}
+    {{- if not (hasKey $envAll.Values.git_repo_templates $repo_name) -}}
+      {{- fail (printf "components.%s.repo refers to '%s' that isn't defined in .git_repo_templates" $component_name $repo_name) -}}
+    {{- end -}}
+    {{- $repo_def := deepCopy (index $envAll.Values.git_repo_templates $repo_name) -}}
+    {{- $auth := $repo_def.auth | default $envAll.Values.git_auth_default -}}
+    {{- $secret_name := printf "git-auth-repo-component-%s" $component_name }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $secret_name }}
+  labels:
+    telco-cloud-init.repo: {{ $repo_name }}
+{{ $labels | toYaml | indent 4 }}
+{{ include "telco-cloud-init.labels" $envAll | indent 4 }}
+stringData:
+{{ $auth | toYaml | indent 2 }}
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: GitRepository
+metadata:
+  name: component-{{ $component_name }}
+  labels:
+    telco-cloud-init.repo: {{ $repo_name }}
+{{ $labels | toYaml | indent 4 }}
+{{ include "telco-cloud-init.labels" $envAll | indent 4 }}
+spec:
+    {{ $secret_ref := dict "secretRef" (dict "name" $secret_name) -}}
+    {{- $git_ref_override := dict "ref" ($component_def.ref_override | default dict) -}}
+    {{- $spec := dict -}}
+    {{- $spec = mergeOverwrite $spec $envAll.Values.git_repo_spec_default $repo_def.spec $secret_ref $git_ref_override -}}
+    {{- if not (hasKey $spec "url") -}}
+        {{- if not (hasKey $repo_def "base_url") -}}
+            {{- fail (printf "repository template '%s' has neither '.spec.url' nor '.base_url' defined" $repo_name) -}}
+        {{- end -}}
+        {{- $_ := set $spec "url" (printf "%s/%s.git" $repo_def.base_url $component_name) -}}
+    {{- else if hasKey $repo_def "base_url" -}}
+      {{- fail (printf "repository template '%s' has both '.spec.url' and '.base_url' defined" $repo_name) -}}
+    {{- end }}
+{{ $spec | toYaml | indent 2 }}
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: {{ $component_name }}
+  labels:
+{{ $labels | toYaml | indent 4 }}
+{{ include "telco-cloud-init.labels" $envAll | indent 4 }}
+spec:
+    {{- $source_ref := dict "sourceRef" (dict "kind" "GitRepository" "name" (printf "component-%s" $component_name)) -}}
+    {{- $spec := dict -}}
+    {{- $spec = mergeOverwrite $spec $envAll.Values.component_kustomization_spec_defaults ($component_def.spec | default dict) $source_ref }}
+{{ $spec | toYaml | indent 2 }}
+  {{- end -}}
+{{ end }}

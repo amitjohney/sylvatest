@@ -1,0 +1,35 @@
+debug: true
+
+git_repo_templates:
+  capi-bootstrap:
+    spec:
+      ref:
+        commit: $CURRENT_COMMIT
+
+components:
+  capd:
+    enabled: true
+  cabpk:
+    enabled: true
+  cluster:
+    spec:
+      path: ./kustomize-components/management-cluster/kubeadm-capd/base
+      #path: ./kustomize-components/management-cluster/kubeadm-capd/orange-proxy
+    dependsOn:
+    - name: capi
+    - name: capd
+    - name: cabpk
+
+cluster:
+  image: registry.gitlab.com/t6306/components/capi-bootstrap/kindest/node:v1.25.0-cni # just kindest/node with preloaded vlan cni binary
+  flavor:
+    infra_provider: capd
+    bootstrap_provider: cabpk
+
+capd:
+  docker_host: $DOCKER_HOST
+
+proxies:
+  http_proxy: $http_proxy
+  https_proxy: $https_proxy
+  no_proxy: $no_proxy

@@ -1,0 +1,37 @@
+debug: true
+
+git_repo_templates:
+  capi-bootstrap:
+    spec:
+      ref:
+        commit: $CURRENT_COMMIT
+
+components:
+  capd:
+    enabled: true # bootstrap-only, management-only
+  cabpr:
+    enabled: true
+  cluster:
+    #spec:
+    #  path: kustomize-components/management-cluster/rke2-capd/orange-proxy
+    dependsOn:
+    - name: capi
+    - name: capd
+    - name: cabpr
+
+  #FIXME: figure out why pivot works locally and not in gitlab ci... (whereas pivot work with kubadm-capd in ci)
+  pivot:
+    enabled: false
+
+cluster:
+  flavor:
+    infra_provider: capd
+    bootstrap_provider: cabpr
+
+capd:
+  docker_host: $DOCKER_HOST
+
+proxies:
+  http_proxy: $http_proxy
+  https_proxy: $https_proxy
+  no_proxy: $no_proxy

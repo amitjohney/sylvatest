@@ -1,0 +1,26 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+# KubeadmControlPlane is missing a patchMergeKey so we can't use strategic merge for files
+# (see https://github.com/kubernetes-sigs/cluster-api/issues/6147)
+# Us a json patch merge ans assume that files list will be defines
+patches:
+- target:
+    kind: KubeadmControlPlane
+  patch: |-
+    - op: add
+      path: /spec/kubeadmConfigSpec/files/-
+      value:
+        path: /etc/systemd/system/containerd.service.d/proxy.conf
+        owner: root
+        permissions: "0644"
+        content: |
+          [Service]
+          Environment="HTTP_PROXY=http://proxy.rd.francetelecom.fr:8080"
+          Environment="HTTPS_PROXY=http://proxy.rd.francetelecom.fr:8080"
+          Environment="NO_PROXY=localhost,127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+    - op: add
+      path: /spec/kubeadmConfigSpec/preKubeadmCommands
+      value:
+        - systemctl daemon-reload
+        - systemctl restart containerd.service

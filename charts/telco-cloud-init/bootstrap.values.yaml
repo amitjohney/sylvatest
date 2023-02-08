@@ -1,0 +1,183 @@
+# Bootstrap values for telco-cloud-init.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates during the boostrap process
+
+phase: bootstrap  ## or 'management'
+
+# this defines the defaults for the .spec produced for the Kustomization resource
+# generated for each item of 'components'
+component_kustomization_spec_defaults:
+  force: false
+  prune: false
+  interval: 100000m
+  retryInterval: 30s
+  path: ""
+  wait: false
+  timeout: 30s
+
+
+components:
+
+  management-cluster-configs:
+    enabled: bootstrap-only
+    repo: capi-bootstrap
+    spec:
+      # FIXME: This is very hacky, we should use an ad-hoc kustomisation instead of this job to re-create configmap and secrets on maangement cluster
+      path: ./kustomize-components/kube-job
+      dependsOn:
+      - name: cluster
+      wait: true
+      force: true
+      patches:
+      - target:
+          kind: Job
+          name: kube-job
+        patch: |
+          - op: replace
+            path: /metadata/name
+            value: copy-configs-job
+      - target:
+          kind: ConfigMap
+          name: job-scripts
+        patch: |
+          - op: replace
+            path: /data/kube-job.sh
+            value: |
+              #!/bin/sh
+
+              set -e
+
+              # FIXME; Flux wait/healthcheck on management cluster should be handling that...
+              # maybe cluster CRD is not compatible with kstatus? (see https://fluxcd.io/flux/components/kustomize/kustomization/#health-assessment)
+              echo "-- Wait for management cluster kubeconfig"
+              attempts=0
+              max_attempts=60
+              until kubectl get secret management-cluster-kubeconfig; do
+                sleep 10
+                ((attempts++)) && ((attempts==max_attempts)) && exit -1
+              done
+
+              echo "-- Retrieve target cluster kubeconfig"
+              kubectl get secret management-cluster-kubeconfig -o jsonpath='{.data.value}' | base64 -d > management-cluster-kubeconfig
+
+              echo "-- Wait for management cluster to be ready"
+              attempts=0
+              until kubectl --kubeconfig management-cluster-kubeconfig wait --for condition=Ready --timeout 2s --all nodes; do
+                sleep 8
+                ((attempts++)) && ((attempts==max_attempts)) && exit -1
+              done
+
+              echo "-- Copy secrets and configmaps from bootstrap to management cluster"
+              kubectl get configmap proxy-env-vars -o yaml | kubectl --kubeconfig management-cluster-kubeconfig apply -f -
+              kubectl get secret management-cluster-secrets -o yaml | kubectl --kubeconfig management-cluster-kubeconfig apply -f -
+              kubectl get configmap management-cluster-values -o yaml | kubectl --kubeconfig management-cluster-kubeconfig apply -f -
+
+              echo "-- All done"
+
+  management-cluster-flux:
+    enabled: bootstrap-only
+    repo: capi-bootstrap
+    labels:
+      suspend-on-pivot: "yes"  # this component must be suspended before pivot
+    spec:
+      path: ./kustomize-components/flux-system
+      dependsOn:
+      - name: management-cluster-configs
+      kubeConfig:
+        secretRef:
+          name: management-cluster-kubeconfig
+      targetNamespace: flux-system
+      wait: true
+      postBuild:
+        substituteFrom:
+        - kind: ConfigMap
+          name: proxy-env-vars
+
+  # instantiate 'telco-cloud-init' chart again in the management cluster
+  # we reinject current values into it, to have the exact same things
+  # this is done via a ConfigMap and a Secret (to hold security sensitive things)
+  management-telco-cloud-init:
+    enabled: bootstrap-only
+    repo: capi-bootstrap
+    labels:
+      suspend-on-pivot: "yes"  # this component must be suspended before pivot
+    spec:
+      path: ./kustomize-components/telco-cloud-init/management-before-pivot/
+      dependsOn:
+      - name: cluster
+      - name: management-cluster-flux
+      kubeConfig:
+        secretRef:
+          name: management-cluster-kubeconfig
+      wait: true
+      postBuild:
+        substituteFrom: # Substitute $CURRENT_COMMIT
+        - kind: ConfigMap
+          name: management-cluster-values
+
+  pivot:
+    enabled: bootstrap-only
+    repo: capi-bootstrap
+    spec:
+      path: ./kustomize-components/kube-job
+      dependsOn:
+      - name: management-telco-cloud-init
+      wait: true
+      force: true
+      patches:
+      - target:
+          kind: Job
+          name: kube-job
+        patch: |
+          - op: replace
+            path: /metadata/name
+            value: pivot-job
+      - target:
+          kind: ConfigMap
+          name: job-scripts
+        patch: |
+          - op: replace
+            path: /data/kube-job.sh
+            value: |
+              #!/bin/sh
+
+              set -e
+
+              echo "-- Retrieve target cluster kubeconfig"
+              kubectl get secret management-cluster-kubeconfig -o jsonpath='{.data.value}' | base64 -d > management-cluster-kubeconfig
+
+              echo "-- Wait for cluster and machines to be ready as it is a required condition to move"
+              kubectl wait --for condition=ControlPlaneReady --timeout 600s --all cluster
+              kubectl wait --for condition=NodeHealthy --timeout 600s --all machine
+
+              echo "-- Wait for capi CRD to be installed on management cluster"
+              attempts=0
+              max_attempts=60
+              until kubectl --kubeconfig management-cluster-kubeconfig get customresourcedefinitions clusters.cluster.x-k8s.io; do
+                sleep 5
+                ((attempts++)) && ((attempts==max_attempts)) && exit -1
+              done
+              # FIXME: use "until clusterctl move --dry-run" instead of checking conditions one by one above?
+
+              echo "-- Freeze reconciliation on Kustomisations in source cluster that related to the management cluster"
+              kubectl annotate kustomizations -l suspend-on-pivot=yes kustomize.toolkit.fluxcd.io/reconcile=disabled --overwrite
+
+              echo "-- Move cluster definitions from source to target cluster"
+              clusterctl move --kubeconfig $KUBECONFIG --to-kubeconfig management-cluster-kubeconfig -v 3
+
+              echo "-- Patch the telco-cloud-init HelmRelease to allow the Flux cluster redefinition to happen in the management cluster"
+              kubectl --kubeconfig management-cluster-kubeconfig \
+                  patch helmrelease telco-cloud-init --type=json --patch='[{"op":"remove","path":"/spec/values/cluster"}]'
+
+              # NOTE: here we could add a reference to another valueFile that would deploy components specific to the management cluster
+              # '[{"op":"add","path":"/spec/chart/spec/valuesFiles/-","value":"charts/telco-cloud-init/management.values.yaml"}]'
+              # and/or create a kustomisation on management-cluster to manage telco-cloud-init helmRelease from git
+
+              echo "-- Freeze reconciliation of current job Kustomisation in source cluster as we're done"
+              kubectl annotate kustomizations pivot kustomize.toolkit.fluxcd.io/reconcile=disabled --overwrite
+
+              echo "-- Accelerate reconciliation of the telco-cloud-init HelmRelease"
+              kubectl --kubeconfig management-cluster-kubeconfig \
+                  annotate --overwrite helmrelease/telco-cloud-init reconcile.fluxcd.io/requestedAt="$(date +%s)"
+
+              echo "-- All done"

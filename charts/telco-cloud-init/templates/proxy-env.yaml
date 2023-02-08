@@ -1,0 +1,15 @@
+{{- $envAll := . -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: proxy-env-vars
+  labels:
+{{ include "telco-cloud-init.labels" $envAll | indent 4 }}
+data:
+{{- range $var_name, $var_value := .Values.proxies }}
+{{- if $var_value }}
+  {{ $var_name }}: {{ $var_value }}
+{{- else }}
+  {{ $var_name }}: ""
+{{- end }}
+{{- end }}
