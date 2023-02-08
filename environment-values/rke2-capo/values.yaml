@@ -3,12 +3,12 @@
 units:
   cluster:
     kustomization_spec:
-      path: ./kustomize-units/cluster-manifests/rke2-capo/orange-falcon
+      path: ./kustomize-units/cluster-manifests/rke2-capo/base
   workload-cluster:
     enabled: true
     repo: sylva-core
     kustomization_spec:
-      path: ./kustomize-units/cluster-manifests/rke2-capo/dns-client-orange-falcon
+      path: ./kustomize-units/cluster-manifests/rke2-capo/base
       postBuild:
         substitute:
           CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
