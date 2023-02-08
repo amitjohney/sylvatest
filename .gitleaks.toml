@@ -18,7 +18,7 @@ paths = [
     '''environment-values/base/secrets.yaml''',
     '''sops-howto.md'''
 ]
-commits = [ "98e43a9925e12295027f18fe3f94f773a1e3d487", 
+commits = [ "ce53d2b6c53115fce3c55ff3e2484fa9b26834f3",
             "7e9319dbd6f9535fb8dcd5079d275e717fb9288d",
             "0d57bd2b0bdc8d810fcc0dd1b0c1914c9914492a",
             "ac147d3773bcfac445a666828d3aa1f8f8249286" ]
