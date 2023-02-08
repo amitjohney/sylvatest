@@ -66,13 +66,13 @@ machines:
     # -- kube-vip version
     kubeVipVersion: v0.4.2
     # -- Control plane VSphere resource pool
-    resourcePool: MGMT/Resources
+    resourcePool: # replace me
     # -- Control plane VSphere machine template to clone, must contain kubeadm at the same version as specified in kubernetes.version
-    template: ubuntu-2004-kube-v1.22.8
+    template: # replace me
     # -- Control plane VSphere folder to store VM
-    folder: k8s training
+    folder: # replace me
     # -- Control plane VSphere datastore to create/locate machine
-    dataStore: vsanDatastore
+    dataStore: # replace me
     # -- Control plane Number of vCPUs to allocate to controlPlane instances
     cpuCount: 2
     # -- Control plane Disk size of VM in GiB
@@ -88,13 +88,13 @@ machines:
       # -- Number of worker VMs instances
       replicas: 2
       # -- workers VSphere resource pool
-      resourcePool: MGMT/Resources
+      resourcePool: # replace me
       # -- workers VSphere machine template to clone, must contain kubeadm at the same version as specified in kubernetes.version
-      template: ubuntu-2004-kube-v1.22.8
+      template: # replace me
       # -- workers VSphere folder to store VM
-      folder: k8s training
+      folder: # replace me
       # -- workers VSphere datastore to create/locate machine
-      dataStore: vsanDatastore
+      dataStore: # replace me
       # -- Number of vCPUs to allocate to worker instances
       cpuCount: 2
       # -- disk size of workers VM in GiB
