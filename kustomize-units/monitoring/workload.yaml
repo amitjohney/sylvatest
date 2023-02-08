@@ -14,12 +14,12 @@ metadata:
   name: monitoring
   namespace: default
 spec:
-  repo: https://gitlab.com/t6306/Labs/fleet-deployments.git
-  branch: main
+  repo: ${GIT_REPO}
+  branch: ${BRANCH}
   clientSecretName: git-repo-auth-fleet-deployments
   paths:
-  - infrastructure/monitoring-stack/monitoring-crd/
-  - infrastructure/monitoring-stack/monitoring/
+  - monitoring-crd/
+  - monitoring/
   targets:
   - name: monitoring
     clusterSelector:
