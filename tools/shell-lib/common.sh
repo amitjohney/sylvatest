@@ -17,9 +17,10 @@ function check_pivot_has_ran() {
   if kubectl wait --for condition=complete --timeout=0s job pivot-job > /dev/null 2>&1; then
     { echo_b "\U000274C The pivot job has already ran and moved resources to the management cluster. Please use apply.sh instead of bootstrap.sh"; exit 1;} || echo
   fi
-
-  if [ -n "$(kubectl get kustomizations.kustomize.toolkit.fluxcd.io cluster -o jsonpath='{.metadata.annotations.pivot/started}')" ]; then
-    { echo_b "\U000274C The pivot job is in progress. Please wait for it to finish."; exit 1;} || echo
+  if kubectl get customresourcedefinitions.apiextensions.k8s.io kustomizations.kustomize.toolkit.fluxcd.io &>/dev/null; then
+    if [ -n "$(kubectl get kustomizations.kustomize.toolkit.fluxcd.io cluster -o jsonpath='{.metadata.annotations.pivot/started}')" ]; then
+      { echo_b "\U000274C The pivot job is in progress. Please wait for it to finish."; exit 1;} || echo
+    fi
   fi
 }
 
