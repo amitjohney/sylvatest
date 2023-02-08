@@ -61,6 +61,12 @@ git_repo_templates: # template to generate Flux GitRepository resources
         tag: 0.1.0
     auth: '{{ .Values.git_auth_default | include "preserve-type" }}'
 
+  cluster-vsphere:
+    spec:
+      url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/cluster-vsphere.git
+      ref:
+        tag: 0.1.0
+
 helm_repo_spec_default:
   interval: 60m0s
 

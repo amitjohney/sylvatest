@@ -11,11 +11,12 @@ units:
     enabled: yes
 
   cluster:
+    repo: cluster-vsphere
     kustomization_spec:
     helmrelease_spec:
       chart:
         spec:
-          chart: charts/cluster-vsphere
+          chart: .
       interval: 10m0s
       releaseName: management-cluster
       targetNamespace: default
