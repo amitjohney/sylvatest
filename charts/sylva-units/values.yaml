@@ -952,7 +952,7 @@ cluster:
   admin_password: '{{ randAlphaNum 64 }}'
 
   # image reference depends provider
-  image: registry.gitlab.com/t6306/components/docker-images/rke2-in-docker:v1-24-4-rke2r1
+  image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/rke2-in-docker:v1-24-4-rke2r1
 
   # for now, the choice below needs to be made
   # consistently with the choice of a matching kustomization path
