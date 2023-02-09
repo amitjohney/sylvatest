@@ -43,7 +43,7 @@ git_repo_templates: # template to generate Flux GitRepository resources
 
   capi-rancher-import:
     spec:
-      url: https://gitlab.com/t6306/components/capi-rancher-import.git
+      url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/capi-rancher-import.git
       ref:
         tag: 0.1.0
     auth: '{{ .Values.git_auth_default | include "preserve-type" }}'
@@ -56,7 +56,7 @@ git_repo_templates: # template to generate Flux GitRepository resources
 
   metal3:
     spec:
-      url: https://gitlab.com/t6306/components/helm-charts/metal3.git
+      url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3.git
       ref:
         tag: 0.1.0
     auth: '{{ .Values.git_auth_default | include "preserve-type" }}'
@@ -412,7 +412,7 @@ units:
       install:
         createNamespace: true
       targetNamespace: metal3-system
-      values:  # see https://gitlab.com/t6306/components/helm-charts/metal3/-/blob/main/egate/metal3/values.yaml
+      values:  # see https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3/-/blob/main/values.yaml
         # global:
         #   storageClass:
         # ironicIPADownloaderBaseURI:
@@ -681,7 +681,7 @@ units:
     enabled: '{{ .Values.units.rancher.enabled | include "preserve-type" }}'
     repo: capi-rancher-import
     depends_on:
-      - name: first-login-rancher    # FIXME: this is temporary while issue https://gitlab.com/t6306/components/capi-rancher-import/-/issues/2 is addressed to have the capi-rancher-import controller check the CRD existence on startup and fail if it's not there yet
+      - name: first-login-rancher    # FIXME: this was temporary, needs to be cleaned up (see https://gitlab.com/sylva-projects/sylva-core/-/issues/4)
       - name: k8s-gateway
     helmrelease_spec:
       chart:
