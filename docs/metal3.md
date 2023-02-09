@@ -1,4 +1,5 @@
 # Metal3 in Sylva
+
 Metal3 is the component of the Sylva stack responsible of the management of baremetal servers.
 
 It provides the capability to enroll, inspect and provision physical servers by means of a set of CRDs.
@@ -10,6 +11,7 @@ This document aims at showing the metal3 architecture and its behavior for the b
 If you want to dig deeper take a look at the following links to the official upstream documentation and projects.
 
 Links to the upstream official documentation:
+
 - [Metal3 user guide](https://metal3io.netlify.app/)
 - [Metal3 website](http://metal3.io/)
 - [Baremetal Operator API](https://github.com/metal3-io/baremetal-operator/blob/main/docs/api.md)
@@ -20,15 +22,16 @@ Links to the upstream official documentation:
 - [Metal3's IP Address Manager API](https://github.com/metal3-io/ip-address-manager/blob/main/docs/api.md)
 
 Links to the upstream repositories:
+
 - [baremetal-operator](https://github.com/metal3-io/baremetal-operator)
 - [cluster-api-provider-metal3](https://github.com/metal3-io/cluster-api-provider-metal3)
 - [ironic](https://opendev.org/openstack/ironic)
 - [ironic-image](https://github.com/metal3-io/ironic-image) used by metal3
-- [ironic-python-agent](https://opendev.org/openstack/ironic-python-agent/)
+- [Ironic-Python-Agent](https://opendev.org/openstack/ironic-python-agent/)
 - [Metal3's IP Address Manager](https://github.com/metal3-io/ip-address-manager)
 
-
 ## Metal3 architecture
+
 The metal3 project aims at reusing the Open Stack component for baremetal management called [Ironic](https://ironicbaremetal.org/) into the Kubernetes ecosystem.
 
 This is achieved by introducing an intermediate layer - the [baremetal-operator](https://github.com/metal3-io/baremetal-operator) - that basically models the domain in CRDs and translates declarative states of the target baremetal infrastructure into instructions to Ironic.
@@ -42,6 +45,7 @@ The baremetal-operator reconciles a set of Custom Resources by interoperating wi
 The most important CRD is the [BareMetalHost](https://github.com/metal3-io/baremetal-operator/blob/main/docs/api.md#baremetalhost): a `BareMetalHost` is the one-to-one representation of a physical server in metal3, it is the object onto which describe the desire state of the server (e.g. powered on/off, provisioned with an OS image and/or a cloud-config volume) and where to look at to know about the state of the machine.
 
 ### Ironic
+
 Ironic is a project initially developed to work inside Open Stack but it is deployed as standalone component within metal3.
 
 Ironic is the component that actually interacts with the baremetal servers to be managed while the baremetal-operator is mostly a Kubernetes interface (actually a set of controllers) towords Ironic.
@@ -52,26 +56,30 @@ Ironic has the responsibility of enrolling baremetal servers, inspect their hard
 
 Provision a baremetal server means installing an OS on it starting from scratch and possibly mount a cloud-config drive that can be used by the `cloud-init` tool to configure host specificities and networking.
 
-Ironic inspects and provisions servers by loading on them its agent: the `ironic-python-agent`.
+Ironic inspects and provisions servers by loading on them its agent: the `Ironic-Python-Agent`.
 
-### Ironic-python-agent
-The [ironic-python-agent](https://docs.openstack.org/ironic-python-agent/latest/) is the agent executed on the baremetal servers used by Ironic to perform operations on the machine.
+### Ironic-Python-Agent
 
-The reason of the requisite of a DHCP server on one network attached to the servers is due to the need of the ironic-python-agent to get a network configuration since so far it is not supported the usage of a cloud-config drive for it.
+The [Ironic-Python-Agent](https://docs.openstack.org/ironic-python-agent/latest/) is the agent executed on the baremetal servers used by Ironic to perform operations on the machine.
 
-The ironic-python-agent collaborates with the Ironic deployment on the management cluster and performs the following operations when required:
+The reason of the requisite of a DHCP server on one network attached to the servers is due to the need of the Ironic-Python-Agent to get a network configuration since so far it is not supported the usage of a cloud-config drive for it.
+
+The Ironic-Python-Agent collaborates with the Ironic deployment on the management cluster and performs the following operations when required:
+
 1. Hardware inspection
 2. Wipe of local disks
 3. Download and installation of a target Operating System
 
 So basically when Ironic needs to perform one of the described operations, it first loads on the baremetal machine its agent.
 
-#### Ironic-python-agent customization
-Sometime you may need to customize the ironic-python-agent image, for example if you need to install on it a specific firmware or driver for your hardware, or if you want to embed in it your CA certificate to secure with TLS the communication between Ironic and the agent.
+#### Ironic-Python-Agent customization
 
-The way for customizing the ironic-python-agent is using the [ironic-python-agent-builder](https://docs.openstack.org/ironic-python-agent-builder/latest/).
+Sometime you may need to customize the Ironic-Python-Agent image, for example if you need to install on it a specific firmware or driver for your hardware, or if you want to embed in it your CA certificate to secure with TLS the communication between Ironic and the agent.
+
+The way for customizing the Ironic-Python-Agent is using the [Ironic-Python-Agent-builder](https://docs.openstack.org/ironic-python-agent-builder/latest/).
 
 ### Metal3 IP Address Manager
+
 Metal3 provides its own mechanism for distributing static IP addresses to the provisioned baremetal machines: the [metal3 IPAM](https://github.com/metal3-io/ip-address-manager).
 
 The metal3 IP address manager works by reconciling a set of [CRDs](https://github.com/metal3-io/ip-address-manager/blob/main/docs/api.md) that represent `IPPools`, `IPAddresses` and `IPClaims`.
@@ -79,13 +87,14 @@ The metal3 IP address manager works by reconciling a set of [CRDs](https://githu
 In [this blog post](https://metal3.io/blog/2020/07/06/IP_address_manager.html) metal3 maintainers introduce it and explain its behavior.
 
 ## Metal3 setup in Sylva
-Metal3 has been integrated and configured in the Sylva project in order to be able to use it as a Cluster API Infrastructure Provider (through the [cluster-api-provider-metal3](https://github.com/metal3-io/cluster-api-provider-metal3)) for creating and managing "remote" baremetal clusters.
 
-With "remote" clusters we mean clusters geographically distributed, in general far from the management cluster infrastructure.
+Metal3 has been integrated and configured in the Sylva project in order to be able to use it as a Cluster API Infrastructure Provider (through the [cluster-api-provider-metal3](https://github.com/metal3-io/cluster-api-provider-metal3)) for creating and managing baremetal clusters.
+
+Workload baremetal clusters may be geographically distributed, in general far from the management cluster infrastructure.
 
 From the networking perspective we expect the baremetal servers to be connected to some IP subnets different from the ones the management cluster is attached to.
 
-This means that we cannot rely on PXE for booting the servers remotely but we use the `Virtual Media` feature to mount remotely images on the machines.
+This means that we cannot rely on PXE for booting the servers remotely but we use the `Virtual Media` feature to mount images on the machines.
 
 This is why we provide a pre-configured setup of metal3 for the Sylva project in order to have it ready to use as soon as possible without having to deal with its complex configuration.
 
@@ -96,23 +105,26 @@ The figure above shows the architecture of metal3 in Sylva with a focus on the n
 > The figure above shows n baremetal servers all connected to the same L2 network: this is not mandatory, metal3 can manage machines in n different locations connected to different IP networks, the figure shows only one just for simplicity.
 
 ## How it works
+
 This section of the docs describes the workflow of the basic operation performed with metal3 (baremetal server enrollment and provisioning) with the objective of providing awareness about the many components involved, their interactions and how are distributed.
 
 Understanding the workflows is very important for debugging metal3.
 
 ### Baremetal server registration and inspection workflow
+
 ![metal3 enrollment workflow](./img/metal3_sylva_enrollment.png)
 When a BareMetalHost is created on the management cluster and includes the server BMC URL and credentials, the registration and inspection operations begin.
 
-Ironic is requested to start the hardware inspection of the baremetal machine by the baremetal-operator and reacts by mounting the ironic-python-agent to the server as a Virtual Media and requesting the BMC to boot it.
+Ironic is requested to start the hardware inspection of the baremetal machine by the baremetal-operator and reacts by mounting the Ironic-Python-Agent to the server as a Virtual Media and requesting the BMC to boot it.
 
-After the server reboot, the ironic-python-agent starts looking for a network configuration: it enables all the available network interfaces and for each runs the DHCP client.
+After the server reboot, the Ironic-Python-Agent starts looking for a network configuration: it enables all the available network interfaces and for each runs the DHCP client.
 
 When the network configuration has been received, the agent runs a process to introspect all the hardware available and then reports the information discovered to Ironic on the management cluster.
 
 Finally the baremetal-operator gets from Ironic the inspection results and updates the status of the BareMetalHost.
 
 ### Cluster API baremetal cluster provisioning workflow
+
 ![metal3 provisioning workflow with CAPI](./img/metal3_sylva_provisioning.png)
 When the CRDs representing a cluster on metal3 infrastructure are created on the management cluster, the process of baremetal cluster provisioning begins.
 
@@ -127,24 +139,27 @@ The `hostSelector` defines a criteria for matchine labels on `BareMetalHost` obj
 
 So the CAPM3 controller processes the `hostSelector` spec, selects the `BareMetalHosts` to be consumed and updates their spec with an OS `image`, `userData` and `networkData` so that metal3 can start the provisioning process for each of them.
 
-Ironic gets requested from the baremetal-operator to provision servers and reacts by loading the `ironic-python-agent` on them if needed (it may be still ready because of a previous inspection) and requesting the OS provisioning by providing the URL of the target image.
+Ironic gets requested from the baremetal-operator to provision servers and reacts by loading the `Ironic-Python-Agent` on them if needed (it may be still ready because of a previous inspection) and requesting the OS provisioning by providing the URL of the target image.
 
-The ironic-python-agent downloads such image, wipes all the local disks, configures the raid setup if requested and installs the target OS on one local disk along with the `cloud-config` drive provided.
+The Ironic-Python-Agent downloads such image, wipes all the local disks, configures the raid setup if requested and installs the target OS on one local disk along with the `cloud-config` drive provided.
 
-When the installation is finished the `ironic-python-agent` reports the success to Ironic and reboots the server.
+When the installation is finished the `Ironic-Python-Agent` reports the success to Ironic and reboots the server.
 
 After the reboot the server will boot the just installed target OS and will execute the `cloud-init` that will setup host specific configuration (such as users and network) and will execute the `kubeadm init/join` command to turn itself into a Kubernetes cluster node.
 
 In the meanwhile the state of the `BareMetalHost` will be updated so that it will result as `provisioned`.
- 
+
 ## Metal3 deployment in Sylva
+
 Metal3 can be deployed as a `unit` in the Sylva stack by enabling the units `metal3` and `capm3` in the `sylva-units` helm chart.
 
 ### Helm chart
+
 We provide an helm chart to simplify the installation and configuration of Metal3 in the scenario of interest of the Sylva stack, that is with level 3 connectivity between Metal3 on the management cluster and the remote baremetal machine to be managed and consumed by cluster-api.
 [Here](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3) you can find the Metal3 helm chart with its documentation.
 
 ### How to enable and configure metal3 in Sylva
+
 In order to install metal3 and CAPM3 on a Sylva management cluster, the related units must be enabled in the `sylva-units`'s `values.yaml`.
 
 ```yaml
@@ -177,6 +192,7 @@ The `capm3` unit doesn't require any configuration, it simply acts as an interme
 ### Networking requirements
 
 ### Provisioning with Virtual Media
+
 Telcos envision a scenario in which clusters will be very distributed geographically and, at least at the far edge, will be Kubernetes cluster on baremetal.
 
 In such scenario there should be no assumption that metal3 and the remote servers are interconnected through a common broadcast domain.
@@ -185,31 +201,38 @@ Instead they will likely be on distinct IP networks.
 
 Hence the Sylva project proposes a customized configuration of the metal3 deployment in order to fit in such kind of scenarios.
 
-In particular Ironic on the management cluster is exposed to the external world through a LoadBalancer Service and it is meant to load the ironic-python-agent on the remote servers through the Virtual Media.
+In particular Ironic on the management cluster is exposed to the external world through a LoadBalancer Service and it is meant to load the Ironic-Python-Agent on the remote servers through the Virtual Media.
 
 Such configuration has a **requirement**: in order for the remote servers to be able to reach the Ironic Service on the management cluster, a **DHCP server** must be configured locally to their location.
 
 ### Images for target OS
+
 In order for the baremetal servers to be consumed by cluster-api and used as workload cluster nodes, the Operating System to be installed on them must include the Kubelet of the Kubernetes version to be used and cloud-init for the host specific customizations.
 
 Such image can be in raw or qcow2 format.
 
 [Airship's image-builder](https://opendev.org/airship/image-builder) can be a valuable tool to build an OS image for metal3.
 
-# Known issues
-In case of troubles it may be useful to take a look at the Ironic's [known issues](https://docs.openstack.org/ironic/latest/admin/drivers/idrac.html#known-issues). 
+## Known issues
+
+In case of troubles it may be useful to take a look at the Ironic's [known issues](https://docs.openstack.org/ironic/latest/admin/drivers/idrac.html#known-issues).
 
 In case you get this error
+
 ```
 No disk space left on device:
 ```
-try to increase the size of Ironic PVC through the value `persistence.ironic.size` of the metal3 helm chart. 
-Take into account that Ironic builds an ISO for each remote server to manage, so you can estimate the right size roughly with this formula:
+
+try to increase the size of Ironic PVC through the value `persistence.ironic.size` of the metal3 helm chart.
+
+Take into account that Ironic builds an ISO for each server to manage, so you can estimate the right size roughly with this formula:
+
 ```
-ironic_pvc_size = <ironic-python-agent ramdisk size> * <number of bm servers to manage>
+ironic_pvc_size = <Ironic-Python-Agent ramdisk size> * <number of bm servers to manage>
 ```
 
-# Troubleshooting
+## Troubleshooting
+
 In case of issues there may be a wide range of reasons.
 
 In order to debug and get some more information you should find useful the following commands to retrieve the logs of the many components involved:
