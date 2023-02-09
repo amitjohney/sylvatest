@@ -20,8 +20,6 @@ secretGenerator:
   behavior: merge
   options:
     disableNameSuffixHash: true
-  envs:
-  - git-secrets.env
   files:
   - secrets=secrets.yaml
   - values=management-cluster-capv-values.yaml

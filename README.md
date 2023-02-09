@@ -1,7 +1,5 @@
 # Sylva-core project
 
-> **_NOTE:_** This project has just landed in this repository and still need few adaptations to be usable as described in following README, we're actively working on it!
-
 This project provides the tools and configuration to set up a Sylva management cluster in a declarative way. It relies on [Cluster API](https://cluster-api.sigs.k8s.io/) to manage cluster lifecycle, and uses [Flux](https://fluxcd.io/flux/) to keep clusters and infrastructure components in sync with their definitions in Git.
 
 This project is delivering the sylva-units helm chart that creates Flux objects used to deploy various software components, called "units". Each of these unit definition will be derived into a set of flux resources (Gitrepositories, Kustomizations, HelmReleases...) following the specific settings defined for the deployment.
@@ -138,21 +136,8 @@ echo "fs.inotify.max_user_instances = 512" | sudo tee -a /etc/sysctl.conf
 sudo sysctl -p /etc/sysctl.conf
 ```
 
-Create your copy of environment-values, and provide your GitLab username and a GitLab token with read access to repository and registry:
-
-```shell
-cp -a environment-values/rke2-capd environment-values/my-rke2-capd
-cat <<EOF > environment-values/my-rke2-capd/git-secrets.env
-username=your_name
-password=glpat-xxxxxxxxxxxxxx
-EOF
-```
-
-> **_NOTE:_** obviously, the files  `git-secrets.env` are sensitive and are meant to be ignored by Git (see `.gitignore`). However, for the sake of security, it can be good idea to [secure these files with SOPS](./sops-howto.md) to mitigate the risk of leakage.
-
-(You can also deploy cluster using the kubeadm infrastructure provider by using the corresponding `environment-values/kubeadm-capd` directory.)
-
-If you are using a corporate proxy, you should also provide proxy URL in the values files `environment-values/my-rke2-capd/values.yaml`:
+Then you may adapt your environment values (in `environment-values/kubeadm-capd/values.yaml`)
+For capd deployment, the only thing you have to provide is the proxy address if you are using one:
 
 ```yaml
 proxies:
@@ -161,14 +146,19 @@ proxies:
   no_proxy: 127.0.0.1,localhost,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8
 ```
 
-> **_NOTE:_** If your bootstrap cluster machine is behind the forward proxy, then all the above proxies should be present as environment variables before running bootstrap.sh
-> You should pay attention and make sure that cluster_cidr (defaulting to 10.96.0.0/12) will be properly excluded by no_proxy, otherwise some units will attempt to use proxy for intra-cluster communications, and fail
-
-Then you can launch the bootstrap process using provided configuration:
+Then you can bootstrap the management cluster creation:
 
 ```shell
-./bootstrap.sh environment-values/my-rke2-capd
+./bootstrap.sh environment-values/kubeadm-capd
 ```
+
+If you want to deploy a cluster using cluster-api-rke2 bootstrap provider, you just have to use the [environment-values/rke2-capd](environment-values/rke2-capd) directory instead.
+
+> **_NOTE:_** If you intent to contribute back to this project (we would be happy to welcome you!), you should probably create your own copy of environment-values prior to edit them. This way you won't be editing files that are tracked by Git, and will not commit them by inadvertence:
+>
+> ```shell
+> cp -a environment-values/rke2-capd environment-values/my-rke2-capd
+> ```
 
 For more details on environment-values generation you can have a look at the [dedicated README](environment-values/README.md).
 
@@ -215,17 +205,6 @@ Before triggering bootstrap.sh, certain prerequisites need to be done/followed
   cp -a environment-values/kubeadm-capo environment-values/my-capo-env
   ```
 
-- Provide your **GitLab username** and a **GitLab token** with read access to repository and registry:
-
-  ```shell
-  cat <<EOF > environment-values/my-capo-env/git-secrets.env
-   username=your_name
-   password=glpat-xxxxxxxxxxxxxx
-   EOF
-  ```
-
-> **_NOTE:_** obviously, the files  `git-secrets.env` are sensitive and are meant to be ignored by Git  (see `.gitignore`). However, for the sake of security, it can be good idea to [secure these files with SOPS](./sops-howto.md) to mitigate the risk of leakage.
-
 - Provide your **OpenStack credentials** in `environment-values/my-capo-env/secrets.yaml`
 
   ```shell
@@ -236,6 +215,8 @@ Before triggering bootstrap.sh, certain prerequisites need to be done/followed
     username: # replace me
     password: # replace me
   ```
+
+> **_NOTE:_** obviously, the `secrets.yaml` file is sensitive and meant to be ignored by Git (see `.gitignore`). However, for the sake of security, it can be good idea to [secure these files with SOPS](./sops-howto.md) to mitigate the risk of leakage.
 
 - Adapt `environment-values/my-capo-env/values.yaml` to suit your environment:
 

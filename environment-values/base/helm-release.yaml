@@ -11,8 +11,6 @@ spec:
   interval: 120m
   ref:
     commit: CURRENT_COMMIT # Placeholder that will be replaced by bootstrap.sh and apply.sh commands
-  secretRef:
-    name: management-cluster-secrets
   url: https://gitlab.com/sylva-projects/sylva-core.git
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
@@ -32,19 +30,10 @@ spec:
         - charts/sylva-units/values.yaml
   interval: 10m0s
   valuesFrom:
-    # NOTE: this configmap will only be created in bootstrap cluster
-  - kind: ConfigMap
+  - optional: true # NOTE: this configmap will only be created in bootstrap cluster
+    kind: ConfigMap
     name: management-cluster-bootstrap-values
     valuesKey: bootstrap.values.yaml
-    optional: true
-  - kind: Secret
-    name: management-cluster-secrets
-    valuesKey: username
-    targetPath: git_auth_default.username
-  - kind: Secret
-    name: management-cluster-secrets
-    valuesKey: password
-    targetPath: git_auth_default.password
   - kind: Secret
     name: management-cluster-secrets
     valuesKey: secrets
