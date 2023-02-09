@@ -48,7 +48,7 @@ export KEY_FP=89C54D2FDE4B50263B1652F23E79A69E0A0BF323
 All the files storing sensitive information can be secured by using Mozilla SOPS,  it mitigates the risk to leak this information on GitLab. The files `git-secrets.env`, which stores your GitLab credentials, are typical examples of sensitive files:
 
 ```yaml
-# These secrets will be used by the GitRepository of the telco-cloud-init HelmRelease
+# These secrets will be used by the GitRepository of the sylva-units HelmRelease
 # It is highly recommended to encrypt this file with SOPS
 username=GIT_USERNAME
 password=GIT_TOKEN
@@ -87,13 +87,13 @@ sops --in-place --decrypt git-secrets.env
 There is one `git-secrets.env` file per environment, so, when working on several environments, it may be worth to blindly encrypt all `git-secrets.env` files:
 
 ```shell
-find capi-bootstrap/ -name git-secrets.env -exec sops --pgp $KEY_FP --in-place --encrypted-regex 'password' --encrypt {} \;
+find sylva-core/ -name git-secrets.env -exec sops --pgp $KEY_FP --in-place --encrypted-regex 'password' --encrypt {} \;
 ```
 
 Then, to decrypt all `git-secrets.env` files:
 
 ```shell
-find  capi-bootstrap/ -name git-secrets.env -exec sops --in-place --decrypt {} \;
+find sylva-core/ -name git-secrets.env -exec sops --in-place --decrypt {} \;
 ```
 
 ## References

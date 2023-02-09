@@ -126,7 +126,7 @@ check-docs-markdown:
     - yq -i '.cluster.cluster_external_ip = strenv(CLUSTER_EXTERNAL_IP)' $values_file
     - if [[ -n $DOCKERIO_REGISTRY_MIRROR ]]; then yq -i '.dockerio_registry_mirror = strenv(DOCKERIO_REGISTRY_MIRROR)' $values_file; fi
     # for now, some units don't work on generic workers
-    # (see https://gitlab.com/t6306/components/capi-bootstrap/-/issues/106)
+    # (see https://gitlab.com/sylva-projects/sylva-core/-/issues/2)
     - |
       if [[ ! $CI_RUNNER_TAGS =~ ".*o-romania.*" ]]; then
         echo "disable some units to allow capd jobs to run on generic gitlab runners"
