@@ -8,7 +8,7 @@ echo_b "\U0001F503 Bootstraping flux"
 kubectl kustomize kustomize-units/flux-system/bootstrap | envsubst | kubectl apply -f -
 
 echo_b "\U000023F3 Wait for Flux to be ready..."
-kubectl wait --for condition=Available --timeout 600s --all-namespaces --all deployment
+kubectl wait --for condition=Available --timeout 600s -n flux-system --all deployment
 
 echo_b "\U0001F4DD Create bootstrap configmap"
 # NOTE(feleouet): as use the same kustomisation for bootstrap and management cluster, pass bootstrap environment values as configmap
