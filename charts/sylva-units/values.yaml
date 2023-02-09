@@ -843,9 +843,6 @@ units:
         substitute:
           GIT_REPO: "https://gitlab.com/sylva-projects/sylva-elements/fleet-deployments/monitoring-stack.git"
           BRANCH: "main"
-        substituteFrom:
-        - kind: Secret
-          name: management-cluster-secrets
 
   # this is a Job attempt to check successful import of a CAPI workload clusters in Rancher, still incomplete
   # it would be used along with a definition of a 'workload-cluster' unit
