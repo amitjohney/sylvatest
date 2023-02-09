@@ -70,9 +70,6 @@ fi
 
 export CURRENT_COMMIT=${CI_COMMIT_SHA:-$(git rev-parse HEAD)}
 
-# Source env-specific scripts to perform ad-hoc tasks if required
-[[ -f ${ENV_PATH}/hacks.sh ]] && source ${ENV_PATH}/hacks.sh
-
 function exit_trap() {
     EXIT_CODE=$?
     # Call debug script if needed

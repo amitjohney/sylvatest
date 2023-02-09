@@ -7,8 +7,8 @@
 # if the CAPD host is a Linux machine with address 172.20.129.247 behind the http://192.168.200.188:3128 proxy, one could use:
 boburciu@WX-5CG020BDT2:~$  ssh -i ~/.ssh/boburciu_key_pair_rocket.pem -l ubuntu 172.20.129.247 -o ProxyCommand='socat - PROXY:192.168.200.188:%h:%p,proxyport=3128' -D 8887
 ubuntu@sylva-core-capd-bb:~$ docker ps | grep management-cluster
-d6272b7f2b52   registry.gitlab.com/t6306/components/docker-images/rke2-in-docker:v1-24-4-rke2r1   "/usr/local/bin/entr…"   2 weeks ago    Up 2 weeks    9345/tcp, 44847/tcp, 127.0.0.1:44847->6443/tcp   management-cluster-control-plane-pphgf
-4f06a372706d   kindest/haproxy:v20210715-a6da3463                                                 "haproxy -sf 7 -W -d…"   2 weeks ago    Up 2 weeks    45453/tcp, 0.0.0.0:45453->6443/tcp               management-cluster-lb
+d6272b7f2b52   registry.gitlab.com/sylva-projects/sylva-elements/container-images/rke2-in-docker:v1-24-4-rke2r1   "/usr/local/bin/entr…"   2 weeks ago    Up 2 weeks    9345/tcp, 44847/tcp, 127.0.0.1:44847->6443/tcp   management-cluster-control-plane-pphgf
+zsh:1: command not found: q
 ubuntu@sylva-core-capd-bb:~$
 ubuntu@sylva-core-capd-bb:~$ docker exec -it management-cluster-control-plane-pphgf sh -c "/var/lib/rancher/rke2/bin/kubectl --kubeconfig /etc/rancher/rke2/rke2.yaml  get ing -A"
 NAMESPACE       NAME                      CLASS    HOSTS           ADDRESS        PORTS     AGE

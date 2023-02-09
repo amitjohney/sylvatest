@@ -88,7 +88,7 @@ units:
     enabled: true
 
   # this declares an override to deploy 'mydevbranch' branch
-  # of https://gitlab.com/t6306/components/myunit.git/
+  # of https://gitlab.com/sylva-projects/sylva-elements/units/myunit.git/
   myunit:
     spec:
       ref:
@@ -135,14 +135,14 @@ units:
 git_repo_templates:
   project-foo:
     spec:
-      url: https://gitlab.com/t6306/components/foo.git
+      url: https://gitlab.com/sylva-projects/sylva-elements/foo.git
 
 units:
 
   my-unit:
     repo: project-foo
     kustomization_spec:
-      path: ./kustomize  # this will point to https://gitlab.com/t6306/components/foo.git / kustomize
+      path: ./kustomize  # this will point to https://gitlab.com/sylva-projects/sylva-elements/foo.git / kustomize
 ```
 
 ### Component using a Helm chart defined in a Git repository
@@ -151,7 +151,7 @@ units:
 git_repo_templates:
   helm-chart-bar:
     spec:
-      url: https://gitlab.com/t6306/helm-charts/bar.git
+      url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/bar.git
       ref:
         tag: v1.0.3
 
@@ -162,7 +162,7 @@ units:
     helmrelease_spec:
       chart:
         spec:
-          chart: ./my-chart   # this will point to https://gitlab.com/t6306/helm-charts/bar.git / my-chart  on tag v1.0.3
+          chart: ./my-chart   # this will point to https://gitlab.com/sylva-projects/sylva-elements/helm-charts/bar.git / my-chart  on tag v1.0.3
 ```
 
 With this type of unit definition, Flux will reconciliate the HelmRelease based
