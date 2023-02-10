@@ -236,12 +236,14 @@ units:
                    tls_cert_file = "/vault/userconfig/vault-tls/tls.crt"
                    tls_key_file = "/vault/userconfig/vault-tls/tls.key"
                  }
-                 storage "inmem" {}
-          #dataStorage:
-          #  enabled: true
-          #  size: 10Gi
-          #  mountPath: "/vault/data"
-          #  storageClass: local-vault-storage  # to be defined
+                 storage "raft" {
+                   path = "/vault/data"
+                 }
+          dataStorage:
+            enabled: true
+            size: 10Gi
+            mountPath: "/vault/data"
+            storageClass: cinder-ceph-ssd  # to be defined
           readinessProbe:
             enabled: false
           ingress:
