@@ -10,6 +10,13 @@ kubectl kustomize kustomize-units/flux-system/bootstrap | envsubst | kubectl app
 echo_b "\U000023F3 Wait for Flux to be ready..."
 kubectl wait --for condition=Available --timeout 600s --all-namespaces --all deployment
 
+echo_b "\U0001F50E Validate sylva-units values for management cluster"
+validate_sylva_units
+
+echo_b "\U000023F3 Delete preview chart and namespace"
+kubectl delete -n sylva-units-preview helmrelease/sylva-units gitrepository/sylva-core
+kubectl delete namespace sylva-units-preview
+
 echo_b "\U0001F4DD Create bootstrap configmap"
 # NOTE(feleouet): as use the same kustomisation for bootstrap and management cluster, pass bootstrap environment values as configmap
 # as it won't be labelled with copy-from-bootstrap-to-management, it won't be copied to management-cluster
