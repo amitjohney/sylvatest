@@ -3,6 +3,9 @@
   "extends": [
     "config:base"
   ],
+  "gitlabci": {
+    "fileMatch": ["gitlab-ci\\.yml$"]
+  },
   "regexManagers": [
     {
       "fileMatch": "kustomization.yaml",
