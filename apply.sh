@@ -25,7 +25,7 @@ if ! (kubectl get namespace flux-system >/dev/null); then
     kubectl kustomize kustomize-units/flux-system | envsubst | kubectl apply -f -
 
     echo_b "\U000023F3 Wait for Flux to be ready..."
-    kubectl wait --for condition=Available --timeout 600s --all-namespaces --all deployment
+    kubectl wait --for condition=Available --timeout 600s -n flux-system --all deployment
 fi
 
 echo_b "\U0001F512 Create or update management cluster secrets and configmaps"
