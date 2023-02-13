@@ -4,14 +4,6 @@ resources:
   - https://github.com/kubernetes-sigs/cluster-api//test/infrastructure/docker/config/default/?ref=v1.2.4
 patches:
   - target:
-      version: v1
-      kind: Namespace
-    patch: |-
-      - op: add
-        path: /metadata/labels
-        value:
-          add-registry-secret: gitlab
-  - target:
       group: apiextensions.k8s.io
       version: v1
       kind: CustomResourceDefinition
@@ -28,10 +20,6 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/args/2
         value: --feature-gates=MachinePool=false,ClusterTopology=false
-      - op: add
-        path: /spec/template/spec/imagePullSecrets
-        value:
-          - name: registry-secret
       - op: add
         path: /spec/template/spec/containers/0/env/-
         value:

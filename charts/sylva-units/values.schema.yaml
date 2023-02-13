@@ -84,7 +84,6 @@ additionalProperties: false
 # (e.g. by setting `proxies:` without any subdict in override values)
 required:
   - registry_secret
-  - git_auth_default
   - git_repo_spec_default
   - git_repo_templates
   - helm_repo_spec_default
@@ -111,9 +110,6 @@ properties:
           - type: string
             pattern: "{{ .* }}"
           - $ref: "#/$defs/username-password"
-
-  git_auth_default:  # -------------------------------
-    $ref: "#/$defs/username-password"
 
   git_repo_spec_default:  # -------------------------------
     type: object

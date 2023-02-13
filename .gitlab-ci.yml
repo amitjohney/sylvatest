@@ -119,7 +119,6 @@ check-docs-markdown:
     - ip route add $KIND_PREFIX via $DOCKER_IP
 
     - export DOCKER_HOST=tcp://$DOCKER_IP:2375
-    - sed -i "s/GIT_USERNAME/$CI_REGISTRY_USER/;s/GIT_TOKEN/$CI_JOB_TOKEN/" environment-values/${ENV_NAME}/git-secrets.env
     - values_file=environment-values/${ENV_NAME}/values.yaml
     - yq -i '.cluster.capd.docker_host = strenv(DOCKER_HOST)' $values_file
     - export CLUSTER_EXTERNAL_IP=$(echo $KIND_PREFIX | awk -F"." '{print $1"."$2"."$3".100"}')
