@@ -1,4 +1,3 @@
-
 #!/usr/bin/env bash
 
 cat <<EOF
@@ -11,7 +10,7 @@ EOF
 
 for f in $(find charts/* -maxdepth 0 -type d)
 do
-  cat <<EOF
+cat <<EOF
 '${f##*/}:helm-lint':
   stage: test
   extends: .helm-lint
@@ -68,9 +67,14 @@ done
 
 for f in $(find environment-values kustomize-units -type f -name 'kustomization.yaml' | sed -r 's|/[^/]+$||')
 do
-  cat <<EOF
+  dependencies_path=''
+  current_path=$(pwd)
+  cd $current_path/${f}
+  dependencies_path=$(yq -r '.resources[] |select(. == "../*")' kustomization.yaml | xargs -r -I % readlink -f % | sed "s/${current_path//\//\\/}\///g" | sed 's/^/        - /g' | sed "s/$/\/**\/*/g")
+  cd $current_path
+cat <<EOF
 
-'${f/}:kustomize-build':
+'${f}:kustomize-build':
   stage: test
   extends: .kustomize-build
   variables:
@@ -79,6 +83,7 @@ do
     - changes:
         - ${f}/**/*
         - tools/gci-templates/**/*
+$dependencies_path
 EOF
 
 done
