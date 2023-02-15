@@ -297,17 +297,6 @@ Before trigerring bootstrap.sh, some prerequisites need to be satisfied.
    cp -a environment-values/kubeadm-capv environment-values/my-capv-env
   ```
 
-- Provide your **GitLab username** and a **GitLab token** with read access to repository and registry:
-
-   ```shell
-    cat <<EOF > environment-values/my-capv-env/git-secrets.env
-    username=your_name
-    password=glpat-xxxxxxxxxxxxxx
-    EOF
-   ```
-
-> **_NOTE:_** the files  `git-secrets.env` are sensitive and are meant to be ignored by Git  (see `.gitignore`). However, for the sake of security, it can be good idea to [secure these files with SOPS](./sops-howto.md) to mitigate the risk of leakage.
-
 - Provide your **vCenter credentials** in `environment-values/my-capv-env/secrets.yaml`
 
     ```shell
