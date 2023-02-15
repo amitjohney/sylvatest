@@ -112,7 +112,13 @@ Deploying clusters in Docker using CAPD (click to expand)
 
 Event if it is not representative of any real-life deployment use-case, running clusters in Docker is useful to enable the testing of lifecycle management of clusters without any infrastructure requirement.
 
-It can be used to test that stack on a laptop or in [GitLab-ci](.gitlab-ci.yml). You just have to install kubectl and [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation), and clone this project.
+It can be used to test that stack on a laptop or in [GitLab-ci](.gitlab-ci.yml). You just have to install following prerequisites:
+
+- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-on-linux)
+- [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
+- [Docker](https://docs.docker.com/engine/install/)
+
+and then clone this [project](https://gitlab.com/sylva-projects/sylva-core).
 
 Then you'll have to create a kind cluster with access to Docker socket:
 
@@ -137,7 +143,9 @@ sudo sysctl -p /etc/sysctl.conf
 ```
 
 Then you may adapt your environment values (in `environment-values/kubeadm-capd/values.yaml`)
-For capd deployment, the only thing you have to provide is the proxy address if you are using one:
+For capd deployment, you have to:
+
+- provide the proxy address if you are using one:
 
 ```yaml
 proxies:
@@ -145,6 +153,8 @@ proxies:
   https_proxy: http://your.company.proxy.url
   no_proxy: 127.0.0.1,localhost,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8
 ```
+
+- modify existing parameter `cluster_external_ip: xx.xx.xx.xx` in file [`environment-values/kubeadm-capd/values.yaml`](https://gitlab.com/sylva-projects/sylva-core/-/blob/main/environment-values/kubeadm-capd/values.yaml#L21) accordingly
 
 Then you can bootstrap the management cluster creation:
 
