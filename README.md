@@ -264,6 +264,152 @@ Before triggering bootstrap.sh, certain prerequisites need to be done/followed
 
 </details>
 
+<details><summary>Deploying clusters in VMware vSphere using CAPV</summary>
+
+Before trigerring bootstrap.sh, some prerequisites need to be satisfied.
+
+- Create a **bootstrap vm** using OpenStack, vsphere or use an existing vm.
+- Set the **proxies** environment variables (http_proxy, https_proxy, no_proxy) if using corporate proxy
+- Install **kubectl** and **[kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)**
+- Clone **sylva-core** project on bootstrap vm
+- Create **kind** cluster using the below command.
+
+  ```shell
+   kind create cluster --name bootstrap
+  ```
+
+  Note that you can create multiple kind clusters on a single bootstrap vm. You just need to switch the context to the cluster you want to work with
+
+  ```shell
+   kind export kubeconfig --name <cluster-name>
+  ```
+
+- Create your own copy of **environment-values** (this will prevent you from accidentally committing your secrets).
+
+  ```shell
+   cp -a environment-values/kubeadm-capv environment-values/my-capv-env
+  ```
+
+- Provide your **vCenter credentials** in `environment-values/my-capv-env/secrets.yaml`
+
+    ```shell
+      username: # replace me
+      password: # replace me
+   ```
+
+- Adapt `environment-values/my-capv-env/values.yaml` to suit your environment:
+
+  ```yaml
+      ...
+      cluster:
+        name: management-cluster
+
+        # image reference depends provider
+        image: "ubuntu-2004-kube-v1.22.8"
+
+        # for now, the choice below needs to be made
+        # consistently with the choice of a matching kustomization path
+        # for the 'cluster' unit
+        # e.g. you can use ./management-cluster-def/rke2-capd
+        capi_providers:
+          infra_provider: capv   # capv
+          bootstrap_provider: cabpk  # RKE2 or kubeadm
+
+        capv:
+          # -- Datacenter to use
+          dataCenter: # replace me
+          # -- VSphere network for VMs and CSI
+          network: # replace me
+          # -- VSphere server dns name
+          server: # replace me
+          # -- VSphere https TLS thumbprint
+          tlsThumbprint: # replace me
+
+        cluster_external_ip: # replace me
+
+      proxies:
+        http_proxy: http://your.company.proxy.url  #replace me
+        https_proxy: http://your.company.proxy.url  #replace me
+        no_proxy: 127.0.0.1,localhost,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8
+  ```
+
+  - The `image` field contains the name of the VM template used to deploy the VMs for the management cluster. The VM template is created from an OVA image. You can find a set of pre-built images in the [repository of CAPV provider](https://github.com/kubernetes-sigs/cluster-api-provider-vsphere#Kubernetes-versions-with-published-OVAs).
+  - The `bootstrap_provider` field can currently be set to `cabpk` for kubeadm or to `cabpr` for rke2
+  - The `tlsThumbprint` field contains the SHA1 thumbprint of the vCenter certificate. It can be retrieved from the certificate with this command:
+
+  ```shell
+  openssl x509 -sha1 -fingerprint -in ca.crt -noout
+  ```
+
+> **_NOTE:_** If your bootstrap cluster machine is behind a corporate proxy, then all the above proxies should be included as environment variables before running bootstrap.sh
+
+- The deployment of the management cluster on vSphere uses the [cluster-vsphere](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/cluster-vsphere) Helm Chart to configure and install the relevant manifests. The file `environment-values/my-capv-env/management-cluster-capv-values.yaml` provides the values for the chart. Adapt it to suit your environment.
+  - The provided file contains the minimum set of values required to setup the cluster. There are a few values that depends on the specific vSphere environment and have to be filled:
+    - Specify the API server endpoint. It must corresponds to the value provided to `cluster_external_ip`.
+
+    ```yaml
+    cluster:
+    controlPlaneEndpoint:
+      # -- IP or DNS name of the kubernetes endpoint
+      host: # set the same value as ./values.yaml:cluster.cluster_external_ip
+    ```
+
+    - In case your environment is behind a corporate proxy, replace the proxy placeholders with the values that apply to your setup
+    - To access the VMs of the cluster via SSH, provide your SSH key:
+
+    ```yaml
+    # Vsphere VMs configuration
+    machines:
+      # -- users to create on machines
+      # see https://github.com/kubernetes-sigs/cluster-api/blob/main/bootstrap/kubeadm/api/v1beta1/kubeadmconfig_types.go#L257 for documentation about user config object
+      users:
+      - name: capv
+        sshAuthorizedKeys:
+        - ssh-rsa <your ssh key>
+          <username>@<hostname>
+        sudo: ALL=(ALL) NOPASSWD:ALL
+    ```
+
+    - Provide a few additional values specific to the vSphere environment:
+
+    ```yaml
+    # Control plane VMs configuration
+    controlPlane:
+      ...
+      # -- Control plane VSphere resource pool
+      resourcePool: # replace me
+      # -- Control plane VSphere machine template to clone, must contain kubeadm at the same version as specified in kubernetes.version
+      template: # replace me, use the same value used for the above image field
+      # -- Control plane VSphere folder to store VM
+      folder: # replace me
+      # -- Control plane VSphere datastore to create/locate machine
+      dataStore: # replace me
+    
+    ...
+
+    workers:
+    # -- Name of the standard worker pool, you can define as many others pools as required
+      worker-md-0:
+        ...
+        # -- workers VSphere resource pool
+        resourcePool: # replace me
+        # -- workers VSphere machine template to clone, must contain kubeadm at the same version as specified in kubernetes.version
+        template: # replace me, use the same value used for the above image field
+        # -- workers VSphere folder to store VM
+        folder: # replace me
+        # -- workers VSphere datastore to create/locate machine
+        dataStore: # replace me
+
+    ```
+
+- Run the bootstrap script:
+
+   ```shell
+    no_proxy="127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16" http_proxy=<proxy-url> https_proxy=<proxy-url> ./bootstrap.sh environment-values/my-capv-env
+   ```
+
+</details>
+
 ### Deploying the management cluster from scratch (Bootstrap workflow)
 
 In previous deployment examples we use an intermediate temporary/disposable bootstrap cluster to provision the management cluster using Cluster API. This is the recommended path as it will enable you to manage the lifecycle of the management cluster itself in the future. The bootstrap process works with the following workflow:
