@@ -52,7 +52,7 @@ Ironic is the component that actually interacts with the baremetal servers to be
 
 It is capable of interacting with a wide set of vendor's BMC through many protocols such as `IPMI`, `redfish`, `iDRAC`, `iLO` etc. .
 
-Ironic has the responsibility of enrolling baremetal servers, inspect their hardware, collect the inspection results into an inventory, provision them.
+Ironic has the responsibility of enrolling baremetal servers, inspecting their hardware, collecting the inspection results into an inventory, provisioning them.
 
 Provision a baremetal server means installing an OS on it starting from scratch and possibly mount a cloud-config drive that can be used by the `cloud-init` tool to configure host specificities and networking.
 
