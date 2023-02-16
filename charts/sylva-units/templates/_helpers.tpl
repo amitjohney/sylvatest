@@ -78,3 +78,38 @@ patch: |
     value:
 {{ $helmrelease_spec | toYaml | indent 6 }}
 {{ end }}
+
+
+{{/*
+
+Test if a unit is enabled or not
+
+Usage:
+
+{{ if tuple $envAll "unit-name" | include "unit-enabled" }}
+
+*/}}
+{{ define "unit-enabled" }}
+  {{- $envAll := index . 0 -}}
+  {{- $unit_name := index . 1 -}}
+
+  {{- $unit_enabled := false -}}
+
+  {{- if hasKey $envAll.Values "units_override_enabled" -}}
+      {{- $unit_enabled = has $unit_name $envAll.Values.units_override_enabled -}}
+  {{- else -}}
+      {{- $unit_def := index $envAll.Values.units $unit_name -}}
+      {{- if $unit_def -}}
+          {{- $unit_enabled = dig "enabled" true $unit_def -}}
+      {{- end -}}
+  {{- end -}}
+
+  {{- if not (kindIs "bool" $unit_enabled) -}}
+    {{- fail (printf "units.%s.enabled is not a boolean (is a %s: %s)" $unit_name (kindOf $unit_enabled) $unit_enabled) -}}
+  {{- end -}}
+
+  {{- if $unit_enabled -}}
+true
+  {{- else -}}
+  {{- end -}}
+{{ end }}
