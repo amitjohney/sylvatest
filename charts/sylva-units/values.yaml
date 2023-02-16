@@ -58,6 +58,12 @@ git_repo_templates: # template to generate Flux GitRepository resources
       ref:
         tag: 0.1.0
 
+  local-path-provisioner:
+    spec:
+      url: https://github.com/rancher/local-path-provisioner.git
+      ref:
+        tag: v0.0.23
+
 helm_repo_spec_default:
   interval: 60m0s
 
@@ -419,6 +425,17 @@ units:
             # if rootPassword is left empty a random one is generated at each installation
             # setting one is suggested in order for mariadb to be able to reuse an already initialized pvc
             rootPassword: "changeme"
+
+  local-path-provisioner:
+    enabled: yes
+    repo: local-path-provisioner
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: deploy/chart/local-path-provisioner
+      targetNamespace: local-path-storage
+      install:
+        createNamespace: true
 
   cluster:
     enabled: yes
