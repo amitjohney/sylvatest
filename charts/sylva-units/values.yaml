@@ -257,11 +257,11 @@ units:
                    tls_key_file = "/vault/userconfig/vault-tls/tls.key"
                  }
                  storage "inmem" {}
-          #dataStorage:
-          #  enabled: true
-          #  size: 10Gi
-          #  mountPath: "/vault/data"
-          #  storageClass: local-vault-storage  # to be defined
+          dataStorage:
+            enabled: true
+            size: 10Gi
+            mountPath: "/vault/data"
+            storageClass: local-path
           readinessProbe:
             enabled: false
           ingress:
