@@ -686,7 +686,6 @@ units:
     enabled: '{{ .Values.units.rancher.enabled | include "preserve-type" }}'
     repo: capi-rancher-import
     depends_on:
-      - name: first-login-rancher    # FIXME: this was temporary, needs to be cleaned up (see https://gitlab.com/sylva-projects/sylva-core/-/issues/4)
       - name: k8s-gateway
     helmrelease_spec:
       chart:
