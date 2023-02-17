@@ -164,6 +164,24 @@ units:
       values:
         installCRDs: true
 
+  trivy-operator:
+    enabled: yes
+    helm_repo_url: https://aquasecurity.github.io/helm-charts/
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: trivy-operator
+          version: v0.10.2
+      targetNamespace: trivy-system
+      install:
+        createNamespace: true
+      values:
+        trivy:
+          httpProxy: '{{ .Values.proxies.https_proxy }}'
+          httpsProxy: '{{ .Values.proxies.https_proxy }}'
+          noProxy: '{{ .Values.proxies.no_proxy }}'
+          severity: UNKNOWN,HIGH,CRITICAL
+
 # sylva-ca provides a Certificate Authority for Components of the management cluster
   sylva-ca:
     enabled: yes
