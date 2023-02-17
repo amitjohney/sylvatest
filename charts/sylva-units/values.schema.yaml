@@ -466,6 +466,15 @@ properties:
                 network_id:  # -------------------------------
                   type: string
 
+                rootVolume:  # -------------------------------
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    diskSize:  # -------------------------------
+                      type: string
+                    volumeType:  # -------------------------------
+                      type: string
+
                 clouds_yaml:  # -------------------------------
                   type: object
                   additionalProperties: false

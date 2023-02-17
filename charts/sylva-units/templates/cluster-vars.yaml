@@ -12,6 +12,8 @@ data:
   FLAVOR_NAME: {{ .Values.cluster.capo.flavor_name }}
   SSH_KEY_NAME: {{ .Values.cluster.capo.ssh_key_name }}
   CAPO_NETWORK_ID: {{ .Values.cluster.capo.network_id }}
+  DISK_SIZE: {{ .Values.cluster.capo.rootVolume.diskSize | quote }}
+  VOLUME_TYPE: {{ .Values.cluster.capo.rootVolume.volumeType }}
 {{ end }}
 {{ if eq .Values.cluster.capi_providers.infra_provider "capv" }}
   VS_DC_NAME: {{ .Values.cluster.capv.dataCenter }}

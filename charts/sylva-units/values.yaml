@@ -498,6 +498,8 @@ units:
                     (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
         - '{{ tuple "../../components/registry-mirror/RKE2ControlPlane"
                     (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
+        - '{{ tuple "../../components/capo-root-volume"
+                    (and .Values.cluster.capo.rootVolume (eq .Values.cluster.capi_providers.infra_provider "capo"))  | include "set-only-if" }}'
 
   calico:
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
@@ -998,6 +1000,10 @@ cluster:
     flavor_name: m1.large # Openstack flavor name
     ssh_key_name: # OpenStack VM SSH key
     network_id:  # OpenStack network to use as external network
+    rootVolume: {} # Let this parameter empty if you don't intent to use root volume
+    # otherwise, provide following values
+    # diskSize: '20' # Size of the VMs root disk
+    # volumeType: '__DEFAULT__' # Type of volume to be created
     clouds_yaml: # (this is a dict, not a YAML string)
       clouds:
         capo_cloud:
