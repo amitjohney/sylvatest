@@ -67,10 +67,14 @@ done
 
 for f in $(find environment-values kustomize-units -type f -name 'kustomization.yaml' | sed -r 's|/[^/]+$||')
 do
+  # Here we'll look into environment-values & kustomize-units for kustomization.yaml files which contains relative paths (../something).
+  # If we found theses kind of paths we'll expand them to create paths relative to the main git repo folder and append them with **/* suffix
+  # Theses paths will be added to the changes: section, so the .kustomize-build job will be run either if the kustomization.yaml file is changed
+  # or if any of his local dependencies changes too.
   dependencies_path=''
   current_path=$(pwd)
   cd $current_path/${f}
-  dependencies_path=$(yq -r '.resources[] |select(. == "../*")' kustomization.yaml | xargs -r -I % readlink -f % | sed "s/${current_path//\//\\/}\///g" | sed 's/^/        - /g' | sed "s/$/\/**\/*/g")
+  dependencies_path=$(yq -r '.resources[] |select(. == "../*")' kustomization.yaml | xargs -r -I % realpath % --relative-to=$current_path | sed 's/^/        - /g' | sed "s/$/\/**\/*/g")
   cd $current_path
 cat <<EOF
 
