@@ -74,7 +74,7 @@ do
   dependencies_path=''
   current_path=$(pwd)
   cd $current_path/${f}
-  dependencies_path=$(yq -r '.resources[] |select(. == "../*")' kustomization.yaml | xargs -r -I % realpath % --relative-to=$current_path | sed 's/^/        - /g' | sed "s/$/\/**\/*/g")
+  dependencies_path=$(yq -r '.resources[] |select(. == "../*")' kustomization.yaml | xargs -r -I % readlink -f % | sed "s/${current_path//\//\\/}\///g" | sed 's/^/        - /g' | sed "s/$/\/**\/*/g")
   cd $current_path
 cat <<EOF
 
