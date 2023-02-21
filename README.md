@@ -236,9 +236,7 @@ Before triggering bootstrap.sh, certain prerequisites need to be done/followed
           kustomization_spec:
             postBuild:
               substitute:
-                CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
                 CLUSTER_EXTERNAL_IP: 1.2.2.1 # IP address of workload-cluster external port
-                SSH_KEY_NAME: '{{ .Values.cluster.capo.ssh_key_name }}'
 
       cluster:
         image: capo-ubuntu-2004-kube-v1.23.6-calico-3.23.1 # Image build with image-builder and uploaded in glance
