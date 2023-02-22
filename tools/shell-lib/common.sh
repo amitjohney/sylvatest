@@ -23,6 +23,23 @@ function check_pivot_has_ran() {
   fi
 }
 
+function retrieve_kubeconfig {
+    orig_umask=$(umask)
+    umask og-rw
+    until kubectl get secret management-cluster-kubeconfig -o jsonpath='{.data.value}' 2>/dev/null | base64 -d > management-cluster-kubeconfig; do
+        sleep 2
+    done
+    umask $orig_umask
+}
+
+function ensure_sylvactl {
+    if [[ ! -f ./sylvactl ]]; then
+        echo_b "\U0001F4E5 Downloading sylvactl"
+        curl -qO --progress-bar https://gitlab.com/api/v4/projects/43501695/packages/generic/releases/v0.0.2-pre/sylvactl
+        chmod +x ./sylvactl
+    fi
+}
+
 function background_watch() {
   local output_prefix=$1
   shift
@@ -84,13 +101,11 @@ function exit_trap() {
 }
 trap exit_trap EXIT
 
-function force_reconcile_and_wait() {
+function force_reconcile() {
   local kinds=$1
   local name_or_selector=$2
   echo "force reconciliation of $1 $2"
   kubectl annotate --overwrite $kinds $name_or_selector reconcile.fluxcd.io/requestedAt=$(date +%s) | sed -e 's/^/  /'
-  echo "waiting for $1 $2 ..."
-  kubectl wait --for condition=Ready --timeout=90s $kinds $name_or_selector | sed -e 's/^/  /'
 }
 
 function validate_sylva_units() {
@@ -107,7 +122,7 @@ function validate_sylva_units() {
 EOF
   kubectl kustomize ${PREVIEW_DIR} | sed "s/CURRENT_COMMIT/${CURRENT_COMMIT}/" | kubectl apply -f -
   rm -Rf ${PREVIEW_DIR}
-  
+
   # this is just to force-refresh in a dev environment with a new commit (or refreshed parameters)
   kubectl annotate --overwrite -n sylva-units-preview gitrepository/sylva-core reconcile.fluxcd.io/requestedAt="$(date +%s)"
   kubectl annotate --overwrite -n sylva-units-preview helmrelease/sylva-units reconcile.fluxcd.io/requestedAt="$(date +%s)"
