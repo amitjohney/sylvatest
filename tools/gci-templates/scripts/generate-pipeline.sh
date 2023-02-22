@@ -1,4 +1,3 @@
-
 #!/usr/bin/env bash
 
 cat <<EOF
@@ -11,7 +10,7 @@ EOF
 
 for f in $(find charts/* -maxdepth 0 -type d)
 do
-  cat <<EOF
+cat <<EOF
 '${f##*/}:helm-lint':
   stage: test
   extends: .helm-lint
@@ -20,7 +19,6 @@ do
   rules:
     - changes:
         - ${f}/**/*
-        - tools/gci-templates/**/*
         - tools/gci-templates/**/*
   needs:
     - job: '${f##*/}:helm-schema-validation'
@@ -63,6 +61,24 @@ do
         - charts/${f##*/}/values.schema.json
         - charts/${f##*/}/values.schema.yaml
         - tools/yaml2json.py
+EOF
+
+done
+
+for f in $(find environment-values kustomize-units -type f -name 'kustomization.yaml' | sed -r 's|/[^/]+$||')
+do
+cat <<EOF
+
+'${f}:kustomize-build':
+  stage: test
+  extends: .kustomize-build
+  variables:
+    KUSTOMIZATION_PATH: "${f}"
+  rules:
+    - changes:
+        - tools/gci-templates/**/*
+        - environment-values/**/*
+        - kustomize-units/**/*
 EOF
 
 done

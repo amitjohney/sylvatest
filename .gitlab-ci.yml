@@ -26,7 +26,7 @@ include:
 chart-generator:
   stage: generate
   script:
-    - echo "Generate a job for each modified charts"
+    - echo "Generate CI jobs for each modified charts/units/environment-values"
     - ./tools/gci-templates/scripts/generate-pipeline.sh > generated-pipeline.yml
   artifacts:
     expire_in: 1 hour
@@ -36,6 +36,8 @@ chart-generator:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       changes:
         - charts/**/*
+        - kustomize-units/**/*
+        - environment-values/**/*
         - tools/gci-templates/**/*
 
 chart-jobs:
@@ -51,6 +53,8 @@ chart-jobs:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       changes:
         - charts/**/*
+        - kustomize-units/**/*
+        - environment-values/**/*
         - tools/gci-templates/**/*
         - tools/yaml2json.py
 

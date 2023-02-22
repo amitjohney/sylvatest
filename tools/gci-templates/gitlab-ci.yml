@@ -69,3 +69,7 @@ default:
       python3 -m jsonschema -o pretty /usr/lib/python3.10/site-packages/jsonschema/schemas/draft2020-12.json -i values.schema.json
       echo "   DONE"
       echo -e "\e[0Ksection_end:`date +%s`:validate_schema\r\e[0K"
+
+.kustomize-build:
+  script:
+    - kubectl kustomize ${KUSTOMIZATION_PATH}
