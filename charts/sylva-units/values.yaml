@@ -223,25 +223,19 @@ units:
       targetNamespace: cert-manager
       wait: true
 
-#  vault-tls issues certificates, meant to be used by Vault, from sylva-ca
-  vault-tls:
+# namespace-defs creates the namespaces to be used by various units
+  namespace-defs:
     enabled: yes
-    depends_on:
-    - name: sylva-ca
     repo: sylva-core
     kustomization_spec:
-      path: ./kustomize-units/vault-tls
-      targetNamespace: vault
+      path: ./kustomize-units/namespace-defs
       wait: true
-      postBuild:
-        substitute:
-          VAULT_DNS: '{{ .Values.cluster.vault.external_hostname }}'
 
 # Vault assumes that the certificates vault-tls have been issued
   vault:
     enabled: yes
     depends_on:
-    - name: vault-tls
+    - name: sylva-ca-certs
     - '{{ tuple (dict "name" "ingress-nginx") (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | include "set-only-if" }}'
     helm_repo_url: https://helm.releases.hashicorp.com
     helmrelease_spec:
@@ -360,6 +354,7 @@ units:
     enabled: yes
     depends_on:
     - name: sylva-ca
+    - name: sylva-ca-certs
     - '{{ tuple (dict "name" "ingress-nginx") (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | include "set-only-if" }}'
     repo: sylva-core
     kustomization_spec:
@@ -596,6 +591,7 @@ units:
   sylva-ca-certs:
     enabled: yes
     depends_on:
+      - name: namespace-defs
       - name: cert-manager
       - name: sylva-ca
     repo: sylva-core
@@ -604,6 +600,8 @@ units:
       postBuild:
         substitute:
           RANCHER_DNS: '{{ .Values.cluster.rancher.external_hostname }}'
+          VAULT_DNS: '{{ .Values.cluster.vault.external_hostname }}'
+          KEYCLOAK_DNS: '{{ .Values.cluster.keycloak.external_hostname }}'
       wait: true
 
   rancher:
