@@ -113,6 +113,7 @@ Understanding the workflows is very important for debugging metal3.
 ### Baremetal server registration and inspection workflow
 
 ![metal3 enrollment workflow](./img/metal3_sylva_enrollment.png)
+
 When a BareMetalHost is created on the management cluster and includes the server BMC URL and credentials, the registration and inspection operations begin.
 
 Ironic is requested to start the hardware inspection of the baremetal machine by the baremetal-operator and reacts by mounting the Ironic-Python-Agent to the server as a Virtual Media and requesting the BMC to boot it.
@@ -203,7 +204,7 @@ Hence the Sylva project proposes a customized configuration of the metal3 deploy
 
 In particular Ironic on the management cluster is exposed to the external world through a LoadBalancer Service and it is meant to load the Ironic-Python-Agent on the remote servers through the Virtual Media.
 
-Such configuration has a **requirement**: in order for the remote servers to be able to reach the Ironic Service on the management cluster, a **DHCP server** must be configured locally to their location.
+Such configuration has a **requirement**: in order for the remote servers to be able to reach the Ironic Service on the management cluster, a **DHCP server** must be configured locally to their location (or alternatively a DHCP Relay).
 
 ### Images for target OS
 
