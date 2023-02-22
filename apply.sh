@@ -35,19 +35,13 @@ echo_b "\U0001F3AF Trigger reconciliation of Flux units"
 
 # this is just to force-refresh with a new commit (or refreshed parameters)
 
-force_reconcile_and_wait gitrepository sylva-core
-
-force_reconcile_and_wait helmrelease sylva-units
-
-force_reconcile_and_wait gitrepositories             "-l app.kubernetes.io/instance=sylva-units"
-
-force_reconcile_and_wait kustomizations,helmreleases "-l app.kubernetes.io/instance=sylva-units"
-
-# Starting from here, the script will just be following Flux units
+force_reconcile gitrepository sylva-core
+force_reconcile helmrelease sylva-units
 
 echo_b "\U000023F3 Wait for Flux units becoming ready"
 
-background_watch "    " gitrepositories kustomizations helmreleases helmcharts
-kubectl wait --for condition=Ready --timeout 1200s --all kustomizations,helmreleases
+ensure_sylvactl
+
+./sylvactl watch --kubeconfig management-cluster-kubeconfig --reconcile --timeout 20m
 
 echo_b "\U0001F389 All done"
