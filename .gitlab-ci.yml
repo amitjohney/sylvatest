@@ -139,6 +139,7 @@ check-docs-markdown:
         yq -i '.units.keycloak.enabled=false' $values_file
         yq -i '.units.flux-webui.enabled=false' $values_file
         yq -i '.units.capi-rancher-import.enabled=false' $values_file
+        yq -i '.units.trivy-operator.enabled=false' $values_file
       fi
     - export DEBUG_ON_EXIT=1
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_prepare\r\e[0K"
