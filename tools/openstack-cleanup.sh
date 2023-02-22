@@ -15,5 +15,6 @@ if openstack ${OS_ARGS} endpoint list &> /dev/null; then
     exit 1
 fi
 
-openstack ${OS_ARGS} server list -f value | awk '$2~/^(management|(first|test)-workload)-cluster-/ {print $1}' | xargs -r openstack ${OS_ARGS} server delete --wait
-openstack ${OS_ARGS} port list -f value | awk '$2~/^(management|(first|test)-workload)-cluster-/ {print $1}' | xargs -r openstack ${OS_ARGS} port delete
+openstack ${OS_ARGS} server list -f value | awk '$2~/^(management|(first|test)-workload)-cluster-/ {print $1}' | xargs -t -r openstack ${OS_ARGS} server delete --wait
+openstack ${OS_ARGS} port list -f value | awk '$2~/^(management|(first|test)-workload)-cluster-/ {print $1}' | xargs -t -r openstack ${OS_ARGS} port delete
+openstack ${OS_ARGS} security group list -f value | awk '$2~/^k8s-cluster-default-(management|(first|test)-workload)-cluster-/ {print $1}' | xargs -tr openstack ${OS_ARGS} security group delete
