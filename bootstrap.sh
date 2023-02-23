@@ -47,7 +47,7 @@ echo_b "\U000023F3 Wait for units installed on management cluster to be ready"
 ./sylvactl watch --reconcile --kubeconfig management-cluster-kubeconfig --timeout 30m
 
 echo_b "\U00002714 Management cluster is ready"
-kubectl --kubeconfig management-cluster-kubeconfig get nodes
+kubectl --kubeconfig management-cluster-kubeconfig get nodes -o wide
 
 echo_b "\U0001F331 You can access following UIs"
 kubectl --kubeconfig management-cluster-kubeconfig get ingress --all-namespaces
