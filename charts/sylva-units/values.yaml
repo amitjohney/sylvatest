@@ -516,8 +516,6 @@ units:
 
   calico:
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
-    depends_on:
-      - name: cluster
     helm_repo_url: https://projectcalico.docs.tigera.io/charts
     helmrelease_spec:
       targetNamespace: tigera-operator
