@@ -439,7 +439,7 @@ units:
     helmrelease_spec:
       chart:
         spec:
-          chart: egate/metal3
+          chart: .
       install:
         createNamespace: true
       targetNamespace: metal3-system
