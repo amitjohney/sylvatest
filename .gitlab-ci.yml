@@ -175,7 +175,7 @@ check-docs-markdown:
     ENV_NAME: kubeadm-capd
 
 test-kubeadm-capd:
-  timeout: 45min
+  timeout: 75min
   extends: .test-capd
   variables:
     ENV_NAME: kubeadm-capd

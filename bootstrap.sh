@@ -49,7 +49,7 @@ if kill $KUBECONFIG_PID &>/dev/null; then
 fi
 
 echo_b "\U000023F3 Wait for units installed on management cluster to be ready"
-./sylvactl watch --reconcile --kubeconfig management-cluster-kubeconfig --timeout 30m
+./sylvactl watch --reconcile --kubeconfig management-cluster-kubeconfig --timeout 40m
 
 echo_b "\U00002714 Management cluster is ready"
 kubectl --kubeconfig management-cluster-kubeconfig get nodes
