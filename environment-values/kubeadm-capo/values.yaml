@@ -31,8 +31,6 @@ cluster:
 
   cluster_external_ip: 1.2.3.4  # replace me
 
-  test_workload_cluster_name: "first-workload-cluster"
-
 proxies:
   # put your own proxy settings here if you need
   http_proxy: ""

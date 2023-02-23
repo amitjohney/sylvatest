@@ -24,8 +24,6 @@ cluster:
 
   cluster_external_ip: # use the .100 (or any other that woudn't be assigned by Docker) IP from the local kind subnet, returned by: docker network inspect -f '{{json .}}' kind | jq -r .IPAM.Config[0].Subnet
 
-  test_workload_cluster_name: "first-workload-cluster"
-
 proxies:
   # put your own proxy settings here if you need
   http_proxy: ""

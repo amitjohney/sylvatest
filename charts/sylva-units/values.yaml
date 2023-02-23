@@ -952,6 +952,8 @@ units:
           CLUSTER_NAME: '{{ .Values.cluster.test_workload_cluster_name }}'
           MACHINE_IMAGE: '{{ .Values.cluster.image }}'
           K8SGATEWAY_LB_IP: '{{ .Values.cluster.cluster_external_ip }}'   # NOTE: same is used for k8s-gateway DNS svc in management cluster
+          CAPO_NETWORK_ID: '{{ tuple .Values.cluster.capo.network_id (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
+          SSH_KEY_NAME: '{{ tuple .Values.cluster.capo.ssh_key_name (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
         substituteFrom:
           - kind: ConfigMap
             name: proxy-env-vars
@@ -1060,6 +1062,7 @@ cluster:
   metal3:
     ironic_ip: 66.66.66.66 # replace me (this IP is the IP at which Ironic is made accessible from BMCs or PXE network)
 
+  test_workload_cluster_name: first-workload-cluster
 
 # add your proxy settings if required
 proxies:
