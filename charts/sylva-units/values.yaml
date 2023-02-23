@@ -732,6 +732,7 @@ units:
     enabled: '{{ .Values.units.rancher.enabled | include "preserve-type" }}'
     repo: capi-rancher-import
     depends_on:
+      - name: rancher
       - name: k8s-gateway
     helmrelease_spec:
       chart:
