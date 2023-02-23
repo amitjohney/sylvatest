@@ -129,4 +129,4 @@ spec:
       kind: OpenStackMachineTemplate
       name: ${CLUSTER_NAME}-control-plane
   replicas: 3
-  version: v1.23.6
+  version: v1.25.6

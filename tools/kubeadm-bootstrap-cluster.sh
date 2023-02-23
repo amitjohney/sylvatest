@@ -10,7 +10,7 @@ systemctl restart containerd
 unset http_proxy https_proxy no_proxy
 
 # Bootstrap cluster
-kubeadm init --kubernetes-version v1.23.6 || true # match with embeeded images if possible
+kubeadm init --kubernetes-version v1.25.6 || true # match with embeeded images if possible
 
 # For convenience...
 mkdir -p /home/ubuntu/.kube

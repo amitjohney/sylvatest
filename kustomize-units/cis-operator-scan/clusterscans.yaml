@@ -4,5 +4,5 @@ kind: ClusterScan
 metadata:
   name: rke2-cis
 spec:
-  # the scaning profile, e.g. rke2-cis-1.23-profile-hardened
+  # the scaning profile, e.g. rke2-cis-1.25-profile-hardened
   scanProfileName: ${SCAN_PROFILE}
