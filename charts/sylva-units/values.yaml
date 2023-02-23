@@ -472,7 +472,7 @@ units:
       chart:
         spec:
           chart: deploy/chart/local-path-provisioner
-      targetNamespace: local-path-storage
+      targetNamespace: kube-system
       install:
         createNamespace: true
 
