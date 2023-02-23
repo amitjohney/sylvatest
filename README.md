@@ -424,7 +424,7 @@ In previous deployment examples we use an intermediate temporary/disposable boot
 
 ### Deploying workload clusters
 
-Deploying a workload cluster the gitops way means that some specific kustomizations defining the workload clusters have to be defined. A unit is named [test-workload-cluster](./environment-values/components/test-workload-cluster/) is used to define it. If this unit is part of units defined in the user values given to the sylva-units helm chart, then a workload cluster will be deployed. You'll be able to see it from the Rancher Web UI.
+Deploying a workload cluster the gitops way means that some specific kustomizations defining the workload clusters have to be defined. This is done by the unit named `test-workload-cluster`. If this unit is enabled in the user values given to the `sylva-units` Helm chart, then a workload cluster will be deployed. You'll be able to see it from the Rancher Web UI.
 
 ## Tips and Troubleshooting
 
