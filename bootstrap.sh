@@ -2,6 +2,11 @@
 
 source tools/shell-lib/common.sh
 
+if [[ ${KUBECONFIG:-} =~ management-cluster-kubeconfig ]]; then
+    echo -e "KUBECONFIG seems to point to the management cluster, which doesn't sound ok for 'bootstrap.sh'\n(KUBECONFIG=$KUBECONFIG)"
+    exit -1
+fi
+
 check_pivot_has_ran
 
 echo_b "\U0001F503 Bootstraping flux"
