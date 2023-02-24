@@ -630,7 +630,6 @@ units:
           retries: 3
       values:
         privateCA: true
-        bootstrapPassword: '{{ .Values.cluster.admin_password }}'
         useBundledSystemChart: true
         hostname: '{{ .Values.cluster.rancher.external_hostname }}'
         ingress:
@@ -676,6 +675,8 @@ units:
                             initialDelaySeconds: 120
                             periodSeconds: 30
                             failureThreshold: 20
+    helm_secret_values:
+      bootstrapPassword: '{{ .Values.cluster.admin_password }}'
 
   rancher-webhook-service:
     enabled: '{{ .Values.units.rancher.enabled | include "preserve-type" }}'
