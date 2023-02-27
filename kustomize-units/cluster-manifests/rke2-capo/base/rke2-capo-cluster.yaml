@@ -162,7 +162,6 @@ spec:
       tlsSan:
       - localhost
       - 127.0.0.1
-      - 0.0.0.0
     agentConfig:
       kubeletArgs:
         - "provider-id=openstack://{{ ds.meta_data.uuid }}"
