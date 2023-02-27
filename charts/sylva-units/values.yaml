@@ -578,7 +578,6 @@ units:
             ignore-volume-az = true
 
   imageswap-webhook:
-    # today, only the rancher-webhook fix requires the use of imageswap-webhook
     enabled: '{{ .Values.units.rancher.enabled | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
@@ -608,19 +607,17 @@ units:
     depends_on:
       - name: cert-manager
       - name: k8s-gateway
-      - name: imageswap-webhook   # cattle-system ns created by imageswap-webhook
       - name: sylva-ca-certs
       - '{{ tuple (dict "name" "ingress-nginx") (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | include "set-only-if" }}'
-    helm_repo_url: https://releases.rancher.com/server-charts/stable
+    helm_repo_url: https://releases.rancher.com/server-charts/latest
     helmrelease_spec:
       chart:
         spec:
           chart: rancher
-          version: 2.6.9
+          version: 2.7.2-rc4
       targetNamespace: cattle-system
       interval: 10m0s
       install:
-        createNamespace: false    # cattle-system ns created by imageswap-webhook
         remediation:
           retries: 3
           remediateLastFailure: false
