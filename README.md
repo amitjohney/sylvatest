@@ -463,6 +463,59 @@ You can also install and use the [clusterctl tool](https://github.com/kubernetes
 clusterctl describe cluster management-cluster --show-conditions all
 ```
 
+### Knowing the state of a deployment
+
+When a deployment (a first one or an update) is done, this is reflected in the status of the `sylva-units`
+HelmRelease:
+
+```terminal
+$ kubectl get helmreleases sylva-units -o yaml | yq .status.conditions
+- lastTransitionTime: "2023-02-28T13:14:19Z"
+  message: Release reconciliation succeeded
+  reason: ReconciliationSucceeded
+  status: "True"
+#         ^^^^^^
+  type: Ready
+- lastTransitionTime: "2023-02-28T13:14:19Z"
+  message: Helm upgrade succeeded
+  reason: UpgradeSucceeded
+  status: "True"
+  type: Released
+```
+
+To know _what_ has been deployed you can find information in the `sylva-units-status` ConfigMap
+which is produced by a Kustomization that has a dependency on all top-level Kustomizations for each units
+and is hence only produced when the deployment or update proceeded to completion.
+
+```terminal
+$ kubectl get configmap sylva-units-status -o yaml | yq .data
+release-revision: "16"
+release-time: "2023-02-28 14:30:16.847929741 +0100 CET m=+0.638859234"
+sylva-units-chart-version: 0.1.0+7e1c2369eddf.2
+values-checksum: 644d1efc8e0818f815306c705014a39421ee14f8c6b47685e98d341c9ab19808
+```
+
+This information allows you to determine what was the last exact version of `sylva-units` which
+was successfully deployed (including the `sylva-core` Git commit id, `61e2cc0f64ec` in this example).
+
+The configmap also includes a checksum of the values.
+
+The information in this ConfigMap can be compared with the annotations of the `sylva-units-status` Kustomization;
+these annotations contains the target values of any in progress deployment.
+
+```terminal
+$ kubectl get kustomizations.kustomize.toolkit.fluxcd.io/sylva-units-status -o jsonpath='{.metadata.annotations}' | jq
+  {
+    "meta.helm.sh/release-name": "sylva-units",
+    "meta.helm.sh/release-namespace": "default",
+    "reconcile.fluxcd.io/requestedAt": "2023-02-28T12:14:56.267009104+01:00",
+    "release-time": "2023-02-28 14:30:16.847929741 +0100 CET m=+0.638859234"
+    "target-release-revision": "16",
+    "target-sylva-units-chart-version": "0.1.0+7e1c2369eddf.2",
+    "target-values-checksum": "644d1efc8e0818f815306c705014a39421ee14f8c6b47685e98d341c9ab19808"
+  }
+```
+
 ### Working directly on the management cluster
 
 Once the bootstrap phase is done, and the pivot is done, the management cluster can be updated with:
