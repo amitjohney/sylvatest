@@ -28,6 +28,7 @@ units:
       # FIXME; Flux wait/healthcheck on management cluster does not work as expected, it becomes ready as soon as manifests are applied
       # cluster readyness will actually be ensured by the retries on installations of this kustomization for now.
       # maybe cluster CRD is not compatible with kstatus? (see https://fluxcd.io/flux/units/kustomize/kustomization/#health-assessment)
+      - name: calico
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/flux-system/base
