@@ -102,8 +102,7 @@ check-docs-markdown:
     changes:
       - "**/*.md"
 
-.test-capd:
-  stage: deploy
+.common-capd:
   script:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_prepare[collapsed=true]\r\e[0KRunning .gitlab-ci script step\e[0m"
 
@@ -142,8 +141,6 @@ check-docs-markdown:
       fi
     - export DEBUG_ON_EXIT=1
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_prepare\r\e[0K"
-    - ./bootstrap.sh environment-values/${ENV_NAME}
-    - kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}' | xargs --no-run-if-empty -n1 kubectl --kubeconfig management-cluster-kubeconfig logs || true
   artifacts:
     when: on_failure
     expire_in: 6 hour
@@ -152,6 +149,13 @@ check-docs-markdown:
       - bootstrap-cluster-dump/
       - management-cluster-dump/
 
+.test-capd:
+  stage: deploy
+  script:
+    - !reference [.common-capd, script]
+    - ./bootstrap.sh environment-values/${ENV_NAME}
+    - kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}' | xargs --no-run-if-empty -n1 kubectl --kubeconfig management-cluster-kubeconfig logs || true
+  artifacts: !reference [.common-capd, artifacts]
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_TAG
@@ -159,6 +163,16 @@ check-docs-markdown:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
       when: manual
   allow_failure: true
+
+.test-preview-capd:
+  stage: deploy
+  timeout: 15min
+  script:
+    - !reference [.common-capd, script]
+    - ./preview.sh environment-values/${ENV_NAME}
+  artifacts: !reference [.common-capd, artifacts]
+  variables:
+    ENV_NAME: kubeadm-capd
 
 test-rke2-capd:
   timeout: 60min
