@@ -418,6 +418,7 @@ In previous deployment examples we use an intermediate temporary/disposable boot
 - `sylva-units` will also install dependent Kustomizations defining Cluster API manifests for the management cluster
 - Once the management cluster is ready, Flux will be installed in it, as well as the `sylva-units` HelmRelease that will deploy again cluster-api & infrastructure units in the management cluster
 - Management cluster definitions are moved (aka. pivoted) to management cluster, that will become independent and self-managed
+- Once the management cluster is deployed, you can connect to it with the kubeconfig file created, named `management-cluster-kubeconfig` (using `kubectl --kubeconfig management-cluster-kubeconfig ...` or `export KUBECONFIG=management-cluster-kubeconfig`).
 - At this stage, bootstrap cluster can be deleted
 
 ### Deploying workload clusters
