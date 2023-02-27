@@ -237,6 +237,7 @@ units:
     depends_on:
     - name: sylva-ca-certs
     - '{{ tuple (dict "name" "ingress-nginx") (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | include "set-only-if" }}'
+    - name: local-path-provisioner
     helm_repo_url: https://helm.releases.hashicorp.com
     helmrelease_spec:
       chart:
