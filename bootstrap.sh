@@ -40,13 +40,32 @@ KUBECONFIG_PID=$!
 
 ensure_sylvactl
 
-echo_b "\U000023F3 Wait for management cluster to be ready"
-./sylvactl watch --reconcile --timeout 20m Kustomization/default/sylva-units
+echo_b "\U000023F3 Wait for management cluster to be initialized [1/2]"
+# because 'cluster' unit becomes true too early, before the kubeconfig is produced
+# waiting for calico unit is a temporary workaround
+./sylvactl watch --reconcile --timeout 20m Kustomization/default/calico
+
+echo_b "\U000023F3 Wait for management cluster to be initialized [2/2]"
+
+./sylvactl watch --reconcile --timeout 20m Kustomization/default/management-cluster-flux
 
 if kill $KUBECONFIG_PID &>/dev/null; then
     echo_b "\U00002717 Failed to retrieve management-cluster kubeconfig"
     exit 1
+else
+    echo_b "\U0001F4C4 management-cluster-kubeconfig file has been retrieved!"
 fi
+
+# wait for pivot to be feasible
+echo_b "\U000023F3 Wait for pivot to be feasible"
+./sylvactl watch --reconcile --kubeconfig management-cluster-kubeconfig --timeout 5m Kustomization/default/mgmt-capi-providers-ready
+
+# TODO: choice up to the user + messages + env varible / CI
+echo_b "\U000023F3 Wait for pivot to be done"
+./sylvactl watch --reconcile --timeout 15m Kustomization/default/pivot
+
+echo_b "\U0001FAA6 Destroy bootstrap cluster"
+kind delete cluster --name bootstrap
 
 echo_b "\U000023F3 Wait for units installed on management cluster to be ready"
 ./sylvactl watch --reconcile --kubeconfig management-cluster-kubeconfig --timeout 30m

@@ -466,6 +466,24 @@ units:
         storageClass:
           defaultClass: '{{ index .Values.units "cinder-csi" "enabled" | not | include "preserve-type" }}'
 
+  mgmt-capi-providers-ready:
+    enabled: yes
+    repo: sylva-core
+    depends_on:
+      capi: true
+      '{{ .Values.cluster.capi_providers.infra_provider }}': true
+      '{{ .Values.cluster.capi_providers.bootstrap_provider }}': true
+    kustomization_spec:
+      path: ./kustomize-units/dummy-dep
+      wait: true
+      patches:
+      - target:
+          kind: ConfigMap
+        patch: |
+          - op: replace
+            path: /metadata/name
+            value: mgmt-capi-providers-ready
+
   cluster:
     enabled: yes
     repo: sylva-core
