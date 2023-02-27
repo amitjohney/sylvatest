@@ -92,11 +92,13 @@ Metal3 has been integrated and configured in the Sylva project in order to be ab
 
 Workload baremetal clusters may be geographically distributed, in general far from the management cluster infrastructure.
 
-From the networking perspective we expect the baremetal servers to be connected to some IP subnets different from the ones the management cluster is attached to.
+From the networking perspective we expect the baremetal servers to be connected to some IP subnets different from the ones the management cluster is attached to but this is not a requirement for the metal3 deployment.
 
-This means that we cannot rely on PXE for booting the servers remotely but we use the `Virtual Media` feature to mount images on the machines.
+Relying on PXE for booting the servers in such scenario would be complex because it would need the configuration of DHCP relays local to the machines to manage.
 
-This is why we provide a pre-configured setup of metal3 for the Sylva project in order to have it ready to use as soon as possible without having to deal with its complex configuration.
+Given the additional network configuration required for PXE setups the proposed metal3 deployment is based on the usage of `Virtual Media`.
+
+We provide a pre-configured setup of metal3 for the Sylva project in order to have it ready to use as soon as possible without having to deal with its complex configuration.
 
 ![metal3 architecture in Sylva](./img/metal3_sylva_architecture.png)
 
@@ -190,21 +192,25 @@ It must be provided in the field `cluster.metal3.ironic_ip`.
 
 The `capm3` unit doesn't require any configuration, it simply acts as an intermediate layer between CAPI and Metal3, so in addition to configure metal3 enabling `capm3` is enough to enable bare metal3 cluster management with CAPI.
 
+It is strongly suggested to override the default passwords of the metal3 unit, in particular make sure to override the values `auth.ironicPassword`, `auth.ironicInspectorPassword`, `mariadb.auth.rootPassword`, `mariadb.auth.replicationPassword` and `mariadb.auth.ironicPassword`.
+
 ### Networking requirements
 
 ### Provisioning with Virtual Media
 
 Telcos envision a scenario in which clusters will be very distributed geographically and, at least at the far edge, will be Kubernetes cluster on baremetal.
 
-In such scenario there should be no assumption that metal3 and the remote servers are interconnected through a common broadcast domain.
+In such scenario metal3 and the remote servers may be interconnected through a common broadcast domain or not.
 
-Instead they will likely be on distinct IP networks.
+Relying on PXE to remotely boot servers may involve the configuration of DHCP relays which increases the complexity of the setup.
 
-Hence the Sylva project proposes a customized configuration of the metal3 deployment in order to fit in such kind of scenarios.
+Instead the alternative `Virtual Media` is able to work in both cases (L2 or L3 connectivity) with much less complexity.
 
-In particular Ironic on the management cluster is exposed to the external world through a LoadBalancer Service and it is meant to load the Ironic-Python-Agent on the remote servers through the Virtual Media.
+Hence the Sylva project proposes a customized configuration of the metal3 deployment able to deploy the [`ironic-python-agent`](https://github.com/openstack/ironic-python-agent) on servers by mounting a `Virtual Media` through the BMCs for the machines management.
 
-Such configuration has a **requirement**: in order for the remote servers to be able to reach the Ironic Service on the management cluster, a **DHCP server** must be configured locally to their location (or alternatively a DHCP Relay).
+The Ironic-Python-Agent is driven by Ironic and needs to communicate with it: for the purpose three Ironic ports are exposed through a `LoadBalancer Service`.
+
+The configuration has a **requirement**: in order for the remote servers to be able to reach the Ironic Service on the management cluster, a **DHCP server** must be configured locally to their location (or alternatively a DHCP Relay).
 
 ### Images for target OS
 
