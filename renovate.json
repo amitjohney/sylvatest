@@ -3,6 +3,7 @@
   "extends": [
     "config:base"
   ],
+  "labels": ["run-e2e-tests"],
   "gitlabci": {
     "fileMatch": ["gitlab-ci\\.yml$"]
   },
