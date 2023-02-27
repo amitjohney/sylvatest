@@ -460,9 +460,10 @@ units:
             ironicIP: '{{ .Values.cluster.metal3.ironic_ip }}'
         mariadb:
           auth:
-            # if rootPassword is left empty a random one is generated at each installation
-            # setting one is suggested in order for mariadb to be able to reuse an already initialized pvc
+            # if rootPassword is left empty a random one is generated at each installation but mariadb won't be able to reuse the same PVCs
             rootPassword: "changeme"
+            # if replicationPassword is left empty a random one is generated at each installation but mariadb won't be able to reuse the same PVCs
+            replicationPassword: "changeme"
           persistence:
             storageClass: local-path
 
