@@ -212,6 +212,18 @@ units:
           noProxy: '{{ .Values.proxies.no_proxy }}'
           severity: UNKNOWN,HIGH,CRITICAL
 
+  harbor:
+    enabled: yes
+    helm_repo_url: https://helm.goharbor.io
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: harbor-helm
+          version: v1.11.1
+      targetNamespace: harbor
+      install:
+        createNamespace: true
+
 # sylva-ca provides a Certificate Authority for Components of the management cluster
   sylva-ca:
     enabled: yes
