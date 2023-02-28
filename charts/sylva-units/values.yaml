@@ -972,7 +972,7 @@ units:
                     (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
 
   workload-cluster-calico:
-    enabled: '{{ index .Values.units "workload-cluster" "enabled" | include "preserve-type" }}'
+    enabled: false
     depends_on:
       - name: workload-cluster
     helm_repo_url: https://projectcalico.docs.tigera.io/charts
