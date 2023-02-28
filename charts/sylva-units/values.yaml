@@ -218,7 +218,7 @@ units:
     helmrelease_spec:
       chart:
         spec:
-          chart: harbor-helm
+          chart: harbor
           version: v1.11.1
       targetNamespace: harbor
       install:
