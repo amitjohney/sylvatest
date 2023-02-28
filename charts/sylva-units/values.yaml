@@ -942,7 +942,7 @@ units:
       - name: capi
       - name: '{{ .Values.cluster.capi_providers.infra_provider }}'
       - name: '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
-      - name: rancher
+      - '{{ tuple (dict "name" "rancher") .Values.units.rancher.enabled | include "set-only-if" }}'
       - name: first-login-rancher
     kustomization_spec:
       postBuild:

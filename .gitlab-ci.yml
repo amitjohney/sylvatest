@@ -132,8 +132,9 @@ check-docs-markdown:
     - |
       if [[ ! $CI_RUNNER_TAGS =~ ".*o-romania.*" ]]; then
         echo "disable some units to allow capd jobs to run on generic gitlab runners"
-        yq -i '.units.workload-cluster.enabled=false' $values_file
-        yq -i '.units.workload-cluster-calico.enabled=false' $values_file
+        yq -i '.units.rancher.enabled=false' $values_file
+        #yq -i '.units.workload-cluster.enabled=false' $values_file
+        #yq -i '.units.workload-cluster-calico.enabled=false' $values_file
         yq -i '.units.monitoring.enabled=false' $values_file
         yq -i '.units.keycloak.enabled=false' $values_file
         yq -i '.units.flux-webui.enabled=false' $values_file
