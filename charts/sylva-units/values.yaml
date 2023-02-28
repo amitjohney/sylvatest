@@ -966,6 +966,10 @@ units:
                     (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
         - '{{ tuple "../../components/proxies/RKE2ControlPlane"
                     (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
+        - '{{ tuple "../../components/dns-client/Ubuntu/KubeadmControlPlane"
+                    (and (ne .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
+        - '{{ tuple "../../components/dns-client/Ubuntu/RKE2ControlPlane"
+                    (and (ne .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
         - '{{ tuple "../../components/registry-mirror/KubeadmControlPlane"
                     (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
         - '{{ tuple "../../components/registry-mirror/RKE2ControlPlane"

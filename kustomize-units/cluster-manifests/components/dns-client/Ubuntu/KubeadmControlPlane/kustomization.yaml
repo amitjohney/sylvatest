@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+patches:
+- target:
+    kind: KubeadmControlPlane
+  patch: |-
+    - op: add
+      path: /spec/kubeadmConfigSpec/files/-
+      value:
+        path: /etc/systemd/resolved.conf
+        content: |
+          [Resolve]
+          DNS=${K8SGATEWAY_LB_IP}
+          Domains=~sylva
+- target:
+    kind: KubeadmControlPlane
+  patch: |-
+    - op: add
+      path: /spec/kubeadmConfigSpec/preKubeadmCommands
+      value:
+        - systemctl restart systemd-resolved
