@@ -1,0 +1,10 @@
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: harbor
+  namespace: harbor
+spec:
+  chart: harbor
+  repo: https://helm.goharbor.io
+  targetNamespace: harbor
