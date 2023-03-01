@@ -1,4 +1,4 @@
-# sylva-units Helm charts
+# `sylva-units` Helm chart
 
 ## Purpose
 
