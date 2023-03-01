@@ -230,6 +230,7 @@ units:
     kustomization_spec:
       path: ./kustomize-units/namespace-defs
       wait: true
+      prune: false
 
 # Vault assumes that the certificates vault-tls have been issued
   vault:
