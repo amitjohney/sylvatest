@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - keycloak-namespace.yaml
   - vault-namespace.yaml
+  - rancher-namespace.yaml
