@@ -612,3 +612,9 @@ properties:
     anyOf:
       - format: uri
       - const: ""
+
+  sylva_core_cluster_manifests_base_url:
+    type: string
+    anyOf:
+      - format: uri
+      - $ref: "#/$defs/string-with-gotpl"

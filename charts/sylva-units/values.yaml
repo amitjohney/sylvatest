@@ -958,21 +958,21 @@ units:
             optional: true
       wait: true
       components:
-        - '{{ tuple "../../components/dns-client/kind/KubeadmControlPlane"
+        - '{{ tuple (printf "%s/components/dns-client/kind/KubeadmControlPlane" .Values.sylva_core_cluster_manifests_base_url)
                     (and (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/dns-client/kind/RKE2ControlPlane"
+        - '{{ tuple (printf "%s/components/dns-client/kind/RKE2ControlPlane" .Values.sylva_core_cluster_manifests_base_url)
                     (and (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/proxies/KubeadmControlPlane"
+        - '{{ tuple (printf "%s/components/proxies/KubeadmControlPlane" .Values.sylva_core_cluster_manifests_base_url)
                     (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/proxies/RKE2ControlPlane"
+        - '{{ tuple (printf "%s/components/proxies/RKE2ControlPlane" .Values.sylva_core_cluster_manifests_base_url)
                     (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/dns-client/Ubuntu/KubeadmControlPlane"
+        - '{{ tuple (printf "%s/components/dns-client/Ubuntu/KubeadmControlPlane" .Values.sylva_core_cluster_manifests_base_url)
                     (and (ne .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/dns-client/Ubuntu/RKE2ControlPlane"
+        - '{{ tuple (printf "%s/components/dns-client/Ubuntu/RKE2ControlPlane" .Values.sylva_core_cluster_manifests_base_url)
                     (and (ne .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/registry-mirror/KubeadmControlPlane"
+        - '{{ tuple (printf "%s/components/registry-mirror/KubeadmControlPlane" .Values.sylva_core_cluster_manifests_base_url)
                     (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/registry-mirror/RKE2ControlPlane"
+        - '{{ tuple (printf "%s/components/registry-mirror/RKE2ControlPlane" .Values.sylva_core_cluster_manifests_base_url)
                     (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
 
   workload-cluster-calico:
@@ -1078,3 +1078,5 @@ dockerio_registry_mirror: ""
 
 # boolean conditioning run of 'check-rancher-clusters' Job
 env_type_ci: false
+
+sylva_core_cluster_manifests_base_url: '{{ (index .Values.git_repo_templates "sylva-core").spec.url }}//kustomize-units/cluster-manifests'
