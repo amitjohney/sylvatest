@@ -3,7 +3,6 @@ kind: Kustomization
 resources:
   - https://github.com/phenixblue/imageswap-webhook//deploy/manifests/?ref=v1.5.1
   - imageswap-config.yaml
-  - imageswap-mwc-selected-ns.yaml
 patches:
   - target:
       group: admissionregistration.k8s.io
