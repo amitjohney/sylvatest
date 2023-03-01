@@ -1037,7 +1037,7 @@ cluster:
           verify: # e.g. false
     #cacert: # cert used to validate CA of OpenStack APIs
     storageClass:
-      name: foo  # name of the storageClass to be created
+      name: cinder-csi  # name of the storageClass to be created
       type: xxx  # this is a cinder volume type e.g. 'ceph_sas' (must exist in OpenStack)
 
   cluster_external_ip: 55.55.55.55
