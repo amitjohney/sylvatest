@@ -4,15 +4,26 @@ kind: Component
 patches:
 - target:
     kind: RKE2ControlPlane
+  #FIXME: Use privateRegistriesConfig once https://github.com/rancher-sandbox/cluster-api-provider-rke2/issues/94 will be fixed
+  #patch: |
+  #  kind: RKE2ControlPlane
+  #  metadata:
+  #    name: _unused_
+  #  spec:
+  #    privateRegistriesConfig:
+  #      mirrors:
+  #        "docker.io":
+  #          endpoint:
+  #            - "${REGISTRY_MIRROR}"
   patch: |
     - op: add
-      path: /spec/rke2ConfigSpec/files/-
+      path: /spec/files/-
       value:
         path: /etc/rancher/rke2/registries.yaml
         owner: root:root
-        permissions: "0644"
+        permissions: "0640"
         content: |
           mirrors:
             docker.io:
               endpoint:
-                - "${REGISTRY_MIRROR}"
+              - "${REGISTRY_MIRROR}"
