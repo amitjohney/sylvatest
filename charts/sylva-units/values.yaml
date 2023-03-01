@@ -587,7 +587,7 @@ units:
             ignore-volume-az = true
 
   imageswap-webhook:
-    enabled: '{{ .Values.units.rancher.enabled | include "preserve-type" }}'
+    enabled: no
     repo: sylva-core
     depends_on:
       - name: cert-manager
