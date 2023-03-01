@@ -269,7 +269,15 @@ units:
                    tls_cert_file = "/vault/userconfig/vault-tls/tls.crt"
                    tls_key_file = "/vault/userconfig/vault-tls/tls.key"
                  }
-                 storage "inmem" {}
+                 storage "raft" {
+                     path = "/vault/data"
+                     retry_join {
+                         leader_api_addr = "https://vault-0.vault-internal:8200"
+                         leader_ca_cert_file = "/vault/userconfig/vault-tls/ca.crt"
+                         leader_client_cert_file = "/vault/userconfig/vault-tls/tls.crt"
+                         leader_client_key_file = "/vault/userconfig/vault-tls/tls.key"
+                     }
+                 }
           dataStorage:
             enabled: true
             size: 10Gi
