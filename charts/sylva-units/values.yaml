@@ -698,7 +698,7 @@ units:
           version: 2.0.0
       interval: 1m0s
       values:
-        domain: "sylva"
+        domain: '{{ .Values.cluster.cluster_external_domain }}'
         replicaCount: 3
         service:
           loadBalancerIP: '{{ .Values.cluster.cluster_external_ip }}'
@@ -852,7 +852,7 @@ units:
           enabled: true
           className: nginx
           hosts:
-            - host: flux.sylva
+            - host: 'flux.{{ .Values.cluster.cluster_external_domain }}'
               paths:
                 - path: /   # setting this to another value like '/flux' does not work (URLs coming back from flux webui aren't rewritten by nginx)
                   pathType: Prefix
@@ -1040,6 +1040,7 @@ cluster:
       type: xxx  # this is a cinder volume type e.g. 'ceph_sas' (must exist in OpenStack)
 
   cluster_external_ip: 55.55.55.55
+  cluster_external_domain: sylva
 
   capd:
     docker_host: unix:///var/run/docker.sock
@@ -1052,13 +1053,13 @@ cluster:
     admin_password: '{{ .Values.cluster.admin_password }}'
 
   rancher:
-    external_hostname: rancher.sylva
+    external_hostname: 'rancher.{{ .Values.cluster.cluster_external_domain }}'
 
   vault:
-    external_hostname: vault.sylva
+    external_hostname: 'vault.{{ .Values.cluster.cluster_external_domain }}'
 
   keycloak:
-    external_hostname: keycloak.sylva
+    external_hostname: 'keycloak.{{ .Values.cluster.cluster_external_domain }}'
 
   metal3:
     ironic_ip: 66.66.66.66 # replace me (this IP is the IP at which Ironic is made accessible from BMCs or PXE network)

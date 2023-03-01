@@ -72,6 +72,9 @@ $defs:
         pattern:
           ^{{ .*\| *include ["']preserve-type['"] }}$
 
+  string-with-gotpl:
+    type: string
+    pattern: ".*{{ .* }}.*"
 
 # lines with '# -------------------------------' correspond to keys in values.yaml
 # (the rest being the JSONSchema language itself)
@@ -378,6 +381,10 @@ properties:
         type: string
         format: ip
 
+      cluster_external_domain:  # -------------------------------
+        type: string
+        format: hostname
+
       cis_benchmark_scan_profile:  # -------------------------------
         type: string
 
@@ -396,8 +403,10 @@ properties:
         properties:
 
           external_hostname:  # -------------------------------
-            type: string
-            format: hostname
+            anyOf:
+              - type: string
+                format: hostname
+              - $ref: "#/$defs/string-with-gotpl"
 
       vault: # -------------------------------
         type: object
@@ -405,8 +414,10 @@ properties:
         properties:
 
           external_hostname:  # -------------------------------
-            type: string
-            format: hostname
+            anyOf:
+              - type: string
+                format: hostname
+              - $ref: "#/$defs/string-with-gotpl"
 
       keycloak: # -------------------------------
         type: object
@@ -414,8 +425,10 @@ properties:
         properties:
 
           external_hostname:  # -------------------------------
-            type: string
-            format: hostname
+            anyOf:
+              - type: string
+                format: hostname
+              - $ref: "#/$defs/string-with-gotpl"
 
       capd:  # -------------------------------
         type: object
