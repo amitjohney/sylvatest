@@ -21,3 +21,25 @@ spec:
             id: ${CAPO_NETWORK_ID}
           allowedAddressPairs:
             - ipAddress: ${CLUSTER_EXTERNAL_IP}
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+kind: OpenStackCluster
+metadata:
+  name: ${CLUSTER_NAME}
+  namespace: default
+spec:
+  cloudName: capo_cloud
+  externalNetworkId: ${CAPO_NETWORK_ID}
+  network:
+    id: ${CAPO_NETWORK_ID}
+  apiServerFixedIP: ${CLUSTER_EXTERNAL_IP}
+  identityRef:
+    kind: Secret
+    name: management-cluster-cloud-config
+  managedSecurityGroups: true
+  disableAPIServerFloatingIP: true
+  apiServerLoadBalancer:
+    enabled: false
+  allowAllInClusterTraffic: true
+  tags:
+  - ${CAPO_TAG}
