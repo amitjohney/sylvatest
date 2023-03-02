@@ -549,6 +549,10 @@ properties:
                       type: string
                     type:  # -------------------------------
                       type: string
+
+                resources_tag:  # -------------------------------
+                  type: string
+
       - if:
           properties:
             capi_providers:

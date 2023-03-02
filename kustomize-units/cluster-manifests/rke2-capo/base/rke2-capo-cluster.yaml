@@ -20,26 +20,6 @@ spec:
     kind: OpenStackCluster
     name: ${CLUSTER_NAME}
 ---
-apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
-kind: OpenStackCluster
-metadata:
-  name: ${CLUSTER_NAME}
-  namespace: default
-spec:
-  cloudName: capo_cloud
-  externalNetworkId: ${CAPO_NETWORK_ID}
-  identityRef:
-    kind: Secret
-    name: management-cluster-cloud-config
-  managedSecurityGroups: true
-  allowAllInClusterTraffic: true
-  disableAPIServerFloatingIP: true
-  apiServerLoadBalancer:
-    enabled: false
-  network:
-    id: ${CAPO_NETWORK_ID}
-  apiServerFixedIP: ${CLUSTER_EXTERNAL_IP}
----
 apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
 kind: RKE2ControlPlane
 metadata:
