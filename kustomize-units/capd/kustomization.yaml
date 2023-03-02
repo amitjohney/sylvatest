@@ -1,7 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - https://github.com/kubernetes-sigs/cluster-api//test/infrastructure/docker/config/default/?ref=v1.2.4
+  - https://github.com/kubernetes-sigs/cluster-api//test/infrastructure/docker/config/default/?ref=v1.3.4
 patches:
   - target:
       group: apiextensions.k8s.io
@@ -29,7 +29,7 @@ images:
 # Use custom image build with support of rke2 bootstrap provider
 - name: gcr.io/k8s-staging-cluster-api/capd-manager:main
   newName: registry.gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/capd-manager
-  newTag: v1.2.2
+  newTag: v1.3.4
 # Add labels to enable clusterctl move to retrieve resources correponding to capd CRDs
 labels:
   - pairs:
