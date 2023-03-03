@@ -40,6 +40,11 @@ spec:
   - kind: ConfigMap
     name: management-cluster-values
     valuesKey: values
+  - kind: ConfigMap
+    name: capo-cluster-resources
+    valuesKey: allocated_ip
+    targetPath: cluster.cluster_external_ip
+    optional: true
   values:
     git_repo_templates:
       sylva-core:

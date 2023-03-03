@@ -12,6 +12,15 @@ unit_helmrelease_spec_default:
 
 units:
 
+  cluster:
+    enabled: yes
+    depends_on:
+      - name: capi
+      - name: '{{ .Values.cluster.capi_providers.infra_provider }}'
+      - name: '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
+      - '{{ tuple (dict "name" "capo-cluster-resources") (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
+      - '{{ tuple (dict "name" "reconcile-sylva-units") (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
+
   calico:
     # overload calico definition in bootstrap context to deploy in the management cluster
     depends_on:
@@ -120,6 +129,37 @@ units:
         {{- mergeOverwrite $chartValues $disableCluster $gitRepoSelf | include "preserve-type" -}}
       valuesFrom: '{{ (lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units").spec.valuesFrom | include "preserve-type" }}'
 
+  reconcile-sylva-units:
+    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'
+    depends_on:
+      - name: capo-cluster-resources
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/kube-job
+      wait: true
+      force: true
+      patches:
+      - target:
+          kind: Job
+          name: kube-job
+        patch: |
+          - op: replace
+            path: /metadata/name
+            value: reconcile-sylva-units-job
+      - target:
+          kind: ConfigMap
+          name: job-scripts
+        patch: |
+          - op: replace
+            path: /data/kube-job.sh
+            value: |
+              #!/bin/bash
+
+              set -e
+
+              echo "-- Forcefully reconcile of the sylva-units HelmRelease"
+              kubectl annotate --overwrite helmrelease/sylva-units reconcile.fluxcd.io/requestedAt="$(date +%s)"
+
   pivot:
     enabled: yes
     depends_on:
@@ -213,3 +253,6 @@ units_override_enabled:
   - management-cluster-configs
   - sylva-units
   - pivot
+  - '{{ tuple "heat-operator" (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
+  - '{{ tuple "capo-cluster-resources" (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
+  - '{{ tuple "reconcile-sylva-units" (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'

@@ -494,6 +494,7 @@ units:
       - name: capi
       - name: '{{ .Values.cluster.capi_providers.infra_provider }}'
       - name: '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
+      - '{{ tuple (dict "name" "capo-cluster-resources") (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
     labels:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
     kustomization_spec:
@@ -524,6 +525,27 @@ units:
                     (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
         - '{{ tuple "../../components/capo-root-volume"
                     (and .Values.cluster.capo.rootVolume (eq .Values.cluster.capi_providers.infra_provider "capo"))  | include "set-only-if" }}'
+
+  heat-operator:
+    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'
+    repo: sylva-core
+    depends_on:
+      - name: cert-manager
+    kustomization_spec:
+      path: ./kustomize-units/heat-operator
+      wait: true
+
+  capo-cluster-resources:
+    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'
+    repo: sylva-core
+    depends_on:
+      - name: heat-operator
+    kustomization_spec:
+      path: ./kustomize-units/capo-cluster-resources
+      wait: true
+      postBuild:
+        substitute:
+          CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
 
   calico:
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
