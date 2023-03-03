@@ -5,6 +5,7 @@ metadata:
   namespace: default
   annotations:
     field.cattle.io/description: "${CLUSTER_FLAVOR} workload cluster"
+    field.cattle.io/creatorId: system:serviceaccount:flux-system:kustomize-controller
   labels:
     capi-rancher-import.cluster-name: ${CLUSTER_NAME}
     rancher-monitoring: ${CLUSTER_MONITORING}
