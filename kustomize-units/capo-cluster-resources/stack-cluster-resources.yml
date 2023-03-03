@@ -1,0 +1,37 @@
+---
+apiVersion: heatoperator.sylva/v1
+kind: HeatStack
+metadata:
+  labels:
+    app.kubernetes.io/name: heatstack
+    app.kubernetes.io/instance: heatstack-capo-cluster-resources
+    app.kubernetes.io/part-of: heat-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: heat-operator
+  name: heatstack-capo-cluster-resources
+  namespace: default
+spec:
+  template:
+    heat_template_version: "2018-08-31"
+
+    parameters:
+      network:
+        type: string
+        description: "Network name"
+
+    resources:
+      port:
+        type: OS::Neutron::Port
+        properties:
+          network: { get_param: network }
+
+    outputs:
+      allocated_ip:
+        value: { get_attr: [port, fixed_ips, 0, ip_address] }
+        description: IP address allocated to the port
+  name: capo-cluster-resources
+  identityRef: management-cluster-cloud-config
+  cloudName: capo_cloud
+  environment:
+    parameters:
+      network: "${CAPO_NETWORK_ID}"
