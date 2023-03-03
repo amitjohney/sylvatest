@@ -20,7 +20,6 @@ patches:
           Environment="HTTPS_PROXY=${https_proxy}"
           Environment="NO_PROXY=${no_proxy}"
     - op: add
-      path: /spec/kubeadmConfigSpec/preKubeadmCommands
+      path: /spec/kubeadmConfigSpec/preKubeadmCommands/-
       value:
-        - systemctl daemon-reload
-        - systemctl restart containerd.service
+        systemctl daemon-reload && systemctl restart containerd.service

@@ -17,6 +17,6 @@ patches:
     kind: KubeadmControlPlane
   patch: |-
     - op: add
-      path: /spec/kubeadmConfigSpec/preKubeadmCommands
+      path: /spec/kubeadmConfigSpec/preKubeadmCommands/-
       value:
-        - systemctl restart systemd-resolved
+        systemctl restart systemd-resolved
