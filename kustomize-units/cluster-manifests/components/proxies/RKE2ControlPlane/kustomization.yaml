@@ -39,8 +39,6 @@ patches:
           HTTPS_PROXY=${https_proxy}
           NO_PROXY=${no_proxy}
     - op: add
-      path: /spec/template/spec/preRKE2Commands
+      path: /spec/template/spec/preRKE2Commands/-
       value:
-        - export HTTP_PROXY=${http_proxy}
-        - export HTTPS_PROXY=${https_proxy}
-        - export NO_PROXY=${no_proxy}
+        export HTTP_PROXY=${http_proxy} HTTPS_PROXY=${https_proxy} NO_PROXY=${no_proxy}

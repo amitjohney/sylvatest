@@ -14,9 +14,9 @@ patches:
           DNS=${K8SGATEWAY_LB_IP}
           Domains=~sylva
     - op: add
-      path: /spec/rke2ConfigSpec/preRKE2Commands
+      path: /spec/rke2ConfigSpec/preRKE2Commands/-
       value:
-        - systemctl restart systemd-resolved
+        systemctl restart systemd-resolved
 - target:
     kind: RKE2ConfigTemplate
   patch: |
@@ -29,6 +29,6 @@ patches:
           DNS=${K8SGATEWAY_LB_IP}
           Domains=~sylva
     - op: add
-      path: /spec/template/spec/preRKE2Commands
+      path: /spec/template/spec/preRKE2Commands/-
       value:
-        - systemctl restart systemd-resolved
+        systemctl restart systemd-resolved
