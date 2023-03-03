@@ -385,6 +385,14 @@ properties:
         type: string
         format: hostname
 
+      control_plane_replicas:  # -------------------------------
+        type: string
+        pattern: "^[0-9]$"
+
+      worker_replicas:  # -------------------------------
+        type: string
+        pattern: "^[0-9]$"
+
       cis_benchmark_scan_profile:  # -------------------------------
         type: string
 
@@ -471,6 +479,12 @@ properties:
               properties:
 
                 flavor_name:  # -------------------------------
+                  type: string
+
+                worker_flavor_name:  # -------------------------------
+                  type: string
+
+                worker_az:  # -------------------------------
                   type: string
 
                 ssh_key_name:  # -------------------------------

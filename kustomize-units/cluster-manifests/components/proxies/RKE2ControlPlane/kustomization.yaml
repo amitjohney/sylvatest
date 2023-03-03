@@ -25,3 +25,22 @@ patches:
           HTTP_PROXY=${http_proxy}
           HTTPS_PROXY=${https_proxy}
           NO_PROXY=${no_proxy}
+- target:
+    kind: RKE2ConfigTemplate
+  patch: |
+    - op: add
+      path: /spec/template/spec/files/-
+      value:
+        path: /etc/default/rke2-agent
+        owner: root:root
+        permissions: "0644"
+        content: |
+          HTTP_PROXY=${http_proxy}
+          HTTPS_PROXY=${https_proxy}
+          NO_PROXY=${no_proxy}
+    - op: add
+      path: /spec/template/spec/preRKE2Commands
+      value:
+        - export HTTP_PROXY=${http_proxy}
+        - export HTTPS_PROXY=${https_proxy}
+        - export NO_PROXY=${no_proxy}
