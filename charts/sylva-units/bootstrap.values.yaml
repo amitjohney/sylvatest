@@ -157,8 +157,17 @@ units:
 
               set -e
 
+              echo "-- Retrieve lastReleaseRevision of the sylva-units HelmRelease"
+              lastrevision=$(kubectl get helmrelease/sylva-units -o jsonpath='{.status.lastReleaseRevision}')
+
               echo "-- Forcefully reconcile of the sylva-units HelmRelease"
               kubectl annotate --overwrite helmrelease/sylva-units reconcile.fluxcd.io/requestedAt="$(date +%s)"
+
+              echo "-- Wait until the last release revision of the sylva-units HelmRelease has been incremented"
+              kubectl wait --for=jsonpath='{.status.lastReleaseRevision}'=$((++lastrevision)) --timeout 180s helmrelease/sylva-units
+
+              echo "-- Wait until the sylva-units HelmRelease is ready"
+              kubectl wait --for=condition=ready --timeout 180s helmrelease/sylva-units
 
   pivot:
     enabled: yes
