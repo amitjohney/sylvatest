@@ -22,7 +22,7 @@ oci_repo_spec_default:
   interval: 60m0s
   gitImplementation: libgit2
 
-flux_resource_templates: # template to generate Flux GitRepository/OCIRepository resources
+source_templates: # template to generate Flux GitRepository/OCIRepository resources
   # <repo-name>:
   #   kind:  GitRepository/OCIRepository
   #   spec:  # partial spec for a Flux resource
@@ -105,7 +105,7 @@ unit_helmrelease_kustomization_spec_default:
   sourceRef:
     kind: GitRepository
     # GitRepository created by templates/gitrepository-self.yaml unless an existing repository is used
-    name: '{{ hasKey (index .Values.flux_resource_templates "sylva-core") "existing_gitrepository" | ternary (index .Values.flux_resource_templates "sylva-core").existing_gitrepository "sylva-core" }}'
+    name: '{{ hasKey (index .Values.source_templates "sylva-core") "existing_gitrepository" | ternary (index .Values.source_templates "sylva-core").existing_gitrepository "sylva-core" }}'
 
   wait: true
 
@@ -120,7 +120,7 @@ status_unit_kustomization_spec_default:
   sourceRef:
     kind: GitRepository
     # GitRepository created by templates/gitrepository-self.yaml unless an existing repository is used
-    name: '{{ hasKey (index .Values.flux_resource_templates "sylva-core") "existing_gitrepository" | ternary (index .Values.flux_resource_templates "sylva-core").existing_gitrepository "sylva-core" }}'
+    name: '{{ hasKey (index .Values.source_templates "sylva-core") "existing_gitrepository" | ternary (index .Values.source_templates "sylva-core").existing_gitrepository "sylva-core" }}'
   wait: true
   patches:
     - target:
@@ -130,7 +130,7 @@ status_unit_kustomization_spec_default:
         metadata:
           name: _ignored_
         data:
-          sylva-core-ref: "{{ (index .Values.flux_resource_templates "sylva-core").spec.ref | toYaml }}"
+          sylva-core-ref: "{{ (index .Values.source_templates "sylva-core").spec.ref | toYaml }}"
           sylva-units-release-revision: "{{ .Release.Revision }}"
 
 
@@ -139,7 +139,7 @@ status_unit_kustomization_spec_default:
 units:
   # <unit-name>:
   #   enabled: boolean
-  #   repo: <name of the repo under 'flux_resource_templates'> (for use with kustomization_spec)
+  #   repo: <name of the repo under 'source_templates'> (for use with kustomization_spec)
   #   helm_repo_url: URL of the Helm repo to use (for use with helmrelease_spec, but not mandatory, 'repo' can be used as well to use a git repo)
   #   labels: (optional) dict holding labels to add to the resources for this unit
   #   ref_override: optional, if defined, this dict will be used for the GitRepository overriding spec.ref (not used if some helm_repo_* is set)

@@ -45,6 +45,6 @@ spec:
     targetPath: cluster.cluster_external_ip
     optional: true
   values:
-    flux_resource_templates:
+    source_templates:
       sylva-core:
         existing_gitrepository: sylva-core

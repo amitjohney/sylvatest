@@ -132,7 +132,7 @@ a given deployment flavor, or for a given deployment).
 units:
 
   my-unit:
-    repo: sylva-core   # this refers to .flux_resource_templates.sylva-core (defined in default values)
+    repo: sylva-core   # this refers to .source_templates.sylva-core (defined in default values)
     kustomization_spec:
       path: ./kustomize-unit/myComponent
     depends_on:
@@ -142,7 +142,7 @@ units:
 ### Component using a Kustomization defined in another repository
 
 ```yaml
-flux_resource_templates:
+source_templates:
   kind:
   project-foo:
     spec:
@@ -159,7 +159,7 @@ units:
 ### Component using a Helm chart defined in a Git repository
 
 ```yaml
-flux_resource_templates:
+source_templates:
   helm-chart-bar:
     kind:
     spec:
@@ -233,7 +233,7 @@ git_auth_default:
   username: your_user_name
   password: glpat-XXXXX
 
-flux_resource_templates:
+source_templates:
   sylva-core:
     kind:
     spec:

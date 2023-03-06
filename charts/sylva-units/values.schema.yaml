@@ -89,7 +89,7 @@ required:
   - registry_secret
   - git_repo_spec_default
   - oci_repo_spec_default
-  - flux_resource_templates
+  - source_templates
   - helm_repo_spec_default
   - unit_kustomization_spec_default
   - unit_helmrelease_spec_default
@@ -123,7 +123,7 @@ properties:
     type: object
     # (fields from a spec of a OCIRepository Flux resource)
 
-  flux_resource_templates:  # -------------------------------
+  source_templates:  # -------------------------------
     type: object
     additionalProperties: false
     patternProperties:

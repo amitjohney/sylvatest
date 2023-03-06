@@ -121,7 +121,7 @@ units:
       values: |
         {{- $chartValues := (lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units").spec.values -}}
         {{- $disableCluster := dict "units" (dict "cluster" (dict "enabled" false)) -}}
-        {{- $gitRepoSelf := dict "flux_resource_templates" (dict "sylva-core" (dict "existing_gitrepository" "sylva-core")) -}}
+        {{- $gitRepoSelf := dict "source_templates" (dict "sylva-core" (dict "existing_gitrepository" "sylva-core")) -}}
         {{- mergeOverwrite $chartValues $disableCluster $gitRepoSelf | include "preserve-type" -}}
       valuesFrom: '{{ (lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units").spec.valuesFrom | include "preserve-type" }}'
 
