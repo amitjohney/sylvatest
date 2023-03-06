@@ -567,7 +567,7 @@
             "properties": {
               "capo": {
                 "type": "object",
-                "additionalProperties": false,
+                "additionalProperties": true,
                 "properties": {
                   "worker_az": {
                     "type": "string"
