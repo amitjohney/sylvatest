@@ -15,7 +15,7 @@ resource such as a Cert Manager Issuer, a Kyverno policy, etc).
 This Helm chart will define Kubernetes for those "units", thanks to [FluxCD](https://fluxcd.io)
 resources, each defining the final resources for a given unit thanks to either on `kustomize` or Helm:
 
-* FluxCD `Kustomizations`, pointing to Git repositories in which [kustomize](https://kustomize.io) `kustomization.yaml` files
+* FluxCD `Kustomizations`, pointing to Git or OCI repositories in which [kustomize](https://kustomize.io) `kustomization.yaml` files
   and Kubernetes manifest files are defined describing how to deploy a unit
 
 * FluxCD `HelmReleases`, which contain definitions of Helm releases for Helm charts hosted
@@ -132,7 +132,7 @@ a given deployment flavor, or for a given deployment).
 units:
 
   my-unit:
-    repo: sylva-core   # this refers to .git_repo_templates.sylva-core (defined in default values)
+    repo: sylva-core   # this refers to .flux_resource_templates.sylva-core (defined in default values)
     kustomization_spec:
       path: ./kustomize-unit/myComponent
     depends_on:
@@ -142,7 +142,8 @@ units:
 ### Component using a Kustomization defined in another repository
 
 ```yaml
-git_repo_templates:
+flux_resource_templates:
+  kind:
   project-foo:
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/foo.git
@@ -158,8 +159,9 @@ units:
 ### Component using a Helm chart defined in a Git repository
 
 ```yaml
-git_repo_templates:
+flux_resource_templates:
   helm-chart-bar:
+    kind:
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/bar.git
       ref:
@@ -231,8 +233,9 @@ git_auth_default:
   username: your_user_name
   password: glpat-XXXXX
 
-git_repo_templates:
+flux_resource_templates:
   sylva-core:
+    kind:
     spec:
       ...
     auth: '{{ .Values.git_auth_default | include "preserve-type" }}'
