@@ -1067,7 +1067,7 @@ cluster:
   capo:
     flavor_name: m1.large # Openstack flavor name
     worker_flavor_name: m1.large
-    worker_az: # replace me
+    # worker_az: # used only when .Values.cluster.worker_replicas is different than 0 string
     ssh_key_name: # OpenStack VM SSH key
     network_id:  # OpenStack network to use as external network
     rootVolume: {} # Let this parameter empty if you don't intent to use root volume
