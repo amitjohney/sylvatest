@@ -21,5 +21,4 @@ patches:
           Environment="NO_PROXY=${no_proxy}"
     - op: add
       path: /spec/kubeadmConfigSpec/preKubeadmCommands/-
-      value:
-        systemctl daemon-reload && systemctl restart containerd.service
+      value: systemctl daemon-reload && systemctl restart containerd.service

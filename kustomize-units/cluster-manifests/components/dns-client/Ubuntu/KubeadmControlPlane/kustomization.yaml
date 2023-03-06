@@ -18,5 +18,4 @@ patches:
   patch: |-
     - op: add
       path: /spec/kubeadmConfigSpec/preKubeadmCommands/-
-      value:
-        systemctl restart systemd-resolved
+      value: systemctl restart systemd-resolved
