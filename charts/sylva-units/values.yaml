@@ -991,9 +991,9 @@ units:
           CONTROL_PLANE_REPLICAS: '{{ tuple "1" (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
           WORKER_REPLICAS: '{{ tuple "0" (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
           WORKER_AZ: '{{ tuple "nova" (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
-          DISK_SIZE: '{{ .Values.cluster.capo.rootVolume.diskSize | quote
+          DISK_SIZE: '{{ tuple (.Values.cluster.capo.rootVolume.diskSize | quote)
                     (and .Values.cluster.capo.rootVolume (eq .Values.cluster.capi_providers.infra_provider "capo"))  | include "set-only-if" }}'
-          VOLUME_TYPE: '{{ .Values.cluster.capo.rootVolume.volumeType | quote
+          VOLUME_TYPE: '{{ tuple (.Values.cluster.capo.rootVolume.volumeType | quote)
                     (and .Values.cluster.capo.rootVolume (eq .Values.cluster.capi_providers.infra_provider "capo"))  | include "set-only-if" }}'
         substituteFrom:
           - kind: ConfigMap
