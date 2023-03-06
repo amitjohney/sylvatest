@@ -556,6 +556,30 @@
         {
           "if": {
             "properties": {
+              "worker_replicas": {
+                "not": {
+                  "const": 0
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "capo": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "worker_az": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
               "capi_providers": {
                 "properties": {
                   "infra_provider": {
@@ -575,9 +599,6 @@
                     "type": "string"
                   },
                   "worker_flavor_name": {
-                    "type": "string"
-                  },
-                  "worker_az": {
                     "type": "string"
                   },
                   "ssh_key_name": {
