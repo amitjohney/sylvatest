@@ -27,8 +27,6 @@ metadata:
 spec:
   kubeadmConfigSpec:
     preKubeadmCommands: []
-    clusterConfiguration:
-      imageRepository: k8s.gcr.io
     files:
     - path: /etc/kubernetes/manifests/kube-vip.yaml
       owner: root:root
@@ -95,6 +93,8 @@ spec:
     postKubeadmCommands:
     - export KUBECONFIG=/etc/kubernetes/admin.conf
     - kubectl taint nodes --all node-role.kubernetes.io/master-
+    clusterConfiguration:
+      imageRepository: k8s.gcr.io
     initConfiguration:
       nodeRegistration:
         kubeletExtraArgs:
@@ -143,13 +143,13 @@ spec:
     matchLabels: null
   template:
     spec:
+      clusterName: ${CLUSTER_NAME}
+      failureDomain: ${WORKER_AZ}
       bootstrap:
         configRef:
           apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
           kind: KubeadmConfigTemplate
           name: ${CLUSTER_NAME}-worker
-      clusterName: ${CLUSTER_NAME}
-      failureDomain: ${WORKER_AZ}
       infrastructureRef:
         apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
         kind: OpenStackMachineTemplate

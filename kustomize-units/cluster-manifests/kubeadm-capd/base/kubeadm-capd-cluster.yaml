@@ -1,4 +1,3 @@
----
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: Cluster
 metadata:
@@ -34,17 +33,13 @@ metadata:
   name: ${CLUSTER_NAME}-control-plane
   namespace: default
 spec:
-  replicas: 1
-  version: v1.24.4
-  machineTemplate:
-    infrastructureRef:
-      apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
-      kind: DockerMachineTemplate
-      name: ${CLUSTER_NAME}-cp-template
-      namespace: default
   kubeadmConfigSpec:
     preKubeadmCommands: []
     files: []
+    postKubeadmCommands:
+      # FIXME: figure out why initConfiguration.nodeRegistration.taints does not work...
+      - kubectl --kubeconfig /etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/control-plane-
+      - kubectl --kubeconfig /etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/master-
     clusterConfiguration:
       apiServer:
         certSANs:
@@ -65,10 +60,14 @@ spec:
         kubeletExtraArgs:
           eviction-hard: nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%
           register-with-taints: ""
-    postKubeadmCommands:
-      # FIXME: figure out why initConfiguration.nodeRegistration.taints does not work...
-      - kubectl --kubeconfig /etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/control-plane-
-      - kubectl --kubeconfig /etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/master-
+  machineTemplate:
+    infrastructureRef:
+      apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+      kind: DockerMachineTemplate
+      name: ${CLUSTER_NAME}-cp-template
+      namespace: default
+  replicas: 1
+  version: v1.24.4
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: DockerMachineTemplate

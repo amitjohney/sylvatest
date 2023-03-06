@@ -26,12 +26,8 @@ metadata:
   name: ${CLUSTER_NAME}-control-plane
   namespace: default
 spec:
-  infrastructureTemplate:
-    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
-    kind: OpenStackMachineTemplate
-    name: ${CLUSTER_NAME}-control-plane
-    namespace: default
   rke2ConfigSpec:
+    preRKE2Commands: []
     files:
     - path: /var/lib/rancher/rke2/server/manifests/ingress.yaml
       owner: "root:root"
@@ -138,7 +134,12 @@ spec:
               targetPort: 9345
             selector:
               component: kube-apiserver
-    preRKE2Commands: []
+    deployRKE2Commands:
+      - "echo 'cni: calico' >> /etc/rancher/rke2/config.yaml"
+      - systemctl daemon-reload
+      - systemctl enable rke2-server.service
+      - systemctl start rke2-server.service
+      - ln -s /var/lib/rancher/rke2/bin/kubectl /usr/local/bin/kubectl
     serverConfig:
       tlsSan:
       - localhost
@@ -146,12 +147,11 @@ spec:
     agentConfig:
       kubeletArgs:
         - "provider-id=openstack://{{ ds.meta_data.uuid }}"
-    deployRKE2Commands:
-      - "echo 'cni: calico' >> /etc/rancher/rke2/config.yaml"
-      - systemctl daemon-reload
-      - systemctl enable rke2-server.service
-      - systemctl start rke2-server.service
-      - ln -s /var/lib/rancher/rke2/bin/kubectl /usr/local/bin/kubectl
+  infrastructureTemplate:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+    kind: OpenStackMachineTemplate
+    name: ${CLUSTER_NAME}-control-plane
+    namespace: default
   replicas: ${CONTROL_PLANE_REPLICAS:=3}
   version: v1.24.4+rke2r1
 ---
@@ -163,17 +163,17 @@ metadata:
 spec:
   template:
     spec:
-      files: []
       preRKE2Commands: []
-      agentConfig:
-        nodeName: "{{ ds.meta_data.local_hostname }}"
-        kubeletArgs:
-          - "provider-id=openstack://{{ ds.meta_data.uuid }}"
+      files: []
       deployRKE2Commands:
       - "echo 'cni: calico' >> /etc/rancher/rke2/config.yaml"
       - systemctl daemon-reload
       - systemctl enable rke2-agent.service
       - systemctl start rke2-agent.service
+      agentConfig:
+        nodeName: "{{ ds.meta_data.local_hostname }}"
+        kubeletArgs:
+          - "provider-id=openstack://{{ ds.meta_data.uuid }}"
 ---
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: MachineDeployment
@@ -190,13 +190,13 @@ spec:
   template:
     spec:
       version: v1.24.4+rke2r1
+      clusterName: ${CLUSTER_NAME}
       failureDomain: ${WORKER_AZ}
       bootstrap:
         configRef:
           apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
           kind: RKE2ConfigTemplate
           name: ${CLUSTER_NAME}-worker
-      clusterName: ${CLUSTER_NAME}
       infrastructureRef:
         apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
         kind: OpenStackMachineTemplate
