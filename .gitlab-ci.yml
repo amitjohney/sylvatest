@@ -130,7 +130,7 @@ check-docs-markdown:
     # for now, some units don't work on generic workers
     # (see https://gitlab.com/sylva-projects/sylva-core/-/issues/2)
     - |
-      if [[ ! $CI_RUNNER_TAGS =~ ".*o-romania.*" ]]; then
+      if [[ ! $CI_RUNNER_TAGS =~ ".*capd-bm.*" ]]; then
         echo "disable some units to allow capd jobs to run on generic gitlab runners"
         yq -i '.units.workload-cluster.enabled=false' $values_file
         yq -i '.units.workload-cluster-calico.enabled=false' $values_file
@@ -174,30 +174,8 @@ check-docs-markdown:
   variables:
     ENV_NAME: kubeadm-capd
 
-test-rke2-capd:
-  timeout: 60min
-  extends: .test-capd
-  variables:
-    ENV_NAME: rke2-capd
-  rules:
-    #NOTE: rke2-capd is resource intensive (~140GB disk), so test it only when needed by adding label `run-e2e-tests` to MR
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
-      when: manual
-  tags:
-    - o-romania-bm
-
 test-kubeadm-capd:
   timeout: 45min
   extends: .test-capd
   variables:
     ENV_NAME: kubeadm-capd
-
-test-kubeadm-capd-bm:
-  timeout: 45min
-  extends: .test-capd
-  rules:
-    #NOTE: testing kubeadm-capd stack on managed runner by adding label `run-e2e-tests` to MR
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
-      when: manual
-  tags:
-    - o-romania-bm
