@@ -31,8 +31,6 @@ cluster:
       name: "cinder-ceph-ssd"
       type: "ceph_ssd"
 
-  cluster_external_ip: 1.2.3.4  # reserve an IP and replace this sample value
-
 proxies:
   # put your own proxy settings here if you need
   http_proxy: ""
