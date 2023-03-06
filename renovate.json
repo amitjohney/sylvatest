@@ -31,7 +31,7 @@
       "fileMatch": "values.yaml",
       "matchStringsStrategy": "recursive",
       "matchStrings": [
-        "git_repo_templates:[\\w\\W]*[ ]+",
+        "flux_resource_templates:[\\w\\W]*[ ]+",
         "url:(?<depName>.*)\\n[\\w\\W]*?(branch:|tag:) (?<currentValue>.*)\\n"
       ],
       "datasourceTemplate": "git-tags"

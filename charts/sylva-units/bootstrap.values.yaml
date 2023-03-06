@@ -184,7 +184,7 @@ units:
             value: pivot-job
       - target:
           kind: ConfigMap
-          name: job-scripts
+            name: job-scripts
         patch: |
           - op: replace
             path: /data/kube-job.sh

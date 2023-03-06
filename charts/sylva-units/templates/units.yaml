@@ -42,13 +42,13 @@
         {{- fail (printf "units.%s.repo isn't defined" $unit_name) -}}
       {{- end -}}
 
-      {{- if not (hasKey $envAll.Values.git_repo_templates $repo_name) -}}
-        {{- fail (printf "units.%s.repo refers to '%s' that isn't defined in .git_repo_templates" $unit_name $repo_name) -}}
+      {{- if not (hasKey $envAll.Values.flux_resource_templates $repo_name) -}}
+        {{- fail (printf "units.%s.repo refers to '%s' that isn't defined in .flux_resource_templates" $unit_name $repo_name) -}}
       {{- end -}}
 
       {{/* definition of the repo specification */}}
 
-      {{- $repo_def := deepCopy (index $envAll.Values.git_repo_templates $repo_name) -}}
+      {{- $repo_def := deepCopy (index $envAll.Values.flux_resource_templates $repo_name) -}}
 
 
       {{- $git_repo_name := ""}}

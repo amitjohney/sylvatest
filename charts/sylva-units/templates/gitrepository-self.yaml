@@ -1,9 +1,9 @@
 {{/* This GitRepository is referred to from 'unit_helmrelease_kustomization_spec_default' */}}
 {{- $envAll := set . "Values" (include "interpret-values-gotpl" . | fromJson) -}}
 {{- $repo_name := "sylva-core" -}}
-{{- if not (hasKey (index .Values.git_repo_templates "sylva-core") "existing_gitrepository") -}}
+{{- if not (hasKey (index .Values.flux_resource_templates "sylva-core") "existing_gitrepository") -}}
     {{- $unit_name := "sylva-core" -}}
-    {{- $repo_def := deepCopy (index $envAll.Values.git_repo_templates $repo_name) -}}
+    {{- $repo_def := deepCopy (index $envAll.Values.flux_resource_templates $repo_name) -}}
     {{- $auth := $repo_def.auth | default $envAll.Values.git_auth_default -}}
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
