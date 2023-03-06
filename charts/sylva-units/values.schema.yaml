@@ -485,6 +485,8 @@ properties:
               properties:
                 infra_provider:
                   const: capo
+            worker_replicas:
+              const: 0
         then:
           properties:
             capo:  # -------------------------------

@@ -586,6 +586,9 @@
                     "const": "capo"
                   }
                 }
+              },
+              "worker_replicas": {
+                "const": 0
               }
             }
           },
