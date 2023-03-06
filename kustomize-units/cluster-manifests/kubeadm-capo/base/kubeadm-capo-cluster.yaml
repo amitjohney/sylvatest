@@ -26,6 +26,7 @@ metadata:
   namespace: default
 spec:
   kubeadmConfigSpec:
+    preKubeadmCommands: []
     clusterConfiguration:
       imageRepository: k8s.gcr.io
     files:

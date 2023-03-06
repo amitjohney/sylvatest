@@ -138,6 +138,7 @@ spec:
               targetPort: 9345
             selector:
               component: kube-apiserver
+    preRKE2Commands: []
     serverConfig:
       tlsSan:
       - localhost
@@ -200,4 +201,3 @@ spec:
         apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
         kind: OpenStackMachineTemplate
         name: ${CLUSTER_NAME}-worker
-
