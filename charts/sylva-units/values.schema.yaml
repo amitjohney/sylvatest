@@ -88,7 +88,8 @@ additionalProperties: false
 required:
   - registry_secret
   - git_repo_spec_default
-  - git_repo_templates
+  - oci_repo_spec_default
+  - flux_resource_templates
   - helm_repo_spec_default
   - unit_kustomization_spec_default
   - unit_helmrelease_spec_default
@@ -118,7 +119,11 @@ properties:
     type: object
     # (fields from a spec of a GitRepository Flux resource)
 
-  git_repo_templates:  # -------------------------------
+  oci_repo_spec_default:  # -------------------------------
+    type: object
+    # (fields from a spec of a OCIRepository Flux resource)
+
+  flux_resource_templates:  # -------------------------------
     type: object
     additionalProperties: false
     patternProperties:
@@ -141,7 +146,7 @@ properties:
 
           spec:  # -------------------------------
             type: object
-            # (fields from a spec of a GitRepository Flux resource)
+            # (fields from a spec of a Flux resource)
             required:
               - url
               - ref
