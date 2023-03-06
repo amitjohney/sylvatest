@@ -20,7 +20,7 @@ git_repo_spec_default:
 oci_repo_spec_default:
   kind: OCIRepository
   interval: 60m0s
-  gitImplementation: libgit2  
+  gitImplementation: libgit2
 
 flux_resource_templates: # template to generate Flux GitRepository/OCIRepository resources
   # <repo-name>:
