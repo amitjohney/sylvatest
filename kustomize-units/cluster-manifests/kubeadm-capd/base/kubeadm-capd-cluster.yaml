@@ -43,6 +43,7 @@ spec:
       name: ${CLUSTER_NAME}-cp-template
       namespace: default
   kubeadmConfigSpec:
+    preKubeadmCommands: []
     files: []
     clusterConfiguration:
       apiServer:

@@ -39,6 +39,7 @@ spec:
     name: ${CLUSTER_NAME}-cp-template
     namespace: default
   rke2ConfigSpec:
+    preRKE2Commands: []
     files: []
     serverConfig:
       tlsSan:
