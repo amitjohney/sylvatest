@@ -38,7 +38,7 @@ git_repo_templates: # template to generate Flux GitRepository resources
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/capi-rancher-import.git
       ref:
-        tag: 0.1.0
+        tag: 0.1.1
 
   weave-gitops:
     spec:
