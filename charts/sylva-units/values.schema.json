@@ -310,91 +310,95 @@
               "helmrelease_spec"
             ]
           },
-          "anyOf": [
+          "allOf": [
             {
-              "properties": {
-                "enabled": {
-                  "const": false
-                }
-              }
-            },
-            {
-              "allOf": [
+              "anyOf": [
                 {
-                  "anyOf": [
-                    {
-                      "required": [
-                        "helmrelease_spec"
-                      ]
-                    },
-                    {
-                      "required": [
-                        "kustomization_spec"
-                      ]
-                    }
+                  "required": [
+                    "helmrelease_spec"
                   ]
                 },
                 {
-                  "not": {
-                    "required": [
-                      "repo",
-                      "helm_repo_url"
-                    ]
+                  "required": [
+                    "kustomization_spec"
+                  ]
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "properties": {
+                    "enabled": {
+                      "const": false
+                    }
                   }
                 },
                 {
-                  "if": {
-                    "not": {
-                      "required": [
-                        "helmrelease_spec"
-                      ]
-                    }
-                  },
-                  "then": {
-                    "properties": {
-                      "kustomization_spec": {
-                        "allOf": [
-                          {
-                            "required": [
-                              "path"
-                            ]
-                          },
-                          {
-                            "anyOf": [
+                  "allOf": [
+                    {
+                      "not": {
+                        "required": [
+                          "repo",
+                          "helm_repo_url"
+                        ]
+                      }
+                    },
+                    {
+                      "if": {
+                        "not": {
+                          "required": [
+                            "helmrelease_spec"
+                          ]
+                        }
+                      },
+                      "then": {
+                        "properties": {
+                          "kustomization_spec": {
+                            "allOf": [
                               {
                                 "required": [
-                                  "wait"
+                                  "path"
                                 ]
                               },
                               {
-                                "required": [
-                                  "healthChecks"
+                                "anyOf": [
+                                  {
+                                    "required": [
+                                      "wait"
+                                    ]
+                                  },
+                                  {
+                                    "required": [
+                                      "healthChecks"
+                                    ]
+                                  }
                                 ]
                               }
                             ]
                           }
-                        ]
+                        }
                       }
-                    }
-                  }
-                },
-                {
-                  "if": {
-                    "required": [
-                      "helmrelease_spec"
-                    ]
-                  },
-                  "then": {
-                    "properties": {
-                      "kustomization_spec": {
-                        "not": {
-                          "required": [
-                            "path"
-                          ]
+                    },
+                    {
+                      "if": {
+                        "required": [
+                          "helmrelease_spec"
+                        ]
+                      },
+                      "then": {
+                        "properties": {
+                          "kustomization_spec": {
+                            "not": {
+                              "required": [
+                                "path"
+                              ]
+                            }
+                          }
                         }
                       }
                     }
-                  }
+                  ]
                 }
               ]
             }
