@@ -12,7 +12,7 @@ patches:
         content: |
           [Resolve]
           DNS=${K8SGATEWAY_LB_IP}
-          Domains=~sylva
+          Domains=~${CLUSTER_EXTERNAL_DOMAIN}
     - op: add
       path: /spec/rke2ConfigSpec/preRKE2Commands/-
       value: systemctl restart systemd-resolved
@@ -26,7 +26,7 @@ patches:
         content: |
           [Resolve]
           DNS=${K8SGATEWAY_LB_IP}
-          Domains=~sylva
+          Domains=~${CLUSTER_EXTERNAL_DOMAIN}
     - op: add
       path: /spec/template/spec/preRKE2Commands/-
       value: systemctl restart systemd-resolved

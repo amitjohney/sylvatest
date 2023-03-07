@@ -1021,6 +1021,7 @@ units:
           MACHINE_IMAGE: '{{ .Values.cluster.image }}'
           REGISTRY_MIRROR: '{{ .Values.dockerio_registry_mirror }}'
           K8SGATEWAY_LB_IP: '{{ .Values.cluster.cluster_external_ip }}'   # NOTE: same is used for k8s-gateway DNS svc in management cluster
+          CLUSTER_EXTERNAL_DOMAIN: '{{ .Values.cluster.cluster_external_domain }}'
           CAPO_NETWORK_ID: '{{ tuple .Values.cluster.capo.network_id (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
           SSH_KEY_NAME: '{{ tuple .Values.cluster.capo.ssh_key_name (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
           CAPO_TAG: '{{ tuple .Values.cluster.capo.resources_tag (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
