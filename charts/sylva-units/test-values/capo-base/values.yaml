@@ -1,0 +1,19 @@
+cluster:
+
+  capi_providers:
+    infra_provider: capo
+
+  capo:
+    ssh_key_name: mykey
+    network_id: abcd-123465
+    clouds_yaml:
+      clouds:
+        capo_cloud:
+          verify: yes
+          auth:
+            project_name: foo
+            username: foo
+            password: bar
+            auth_url: https://1.2.3.4
+            user_domain_name: foo
+            project_domain_name: foo
