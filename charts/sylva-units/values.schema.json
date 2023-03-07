@@ -43,7 +43,7 @@
   "required": [
     "registry_secret",
     "git_repo_spec_default",
-    "git_repo_templates",
+    "source_templates",
     "helm_repo_spec_default",
     "unit_kustomization_spec_default",
     "unit_helmrelease_spec_default",
@@ -79,7 +79,10 @@
     "git_repo_spec_default": {
       "type": "object"
     },
-    "git_repo_templates": {
+    "oci_repo_spec_default": {
+      "type": "object"
+    },
+    "source_templates": {
       "type": "object",
       "additionalProperties": false,
       "patternProperties": {
@@ -104,6 +107,9 @@
             },
             "auth": {
               "$ref": "#/$defs/username-password"
+            },
+            "kind": {
+              "type": "string"
             },
             "spec": {
               "type": "object",
