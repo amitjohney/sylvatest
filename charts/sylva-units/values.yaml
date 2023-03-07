@@ -547,6 +547,7 @@ units:
       postBuild:
         substitute:
           CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
+          CAPO_TAG: '{{ .Values.cluster.capo.resources_tag }}'
 
   calico:
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
@@ -968,6 +969,42 @@ units:
                   - name: CLUSTER_NAME
                     value: '{{ .Values.cluster.test_workload_cluster_name }}'
 
+  workload-capo-cluster-resources:
+    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'
+    repo: sylva-core
+    depends_on:
+      - name: heat-operator
+    kustomization_spec:
+      path: ./kustomize-units/capo-cluster-resources
+      wait: true
+      patches:
+        - target:
+            kind: HeatStack
+          patch: |
+            kind: HeatStack
+            metadata:
+              name: _unused_
+            spec:
+              name: workload-capo-cluster-resources
+        - target:
+            kind: HeatStack
+          patch: |
+            - op: replace
+              path: /metadata/name
+              value: heatstack-workload-capo-cluster-resources
+        - target:
+            kind: HeatStack
+          patch: |
+            - op: add
+              path: /spec/template/outputs
+              value:
+                CLUSTER_EXTERNAL_IP:
+                  value: { get_attr: [port, fixed_ips, 0, ip_address] }
+      postBuild:
+        substitute:
+          CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
+          CAPO_TAG: '{{ .Values.cluster.capo.resources_tag }}'
+
   workload-cluster:
     enabled: false
     repo: sylva-core
@@ -998,6 +1035,9 @@ units:
         substituteFrom:
           - kind: ConfigMap
             name: proxy-env-vars
+            optional: true
+          - kind: ConfigMap
+            name: workload-capo-cluster-resources
             optional: true
       wait: true
       components:

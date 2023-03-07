@@ -32,6 +32,7 @@ spec:
   name: capo-cluster-resources
   identityRef: management-cluster-cloud-config
   cloudName: capo_cloud
+  tag: ${CAPO_TAG}
   environment:
     parameters:
       network: "${CAPO_NETWORK_ID}"
