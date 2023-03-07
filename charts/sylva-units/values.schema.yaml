@@ -212,18 +212,12 @@ properties:
                 type: string
 
           depends_on:  # -------------------------------
-            type: array
-            items:
-              anyOf:
-                - type: object
-                  additionalProperties: false
-                  required:
-                    - name
-                  properties:
-                    name:  # -------------------------------
-                      type: string
-                      pattern: "^([a-z0-9][a-z0-9-]*[a-z0-9]|{{ .* }})$"
-                - $ref: "#/$defs/gotpl"
+            type: object
+            patternProperties:
+              "^([a-z0-9][a-z0-9-]*[a-z0-9]|{{ .* }})$":  # a unit name (can be templated)
+                anyOf:
+                  - type: boolean
+                  - $ref: "#/$defs/gotpl"
 
           ref_override:  # -------------------------------
             type: string

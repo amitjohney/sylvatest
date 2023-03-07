@@ -190,26 +190,18 @@
               }
             },
             "depends_on": {
-              "type": "array",
-              "items": {
-                "anyOf": [
-                  {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": [
-                      "name"
-                    ],
-                    "properties": {
-                      "name": {
-                        "type": "string",
-                        "pattern": "^([a-z0-9][a-z0-9-]*[a-z0-9]|{{ .* }})$"
-                      }
+              "type": "object",
+              "patternProperties": {
+                "^([a-z0-9][a-z0-9-]*[a-z0-9]|{{ .* }})$": {
+                  "anyOf": [
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
                     }
-                  },
-                  {
-                    "$ref": "#/$defs/gotpl"
-                  }
-                ]
+                  ]
+                }
               }
             },
             "ref_override": {

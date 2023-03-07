@@ -15,16 +15,12 @@ units:
   cluster:
     enabled: yes
     depends_on:
-      - name: capi
-      - name: '{{ .Values.cluster.capi_providers.infra_provider }}'
-      - name: '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
-      - '{{ tuple (dict "name" "capo-cluster-resources") (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
-      - '{{ tuple (dict "name" "reconcile-sylva-units") (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
+      reconcile-sylva-units: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'
 
   calico:
     # overload calico definition in bootstrap context to deploy in the management cluster
     depends_on:
-      - name: cluster
+      cluster: true
     helmrelease_spec:
       kubeConfig:
         secretRef:
@@ -35,11 +31,11 @@ units:
   management-cluster-flux:
     enabled: yes
     depends_on:
-      - name: cluster
+      cluster: true
       # FIXME; Flux wait/healthcheck on management cluster does not work as expected, it becomes ready as soon as manifests are applied
       # cluster readyness will actually be ensured by the retries on installations of this kustomization for now.
       # maybe cluster CRD is not compatible with kstatus? (see https://fluxcd.io/flux/units/kustomize/kustomization/#health-assessment)
-      - '{{ tuple (dict "name" "calico") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") | include "set-only-if" }}'
+      calico: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/flux-system/base
@@ -58,7 +54,7 @@ units:
   management-cluster-configs:
     enabled: yes
     depends_on:
-      - name: management-cluster-flux
+      management-cluster-flux: true
     repo: sylva-core
     kustomization_spec:
       # FIXME: This is very hacky, we should use an ad-hoc kustomisation instead of this job to re-create configmap and secrets on maangement cluster
@@ -99,7 +95,7 @@ units:
   sylva-units:
     enabled: yes
     depends_on:
-      - name: management-cluster-configs
+      management-cluster-configs: true
     repo: sylva-core
     labels:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
@@ -132,7 +128,7 @@ units:
   reconcile-sylva-units:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'
     depends_on:
-      - name: capo-cluster-resources
+      capo-cluster-resources: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kube-job
@@ -172,7 +168,7 @@ units:
   pivot:
     enabled: yes
     depends_on:
-      - name: sylva-units
+      sylva-units: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kube-job
