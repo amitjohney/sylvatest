@@ -11,7 +11,9 @@ data:
 {{ if eq .Values.cluster.capi_providers.infra_provider "capo" }}
   FLAVOR_NAME: {{ .Values.cluster.capo.flavor_name }}
   WORKER_FLAVOR_NAME: {{ .Values.cluster.capo.worker_flavor_name }}
-  WORKER_AZ: {{ .Values.cluster.capo.worker_az | default "nova" }}
+{{ if hasKey .Values.cluster.capo "worker_az" }}
+  WORKER_AZ: {{ .Values.cluster.capo.worker_az }}
+{{ end }}
   SSH_KEY_NAME: {{ .Values.cluster.capo.ssh_key_name }}
   CAPO_NETWORK_ID: {{ .Values.cluster.capo.network_id }}
 {{ if gt (len .Values.cluster.capo.rootVolume) 1 }}
@@ -26,5 +28,5 @@ data:
   VS_TLS_THUMBPRINT: {{ .Values.cluster.capv.tlsThumbprint }}
 {{ end }}
   CLUSTER_EXTERNAL_IP: {{ .Values.cluster.cluster_external_ip }}
-  CONTROL_PLANE_REPLICAS: {{ .Values.cluster.control_plane_replicas | default "3" | quote }}
-  WORKER_REPLICAS: {{ .Values.cluster.worker_replicas | default "0" | quote }}
+  CONTROL_PLANE_REPLICAS: {{ .Values.cluster.control_plane_replicas | quote }}
+  WORKER_REPLICAS: {{ .Values.cluster.worker_replicas | quote }}

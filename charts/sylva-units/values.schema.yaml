@@ -386,12 +386,10 @@ properties:
         format: hostname
 
       control_plane_replicas:  # -------------------------------
-        type: string
-        pattern: "^[0-9]$"
+        type: integer
 
       worker_replicas:  # -------------------------------
-        type: string
-        pattern: "^[0-9]$"
+        type: integer
 
       cis_benchmark_scan_profile:  # -------------------------------
         type: string
@@ -465,6 +463,26 @@ properties:
         pattern: "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
 
     allOf:
+      - if:
+          properties:
+            capi_providers:
+              properties:
+                infra_provider:
+                  const: capo
+            worker_replicas:
+              type: integer
+              minimum: 1
+        then:
+          properties:
+            capo:  # -------------------------------
+              type: object
+              properties:
+
+                worker_az:  # -------------------------------
+                  type: string
+
+              required:
+                - worker_az
       - if:
           properties:
             capi_providers:
