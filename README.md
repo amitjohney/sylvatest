@@ -53,7 +53,7 @@ units: # defines Flux Kustomizations & HelmReleases
     enabled: '{{ eq .Values.cluster.capi_providers.infra_provider "capo" | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
-      - name: cert-manager
+      cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/capo
       wait: true
@@ -82,7 +82,7 @@ units:
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
-      - name: cert-manager
+      cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/cabpr
       wait: true

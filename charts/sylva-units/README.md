@@ -136,7 +136,7 @@ units:
     kustomization_spec:
       path: ./kustomize-unit/myComponent
     depends_on:
-      - name: my-other-unit  # my-unit will not be deployed before my-other-unit is ready
+      my-other-unit: true  # my-unit will not be deployed before my-other-unit is ready
 ```
 
 ### Component using a Kustomization defined in another repository
@@ -250,11 +250,16 @@ units:
   foo:
     # example of a conditional dependency
     depends_on:
-    - '{{ tuple (dict "name" "bar") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") | include "set-only-if" }}'
+      bar: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
     helmrelease_spec:
       values:
         # set proxy value for foo chart only if proxies value contains an http_proxy key with a non-empty value
         proxy: '{{ tuple .Values.proxies.http_proxy .Values.proxies.http_proxy | include "set-only-if" }}'
+        # include 3 as an item in the list only if the bootstrap_provider is cabpk:
+        my_list:
+          - 1
+          - 2
+          - '{{ tuple 3 (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | include "set-only-if" }}'
 ```
 
 For more details on templating features & limitations, refer to [`_interpret-values.tpl`](templates/_interpret-values.tpl)

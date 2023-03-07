@@ -166,7 +166,21 @@ stringData:
     {{/* let's set the dependsOn field */}}
     {{- $dependsOn := dict -}}
     {{- if hasKey $unit_def "depends_on" -}}
-      {{- $_ := set $dependsOn "dependsOn" $unit_def.depends_on -}}
+      {{- $dependsOnList := list -}}
+      {{- range $dep_unit_name, $is_depend_on := $unit_def.depends_on -}}
+        {{- if $is_depend_on -}}
+
+          {{- if not (hasKey $envAll.Values.units $dep_unit_name) -}}
+            {{- fail (printf "unit '%s' is declared with a dependency on non-existing unit '%s'" $unit_name $dep_unit_name) -}}
+          {{- else if not (include "unit-enabled" (tuple $envAll $dep_unit_name)) -}}
+            {{- fail (printf "unit '%s' is declared with a dependency on disabled unit '%s'" $unit_name $dep_unit_name) -}}
+          {{- end -}}
+
+          {{- $dependsOnList = append $dependsOnList (dict "name" $dep_unit_name) -}}  
+
+        {{- end -}}
+      {{ end }}
+      {{- $_ := set $dependsOn "dependsOn" $dependsOnList -}}
     {{- end -}}
 
     {{/* finalize the definition of the Kustomization spec by merging everything we have */}}

@@ -132,7 +132,8 @@ units:
   #   helm_repo_url: URL of the Helm repo to use (for use with helmrelease_spec, but not mandatory, 'repo' can be used as well to use a git repo)
   #   labels: (optional) dict holding labels to add to the resources for this unit
   #   ref_override: optional, if defined, this dict will be used for the GitRepository overriding spec.ref (not used if some helm_repo_* is set)
-  #   depends_on: list of '{name: unit}' maps defining the dependencies of this unit (this is injected in the unit Kustomization as dependsOn field)
+  #   depends_on: dict defining the dependencies of this unit, keys are unit names, values are booleans
+  #               (these dependencies are injected in the unit Kustomization via 'spec.dependsOn')
   #   helmrelease_spec:  # optionnal, contains a partial spec for a FluxCD HelmRelease, all the
   #                      # key things are generated from unit_helmrelease_spec_default
   #                      # and from other fields in the unit definition
@@ -216,7 +217,7 @@ units:
   sylva-ca:
     enabled: yes
     depends_on:
-    - name: cert-manager
+      cert-manager: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/sylva-ca
@@ -236,9 +237,9 @@ units:
   vault:
     enabled: yes
     depends_on:
-    - name: sylva-ca-certs
-    - '{{ tuple (dict "name" "ingress-nginx") (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | include "set-only-if" }}'
-    - name: local-path-provisioner
+      sylva-ca-certs: true
+      ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
+      local-path-provisioner: true
     helm_repo_url: https://helm.releases.hashicorp.com
     helmrelease_spec:
       chart:
@@ -337,7 +338,7 @@ units:
   cis-operator:
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | include "preserve-type" }}'
     depends_on:
-      - name: cis-operator-crd
+      cis-operator-crd: true
     helm_repo_url: https://charts.rancher.io
     helmrelease_spec:
       chart:
@@ -351,7 +352,7 @@ units:
   cis-operator-scan:
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | include "preserve-type" }}'
     depends_on:
-      - name: cis-operator
+      cis-operator: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/cis-operator-scan
@@ -363,9 +364,9 @@ units:
   keycloak:
     enabled: yes
     depends_on:
-    - name: sylva-ca
-    - name: sylva-ca-certs
-    - '{{ tuple (dict "name" "ingress-nginx") (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | include "set-only-if" }}'
+      sylva-ca: true
+      sylva-ca-certs: true
+      ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/keycloak
@@ -379,7 +380,7 @@ units:
     enabled: yes
     repo: sylva-core
     depends_on:
-      - name: cert-manager
+      cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/capi
       wait: true
@@ -388,7 +389,7 @@ units:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
-      - name: cert-manager
+      cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/capd
       postBuild:
@@ -400,7 +401,7 @@ units:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
-      - name: cert-manager
+      cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/capo
       wait: true
@@ -409,7 +410,7 @@ units:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
-      - name: cert-manager
+      cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/capm3
       wait: true
@@ -418,7 +419,7 @@ units:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capv" | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
-      - name: cert-manager
+      cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/capv
       wait: true
@@ -427,7 +428,7 @@ units:
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
-      - name: cert-manager
+      cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/cabpk
       wait: true
@@ -436,7 +437,7 @@ units:
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
-      - name: cert-manager
+      cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/cabpr
       wait: true
@@ -444,7 +445,7 @@ units:
   metal3:
     enabled: no
     depends_on:
-    - name: cert-manager
+      cert-manager: true
     repo: metal3
     helmrelease_spec:
       chart:
@@ -491,10 +492,10 @@ units:
     enabled: yes
     repo: sylva-core
     depends_on:
-      - name: capi
-      - name: '{{ .Values.cluster.capi_providers.infra_provider }}'
-      - name: '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
-      - '{{ tuple (dict "name" "capo-cluster-resources") (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
+      capi: true
+      '{{ .Values.cluster.capi_providers.infra_provider }}': true
+      '{{ .Values.cluster.capi_providers.bootstrap_provider }}': true
+      capo-cluster-resources: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'
     labels:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
     kustomization_spec:
@@ -531,7 +532,7 @@ units:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
-      - name: cert-manager
+      cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/heat-operator
       wait: true
@@ -540,7 +541,7 @@ units:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
-      - name: heat-operator
+      heat-operator: true
     kustomization_spec:
       path: ./kustomize-units/capo-cluster-resources
       wait: true
@@ -615,7 +616,7 @@ units:
     enabled: no
     repo: sylva-core
     depends_on:
-      - name: cert-manager
+      cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/imageswap-webhook
       wait: true
@@ -623,9 +624,9 @@ units:
   sylva-ca-certs:
     enabled: yes
     depends_on:
-      - name: namespace-defs
-      - name: cert-manager
-      - name: sylva-ca
+      namespace-defs: true
+      cert-manager: true
+      sylva-ca: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/sylva-ca-certs
@@ -639,10 +640,10 @@ units:
   rancher:
     enabled: yes
     depends_on:
-      - name: cert-manager
-      - name: k8s-gateway
-      - name: sylva-ca-certs
-      - '{{ tuple (dict "name" "ingress-nginx") (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | include "set-only-if" }}'
+      cert-manager: true
+      k8s-gateway: true
+      sylva-ca-certs: true
+      ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
     helm_repo_url: https://releases.rancher.com/server-charts/latest
     helmrelease_spec:
       chart:
@@ -712,7 +713,7 @@ units:
     enabled: '{{ .Values.units.rancher.enabled | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
-      - name: rancher
+      rancher: true
     kustomization_spec:
       path: ./kustomize-units/rancher-webhook
       wait: true
@@ -720,7 +721,7 @@ units:
   k8s-gateway:
     enabled: yes
     depends_on:
-    - '{{ tuple (dict "name" "metallb-config") (eq .Values.cluster.capi_providers.infra_provider "capd") | include "set-only-if" }}'
+      metallb-config: '{{ eq .Values.cluster.capi_providers.infra_provider "capd" | include "preserve-type" }}'
     helm_repo_url: https://ori-edge.github.io/k8s_gateway/
     helmrelease_spec:
       chart:
@@ -740,7 +741,7 @@ units:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
-    - name: cert-manager
+      cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/metallb
       wait: true
@@ -749,7 +750,7 @@ units:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
-    - name: metallb
+      metallb: true
     kustomization_spec:
       path: ./kustomize-units/metallb-config
       wait: true
@@ -761,8 +762,8 @@ units:
     enabled: '{{ .Values.units.rancher.enabled | include "preserve-type" }}'
     repo: capi-rancher-import
     depends_on:
-      - name: rancher
-      - name: k8s-gateway
+      rancher: true
+      k8s-gateway: true
     helmrelease_spec:
       chart:
         spec:
@@ -787,7 +788,7 @@ units:
   ingress-nginx:
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
     depends_on:
-    - '{{ tuple (dict "name" "metallb-config") (eq .Values.cluster.capi_providers.infra_provider "capd") | include "set-only-if" }}'
+      metallb-config: '{{ eq .Values.cluster.capi_providers.infra_provider "capd" | include "preserve-type" }}'
     helm_repo_url: https://kubernetes.github.io/ingress-nginx
     helmrelease_spec:
       chart:
@@ -810,7 +811,7 @@ units:
     enabled: '{{ .Values.units.rancher.enabled | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
-      - name: rancher
+      rancher: true
     kustomization_spec:
       path: ./kustomize-units/kube-job
       wait: true
@@ -854,8 +855,8 @@ units:
   flux-webui:
     enabled: yes
     depends_on:
-      - name: flux-system
-      - '{{ tuple (dict "name" "ingress-nginx") (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | include "set-only-if" }}'
+      flux-system: true
+      ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
     repo: weave-gitops
     helmrelease_spec:
       chart:
@@ -897,8 +898,8 @@ units:
     enabled: '{{ index .Values.units "workload-cluster" "enabled" | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
-      - name: first-login-rancher
-      - name: workload-cluster
+      first-login-rancher: true
+      workload-cluster: true
     kustomization_spec:
       path: ./kustomize-units/cluster-import
       postBuild:
@@ -912,7 +913,7 @@ units:
     enabled: '{{ .Values.units.rancher.enabled | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
-      - name: rancher
+      rancher: true
     kustomization_spec:
       path: ./kustomize-units/monitoring
       wait: true
@@ -928,7 +929,7 @@ units:
     enabled: '{{ index .Values.units "workload-cluster" "enabled" | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
-      - name: cluster-import
+      cluster-import: true
     kustomization_spec:
       path: ./kustomize-units/kube-job
       wait: true
@@ -973,7 +974,7 @@ units:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
-      - name: heat-operator
+      heat-operator: true
     kustomization_spec:
       path: ./kustomize-units/capo-cluster-resources
       wait: true
@@ -1009,11 +1010,11 @@ units:
     enabled: false
     repo: sylva-core
     depends_on:
-      - name: capi
-      - name: '{{ .Values.cluster.capi_providers.infra_provider }}'
-      - name: '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
-      - name: rancher
-      - name: first-login-rancher
+      capi: true
+      '{{ .Values.cluster.capi_providers.infra_provider }}': true
+      '{{ .Values.cluster.capi_providers.bootstrap_provider }}': true
+      rancher: true
+      first-login-rancher: true
     kustomization_spec:
       postBuild:
         substitute:
@@ -1063,7 +1064,7 @@ units:
   workload-cluster-calico:
     enabled: false
     depends_on:
-      - name: workload-cluster
+      workload-cluster: true
     helm_repo_url: https://projectcalico.docs.tigera.io/charts
     helmrelease_spec:
       targetNamespace: tigera-operator
