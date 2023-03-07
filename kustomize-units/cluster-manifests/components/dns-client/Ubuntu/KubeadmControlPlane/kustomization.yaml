@@ -12,7 +12,7 @@ patches:
         content: |
           [Resolve]
           DNS=${K8SGATEWAY_LB_IP}
-          Domains=~sylva
+          Domains=~${CLUSTER_EXTERNAL_DOMAIN}
 - target:
     kind: KubeadmControlPlane
   patch: |-
