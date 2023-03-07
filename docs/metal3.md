@@ -1,5 +1,7 @@
 # Metal3 in Sylva
 
+> :warning: The deployment of metal3 proposed in Sylva is currently meant to be used for lab experimentations but not for production
+
 Metal3 is the component of the Sylva stack responsible of the management of baremetal servers.
 
 It provides the capability to enroll, inspect and provision physical servers by means of a set of CRDs.
