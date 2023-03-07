@@ -1101,13 +1101,13 @@ cluster:
   cis_benchmark_scan_profile: '{{ eq .Values.cluster.capi_providers.bootstrap_provider "cabpr" | ternary "rke2-cis-1.23-profile-hardened" "no-scan-profile-defined-for-kubeadm-cluster" }}'
 
   # Nodes number for controlplane and workers
-  control_plane_replicas: '3'
-  worker_replicas: '0'
+  control_plane_replicas: 3
+  worker_replicas: 0
 
   capo:
     flavor_name: m1.large # Openstack flavor name
     worker_flavor_name: m1.large
-    worker_az: # replace me
+    # worker_az only required to be provided when .Values.cluster.worker_replicas > 0
     ssh_key_name: # OpenStack VM SSH key
     network_id:  # OpenStack network to use as external network
     rootVolume: {} # Let this parameter empty if you don't intent to use root volume
