@@ -15,7 +15,6 @@ registry_secret: {}
 
 git_repo_spec_default:
   interval: 60m0s
-  gitImplementation: libgit2
 
 git_repo_templates: # template to generate Flux GitRepository resources
   # <repo-name>:

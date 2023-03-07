@@ -7,7 +7,6 @@ metadata:
   labels:
     copy-from-bootstrap-to-management: ""
 spec:
-  gitImplementation: libgit2
   interval: 120m
   ref:
     commit: CURRENT_COMMIT # Placeholder that will be replaced by bootstrap.sh and apply.sh commands
