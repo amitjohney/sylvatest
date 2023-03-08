@@ -143,7 +143,7 @@ units:
 
 ```yaml
 source_templates:
-  kind:
+  kind: GitRepository # or OCIRepository
   project-foo:
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/foo.git
@@ -161,7 +161,7 @@ units:
 ```yaml
 source_templates:
   helm-chart-bar:
-    kind:
+    kind: GitRepository
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/bar.git
       ref:
