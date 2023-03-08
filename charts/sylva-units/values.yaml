@@ -17,7 +17,6 @@ git_repo_spec_default:
   interval: 60m0s
 
 oci_repo_spec_default:
-  kind: OCIRepository
   interval: 60m0s
 
 source_templates: # template to generate Flux GitRepository/OCIRepository resources
