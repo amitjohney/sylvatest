@@ -543,7 +543,11 @@ units:
       heat-operator: true
     kustomization_spec:
       path: ./kustomize-units/capo-cluster-resources
-      wait: true
+      healthChecks:
+        # until the heat operator is improved to conform to kstatus specs
+        # see https://gitlab.com/sylva-projects/sylva-core/-/issues/104
+        - kind: ConfigMap
+          name: capo-cluster-resources
       postBuild:
         substitute:
           CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
@@ -976,7 +980,11 @@ units:
       heat-operator: true
     kustomization_spec:
       path: ./kustomize-units/capo-cluster-resources
-      wait: true
+      healthChecks:
+        # until the heat operator is improved to conform to kstatus specs
+        # see https://gitlab.com/sylva-projects/sylva-core/-/issues/104
+        - kind: ConfigMap
+          name: workload-capo-cluster-resources
       patches:
         - target:
             kind: HeatStack
