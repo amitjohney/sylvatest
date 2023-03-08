@@ -288,57 +288,59 @@ properties:
           helm_repo_url:
             - helmrelease_spec
 
-        anyOf:
-          # for a unit which is explicitly disabled, we don't mandate anything:
-          - properties:
-              enabled:
-                const: false
+        allOf:
+          - anyOf:  # require having at least helmrelease_spec or
+                    # kustomization_spec, and allow having both
+            - required:
+              - helmrelease_spec
+            - required:
+              - kustomization_spec
 
-          # ... for a unit which is explicitly enabled or conditionally enabled we enforce
-          # the following:
-          - allOf:
-            - anyOf:  # require having at least helmrelease_spec or
-                      # kustomization_spec, and allow having both
-              - required:
-                - helmrelease_spec
-              - required:
-                - kustomization_spec
+          - anyOf:
+            # for a unit which is explicitly disabled, we don't mandate anything else
+            - properties:
+                enabled:
+                  const: false
 
-            # prevent having both 'repo' and 'helm_repo_url':
-            - not:
-                required:
-                  - repo
-                  - helm_repo_url
+            # ... for a unit which is explicitly enabled or conditionally enabled we enforce
+            # the following:
+            - allOf:
 
-            # there are some things we need on kustomization_spec
-            # but that aren't needed in the case where we specify helmrelease_spec
-            # (see example where we need that under bootstrap.values.yaml:units.sylva-units)
-            - if:
-                not:
+              # prevent having both 'repo' and 'helm_repo_url':
+              - not:
+                  required:
+                    - repo
+                    - helm_repo_url
+
+              # there are some things we need on kustomization_spec
+              # but that aren't needed in the case where we specify helmrelease_spec
+              # (see example where we need that under bootstrap.values.yaml:units.sylva-units)
+              - if:
+                  not:
+                    required:
+                      - helmrelease_spec
+                then:
+                  properties:
+                    kustomization_spec:
+                      allOf:
+                        - required:
+                          - path
+                        - anyOf:  # force having either 'wait' or 'healthChecks'
+                          - required:
+                              - wait
+                          - required:
+                              - healthChecks
+
+              # if helmrelease_spec is used then, kustomization_spec.path cannot be set
+              - if:
                   required:
                     - helmrelease_spec
-              then:
-                properties:
-                  kustomization_spec:
-                    allOf:
-                      - required:
-                        - path
-                      - anyOf:  # force having either 'wait' or 'healthChecks'
-                        - required:
-                            - wait
-                        - required:
-                            - healthChecks
-
-            # if helmrelease_spec is used then, kustomization_spec.path cannot be set
-            - if:
-                required:
-                  - helmrelease_spec
-              then:
-                properties:
-                  kustomization_spec:
-                    not:
-                      required:
-                        - path
+                then:
+                  properties:
+                    kustomization_spec:
+                      not:
+                        required:
+                          - path
 
   cluster:  # -------------------------------
     type: object
