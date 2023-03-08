@@ -520,9 +520,10 @@ units:
       healthChecks:
         # until the heat operator is improved to conform to kstatus specs
         # see https://gitlab.com/sylva-projects/sylva-core/-/issues/104
-        - apiVersion: ''
+        - apiVersion: v1
           kind: ConfigMap
           name: capo-cluster-resources
+          namespace: default
       postBuild:
         substitute:
           CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
