@@ -106,31 +106,6 @@ unit_helmrelease_kustomization_spec_default:
 
   wait: true
 
-# this base template is used to generate the special "sylva-units-status" Kustomization
-# which is a special Kustomization that depends on all other Kustomizations
-# produced by the chart. Looking at its status allows to tell if all units have been deployed.
-#
-# (see templates/status-kustomization.yaml for the code injecting the dependsOn)
-#
-status_unit_kustomization_spec_default:
-  path: ./kustomize-units/sylva-units-status
-  sourceRef:
-    kind: GitRepository
-    # GitRepository created by templates/gitrepository-self.yaml unless an existing repository is used
-    name: '{{ hasKey (index .Values.source_templates "sylva-core") "existing_gitrepository" | ternary (index .Values.source_templates "sylva-core").existing_gitrepository "sylva-core" }}'
-  wait: true
-  patches:
-    - target:
-        kind: ConfigMap
-      patch: |
-        kind: ConfigMap
-        metadata:
-          name: _ignored_
-        data:
-          sylva-core-ref: "{{ (index .Values.source_templates "sylva-core").spec.ref | toYaml }}"
-          sylva-units-release-revision: "{{ .Release.Revision }}"
-
-
 # this defines Flux HelmRelease objects, and for each  # FIXME
 # a corresponding GitRepository (and Secret, TODO: the Secret don't need to be generated for each unit)
 units:
