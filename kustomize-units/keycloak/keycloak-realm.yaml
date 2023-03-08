@@ -1,0 +1,71 @@
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: KeycloakRealmImport
+metadata:
+  name: rancher
+  namespace: keycloak
+  labels:
+    app: sso
+spec:
+  keycloakCRName: keycloak
+  realm:
+    id: rancher
+    realm: rancher
+    enabled: true
+    displayName: Rancher
+    loginTheme: base
+    accountTheme: keycloak
+    adminTheme: keycloak
+    clients:
+      - clientId: rancher
+        name: rancher
+        enabled: true
+        protocol: openid-connect
+        publicClient: false
+        clientAuthenticatorType: client-secret
+        secret: ${RANCHER_CLIENT_SECRET}
+        redirectUris:
+          - "https://${RANCHER_DNS}/verify-auth"
+        webOrigins:
+          - "https://${RANCHER_DNS}"
+        directAccessGrantsEnabled: true
+        defaultClientScopes:
+          - "profile"
+          - "email"
+        optionalClientScopes:
+          - "phone"
+          - "address"
+        protocolMappers:
+          - name: Groups Mapper
+            protocol: openid-connect
+            protocolMapper: oidc-group-membership-mapper
+            config:
+              full.path: "false"
+              id.token.claim: "false"
+              access.token.claim: "false"
+              userinfo.token.claim: "true"
+              claim.name: groups
+          - name: Client Audience
+            protocol: openid-connect
+            protocolMapper: oidc-audience-mapper
+            config:
+              included.client.audience: ranchertest
+              access.token.claim: "true"
+          - name: Group Path
+            protocol: openid-connect
+            protocolMapper: oidc-group-membership-mapper
+            config:
+              full.path: "true"
+              id.token.claim: "false"
+              access.token.claim: "false"
+              userinfo.token.claim: "true"
+              claim.name: full_group_path
+    users:
+      - username: rancher
+        enabled: true
+        email: rancher@example.com
+        firstName: rancher
+        lastName: moo
+        credentials:
+          - type: password
+            value: ${RANCHER_CLIENT_SECRET}
+            temporary: false

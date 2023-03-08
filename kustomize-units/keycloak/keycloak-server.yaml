@@ -5,10 +5,19 @@ metadata:
   labels:
     app: sso
 spec:
-  instances: 1
-  ingress:
-    enabled: false
+  db:
+    vendor: postgres
+    host: postgres
+    usernameSecret:
+      name: keycloak-db-secret
+      key: username
+    passwordSecret:
+      name: postgres
+      key: postgres-password
   hostname:
     hostname: ${KEYCLOAK_DNS}
   http:
     tlsSecret: keycloak-tls
+  ingress:
+    enabled: false
+  instances: 1
