@@ -165,9 +165,6 @@
     "unit_helmrelease_kustomization_spec_default": {
       "type": "object"
     },
-    "status_unit_kustomization_spec_default": {
-      "type": "object"
-    },
     "units": {
       "type": "object",
       "patternProperties": {

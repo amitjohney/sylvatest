@@ -187,9 +187,6 @@ properties:
     type: object
     # TODO: detail more
 
-  status_unit_kustomization_spec_default:  # -------------------------------
-    type: object
-
   units:  # -------------------------------
     type: object
     patternProperties:
