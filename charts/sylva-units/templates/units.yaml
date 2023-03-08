@@ -31,7 +31,7 @@
     {{- $helmrelease_spec_overrides := dict -}}
     {{- $kustomization_spec_overrides := dict -}}
 
-    {{/************* Generation of Flux sources (GitRepository or HelmRepository) */}}
+    {{/************* Generation of Flux sources (GitRepository or OCIRepository or HelmRepository) */}}
 
     {{- if not (hasKey $unit_def "helm_repo_url") -}}
       {{/* if no helm_repo_url is set, then we know we'll use a GitRepository */}}
@@ -70,7 +70,8 @@
 
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: GitRepository
+kind: {{ $repo_def.kind }}
+{{/* we create either a GitRepository or OCIRepository*/}}
 metadata:
   name: {{ $git_repo_name }}
   labels:
@@ -176,7 +177,7 @@ stringData:
             {{- fail (printf "unit '%s' is declared with a dependency on disabled unit '%s'" $unit_name $dep_unit_name) -}}
           {{- end -}}
 
-          {{- $dependsOnList = append $dependsOnList (dict "name" $dep_unit_name) -}}  
+          {{- $dependsOnList = append $dependsOnList (dict "name" $dep_unit_name) -}}
 
         {{- end -}}
       {{ end }}
