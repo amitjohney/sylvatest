@@ -57,7 +57,7 @@ spec:
   sourceRef:
     kind: GitRepository
     # GitRepository created by templates/gitrepository-self.yaml unless an existing repository is used
-    name: {{ hasKey (index .Values.git_repo_templates "sylva-core") "existing_gitrepository" | ternary (index .Values.git_repo_templates "sylva-core").existing_gitrepository "sylva-core" }}
+    name: {{ hasKey (index .Values.source_templates "sylva-core") "existing_gitrepository" | ternary (index .Values.source_templates "sylva-core").existing_gitrepository "sylva-core" }}
   path: ./kustomize-units/sylva-units-status
   dependsOn: {{ $deps | toYaml | nindent 4 }}
   wait: true
