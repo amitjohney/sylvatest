@@ -5,13 +5,6 @@
     {{- $unit_name := "sylva-core" -}}
     {{- $repo_def := deepCopy (index $envAll.Values.source_templates $repo_name) -}}
     {{- $auth := $repo_def.auth | default $envAll.Values.git_auth_default -}}
-{{ $secret_ref := dict "secretRef" (dict "name" "git-repo-auth-sylva-core") -}}
-{{- $spec := dict -}}
-{{- if not (eq $repo_def.kind "OCIRepository") -}}
-    {{- $spec = mergeOverwrite $spec $envAll.Values.git_repo_spec_default $repo_def.spec $secret_ref -}}
-{{- else -}}
-    {{- $spec = mergeOverwrite $spec $envAll.Values.oci_repo_spec_default $repo_def.spec $secret_ref -}}
-{{- end -}}
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 {{- if (eq $repo_def.kind "GitRepository") -}}
@@ -24,6 +17,13 @@ metadata:
   labels:
 {{ include "sylva-units.labels" $envAll | indent 4 }}
 spec:
+    {{ $secret_ref := dict "secretRef" (dict "name" "git-repo-auth-sylva-core") -}}
+    {{- $spec := dict -}}
+    {{- if not (eq $repo_def.kind "OCIRepository") -}}
+        {{- $spec = mergeOverwrite $spec $envAll.Values.git_repo_spec_default $repo_def.spec $secret_ref -}}
+    {{- else -}}
+        {{- $spec = mergeOverwrite $spec $envAll.Values.oci_repo_spec_default $repo_def.spec $secret_ref -}}
+    {{- end -}}
     {{- if not (hasKey $spec "url") -}}
         {{- if not (hasKey $repo_def "base_url") -}}
             {{- fail (printf "repository template '%s' has neither '.spec.url' nor '.base_url' defined" $repo_name) -}}
