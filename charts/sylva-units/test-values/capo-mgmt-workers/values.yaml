@@ -1,0 +1,4 @@
+cluster:
+  worker_replicas: 2
+  capo:
+    worker_az: nova-worker-az
