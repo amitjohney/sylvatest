@@ -63,7 +63,11 @@
         {{- end -}}
         {{- $git_ref_override := dict "ref" ($unit_def.ref_override | default dict) -}}
         {{- $git_repo_spec := dict -}}
+        {{- if (eq $repo_def.kind "GitRepository") }}
         {{- $git_repo_spec = mergeOverwrite $git_repo_spec $envAll.Values.git_repo_spec_default $repo_def.spec $secret_ref $git_ref_override -}}
+        {{- else if (eq $repo_def.kind "OCIRepository") }}
+        {{- $git_repo_spec = mergeOverwrite $git_repo_spec $envAll.Values.oci_repo_spec_default $repo_def.spec $secret_ref $git_ref_override -}}
+        {{- end }}
         {{- if not (hasKey $git_repo_spec "url") -}}
           {{- fail (printf "repository template '%s' does not have 'url' defined" $repo_name) -}}
         {{- end }}
