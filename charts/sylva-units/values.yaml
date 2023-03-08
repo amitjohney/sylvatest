@@ -14,7 +14,6 @@ registry_secret: {}
   #  password: glpat-XXXXX
 
 git_repo_spec_default:
-  kind: GitRepository
   interval: 60m0s
 
 oci_repo_spec_default:
