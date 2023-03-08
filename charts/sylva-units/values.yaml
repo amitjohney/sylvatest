@@ -1078,6 +1078,46 @@ units:
         secretRef:
           name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
 
+  workload-cluster-multus:
+    enabled: false
+    depends_on:
+      workload-cluster: true
+      workload-cluster-calico: '{{ index .Values.units "workload-cluster-calico" "enabled" | include "preserve-type" }}'
+    helm_repo_url: https://rke2-charts.rancher.io/
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: "rke2-multus"
+          version: "v3.9.3-build2023010901"
+      kubeConfig:
+        secretRef:
+          name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
+      targetNamespace: kube-system
+      install:
+        createNamespace: false
+      values:
+        rke2-whereabouts:
+          enabled: true
+      postRenderers:
+        - kustomize:
+            patchesStrategicMerge:
+              - kind: DaemonSet
+                apiVersion: apps/v1
+                metadata:
+                  name: workload-cluster-multus-rke2-whereabouts
+                  namespace: kube-system
+                  labels:
+                    $patch: delete
+                    app: whereabouts
+              - kind: ServiceAccount
+                apiVersion: v1
+                metadata:
+                  name: workload-cluster-multus-rke2-whereabouts
+                  namespace: kube-system
+                  labels:
+                    $patch: delete
+                    app: whereabouts
+
 ## stuff related to the 'cluster' unit
 
 cluster:
