@@ -31,8 +31,8 @@ echo_b "\U0001F4DC Install sylva-units Helm release"
 kubectl kustomize ${ENV_PATH} | sed "s/CURRENT_COMMIT/${CURRENT_COMMIT}/" | kubectl apply -f -
 
 # this is just to force-refresh in a dev environment with a new commit (or refreshed parameters)
-kubectl annotate --overwrite gitrepository/sylva-core reconcile.fluxcd.io/requestedAt="$(date +%s)"
-kubectl annotate --overwrite helmrelease/sylva-units reconcile.fluxcd.io/requestedAt="$(date +%s)"
+kubectl annotate --overwrite gitrepository/sylva-core reconcile.fluxcd.io/requestedAt="$(date -uIs)"
+kubectl annotate --overwrite helmrelease/sylva-units reconcile.fluxcd.io/requestedAt="$(date -uIs)"
 
 # Attempt to retrieve management-cluster-kubeconfig in background
 retrieve_kubeconfig &
