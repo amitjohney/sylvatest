@@ -178,7 +178,7 @@ metadata:
   name: {{ $secretName }}
   labels: {{ $labels | toYaml | nindent 4 }}
 stringData:
-{{ $unit_def.kustomization_substitute_secrets | toYaml | nindent 2 }}
+{{- $unit_def.kustomization_substitute_secrets | toYaml | nindent 2 }}
 
       {{ $substituteFrom := ($kustomization_spec.postBuild | default dict).substituteFrom | default list -}}
       {{- $secretsValues := dict "kind" "Secret" "name" $secretName -}}
