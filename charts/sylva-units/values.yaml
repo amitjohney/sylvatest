@@ -1095,6 +1095,7 @@ units:
     depends_on:
       first-login-rancher: true
       workload-cluster: true
+      workload-cluster-calico: '{{ index .Values.units "workload-cluster-calico" "enabled" | include "preserve-type" }}'
     kustomization_spec:
       path: ./kustomize-units/cluster-import
       postBuild:
