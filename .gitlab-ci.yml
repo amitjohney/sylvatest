@@ -2,6 +2,7 @@ stages:
   - generate
   - test
   - deploy
+  - delete
 
 default:
   tags:
@@ -15,6 +16,7 @@ default:
 variables:
   DOCKER_TLS_CERTDIR: ""
   GITLEAKS_ARGS: '--verbose --log-opts=$CI_COMMIT_SHA'
+  DOCKER_HOST: tcp://docker:2375/
 
 # included templates
 include:
@@ -179,3 +181,128 @@ test-kubeadm-capd:
   extends: .test-capd
   variables:
     ENV_NAME: kubeadm-capd
+
+.test-capo:
+  stage: deploy
+  before_script:
+    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:before_script_section[collapsed=true]\r\e[0KRunning before_script step\e[0m"
+
+    - DOCKER_IP=$(getent hosts docker | awk '{print $1}')
+    - |
+      # create a cluster with access to API endpoint through docker-in-docker address
+      cat <<EOF | kind create cluster --name capo --config=-
+      kind: Cluster
+      apiVersion: kind.x-k8s.io/v1alpha4
+      networking:
+        apiServerAddress: "$DOCKER_IP"
+        apiServerPort: 6443
+      EOF
+    - kubectl cluster-info --context kind-capo
+
+    - KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
+    - ip route add $KIND_PREFIX via $DOCKER_IP
+
+    # the OS_* variables below are set in the gitlab runner configuration
+    # and contain information to connect to the OpenStack instance used
+    # by this test
+    - |
+      cat <<EOF>> clouds.yml
+      clouds:
+        capo_cloud:
+          auth:
+            auth_url: '${OS_AUTH_URL}'
+            user_domain_name: '${OS_USER_DOMAIN_ID}'
+            project_domain_name: '${OS_PROJECT_DOMAIN_ID}'
+            project_name: '${OS_TENANT_NAME}'
+            username: '${OS_USERNAME}'
+            password: '${OS_PASSWORD}'
+            region: '${OS_REGION_NAME}'
+          verify: false
+      EOF
+    - yq -i eval-all 'select(fileIndex==0).cluster.capo.clouds_yaml = select(fileIndex==1) | select(fileIndex==0)' environment-values/${ENV_NAME}/secrets.yaml clouds.yml
+    - if [[ -n $OS_DOCKERIO_REGISTRY_MIRROR ]]; then yq -i '.dockerio_registry_mirror = strenv(OS_DOCKERIO_REGISTRY_MIRROR)' environment-values/$ENV_NAME/values.yaml; fi
+    - export CAPO_TAG="${CI_PIPELINE_ID}-${ENV_NAME}"
+    - yq -i '.cluster.capo.resources_tag = strenv(CAPO_TAG)' environment-values/$ENV_NAME/values.yaml
+    - yq -i '.env_type_ci = true' environment-values/$ENV_NAME/values.yaml
+
+    - export DEBUG_ON_EXIT=1
+
+    - echo -e "\e[0Ksection_end:`date +%s`:before_script_section\r\e[0K"
+  script:
+    - git config --global credential.helper cache
+    # the CI_COMPONENT_* variables below are set in the gitlab runner configuration
+    # and allow to enable extra kustomize components needed in the context of the platform
+    # on which this test actually runs
+    - git clone --depth=1 https://foo:${CI_COMPONENT_REPO_PAT}@${CI_COMPONENT_REPO}
+    - export CI_COMPONENT="https://${CI_COMPONENT_REPO}//sylva-core-ci/falcon-${ENV_NAME}?ref=sylva-capo-ci-upstream"
+    - if [ $(yq '.components | length' environment-values/$ENV_NAME/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' environment-values/$ENV_NAME/kustomization.yaml; fi
+    - yq -i '.components += strenv(CI_COMPONENT)' environment-values/$ENV_NAME/kustomization.yaml
+    - ./bootstrap.sh environment-values/${ENV_NAME}
+    - kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}' | xargs --no-run-if-empty -n1 kubectl --kubeconfig management-cluster-kubeconfig logs || true
+  artifacts:
+    when: on_failure
+    expire_in: 6 hour
+    paths:
+      - debug-on-exit.log
+      - bootstrap-cluster-dump/
+      - management-cluster-dump/
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+    - if: $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      when: manual
+  allow_failure: true
+  tags:
+    - falcon
+
+test-rke2-capo:
+  timeout: 75min
+  extends: .test-capo
+  variables:
+    ENV_NAME: "rke2-capo"
+  resource_group: test-rke2-capo-falcon
+
+test-kubeadm-capo:
+  timeout: 60min
+  extends: .test-capo
+  variables:
+    ENV_NAME: "kubeadm-capo"
+  resource_group: test-kubeadm-capo-falcon
+
+.cleanup-capo:
+  stage: delete
+  image:
+    name: registry.gitlab.com/t6306/components/docker-images/ci-image:openstack-client-v1.0
+  script:
+    - mkdir -p ~/.config/openstack
+    - |
+      cat <<EOF>> ~/.config/openstack/clouds.yml
+      clouds:
+        capo_cloud:
+          auth:
+            auth_url: '${OS_AUTH_URL}'
+            user_domain_name: '${OS_USER_DOMAIN_ID}'
+            project_domain_name: '${OS_PROJECT_DOMAIN_ID}'
+            project_name: '${OS_TENANT_NAME}'
+            username: '${OS_USERNAME}'
+            password: '${OS_PASSWORD}'
+          verify: false
+      EOF
+    - sh ./tools/openstack-cleanup.sh capo_cloud "${CI_PIPELINE_ID}-${ENV_NAME}"
+  tags:
+    - falcon
+
+cleanup-rke2-capo:
+  extends: .cleanup-capo
+  variables:
+    ENV_NAME: "rke2-capo"
+  needs:
+    - test-rke2-capo
+
+cleanup-kubeadm-capo:
+  extends: .cleanup-capo
+  variables:
+    ENV_NAME: "kubeadm-capo"
+  needs:
+    - test-kubeadm-capo
