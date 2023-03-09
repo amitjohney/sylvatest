@@ -153,7 +153,7 @@ units:
 
               set -e
 
-              reconcileAt=$(date +%s)
+              reconcileAt=$(date -uIs)
 
               echo "-- Forcefully reconcile of the sylva-units HelmRelease"
               kubectl annotate --overwrite helmrelease/sylva-units reconcile.fluxcd.io/requestedAt="$reconcileAt"
@@ -236,7 +236,7 @@ units:
 
               echo "-- Accelerate reconciliation of the sylva-units HelmRelease"
               kubectl --kubeconfig management-cluster-kubeconfig \
-                  annotate --overwrite helmrelease/sylva-units reconcile.fluxcd.io/requestedAt="$(date +%s)"
+                  annotate --overwrite helmrelease/sylva-units reconcile.fluxcd.io/requestedAt="$(date -uIs)"
 
               echo "-- Signal to bootstrap.sh that the pivot job has ended"
               kubectl annotate --overwrite kustomizations.kustomize.toolkit.fluxcd.io cluster pivot/started-

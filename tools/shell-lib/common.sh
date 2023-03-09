@@ -77,7 +77,7 @@ function force_reconcile() {
   local kinds=$1
   local name_or_selector=$2
   echo "force reconciliation of $1 $2"
-  kubectl annotate --overwrite $kinds $name_or_selector reconcile.fluxcd.io/requestedAt=$(date +%s) | sed -e 's/^/  /'
+  kubectl annotate --overwrite $kinds $name_or_selector reconcile.fluxcd.io/requestedAt=$(date -uIs) | sed -e 's/^/  /'
 }
 
 function validate_sylva_units() {
@@ -96,8 +96,8 @@ EOF
   rm -Rf ${PREVIEW_DIR}
 
   # this is just to force-refresh in a dev environment with a new commit (or refreshed parameters)
-  kubectl annotate --overwrite -n sylva-units-preview gitrepository/sylva-core reconcile.fluxcd.io/requestedAt="$(date +%s)"
-  kubectl annotate --overwrite -n sylva-units-preview helmrelease/sylva-units reconcile.fluxcd.io/requestedAt="$(date +%s)"
+  kubectl annotate --overwrite -n sylva-units-preview gitrepository/sylva-core reconcile.fluxcd.io/requestedAt="$(date -uIs)"
+  kubectl annotate --overwrite -n sylva-units-preview helmrelease/sylva-units reconcile.fluxcd.io/requestedAt="$(date -uIs)"
 
   echo "Wait for Helm release to be ready"
   for flux_resource in gitrepository/sylva-core helmchart/sylva-units-preview-sylva-units helmrelease/sylva-units; do
