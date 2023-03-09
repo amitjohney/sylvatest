@@ -143,26 +143,6 @@ stringData:
 
     {{- $kustomization_spec := dict -}}
 
-    {{- if hasKey $unit_def "kustomization_substitute_secrets" -}}
-        {{/* if the unit has "kustomization_substitute_secrets" defined, then
-             we add to substituteFrom a Secret with "kustomization_substitute_secrets"
-        */}}
-        {{- $secretName := printf "kustomization-unit-substitute-%s" $unit_name }}
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: {{ $secretName }}
-  labels: {{ $labels | toYaml | nindent 4 }}
-stringData:
-{{ $unit_def.kustomization_substitute_secrets | toYaml | nindent 2 }}
-
-      {{ $substituteFrom := ($kustomization_spec.postBuild | default dict).substituteFrom | default list -}}
-      {{- $secretsValues := dict "kind" "Secret" "name" $secretName -}}
-
-      {{- $_ := mergeOverwrite $kustomization_spec (dict "postBuild" (dict "substituteFrom" (append $substituteFrom $secretsValues))) -}}
-    {{- end -}}
-
     {{/* let's set the dependsOn field */}}
     {{- $dependsOn := dict -}}
     {{- if hasKey $unit_def "depends_on" -}}
@@ -186,6 +166,25 @@ stringData:
     {{/* finalize the definition of the Kustomization spec by merging everything we have */}}
     {{- $kustomization_spec = mergeOverwrite $kustomization_spec $envAll.Values.unit_kustomization_spec_default ($unit_def.kustomization_spec | default dict) $dependsOn $kustomization_spec_overrides }}
 
+    {{- if hasKey $unit_def "kustomization_substitute_secrets" }}
+        {{/* if the unit has "kustomization_substitute_secrets" defined, then
+             we add to substituteFrom a Secret with "kustomization_substitute_secrets"
+        */}}
+        {{- $secretName := printf "kustomization-unit-substitute-%s" $unit_name }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $secretName }}
+  labels: {{ $labels | toYaml | nindent 4 }}
+stringData:
+{{ $unit_def.kustomization_substitute_secrets | toYaml | nindent 2 }}
+
+      {{ $substituteFrom := ($kustomization_spec.postBuild | default dict).substituteFrom | default list -}}
+      {{- $secretsValues := dict "kind" "Secret" "name" $secretName -}}
+
+      {{- $_ := mergeOverwrite $kustomization_spec (dict "postBuild" (dict "substituteFrom" (append $substituteFrom $secretsValues))) -}}
+    {{- end }}
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
 kind: Kustomization
