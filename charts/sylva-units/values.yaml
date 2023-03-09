@@ -1105,6 +1105,22 @@ units:
           CLUSTER_NAME: '{{ .Values.cluster.test_workload_cluster_name }}'
       wait: true
 
+  test-components:
+    repo: sylva-core
+    enabled: true
+    kustomization_spec:
+      wait: true
+      path: ./kustomize-units/test-components/base
+      components:
+        - ../components/append-to-list-2
+      patches:
+        - target:
+            kind: Certificate
+          patch: |
+            - op: add
+              path: /spec/emailAddresses/-
+              value: added-by-a-patch-in-Kustomization@test.com
+
 ## stuff related to the 'cluster' unit
 
 cluster:
