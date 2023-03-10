@@ -51,7 +51,8 @@ fi
 echo_b "\U000023F3 Wait for units installed on management cluster to be ready"
 ./sylvactl watch --reconcile --kubeconfig management-cluster-kubeconfig --timeout 30m
 
-echo_b "\U00002714 Management cluster is ready"
+echo_b "\U00002714 Sylva is ready, everything deployed in management cluster (including test workload cluster definition, if enabled)"
+echo "   Management cluster nodes:"
 kubectl --kubeconfig management-cluster-kubeconfig get nodes
 
 echo_b "\U0001F331 You can access following UIs"
