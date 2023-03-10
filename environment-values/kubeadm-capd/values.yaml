@@ -5,8 +5,6 @@ units:
     kustomization_spec:
       path: ./kustomize-units/cluster-manifests/kubeadm-capd/base
   workload-cluster:
-    enabled: true
-    repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/cluster-manifests/kubeadm-capd/base
 
@@ -27,5 +25,3 @@ proxies:
 
 # add your local docker.io registry mirror to avoid rate limitting if required
 dockerio_registry_mirror: ""
-
-env_type_ci: true
