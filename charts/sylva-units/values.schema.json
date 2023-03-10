@@ -224,7 +224,12 @@
                     "required": [
                       "wait",
                       "healthChecks"
-                    ]
+                    ],
+                    "properties": {
+                      "wait": {
+                        "const": true
+                      }
+                    }
                   }
                 },
                 {
