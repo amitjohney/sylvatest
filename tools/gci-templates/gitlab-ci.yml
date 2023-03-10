@@ -1,5 +1,5 @@
 ---
-image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image:v1-0-0
+image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image:v1-0-2
 
 default:
   before_script:
