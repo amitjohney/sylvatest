@@ -956,7 +956,8 @@ units:
             metadata:
               name: _unused_
             spec:
-              name: workload-capo-cluster-resources
+              namePrefix: workload-cluster
+              configmapName: workload-capo-cluster-resources
         - target:
             kind: HeatStack
           patch: |

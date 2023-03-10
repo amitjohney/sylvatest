@@ -29,7 +29,10 @@ spec:
       allocated_ip:
         value: { get_attr: [port, fixed_ips, 0, ip_address] }
         description: IP address allocated to the port
-  name: capo-cluster-resources
+  namePrefix: capo-cluster
+  configmapName: capo-cluster-resources
+  configmapLabels:
+    copy-from-bootstrap-to-management: ""
   identityRef: management-cluster-cloud-config
   cloudName: capo_cloud
   tag: ${CAPO_TAG}
