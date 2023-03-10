@@ -27,9 +27,13 @@ default:
 
       echo -e "\e[0Ksection_end:`date +%s`:helm_dependency_build\r\e[0K"
 
-      echo -e "\e[0Ksection_start:`date +%s`:helm_base_values\r\e[0K--------------- Checking default values with 'helm template' and 'yamllint' (all units enabled) ..."
+      echo -e "\e[0Ksection_start:`date +%s`:helm_base_values\r\e[0K--------------- Checking default values with 'helm template' and 'yamllint' (for sylva-units chart all units enabled) ..."
 
-      helm template ${HELM_NAME} $chart_dir --set test_all_units_enabled=true \
+      # This applies only to sylva-units chart where we want to check that templating
+      # works fine with all units enabled
+      yq eval '{"units": .units | ... comments="" | to_entries | map({"key":.key,"value":{"enabled":true}}) | from_entries}' $chart_dir/values.yaml > all-units-enabled.yaml
+
+      helm template ${HELM_NAME} $chart_dir --values all-units-enabled.yaml \
         | yamllint - -d "$(cat < tools/gci-templates/yamllint.yaml) $(cat < tools/gci-templates/yamllint-helm-template-rules)"
 
       echo OK

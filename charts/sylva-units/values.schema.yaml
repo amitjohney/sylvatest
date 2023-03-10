@@ -628,11 +628,6 @@ properties:
     items:
       type: string
 
-  test_all_units_enabled:  # -------------------------------
-    anyOf:
-      - type: boolean
-      - type: "null"
-
   env_type_ci:
     type: boolean
 
