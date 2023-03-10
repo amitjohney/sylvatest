@@ -7,7 +7,7 @@ default:
   tags:
     - gitlab-org-docker
     # - docker
-  image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image:v1-0-1
+  image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image:v1-0-2
   services:
     - name: docker:dind
       alias: docker
@@ -148,6 +148,12 @@ check-docs-markdown:
       - debug-on-exit.log
       - bootstrap-cluster-dump/
       - management-cluster-dump/
+      - bootstrap-cluster-units-report.xml
+      - management-cluster-units-report.xml
+    reports:
+      junit:
+      - bootstrap-cluster-units-report.xml
+      - management-cluster-units-report.xml
 
 .test-capd:
   stage: deploy
