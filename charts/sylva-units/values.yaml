@@ -257,7 +257,6 @@ units:
             enabled: true
             size: 10Gi
             mountPath: "/vault/data"
-            storageClass: local-path
           readinessProbe:
             enabled: false
           ingress:
@@ -460,6 +459,9 @@ units:
       targetNamespace: kube-system
       install:
         createNamespace: true
+      values:
+        storageClass:
+          defaultClass: '{{ index .Values.units "cinder-csi" "enabled" | not | include "preserve-type" }}'
 
   cluster:
     enabled: yes
@@ -567,6 +569,8 @@ units:
             kind: StorageClass
             metadata:
               name: "{{ .Values.cluster.capo.storageClass.name }}"
+              annotations:
+                storageclass.kubernetes.io/is-default-class: "true"
             provisioner: cinder.csi.openstack.org
             volumeBindingMode: Immediate
             reclaimPolicy: Delete
