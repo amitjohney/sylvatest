@@ -977,7 +977,7 @@ units:
           CAPO_TAG: '{{ .Values.cluster.capo.resources_tag }}'
 
   workload-cluster:
-    enabled: false
+    enabled: '{{ .Values.env_type_ci | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
       capi: true
@@ -986,6 +986,7 @@ units:
       rancher: true
       first-login-rancher: true
     kustomization_spec:
+      path: ./kustomize-units/cluster-manifests/kubeadm-capd/base
       postBuild:
         substitute:
           CLUSTER_NAME: '{{ .Values.cluster.test_workload_cluster_name }}'
@@ -1033,7 +1034,7 @@ units:
                     (and .Values.cluster.capo.rootVolume (eq .Values.cluster.capi_providers.infra_provider "capo"))  | include "set-only-if" }}'
 
   workload-cluster-calico:
-    enabled: false
+    enabled: '{{ and .Values.env_type_ci (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") | include "preserve-type" }}'
     depends_on:
       workload-cluster: true
     helm_repo_url: https://projectcalico.docs.tigera.io/charts
@@ -1196,5 +1197,5 @@ proxies:
 # add your local docker.io registry mirror to avoid rate limitting if required
 dockerio_registry_mirror: ""
 
-# boolean conditioning run of 'check-rancher-clusters' Job
+# boolean conditioning which unit we automatically enable in CI tests
 env_type_ci: false

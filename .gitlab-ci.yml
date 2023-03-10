@@ -129,6 +129,7 @@ check-docs-markdown:
     - export CLUSTER_EXTERNAL_IP=$(echo $KIND_PREFIX | awk -F"." '{print $1"."$2"."$3".100"}')
     - yq -i '.cluster.cluster_external_ip = strenv(CLUSTER_EXTERNAL_IP)' $values_file
     - if [[ -n $DOCKERIO_REGISTRY_MIRROR ]]; then yq -i '.dockerio_registry_mirror = strenv(DOCKERIO_REGISTRY_MIRROR)' $values_file; fi
+    - yq -i '.env_type_ci = true' $values_file
     # for now, some units don't work on generic workers
     # (see https://gitlab.com/sylva-projects/sylva-core/-/issues/2)
     - |

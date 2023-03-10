@@ -5,8 +5,6 @@ units:
     kustomization_spec:
       path: ./kustomize-units/cluster-manifests/kubeadm-capo/base
   workload-cluster:
-    enabled: true
-    repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/cluster-manifests/kubeadm-capo/base
       postBuild:
