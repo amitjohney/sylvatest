@@ -1001,6 +1001,7 @@ units:
       rancher: true
       first-login-rancher: true
     kustomization_spec:
+      path: ./kustomize-units/cluster-manifests/kubeadm-capd/base
       postBuild:
         substitute:
           CLUSTER_NAME: '{{ .Values.cluster.test_workload_cluster_name }}'
