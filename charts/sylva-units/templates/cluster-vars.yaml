@@ -27,6 +27,15 @@ data:
   VS_SERVER: {{ .Values.cluster.capv.server }}
   VS_TLS_THUMBPRINT: {{ .Values.cluster.capv.tlsThumbprint }}
 {{ end }}
+{{ if eq .Values.cluster.capi_providers.infra_provider "capm3" }}
+  IMAGE_URL: {{ .Values.cluster.capm3.imageUrl }}
+  IMAGE_FORMAT: {{ .Values.cluster.capm3.imageFormat }}
+  IMAGE_CHECKSUM_TYPE: {{ .Values.cluster.capm3.imageChecksumType }}
+  IMAGE_CHECKSUM: {{ .Values.cluster.capm3.imageChecksum }}
+  NODE_DRAIN_TIMEOUT: {{ .Values.cluster.capm3.nodeDrainTimeOut }}
+  CTLPLANE_KUBEADM_EXTRA_CONFIG: {{ .Values.cluster.capm3.controlPlaneKubeadmExtraConfig }}
+  WORKERS_KUBEADM_EXTRA_CONFIG: {{ .Values.cluster.capm3.workersKubeadmExtraConfig }}
+{{ end }}
   CLUSTER_EXTERNAL_IP: {{ .Values.cluster.cluster_external_ip }}
   CONTROL_PLANE_REPLICAS: {{ .Values.cluster.control_plane_replicas | quote }}
   WORKER_REPLICAS: {{ .Values.cluster.worker_replicas | quote }}
