@@ -17,4 +17,4 @@ metadata:
 type: Opaque
 stringData:
   ADMIN_USERNAME: admin
-  ADMIN_PASSWORD: {{ (kubectl -n keycloak get secret keycloak-initial-admin -o=jsonpath='{.data.username}' | base64 -w0) | quote }} 
+  ADMIN_PASSWORD: {{ (kubectl -n keycloak get secret keycloak-initial-admin -o=jsonpath="{.data.password}" | base64 -w0) | quote }} 
