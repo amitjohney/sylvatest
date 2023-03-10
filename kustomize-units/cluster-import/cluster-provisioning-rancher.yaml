@@ -8,4 +8,3 @@ metadata:
     field.cattle.io/creatorId: system:serviceaccount:flux-system:kustomize-controller
   labels:
     capi-rancher-import.cluster-name: ${CLUSTER_NAME}
-    rancher-monitoring: ${CLUSTER_MONITORING}
