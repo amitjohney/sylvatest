@@ -439,8 +439,11 @@ units:
             accessMode: "ReadWriteOnce"
         services:
           ironic:
-          # Specify the IP address used by Ironic service
+            # Specify the IP address used by Ironic service
             ironicIP: '{{ .Values.cluster.metal3.ironic_ip }}'
+            # We allow shared IPs because we are exposing (by design) a single cluster external IP
+            annotations:
+              metallb.universe.tf/allow-shared-ip: '{{ .Values.cluster.cluster_external_ip }}'
         mariadb:
           auth:
             # if rootPassword is left empty a random one is generated at each installation but mariadb won't be able to reuse the same PVCs
