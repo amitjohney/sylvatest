@@ -1,0 +1,21 @@
+apiVersion: legacy.k8s.keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: sylva-usesr
+  labels:
+    realm1: sylva # must match the external-keycloak label
+spec:
+  realmSelector:
+    matchLabels:
+      realm1: sylva
+  user:
+    username: sylva-admin
+    enabled: true
+    email: sylva-admin@example.com
+    firstName: sylva
+    lastName: sylva
+    credentials:
+      - type: password
+        value: ${RANCHER_CLIENT_SECRET}
+        temporary: false
+
