@@ -233,11 +233,15 @@ properties:
               - not:
                   required:
                     - dependsOn
-              # prevent having both "wait" and "healthChecks"
+              # prevent having both "wait: true" and "healthChecks"
+              # because in this case FluxCD Kustomize controller ignores "healthChecks"
               - not:
                   required:
                     - wait
                     - healthChecks
+                  properties:
+                    wait:
+                      const: true
               # do not allow sourceRef (dynamically set by Helm template based on 'repo')
               - not:
                   required:
