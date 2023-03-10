@@ -155,12 +155,12 @@ metadata:
   name: {{ $secretName }}
   labels: {{ $labels | toYaml | nindent 4 }}
 stringData:
-{{ $unit_def.kustomization_substitute_secrets | toYaml | nindent 2 }}
+{{- $unit_def.kustomization_substitute_secrets | toYaml | nindent 2 }}
 
-      {{ $substituteFrom := ($kustomization_spec.postBuild | default dict).substituteFrom | default list -}}
+      {{- $substituteFrom := ($unit_def.kustomization_spec.postBuild | default dict).substituteFrom | default list -}}
       {{- $secretsValues := dict "kind" "Secret" "name" $secretName -}}
 
-      {{- $_ := mergeOverwrite $kustomization_spec (dict "postBuild" (dict "substituteFrom" (append $substituteFrom $secretsValues))) -}}
+      {{- $_ := mergeOverwrite $kustomization_spec_overrides (dict "postBuild" (dict "substituteFrom" (append $substituteFrom $secretsValues))) -}}
     {{- end -}}
 
     {{/* let's set the dependsOn field */}}
