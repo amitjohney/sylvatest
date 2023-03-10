@@ -688,6 +688,22 @@ units:
     helm_secret_values:
       bootstrapPassword: '{{ .Values.cluster.admin_password }}'
 
+    kustomization_spec:
+      # these healthchecks are added so that this unit does not become ready before
+      # a few things that Rancher sets up behind the scene is ready
+      healthChecks:
+        - kind: CustomResourceDefinition
+          name: clusters.provisioning.cattle.io  # this is because capi-rancher-import needs this
+        - kind: Deployment
+          name: rancher-webhook
+          namespace: cattle-system
+        - kind: Service
+          name: rancher-webhook
+          namespace: cattle-system
+        - kind: Service
+          name: webhook-service
+          namespace: cattle-system
+
   rancher-webhook-service:
     enabled: '{{ .Values.units.rancher.enabled | include "preserve-type" }}'
     repo: sylva-core

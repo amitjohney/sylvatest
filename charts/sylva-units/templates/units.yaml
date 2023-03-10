@@ -184,8 +184,17 @@ stringData:
     {{- end -}}
 
     {{/* finalize the definition of the Kustomization spec by merging everything we have */}}
-    {{- $kustomization_spec = mergeOverwrite $kustomization_spec $envAll.Values.unit_kustomization_spec_default ($unit_def.kustomization_spec | default dict) $dependsOn $kustomization_spec_overrides }}
+    {{- $kustomization_spec = mergeOverwrite $kustomization_spec $envAll.Values.unit_kustomization_spec_default ($unit_def.kustomization_spec | default dict) $dependsOn $kustomization_spec_overrides -}}
 
+    {{/* 
+    if healthChecks is specified on kustomization_spec while helmrelease_spec is defined,
+    then we inject a reference to the HelmRelease in the healthChecks, to ensure
+    that the HelmRelease object will not be omitted
+    */}}
+    {{- if and (hasKey $kustomization_spec "healthChecks")
+               (hasKey $unit_def "helmrelease_spec") -}}
+      {{- $_ := set $kustomization_spec "healthChecks" (append $kustomization_spec.healthChecks (dict "namespace" $envAll.Release.Namespace "kind" "HelmRelease" "name" $unit_name)) -}}
+    {{- end }}
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
 kind: Kustomization
