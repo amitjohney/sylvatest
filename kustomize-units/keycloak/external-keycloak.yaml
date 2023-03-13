@@ -8,13 +8,15 @@ metadata:
 spec:
   url: https://keycloak-service:8443 # set to the Service created by the new Keycloak Operator
   contextRoot: /
----
+status:
+  credentialSecret: keycloak-initial-admin
+#---
 # The Admin Credentials need to match those used/created by the new Keycloak Operator
-apiVersion: v1
-kind: Secret
-metadata:
-  name: credential-external-keycloak
-type: Opaque
-stringData:
-  ADMIN_USERNAME: admin
-  ADMIN_PASSWORD: {{ (kubectl -n keycloak get secret keycloak-initial-admin -o=jsonpath="{.data.password}" | base64 -w0) | quote }} 
+#apiVersion: v1
+#kind: Secret
+#metadata:
+#  name: credential-external-keycloak
+#type: Opaque
+#stringData:
+#  ADMIN_USERNAME: admin
+#  ADMIN_PASSWORD: {{ (kubectl -n keycloak get secret keycloak-initial-admin -o=jsonpath="{.data.password}" | base64 -w0) | quote }} 
