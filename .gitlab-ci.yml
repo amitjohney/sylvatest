@@ -104,32 +104,32 @@ check-docs-markdown:
     changes:
       - "**/*.md"
 
-.common-capd:
-  script:
-    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_prepare[collapsed=true]\r\e[0KRunning .gitlab-ci script step\e[0m"
-
+.common-deployment:
+  script_common:
+    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_common[collapsed=true]\r\e[0KRunning common deployment steps\e[0m"
     - DOCKER_IP=$(getent hosts docker | awk '{print $1}')
     - |
       # create a cluster with access to API endpoint through docker-in-docker address
-      cat <<EOF | kind create cluster --name capd --config=-
+      cat <<EOF | kind create cluster --name bootstrap --config=-
       kind: Cluster
       apiVersion: kind.x-k8s.io/v1alpha4
       networking:
         apiServerAddress: "$DOCKER_IP"
         apiServerPort: 6443
       EOF
-    - kubectl cluster-info --context kind-capd
-
+    - kubectl cluster-info --context kind-bootstrap
     - KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
     - ip route add $KIND_PREFIX via $DOCKER_IP
-
-    - export DOCKER_HOST=tcp://$DOCKER_IP:2375
     - values_file=environment-values/${ENV_NAME}/values.yaml
+    - yq -i '.env_type_ci = true' $values_file
+    - if [[ -n $OS_DOCKERIO_REGISTRY_MIRROR ]]; then yq -i '.dockerio_registry_mirror = strenv(OS_DOCKERIO_REGISTRY_MIRROR)' $values_file; fi
+    - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_common\r\e[0K"
+  script_capd:
+    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capd[collapsed=true]\r\e[0KApplying specific capd configuration\e[0m"
+    - export DOCKER_HOST=tcp://$DOCKER_IP:2375
     - yq -i '.cluster.capd.docker_host = strenv(DOCKER_HOST)' $values_file
     - export CLUSTER_EXTERNAL_IP=$(echo $KIND_PREFIX | awk -F"." '{print $1"."$2"."$3".100"}')
     - yq -i '.cluster.cluster_external_ip = strenv(CLUSTER_EXTERNAL_IP)' $values_file
-    - if [[ -n $DOCKERIO_REGISTRY_MIRROR ]]; then yq -i '.dockerio_registry_mirror = strenv(DOCKERIO_REGISTRY_MIRROR)' $values_file; fi
-    - yq -i '.env_type_ci = true' $values_file
     # for now, some units don't work on generic workers
     # (see https://gitlab.com/sylva-projects/sylva-core/-/issues/2)
     - |
@@ -142,8 +142,28 @@ check-docs-markdown:
         yq -i '.units.flux-webui.enabled=false' $values_file
         yq -i '.units.capi-rancher-import.enabled=false' $values_file
       fi
-    - export DEBUG_ON_EXIT=1
-    - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_prepare\r\e[0K"
+    - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capd\r\e[0K"
+  post_deployment_common:
+    - kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}' | xargs --no-run-if-empty -n1 kubectl --kubeconfig management-cluster-kubeconfig logs || true
+  os_cloud:
+    # the OS_* variables below are set in the gitlab runner configuration
+    # and contain information to connect to the OpenStack instance used
+    # by this test
+    - mkdir -p ~/.config/openstack
+    - |
+      cat <<EOF>> ~/.config/openstack/clouds.yml
+      clouds:
+        capo_cloud:
+          auth:
+            auth_url: '${OS_AUTH_URL}'
+            user_domain_name: '${OS_USER_DOMAIN_ID}'
+            project_domain_name: '${OS_PROJECT_DOMAIN_ID}'
+            project_name: '${OS_TENANT_NAME}'
+            username: '${OS_USERNAME}'
+            password: '${OS_PASSWORD}'
+          region_name: '${OS_REGION_NAME}'
+          verify: false
+      EOF
   artifacts:
     when: on_failure
     expire_in: 6 hour
@@ -157,29 +177,32 @@ check-docs-markdown:
       junit:
       - bootstrap-cluster-units-report.xml
       - management-cluster-units-report.xml
-
-.test-capd:
-  stage: deploy
-  script:
-    - !reference [.common-capd, script]
-    - ./bootstrap.sh environment-values/${ENV_NAME}
-    - kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}' | xargs --no-run-if-empty -n1 kubectl --kubeconfig management-cluster-kubeconfig logs || true
-  artifacts: !reference [.common-capd, artifacts]
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_TAG
     - if: $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
       when: manual
+
+.test-capd:
+  stage: deploy
+  script:
+    - !reference [.common-deployment, script_common]
+    - !reference [.common-deployment, script_capd]
+    - ./bootstrap.sh environment-values/${ENV_NAME}
+    - !reference [.common-deployment, post_deployment_common]
+  artifacts: !reference [.common-deployment, artifacts]
+  rules: !reference [.common-deployment, rules]
   allow_failure: true
 
 .test-preview-capd:
   stage: deploy
   timeout: 15min
   script:
-    - !reference [.common-capd, script]
+    - !reference [.common-deployment, script_common]
+    - !reference [.common-deployment, script_capd]
     - ./preview.sh environment-values/${ENV_NAME}
-  artifacts: !reference [.common-capd, artifacts]
+  artifacts: !reference [.common-deployment, artifacts]
   variables:
     ENV_NAME: kubeadm-capd
 
@@ -191,51 +214,13 @@ test-kubeadm-capd:
 
 .test-capo:
   stage: deploy
-  before_script:
-    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:before_script_section[collapsed=true]\r\e[0KRunning before_script step\e[0m"
-
-    - DOCKER_IP=$(getent hosts docker | awk '{print $1}')
-    - |
-      # create a cluster with access to API endpoint through docker-in-docker address
-      cat <<EOF | kind create cluster --name capo --config=-
-      kind: Cluster
-      apiVersion: kind.x-k8s.io/v1alpha4
-      networking:
-        apiServerAddress: "$DOCKER_IP"
-        apiServerPort: 6443
-      EOF
-    - kubectl cluster-info --context kind-capo
-
-    - KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
-    - ip route add $KIND_PREFIX via $DOCKER_IP
-
-    # the OS_* variables below are set in the gitlab runner configuration
-    # and contain information to connect to the OpenStack instance used
-    # by this test
-    - |
-      cat <<EOF>> clouds.yml
-      clouds:
-        capo_cloud:
-          auth:
-            auth_url: '${OS_AUTH_URL}'
-            user_domain_name: '${OS_USER_DOMAIN_ID}'
-            project_domain_name: '${OS_PROJECT_DOMAIN_ID}'
-            project_name: '${OS_TENANT_NAME}'
-            username: '${OS_USERNAME}'
-            password: '${OS_PASSWORD}'
-            region: '${OS_REGION_NAME}'
-          verify: false
-      EOF
-    - yq -i eval-all 'select(fileIndex==0).cluster.capo.clouds_yaml = select(fileIndex==1) | select(fileIndex==0)' environment-values/${ENV_NAME}/secrets.yaml clouds.yml
-    - if [[ -n $OS_DOCKERIO_REGISTRY_MIRROR ]]; then yq -i '.dockerio_registry_mirror = strenv(OS_DOCKERIO_REGISTRY_MIRROR)' environment-values/$ENV_NAME/values.yaml; fi
-    - export CAPO_TAG="${CI_PIPELINE_ID}-${ENV_NAME}"
-    - yq -i '.cluster.capo.resources_tag = strenv(CAPO_TAG)' environment-values/$ENV_NAME/values.yaml
-    - yq -i '.env_type_ci = true' environment-values/$ENV_NAME/values.yaml
-
-    - export DEBUG_ON_EXIT=1
-
-    - echo -e "\e[0Ksection_end:`date +%s`:before_script_section\r\e[0K"
   script:
+    - !reference [.common-deployment, script_common]
+    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capo[collapsed=true]\r\e[0KApplying specific capo configuration\e[0m"
+    - !reference [.common-deployment, os_cloud]
+    - yq -i eval-all 'select(fileIndex==0).cluster.capo.clouds_yaml = select(fileIndex==1) | select(fileIndex==0)' environment-values/${ENV_NAME}/secrets.yaml ~/.config/openstack/clouds.yml
+    - export CAPO_TAG="${CI_PIPELINE_ID}-${ENV_NAME}"
+    - yq -i '.cluster.capo.resources_tag = strenv(CAPO_TAG)' $values_file
     - git config --global credential.helper cache
     # the CI_COMPONENT_* variables below are set in the gitlab runner configuration
     # and allow to enable extra kustomize components needed in the context of the platform
@@ -244,21 +229,11 @@ test-kubeadm-capd:
     - export CI_COMPONENT="https://${CI_COMPONENT_REPO}//sylva-core-ci/falcon-${ENV_NAME}?ref=sylva-capo-ci-upstream"
     - if [ $(yq '.components | length' environment-values/$ENV_NAME/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' environment-values/$ENV_NAME/kustomization.yaml; fi
     - yq -i '.components += strenv(CI_COMPONENT)' environment-values/$ENV_NAME/kustomization.yaml
+    - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capd\r\e[0K"
     - ./bootstrap.sh environment-values/${ENV_NAME}
-    - kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}' | xargs --no-run-if-empty -n1 kubectl --kubeconfig management-cluster-kubeconfig logs || true
-  artifacts:
-    when: on_failure
-    expire_in: 6 hour
-    paths:
-      - debug-on-exit.log
-      - bootstrap-cluster-dump/
-      - management-cluster-dump/
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_COMMIT_TAG
-    - if: $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-      when: manual
+    - !reference [.common-deployment, post_deployment_common]
+  artifacts: !reference [.common-deployment, artifacts]
+  rules: !reference [.common-deployment, rules]
   allow_failure: true
   tags:
     - falcon
@@ -280,21 +255,11 @@ test-kubeadm-capo:
   image:
     name: registry.gitlab.com/t6306/components/docker-images/ci-image:openstack-client-v1.0
   script:
-    - mkdir -p ~/.config/openstack
-    - |
-      cat <<EOF>> ~/.config/openstack/clouds.yml
-      clouds:
-        capo_cloud:
-          auth:
-            auth_url: '${OS_AUTH_URL}'
-            user_domain_name: '${OS_USER_DOMAIN_ID}'
-            project_domain_name: '${OS_PROJECT_DOMAIN_ID}'
-            project_name: '${OS_TENANT_NAME}'
-            username: '${OS_USERNAME}'
-            password: '${OS_PASSWORD}'
-          verify: false
-      EOF
+    - !reference [.common-deployment, os_cloud]
     - sh ./tools/openstack-cleanup.sh capo_cloud "${CI_PIPELINE_ID}-${ENV_NAME}"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  allow_failure: true
   tags:
     - falcon
 
