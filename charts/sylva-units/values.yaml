@@ -368,6 +368,9 @@ units:
       path: ./kustomize-units/keycloak
       targetNamespace: keycloak
       postBuild:
+        substituteFrom:
+          - kind: Secret
+            name: keycloak-initial-admin
         substitute:
           KEYCLOAK_DNS: '{{ .Values.cluster.keycloak.external_hostname }}'
           RANCHER_DNS: '{{ .Values.cluster.rancher.external_hostname }}'
