@@ -371,6 +371,7 @@ units:
         substituteFrom:
           - kind: Secret
             name: keycloak-initial-admin
+            namespace: keycloak
         substitute:
           KEYCLOAK_DNS: '{{ .Values.cluster.keycloak.external_hostname }}'
           RANCHER_DNS: '{{ .Values.cluster.rancher.external_hostname }}'
