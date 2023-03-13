@@ -367,7 +367,7 @@ units:
     kustomization_spec:
       path: ./kustomize-units/keycloak
       targetNamespace: keycloak
-      CrossNamespaceSourceReference: keycloak
+      sourceRef: keycloak
       postBuild:
         substituteFrom:
           - kind: Secret
