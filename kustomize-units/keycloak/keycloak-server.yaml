@@ -21,3 +21,13 @@ spec:
   ingress:
     enabled: false
   instances: 1
+---
+#  The Admin Credentials need to match those used/created by the new Keycloak Operator
+apiVersion: v1
+kind: Secret
+metadata:
+  name: keycloak-initial-admin
+stringData:
+  admin: admin
+  password: ${KEYCLOAK_ADMIN_PASSWORD}
+type: kubernetes.io/basic-auth 
