@@ -659,6 +659,10 @@ units:
           namespaceList:
             - cattle-fleet-system
             - rancher-operator-system
+        global:
+          cattle:
+            psp:
+              enabled: false
       postRenderers:
         - kustomize:
             patchesStrategicMerge:
