@@ -28,6 +28,6 @@ kind: Secret
 metadata:
   name: keycloak-initial-admin
 stringData:
-  admin: admin
+  username: admin
   password: ${KEYCLOAK_ADMIN_PASSWORD}
 type: kubernetes.io/basic-auth 
