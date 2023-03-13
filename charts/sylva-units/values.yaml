@@ -593,7 +593,7 @@ units:
             domain-name = "{{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.user_domain_name }}"
             username = "{{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.username }}"
             password = "{{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.password }}"
-            region = "{{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.region }}"
+            region = "{{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.region_name }}"
             tls-insecure = "{{ not .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.verify }}"
             [BlockStorage]
             ignore-volume-az = true
