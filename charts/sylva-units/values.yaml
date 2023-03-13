@@ -367,6 +367,7 @@ units:
     kustomization_spec:
       path: ./kustomize-units/keycloak
       targetNamespace: keycloak
+      namespace: keycloak
       postBuild:
         substituteFrom:
           - kind: Secret
