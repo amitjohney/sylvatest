@@ -362,20 +362,43 @@ units:
       sylva-ca-certs: true
       ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
     repo: sylva-core
-    kustomization_substitute_secrets:
-      RANCHER_CLIENT_SECRET: '{{ .Values.cluster.admin_password }}'
     kustomization_spec:
       path: ./kustomize-units/keycloak
       targetNamespace: keycloak
-      sourceRef: keycloak
       postBuild:
-        substituteFrom:
-          - kind: Secret
-            name: keycloak-initial-admin
         substitute:
           KEYCLOAK_DNS: '{{ .Values.cluster.keycloak.external_hostname }}'
-          RANCHER_DNS: '{{ .Values.cluster.rancher.external_hostname }}'
       wait: false
+
+  keycloak-legacy-operator:
+    enabled: yes
+    depends_on:
+      keycloak: true
+    repo: sylva-core
+    kustomization_spec:
+        path: ./kustomize-units/keycloak-legacy-operator
+        targetNamespace: keycloak
+        wait: true
+
+  keycloak-resources:
+    enabled: yes
+    depends_on:
+      keycloak: true
+      keycloak-legacy-operator: true
+    repo: sylva-core
+    kustomization_substitute_secrets:
+      RANCHER_CLIENT_SECRET: '{{ .Values.cluster.admin_password }}'
+    kustomization_spec:
+        path: ./kustomize-units/keycloak-resources
+        targetNamespace: keycloak
+        postBuild:
+          substituteFrom:
+            - kind: Secret
+              name: keycloak-initial-admin
+          substitute:
+            KEYCLOAK_DNS: '{{ .Values.cluster.keycloak.external_hostname }}'
+            RANCHER_DNS: '{{ .Values.cluster.rancher.external_hostname }}'
+        wait: true
 
   capi:
     enabled: yes
