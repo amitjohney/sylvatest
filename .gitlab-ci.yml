@@ -268,14 +268,12 @@ test-rke2-capo:
   extends: .test-capo
   variables:
     ENV_NAME: "rke2-capo"
-  resource_group: test-rke2-capo-falcon
 
 test-kubeadm-capo:
   timeout: 60min
   extends: .test-capo
   variables:
     ENV_NAME: "kubeadm-capo"
-  resource_group: test-kubeadm-capo-falcon
 
 .cleanup-capo:
   stage: delete
