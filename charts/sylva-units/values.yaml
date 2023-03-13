@@ -31,7 +31,7 @@ git_repo_templates: # template to generate Flux GitRepository resources
       url: https://gitlab.com/sylva-projects/sylva-core.git
       ref:
         # tag/commit will take precedence, see https://fluxcd.io/flux/units/source/api/#source.toolkit.fluxcd.io/v1beta2.GitRepositoryRef
-        branch: priya/k8s-upgrade
+        branch: main
 
   capi-rancher-import:
     spec:
