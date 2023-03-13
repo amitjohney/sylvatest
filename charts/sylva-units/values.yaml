@@ -367,6 +367,7 @@ units:
       targetNamespace: keycloak
       postBuild:
         substitute:
+          KEYCLOAK_ADMIN_PASSWORD: '{{ .Values.cluster.admin_password }}'
           KEYCLOAK_DNS: '{{ .Values.cluster.keycloak.external_hostname }}'
       wait: false
 
@@ -378,6 +379,9 @@ units:
     kustomization_spec:
         path: ./kustomize-units/keycloak-legacy-operator
         targetNamespace: keycloak
+        postBuild:
+          substitute:
+            KEYCLOAK_ADMIN_PASSWORD: '{{ .Values.cluster.admin_password }}'
         wait: true
 
   keycloak-resources:
@@ -392,9 +396,6 @@ units:
         path: ./kustomize-units/keycloak-resources
         targetNamespace: keycloak
         postBuild:
-          substituteFrom:
-            - kind: Secret
-              name: keycloak-initial-admin
           substitute:
             KEYCLOAK_DNS: '{{ .Values.cluster.keycloak.external_hostname }}'
             RANCHER_DNS: '{{ .Values.cluster.rancher.external_hostname }}'
