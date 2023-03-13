@@ -635,7 +635,7 @@ units:
       chart:
         spec:
           chart: rancher
-          version: 2.7.2-rc4
+          version: 2.7.2-rc5
       targetNamespace: cattle-system
       interval: 10m0s
       install:
