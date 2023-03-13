@@ -18,83 +18,11 @@ default:
 
 .helm-template-yamllint:
   script:
-    - |
-      set -o pipefail
-
-      echo -e "\e[0Ksection_start:`date +%s`:helm_dependency_build\r\e[0K--------------- helm dependency build"
-
-      helm dependency build $chart_dir
-
-      echo -e "\e[0Ksection_end:`date +%s`:helm_dependency_build\r\e[0K"
-
-      echo -e "\e[0Ksection_start:`date +%s`:helm_base_values\r\e[0K--------------- Checking default values with 'helm template' and 'yamllint' (for sylva-units chart all units enabled) ..."
-
-      # This applies only to sylva-units chart where we want to check that templating
-      # works fine with all units enabled
-      yq eval '{"units": .units | ... comments="" | to_entries | map({"key":.key,"value":{"enabled":true}}) | from_entries}' $chart_dir/values.yaml > all-units-enabled.yaml
-
-      helm template ${HELM_NAME} $chart_dir --values all-units-enabled.yaml \
-        | yamllint - -d "$(cat < tools/gci-templates/yamllint.yaml) $(cat < tools/gci-templates/yamllint-helm-template-rules)"
-
-      echo OK
-      echo -e "\e[0Ksection_end:`date +%s`:helm_base_values\r\e[0K"
-
-      test_dirs=$(find $chart_dir/test-values -mindepth 1 -maxdepth 1 -type d)
-      if [ -d $chart_dir/test-values ] && [ -n "$test_dirs" ] ; then
-        for dir in $test_dirs ; do
-          echo -e "\e[0Ksection_start:`date +%s`:helm_more_values\r\e[0K--------------- Checking values from test-values/$(basename $dir) with 'helm template' and 'yamllint' ..."
-
-          set +e
-          helm template ${HELM_NAME} $chart_dir $(ls $dir/*.y*ml | grep -v test-spec.yaml | sed -e 's/^/--values /') \
-            | yamllint - -d "$(cat < tools/gci-templates/yamllint.yaml) $(cat < tools/gci-templates/yamllint-helm-template-rules)"
-          exit_code=$?
-          set -e
-
-          if [[ -f $dir/test-spec.yaml && $(yq .require-failure $dir/test-spec.yaml) == "true" ]]; then
-              expected_exit_code=1
-              error_message="This testcase is supposed to make 'helm template ..| yamllint ..' fail, but it actually succeeded."
-              success_message="This negative testcase expectedly made 'helm template ..| yamllint ..' fail."
-          else
-              expected_exit_code=0
-              error_message="Failure when running 'helm template ..| yamllint ..' on this test case."
-          fi
-
-          if [[ $exit_code -ne $expected_exit_code ]]; then
-            echo $error_message
-            exit
-          else
-            echo $success_message
-          fi
-
-          echo OK
-          echo -e "\e[0Ksection_end:`date +%s`:helm_more_values\r\e[0K"
-        done
-      fi
+    - tools/gci-templates/scripts/helm-template-yamllint.sh
 
 .helm-schema-validation:
   script:
-    - |
-      RED='\033[0;31m'
-      NC='\033[0m'
-      echo -e "\e[0Ksection_start:`date +%s`:lint_schema\r\e[0K--------------- Lint Schema YAML file"
-      echo "Lint $chart_dir/values.schema.yaml ..."
-      yamllint --no-warnings -c tools/gci-templates/yamllint.yaml $chart_dir/values.schema.yaml
-      echo "   DONE"
-      echo -e "\e[0Ksection_end:`date +%s`:lint_schema\r\e[0K"
-
-      echo -e "\e[0Ksection_start:`date +%s`:check_generation\r\e[0K--------------- Check that ${HELM_NAME}/values.schema.json was regenerated from values.schema.yaml ..."
-      tools/yaml2json.py < $chart_dir/values.schema.yaml > values.schema.json
-      if ! cmp -s values.schema.json $chart_dir/values.schema.json ; then
-        echo "${RED}$chart_dir/values.schema.json wasn't generated with $chart_dir/values.schema.yaml${NC}"
-        exit 1
-      fi
-      echo "   DONE"
-      echo -e "\e[0Ksection_end:`date +%s`:check_generation\r\e[0K"
-
-      echo -e "\e[0Ksection_start:`date +%s`:validate_schema\r\e[0K--------------- Validate that the chart values schema contains a valid JSON Schema ..."
-      python3 -m jsonschema -o pretty /usr/lib/python3.10/site-packages/jsonschema/schemas/draft2020-12.json -i values.schema.json
-      echo "   DONE"
-      echo -e "\e[0Ksection_end:`date +%s`:validate_schema\r\e[0K"
+    - tools/gci-templates/scripts/helm-schema-validation.sh
 
 .kustomize-build:
   script:
