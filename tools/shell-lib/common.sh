@@ -60,19 +60,27 @@ export CURRENT_COMMIT=${CI_COMMIT_SHA:-$(git rev-parse HEAD)}
 
 function exit_trap() {
     EXIT_CODE=$?
+
+    (echo "Remaining processes ?..." ; ps auxwf) | tee -a debug-on-exit.log
+
+    # Kill all child processes (kubectl watches) on exit
+    pids="$(jobs -rp)"
+    [ -n "$pids" ] && kill $pids || true
+
+    (echo "Remaining processes ?..." ; ps auxwf) | tee -a debug-on-exit.log
+
     # Call debug script if needed
     if [[ $EXIT_CODE -ne 0 && ${DEBUG_ON_EXIT:-"0"} -eq 1 ]] || [[ -n ${CI_JOB_NAME} ]]; then
         echo_b "gathering debugging logs in debug-on-exit.log file"
-        ${BASE_DIR}/tools/shell-lib/debug-on-exit.sh > debug-on-exit.log
+        ${BASE_DIR}/tools/shell-lib/debug-on-exit.sh >> debug-on-exit.log
         if [[ -n ${CI_JOB_NAME} ]]; then 
           tools/gci-templates/scripts/units-reports.py --env-type=${CI_JOB_NAME}:bootstrap --input ${CI_PROJECT_DIR}/bootstrap-cluster-dump/flux-kustomizations.yaml --output bootstrap-cluster-units-report.xml
           tools/gci-templates/scripts/units-reports.py --env-type=${CI_JOB_NAME}:management --input ${CI_PROJECT_DIR}/management-cluster-dump/flux-kustomizations.yaml --output management-cluster-units-report.xml
         fi
     fi
 
-    # Kill all child processes (kubectl watches) on exit
-    pids="$(jobs -rp)"
-    [ -n "$pids" ] && kill $pids || true
+    (echo "Remaining processes ?..." ; ps auxwf) | tee -a debug-on-exit.log
+
     exit $EXIT_CODE
 }
 trap exit_trap EXIT

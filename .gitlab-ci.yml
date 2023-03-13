@@ -106,6 +106,7 @@ check-docs-markdown:
 
 .common-capd:
   script:
+    - apk add procps
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_prepare[collapsed=true]\r\e[0KRunning .gitlab-ci script step\e[0m"
 
     - DOCKER_IP=$(getent hosts docker | awk '{print $1}')
