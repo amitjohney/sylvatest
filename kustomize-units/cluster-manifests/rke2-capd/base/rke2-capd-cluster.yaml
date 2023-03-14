@@ -62,7 +62,7 @@ spec:
       - ln -s /etc/rancher/rke2/rke2.yaml /etc/kubernetes/kubelet.conf
       - ln -s /var/lib/rancher/rke2/bin/kubectl /usr/local/bin/kubectl
   replicas: 1
-  version: 1.25.6+rke2r1
+  version: v1.25.6+rke2r1
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: DockerMachineTemplate
