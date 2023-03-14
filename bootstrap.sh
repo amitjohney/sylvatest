@@ -68,6 +68,8 @@ echo_b "\U0001FAA6 Destroy bootstrap cluster"
 kind delete cluster --name bootstrap
 
 echo_b "\U000023F3 Wait for units installed on management cluster to be ready"
+kubectl --kubeconfig management-cluster-kubeconfig get nodes
+kubectl --kubeconfig management-cluster-kubeconfig get kustomizations
 ./sylvactl watch --reconcile --kubeconfig management-cluster-kubeconfig --timeout 30m
 
 echo_b "\U00002714 Sylva is ready, everything deployed in management cluster (including test workload cluster definition, if enabled)"
