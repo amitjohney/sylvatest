@@ -145,7 +145,7 @@ spec:
       - 127.0.0.1
     agentConfig:
       kubeletArgs:
-        - "provider-id=openstack://{{ ds.meta_data.uuid }}"
+        - "provider-id=openstack:///{{ ds.meta_data.uuid }}"
     deployRKE2Commands:
       - "echo 'cni: calico' >> /etc/rancher/rke2/config.yaml"
       - systemctl daemon-reload
@@ -168,7 +168,7 @@ spec:
       agentConfig:
         nodeName: "{{ ds.meta_data.local_hostname }}"
         kubeletArgs:
-          - "provider-id=openstack://{{ ds.meta_data.uuid }}"
+          - "provider-id=openstack:///{{ ds.meta_data.uuid }}"
       deployRKE2Commands:
       - "echo 'cni: calico' >> /etc/rancher/rke2/config.yaml"
       - systemctl daemon-reload

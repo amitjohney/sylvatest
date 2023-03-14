@@ -98,12 +98,12 @@ spec:
     initConfiguration:
       nodeRegistration:
         kubeletExtraArgs:
-          provider-id: openstack://{{ ds.meta_data.uuid }}
+          provider-id: openstack:///{{ ds.meta_data.uuid }}
         name: '{{ ds.meta_data.name }}'
     joinConfiguration:
       nodeRegistration:
         kubeletExtraArgs:
-          provider-id: openstack://{{ ds.meta_data.uuid }}
+          provider-id: openstack:///{{ ds.meta_data.uuid }}
         name: '{{ ds.meta_data.name }}'
   machineTemplate:
     metadata:
@@ -128,7 +128,7 @@ spec:
       joinConfiguration:
         nodeRegistration:
           kubeletExtraArgs:
-            provider-id: 'openstack://{{ ds.meta_data.uuid }}'
+            provider-id: 'openstack:///{{ ds.meta_data.uuid }}'
           name: '{{ ds.meta_data.name }}'
 ---
 apiVersion: cluster.x-k8s.io/v1beta1
