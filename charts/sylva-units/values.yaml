@@ -1068,7 +1068,8 @@ units:
         - '{{ tuple "../../components/capo-root-volume"
                     (and .Values.cluster.capo.rootVolume (eq .Values.cluster.capi_providers.infra_provider "capo"))  | include "set-only-if" }}'
         {{- range .Values.cluster.capo.additional_networks }}
-        - '{{ printf "../../components/capo-additional-networks/%s" .vnic_type }}'
+        - '{{ tuple ( printf "../../components/capo-additional-networks/%s" .vnic_type )
+                    (gt (len .vnic_type) 0 ) | include "set-only-if" }}'
         {{- end }}
 
   workload-cluster-calico:
