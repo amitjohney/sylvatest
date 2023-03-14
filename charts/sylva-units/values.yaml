@@ -1048,7 +1048,7 @@ units:
             name: workload-capo-cluster-resources
             optional: true
       wait: true
-      components: |-
+      components:
         - '{{ tuple "../../components/dns-client/kind/KubeadmControlPlane"
                     (and (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
         - '{{ tuple "../../components/dns-client/kind/RKE2ControlPlane"
