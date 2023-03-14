@@ -35,7 +35,7 @@ function retrieve_kubeconfig {
 function ensure_sylvactl {
     if [[ ! -f ./sylvactl ]]; then
         echo_b "\U0001F4E5 Downloading sylvactl"
-        curl -qO --progress-bar https://gitlab.com/api/v4/projects/43501695/packages/generic/releases/v0.0.2-pre/sylvactl
+        curl -qO --progress-bar https://gitlab.com/api/v4/projects/43501695/packages/generic/releases/v0.0.3-pre/sylvactl
         chmod +x ./sylvactl
     fi
 }
