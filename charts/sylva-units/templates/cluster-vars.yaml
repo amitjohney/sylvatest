@@ -16,7 +16,7 @@ data:
 {{- end }}
   SSH_KEY_NAME: {{ .Values.cluster.capo.ssh_key_name }}
   CAPO_NETWORK_ID: {{ .Values.cluster.capo.network_id }}
-{{- if gt (len .Values.cluster.capo.additional_networks) 1 }}
+{{- if gt (len .Values.cluster.capo.additional_networks) 0 }}
 {{- range .Values.cluster.capo.additional_networks }}
 {{- if eq .vnic_type "virtio" }}
   VIRTIO_VNIC_NETWORK_ID: {{ .network_id }}

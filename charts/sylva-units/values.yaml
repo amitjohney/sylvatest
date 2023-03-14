@@ -1212,6 +1212,10 @@ cluster:
     # worker_az only required to be provided when .Values.cluster.worker_replicas > 0
     ssh_key_name: # OpenStack VM SSH key
     network_id:  # OpenStack network to use as external network
+    additional_networks: [] # Let this parameter empty if you only need the management network
+    # or specify additional networks to be used. Only one network of each type can be added and supported types are virtio or direct
+    # - network_id: # openstack network id
+    #   vnic_type: 'virtio' # or 'direct'
     rootVolume: {} # Let this parameter empty if you don't intent to use root volume
     # otherwise, provide following values
     # diskSize: '20' # Size of the VMs root disk
