@@ -236,7 +236,10 @@ test-kubeadm-capd:
     - ./bootstrap.sh environment-values/${ENV_NAME}
     - !reference [.common-deployment, post_deployment_common]
   artifacts: !reference [.common-deployment, artifacts]
-  rules: !reference [.common-deployment, rules]
+  rules:
+    - if: $CI_MERGE_REQUEST_LABELS =~ /renovate/
+      when: manual
+    - !reference [.common-deployment, rules]
   allow_failure: true
   tags:
     - falcon
