@@ -1,0 +1,9 @@
+apiVersion: crd.projectcalico.org/v1
+kind: GlobalNetworkSet
+metadata:
+  labels:
+    node-role.kubernetes.io/control-plane: "true"
+  name: cluster-ip
+spec:
+  nets:
+    - 192.168.128.211/32

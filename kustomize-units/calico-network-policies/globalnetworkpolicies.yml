@@ -1,0 +1,48 @@
+---
+apiVersion: crd.projectcalico.org/v1
+kind: GlobalNetworkPolicy
+metadata:
+  name: management-global-network-policy
+spec:
+  order: 100
+  selector: node-role.kubernetes.io/control-plane == "true"
+  preDNAT: true
+  applyOnForward: true
+  ingress:
+    - action: Allow
+      protocol: ICMP
+    - action: Deny
+      ipVersion: 6
+      protocol: ICMPv6
+    - action: Allow
+      protocol: 112
+    - action: Allow
+      protocol: TCP
+      destination:
+        ports:
+          - 7946 # pod
+          - 2379 # pod etcd sources = other nodes of the cluster
+          - 2380 # pod etcd sources = other nodes of the cluster
+          - 7472 # pod
+          - 22 # ssh sources = external
+          - 9796 # pod node exporter sources = other nodes of the cluster
+          - 10250 # kubelet sources = other nodes of the cluster
+          - 6443 # pod kube-apiserver sources = other nodes and external
+          - 9808 # pod
+          - 5473 # pod calico-node sources = other nodes of the cluster
+    - action: Allow
+      protocol: TCP
+      destination:
+        ports:
+          - 9345 # rke2 servers sources = other nodes of the cluster
+    - action: Allow
+      protocol: UDP
+      destination:
+        ports:
+          - 4789 # pod
+          - 7946 # pod
+          - 68
+    - action: Log
+    - action: Allow
+  egress:
+    - action: Allow
