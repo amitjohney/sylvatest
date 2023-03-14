@@ -1048,7 +1048,7 @@ units:
             name: workload-capo-cluster-resources
             optional: true
       wait: true
-      components:
+      components: |-
         - '{{ tuple "../../components/dns-client/kind/KubeadmControlPlane"
                     (and (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
         - '{{ tuple "../../components/dns-client/kind/RKE2ControlPlane"
@@ -1067,6 +1067,9 @@ units:
                     (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
         - '{{ tuple "../../components/capo-root-volume"
                     (and .Values.cluster.capo.rootVolume (eq .Values.cluster.capi_providers.infra_provider "capo"))  | include "set-only-if" }}'
+        {{- range .Values.cluster.capo.additional_networks }}
+        - '{{ printf "../../components/capo-additional-networks/%s" .vnic_type }}'
+        {{- end }}
 
   workload-cluster-calico:
     enabled: '{{ and .Values.env_type_ci (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") | include "preserve-type" }}'

@@ -8,25 +8,34 @@ metadata:
 data:
   CLUSTER_NAME: {{ .Values.cluster.name }}
   MACHINE_IMAGE: {{ .Values.cluster.image }}
-{{ if eq .Values.cluster.capi_providers.infra_provider "capo" }}
+{{- if eq .Values.cluster.capi_providers.infra_provider "capo" }}
   FLAVOR_NAME: {{ .Values.cluster.capo.flavor_name }}
   WORKER_FLAVOR_NAME: {{ .Values.cluster.capo.worker_flavor_name }}
-{{ if hasKey .Values.cluster.capo "worker_az" }}
+{{- if hasKey .Values.cluster.capo "worker_az" }}
   WORKER_AZ: {{ .Values.cluster.capo.worker_az }}
-{{ end }}
+{{- end }}
   SSH_KEY_NAME: {{ .Values.cluster.capo.ssh_key_name }}
   CAPO_NETWORK_ID: {{ .Values.cluster.capo.network_id }}
-{{ if gt (len .Values.cluster.capo.rootVolume) 1 }}
+{{- if gt (len .Values.cluster.capo.additional_networks) 1 }}
+{{- range .Values.cluster.capo.additional_networks }}
+{{- if eq .vnic_type "virtio" }}
+  VIRTIO_VNIC_NETWORK_ID: {{ .network_id }}
+{{- else }}
+  DIRECT_VNIC_NETWORK_ID: {{ .network_id }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if gt (len .Values.cluster.capo.rootVolume) 1 }}
   DISK_SIZE: {{ .Values.cluster.capo.rootVolume.diskSize | quote }}
   VOLUME_TYPE: {{ .Values.cluster.capo.rootVolume.volumeType }}
-{{ end }}
-{{ end }}
-{{ if eq .Values.cluster.capi_providers.infra_provider "capv" }}
+{{- end }}
+{{- end }}
+{{- if eq .Values.cluster.capi_providers.infra_provider "capv" }}
   VS_DC_NAME: {{ .Values.cluster.capv.dataCenter }}
   VS_NETWORK: {{ .Values.cluster.capv.network }}
   VS_SERVER: {{ .Values.cluster.capv.server }}
   VS_TLS_THUMBPRINT: {{ .Values.cluster.capv.tlsThumbprint }}
-{{ end }}
+{{- end }}
   CLUSTER_EXTERNAL_IP: {{ .Values.cluster.cluster_external_ip }}
   CONTROL_PLANE_REPLICAS: {{ .Values.cluster.control_plane_replicas | quote }}
   WORKER_REPLICAS: {{ .Values.cluster.worker_replicas | quote }}

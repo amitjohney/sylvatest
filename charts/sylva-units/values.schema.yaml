@@ -508,6 +508,18 @@ properties:
                 network_id:  # -------------------------------
                   type: string
 
+                additional_networks:  # -------------------------------
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      network_id:
+                        type: string
+                      vnic_type:
+                        pattern: '(virtio|direct)'
+                        type: string
+
                 rootVolume:  # -------------------------------
                   type: object
                   additionalProperties: false
