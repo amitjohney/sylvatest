@@ -190,7 +190,7 @@ units:
             value: |
               #!/bin/bash
 
-              set -e
+              set -evx
 
               echo "-- Signal that the pivot job has started. This is used in bootstrap.sh to prevent accidental re-runs"
               kubectl annotate --overwrite kustomizations.kustomize.toolkit.fluxcd.io cluster pivot/started=true
