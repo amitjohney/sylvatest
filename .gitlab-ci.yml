@@ -9,9 +9,6 @@ default:
     - gitlab-org-docker
     # - docker
   image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image:v1-0-2
-  services:
-    - name: docker:dind
-      alias: docker
 
 variables:
   DOCKER_TLS_CERTDIR: ""
@@ -105,6 +102,9 @@ check-docs-markdown:
       - "**/*.md"
 
 .common-deployment:
+  services:
+    - name: docker:dind
+      alias: docker
   script_common:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_common[collapsed=true]\r\e[0KRunning common deployment steps\e[0m"
     - DOCKER_IP=$(getent hosts docker | awk '{print $1}')
@@ -186,6 +186,7 @@ check-docs-markdown:
 
 .test-capd:
   stage: deploy
+  services: !reference [.common-deployment, services]
   script:
     - !reference [.common-deployment, script_common]
     - !reference [.common-deployment, script_capd]
@@ -197,6 +198,7 @@ check-docs-markdown:
 
 .test-preview-capd:
   stage: deploy
+  services: !reference [.common-deployment, services]
   timeout: 15min
   script:
     - !reference [.common-deployment, script_common]
@@ -214,6 +216,7 @@ test-kubeadm-capd:
 
 .test-capo:
   stage: deploy
+  services: !reference [.common-deployment, services]
   script:
     - !reference [.common-deployment, script_common]
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capo[collapsed=true]\r\e[0KApplying specific capo configuration\e[0m"
