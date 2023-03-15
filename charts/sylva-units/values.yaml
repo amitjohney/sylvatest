@@ -1234,6 +1234,26 @@ units:
         secretRef:
           name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
 
+  coredns:
+    enabled: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/coredns
+      wait: true
+      patches:
+        - target:
+            kind: ConfigMap
+            name: coredns
+          patch: |
+            - op: replace
+              path: /metadata/name
+              value: '{{ (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | ternary "coredns" "rke2-coredns-rke2-coredns" }}'
+      postBuild:
+        substitute:
+          CLUSTER_EXTERNAL_IP: '{{ .Values.cluster.cluster_external_ip }}'
+          CLUSTER_EXTERNAL_DOMAIN: '{{ .Values.cluster.cluster_external_domain }}'
+
+
 ## stuff related to the 'cluster' unit
 
 cluster:
