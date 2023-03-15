@@ -30,7 +30,10 @@ git_repo_templates: # template to generate Flux GitRepository resources
     spec:
       url: https://gitlab.com/sylva-projects/sylva-core.git
       ref:
-        # tag/commit will take precedence, see https://fluxcd.io/flux/units/source/api/#source.toolkit.fluxcd.io/v1beta2.GitRepositoryRef
+        # this is provided only for reference
+        # in practice the sylva-core framework will always override this ref so that the
+        # currently checked out commit of sylva-core is used by sylva-units
+        # (you can grep the code for "CURRENT_COMMIT" to find out why)
         branch: main
 
   capi-rancher-import:
