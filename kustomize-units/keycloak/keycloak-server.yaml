@@ -5,10 +5,28 @@ metadata:
   labels:
     app: sso
 spec:
-  instances: 1
-  ingress:
-    enabled: false
+  db:
+    vendor: postgres
+    host: postgres
+    usernameSecret:
+      name: keycloak-db-secret
+      key: username
+    passwordSecret:
+      name: postgres
+      key: postgres-password
   hostname:
     hostname: ${KEYCLOAK_DNS}
   http:
     tlsSecret: keycloak-tls
+  ingress:
+    enabled: false
+  instances: 1
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: keycloak-initial-admin
+stringData:
+  username: admin
+  password: ${KEYCLOAK_ADMIN_PASSWORD}
+type: kubernetes.io/basic-auth

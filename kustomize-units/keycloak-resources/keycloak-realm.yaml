@@ -1,0 +1,32 @@
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: KeycloakRealmImport
+metadata:
+  name: sylva
+  namespace: keycloak
+  labels:
+    app: sso
+spec:
+  keycloakCRName: keycloak
+  realm:
+    id: sylva
+    realm: sylva
+    enabled: true
+    displayName: Sylva
+    loginTheme: base
+    accountTheme: keycloak
+    adminTheme: keycloak
+---
+apiVersion: legacy.k8s.keycloak.org/v1alpha1
+kind: KeycloakRealm
+metadata:
+  name: sylva
+  labels:
+    realm1: sylva   # Must match what is declared in external-keycloak.yml
+spec:
+  unmanaged: true
+  realm:
+    id: "sylva"
+    realm: "sylva"
+  instanceSelector:
+    matchLabels:
+      realm1: sylva
