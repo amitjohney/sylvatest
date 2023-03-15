@@ -22,7 +22,7 @@ ubuntu@sylva-core-capd-bb:~$ docker ps | grep management-cluster
 # and the just use the browser with a SOCKS v5 host for 127.0.0.1:8887 and enable "Proxy DNS when using SOCKS v5". The UIs will then be available.
 ```
 
-## Move past Docker Hub rate limitting
+## Move past Docker Hub rate limiting
 
 You can [run a local registry mirror](https://docs.docker.com/registry/recipes/mirror/#run-a-registry-as-a-pull-through-cache) and have the management cluster be configured with a `docker.io` registry mirror to point to it by setting `dockerio_registry_mirror` in environment-values with its endpoint. <br/>
 As an example, for CAPO Orange environments this is `dockerio_registry_mirror: "http://172.20.129.142"`, while for Orange managed GitLab runners this is `dockerio_registry_mirror: "http://192.168.74.5"`, set inside the runner [runners.environment](https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-runners-section) in variable `DOCKERIO_REGISTRY_MIRROR`.

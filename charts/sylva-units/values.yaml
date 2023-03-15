@@ -1342,7 +1342,7 @@ proxies:
   http_proxy: ""
   no_proxy: ""
 
-# add your local docker.io registry mirror to avoid rate limitting if required
+# add your local docker.io registry mirror to avoid rate limiting if required
 dockerio_registry_mirror: ""
 
 # boolean conditioning which unit we automatically enable in CI tests
