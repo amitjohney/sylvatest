@@ -3,6 +3,12 @@ set -o pipefail
 
 export BASE_DIR="$(realpath $(dirname $0))"
 
+if [[ -n "${CI_JOB_NAME:-}" ]]; then
+  export IN_CI=1
+else
+  export IN_CI=0
+fi
+
 echo_b() {
   if (( ${current_section_number:-0} > 0 )) ; then
     echo -e "\e[0Ksection_end:`date +%s`:section_$current_section_number\r\e[0K"
@@ -61,10 +67,10 @@ export CURRENT_COMMIT=${CI_COMMIT_SHA:-$(git rev-parse HEAD)}
 function exit_trap() {
     EXIT_CODE=$?
     # Call debug script if needed
-    if [[ $EXIT_CODE -ne 0 && ${DEBUG_ON_EXIT:-"0"} -eq 1 ]] || [[ -n ${CI_JOB_NAME} ]]; then
+    if [[ $EXIT_CODE -ne 0 && ${DEBUG_ON_EXIT:-"0"} -eq 1 ]] || [[ $IN_CI -eq 1 ]]; then
         echo_b "gathering debugging logs in debug-on-exit.log file"
         ${BASE_DIR}/tools/shell-lib/debug-on-exit.sh > debug-on-exit.log
-        if [[ -n ${CI_JOB_NAME} ]]; then 
+        if [[ $IN_CI -eq 1 ]]; then
           tools/gci-templates/scripts/units-reports.py --env-type=${CI_JOB_NAME}:bootstrap --input ${CI_PROJECT_DIR}/bootstrap-cluster-dump/flux-kustomizations.yaml --output bootstrap-cluster-units-report.xml
           tools/gci-templates/scripts/units-reports.py --env-type=${CI_JOB_NAME}:management --input ${CI_PROJECT_DIR}/management-cluster-dump/flux-kustomizations.yaml --output management-cluster-units-report.xml
         fi
