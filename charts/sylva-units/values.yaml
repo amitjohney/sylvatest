@@ -371,7 +371,7 @@ units:
       wait: false
 
   keycloak-legacy-operator:
-    enabled: yes
+    enabled: '{{ .Values.units.keycloak.enabled | include "preserve-type" }}'
     depends_on:
       keycloak: true
     repo: sylva-core
@@ -384,7 +384,7 @@ units:
       wait: true
 
   keycloak-resources:
-    enabled: yes
+    enabled: '{{ .Values.units.keycloak.enabled | include "preserve-type" }}'
     depends_on:
       keycloak: true
       keycloak-legacy-operator: true
