@@ -30,3 +30,4 @@ data:
   CLUSTER_EXTERNAL_IP: {{ .Values.cluster.cluster_external_ip }}
   CONTROL_PLANE_REPLICAS: {{ .Values.cluster.control_plane_replicas | quote }}
   WORKER_REPLICAS: {{ .Values.cluster.worker_replicas | quote }}
+  CLUSTER_EXTERNAL_DOMAIN: {{ .Values.cluster.cluster_external_domain }}
