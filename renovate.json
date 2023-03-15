@@ -23,7 +23,7 @@
       "matchStringsStrategy": "recursive",
       "matchStrings": [
         "units:[\\w\\W]*[ ]+",
-        "helm_repo_url:(?<registryUrl>.*)\\n[\\w\\W]*?chart: (?<depName>.*)\\n[\\w\\W]*?version: (?<currentValue>.*)\\n"
+        "^\\s*helm_repo_url:(?<registryUrl>.*)\\n[\\w\\W]*?chart: (?<depName>.*)\\n[\\w\\W]*?version: (?<currentValue>.*)\\n"
       ],
       "datasourceTemplate": "helm"
     },
@@ -32,7 +32,7 @@
       "matchStringsStrategy": "recursive",
       "matchStrings": [
         "git_repo_templates:[\\w\\W]*[ ]+",
-        "url:(?<depName>.*)\\n[\\w\\W]*?(branch:|tag:) (?<currentValue>.*)\\n"
+        "^\\s*url:(?<depName>.*)\\n[\\w\\W]*?(branch:|tag:) (?<currentValue>.*)\\n"
       ],
       "datasourceTemplate": "git-tags"
     }
