@@ -402,7 +402,7 @@ units:
         substitute:
           KEYCLOAK_DNS: '{{ .Values.cluster.keycloak.external_hostname }}'
           RANCHER_DNS: '{{ .Values.cluster.rancher.external_hostname }}'
-      wait: true
+      wait: false  # see https://gitlab.com/sylva-projects/sylva-core/-/issues/144
 
   capi:
     enabled: yes
