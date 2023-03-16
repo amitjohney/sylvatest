@@ -363,6 +363,7 @@ units:
       sylva-ca: true
       sylva-ca-certs: true
       ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
+      postgres: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/keycloak
