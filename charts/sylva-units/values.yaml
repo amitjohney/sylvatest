@@ -385,7 +385,7 @@ units:
       postBuild:
         substitute:
           KEYCLOAK_ADMIN_PASSWORD: '{{ .Values.cluster.admin_password }}'
-      wait: true
+      wait: false
 
   keycloak-resources:
     enabled: '{{ .Values.units.keycloak.enabled | include "preserve-type" }}'
@@ -402,7 +402,7 @@ units:
         substitute:
           KEYCLOAK_DNS: '{{ .Values.cluster.keycloak.external_hostname }}'
           RANCHER_DNS: '{{ .Values.cluster.rancher.external_hostname }}'
-      wait: true
+      wait: false  # see https://gitlab.com/sylva-projects/sylva-core/-/issues/144
 
   capi:
     enabled: yes
@@ -680,6 +680,7 @@ units:
           RANCHER_DNS: '{{ .Values.cluster.rancher.external_hostname }}'
           VAULT_DNS: '{{ .Values.cluster.vault.external_hostname }}'
           KEYCLOAK_DNS: '{{ .Values.cluster.keycloak.external_hostname }}'
+          FLUX_DNS: '{{ .Values.cluster.flux.external_hostname }}'
       wait: true
 
   rancher:
@@ -945,10 +946,14 @@ units:
           enabled: true
           className: nginx
           hosts:
-            - host: 'flux.{{ .Values.cluster.cluster_external_domain }}'
+            - host: '{{ .Values.cluster.flux.external_hostname }}'
               paths:
                 - path: /   # setting this to another value like '/flux' does not work (URLs coming back from flux webui aren't rewritten by nginx)
                   pathType: Prefix
+          tls:
+            - secretName: weave-tls
+              hosts:
+                - '{{ .Values.cluster.flux.external_hostname }}'
     helm_secret_values:
       adminUser:
         create: true
@@ -1330,6 +1335,9 @@ cluster:
 
   keycloak:
     external_hostname: 'keycloak.{{ .Values.cluster.cluster_external_domain }}'
+
+  flux:
+    external_hostname: 'flux.{{ .Values.cluster.cluster_external_domain }}'
 
   metal3:
     ironic_ip: 66.66.66.66 # replace me (this IP is the IP at which Ironic is made accessible from BMCs or PXE network)
