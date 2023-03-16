@@ -35,6 +35,20 @@
         "\\n\\s+url:(?<depName>.*)\\n[\\w\\W]*?(branch:|tag:) (?<currentValue>.*)\\n"
       ],
       "datasourceTemplate": "git-tags"
+    },
+    {
+      "datasourceTemplate": "docker",
+      "fileMatch": ["management-cluster-capv-values.yaml"],
+      "matchStrings": [
+        "#\\s?renovate: registryUrl=(?<registryUrl>.*?) image=(?<depName>.*?)\\s?\\s*kubeVipVersion:\\s?(?<currentValue>[\\w\\.\\-]*)"
+      ]
+    },
+    {
+      "datasourceTemplate": "docker",
+      "fileMatch": ["kubeadm-capo-cluster.yaml"],
+      "matchStrings": [
+        "#\\s?renovate: registryUrl=(?<registryUrl>.*?) image=(?<depName>.*?)\\s?\\s*image:.*:(?<currentValue>[\\w+\\.\\-]*)"
+      ]
     }
   ]
 }
