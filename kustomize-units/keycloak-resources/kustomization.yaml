@@ -7,4 +7,4 @@ resources:
 - keycloak-realm.yaml
 - keycloak-user.yaml
 - rancher-client.yaml
-
+- flux-client.yaml

@@ -1,11 +1,11 @@
 {{- $envAll := set . "Values" (include "interpret-values-gotpl" . | fromJson) -}}
-{{ range $repo_name, $repo_def := .Values.git_repo_templates }}
+{{ range $repo_name, $repo_def := .Values.source_templates }}
 {{- if hasKey $repo_def "auth" -}}
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: git-repo-auth-{{ $repo_name }}
+  name: source-repo-auth-{{ $repo_name }}
   labels:
     sylva-units.repo: {{ $repo_name }}
 {{ include "sylva-units.labels" $envAll | indent 4 }}

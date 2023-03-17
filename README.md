@@ -40,7 +40,7 @@ Management cluster configuration is done through the `sylva-units` chart values,
 
 ```yaml
 ### Chart values ###
-git_repo_templates: # defines Flux GitRepository resources
+source_templates: # defines Flux GitRepository/OCIRepository resources
   [...]
   sylva-core:
     spec:
