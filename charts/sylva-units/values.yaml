@@ -243,6 +243,18 @@ units:
             username: postgres
         nameOverride: postgres
 
+  vault-operator:
+    enabled: true
+    helm_repo_url: https://kubernetes-charts.banzaicloud.com
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: vault-operator
+          version: v1.19.0
+      targetNamespace: vault
+      install:
+        createNamespace: true
+
 # Vault assumes that the certificates vault-tls have been issued
   vault:
     enabled: yes
@@ -250,87 +262,14 @@ units:
       sylva-ca-certs: true
       ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
       local-path-provisioner: true
-    helm_repo_url: https://helm.releases.hashicorp.com
-    helmrelease_spec:
-      chart:
-        spec:
-          chart: vault
-          version: v0.22.0
-      targetNamespace: vault
-      values:
-        server:
-          extraEnvironmentVars:
-            VAULT_CACERT: /vault/userconfig/vault-tls/ca.crt
-            VAULT_ADDR: https://127.0.0.1:8200
-          extraVolumes:
-          - type: secret
-            name: vault-tls
-          ha:
-            enabled: true
-            replicas: 1
-            raft:
-              enabled: true
-              setNodeId: true
-              # FIXME: update storage to raft when local storage on the management cluster is available
-              config: |
-                 ui = true
-                 listener "tcp" {
-                   tls_disable = 0
-                   address = "[::]:8200"
-                   cluster_address = "[::]:8201"
-                   tls_cert_file = "/vault/userconfig/vault-tls/tls.crt"
-                   tls_key_file = "/vault/userconfig/vault-tls/tls.key"
-                 }
-                 storage "raft" {
-                     path = "/vault/data"
-                     retry_join {
-                         leader_api_addr = "https://vault-0.vault-internal:8200"
-                         leader_ca_cert_file = "/vault/userconfig/vault-tls/ca.crt"
-                         leader_client_cert_file = "/vault/userconfig/vault-tls/tls.crt"
-                         leader_client_key_file = "/vault/userconfig/vault-tls/tls.key"
-                     }
-                 }
-          dataStorage:
-            enabled: true
-            size: 10Gi
-            mountPath: "/vault/data"
-          readinessProbe:
-            enabled: false
-          ingress:
-            enabled: true
-            annotations:
-              kubernetes.io/ingress.class: nginx
-              nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-              #cert-manager.io/issuer: "ca-issuer"
-            pathType: Prefix
-            activeService: false
-            hosts:
-            - host: '{{ .Values.cluster.vault.external_hostname }}'
-              paths: []
-            extraPaths:
-            - path: /*
-              pathType: Prefix
-              backend:
-                service:
-                  name: vault-ui
-                  port:
-                    number: 8200
-            tls:
-            - secretName: vault-tls
-              hosts:
-              - '{{ .Values.cluster.vault.external_hostname }}'
-        ui:
-          enabled: true
-        csi:
-          enabled: true
-          volumes:
-          - name: vault-ca
-            secret:
-              secretName: vault-tls
-          volumeMounts:
-          - name: vault-ca
-            mountPath: /vault/tls
-            readOnly: true
+      vault-operator: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/vault
+      wait: true
+      postBuild:
+        substitute:
+          VAULT_DNS: '{{ .Values.cluster.vault.external_hostname }}'
 
   cis-operator-crd:
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | include "preserve-type" }}'
