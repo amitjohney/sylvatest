@@ -66,7 +66,7 @@ machines:
     # -- kube-vip version
     # Renovate Bot needs additional information to detect the kube-vip version:
     # renovate: registryUrl=https://ghcr.io image=kube-vip/kube-vip
-    kubeVipVersion: v0.4.2
+    kubeVipVersion: v0.5.11
     # -- Control plane VSphere resource pool
     resourcePool: # replace me
     # -- Control plane VSphere machine template to clone, must contain kubeadm at the same version as specified in kubernetes.version
