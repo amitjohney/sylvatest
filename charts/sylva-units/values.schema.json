@@ -43,7 +43,7 @@
   "required": [
     "registry_secret",
     "git_repo_spec_default",
-    "git_repo_templates",
+    "source_templates",
     "helm_repo_spec_default",
     "unit_kustomization_spec_default",
     "unit_helmrelease_spec_default",
@@ -79,7 +79,10 @@
     "git_repo_spec_default": {
       "type": "object"
     },
-    "git_repo_templates": {
+    "oci_repo_spec_default": {
+      "type": "object"
+    },
+    "source_templates": {
       "type": "object",
       "additionalProperties": false,
       "patternProperties": {
@@ -94,16 +97,39 @@
             },
             {
               "required": [
-                "existing_gitrepository"
+                "existing_source"
               ]
             }
           ],
           "properties": {
-            "existing_gitrepository": {
-              "type": "string"
+            "existing_source": {
+              "type": "object",
+              "required": [
+                "name",
+                "kind"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "GitRepository",
+                    "OCIRepository"
+                  ]
+                }
+              }
             },
             "auth": {
               "$ref": "#/$defs/username-password"
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "GitRepository",
+                "OCIRepository"
+              ]
             },
             "spec": {
               "type": "object",
@@ -115,32 +141,6 @@
                 "url": {
                   "type": "string",
                   "format": "uri"
-                },
-                "ref": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "anyOf": [
-                    {
-                      "required": [
-                        "branch"
-                      ]
-                    },
-                    {
-                      "required": [
-                        "tag"
-                      ]
-                    },
-                    {
-                      "required": [
-                        "commit"
-                      ]
-                    }
-                  ],
-                  "patternProperties": {
-                    "(branch|tag|commit)": {
-                      "type": "string"
-                    }
-                  }
                 }
               },
               "not": {
@@ -149,7 +149,97 @@
                 ]
               }
             }
-          }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "kind": {
+                    "const": "GitRepository"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "spec": {
+                    "type": "object",
+                    "properties": {
+                      "ref": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "anyOf": [
+                          {
+                            "required": [
+                              "branch"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "tag"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "commit"
+                            ]
+                          }
+                        ],
+                        "patternProperties": {
+                          "(branch|tag|commit)": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "kind": {
+                    "const": "OCIRepository"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "spec": {
+                    "type": "object",
+                    "properties": {
+                      "ref": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "anyOf": [
+                          {
+                            "required": [
+                              "digest"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "semver"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "tag"
+                            ]
+                          }
+                        ],
+                        "patternProperties": {
+                          "(diges|semver|tag)": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
         }
       }
     },

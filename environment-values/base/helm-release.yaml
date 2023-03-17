@@ -45,6 +45,8 @@ spec:
     targetPath: cluster.cluster_external_ip
     optional: true
   values:
-    git_repo_templates:
+    source_templates:
       sylva-core:
-        existing_gitrepository: sylva-core
+        existing_source:
+          name: sylva-core
+          kind: GitRepository
