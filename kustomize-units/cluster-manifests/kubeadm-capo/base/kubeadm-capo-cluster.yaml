@@ -73,7 +73,7 @@ spec:
               value: :2112
             # Renovate Bot needs additional information to detect the kube-vip version:
             # renovate: registryUrl=https://ghcr.io image=kube-vip/kube-vip
-            image: ghcr.io/kube-vip/kube-vip:v0.5.0
+            image: ghcr.io/kube-vip/kube-vip:v0.5.11
             imagePullPolicy: Always
             name: kube-vip
             resources: {}
