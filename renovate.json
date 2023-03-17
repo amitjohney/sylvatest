@@ -3,19 +3,27 @@
   "extends": [
     "config:base"
   ],
-  "labels": ["run-e2e-tests", "renovate"],
+  "labels": [
+    "run-e2e-tests",
+    "renovate"
+  ],
   "gitlabci": {
-    "fileMatch": ["gitlab-ci\\.yml$"]
+    "fileMatch": [
+      "gitlab-ci\\.yml$"
+    ]
   },
   "regexManagers": [
     {
       "fileMatch": "kustomization.yaml",
-      "matchStrings": ["https:\/\/github\.com\/(?<depName>.*\/.*?)\/releases\/download\/(?<currentValue>.*?)\/"],
+      "matchStrings": ["https:\/\/github\.com\/(?<depName>.*\/.*?)\/releases\/download\/(?<currentValue>.*?)\/"
+      ],
       "datasourceTemplate": "github-releases"
     },
     {
       "fileMatch": "kustomization.yaml",
-      "matchStrings": ["https:\/\/raw.githubusercontent.com\/(?<depName>[^\/]*\/[^\/]*)\/(?<currentValue>.*?)\/"],
+      "matchStrings": [
+        "https:\/\/raw.githubusercontent.com\/(?<depName>[^\/]*\/[^\/]*)\/(?<currentValue>.*?)\/"
+      ],
       "datasourceTemplate": "github-tags"
     },
     {
@@ -31,7 +39,7 @@
       "fileMatch": "values.yaml",
       "matchStringsStrategy": "recursive",
       "matchStrings": [
-        "git_repo_templates:[\\w\\W]*[ ]+",
+        "source_templates:[\\w\\W]*[ ]+",
         "\\n\\s+url:(?<depName>.*)\\n[\\w\\W]*?(branch:|tag:) (?<currentValue>.*)\\n"
       ],
       "datasourceTemplate": "git-tags"

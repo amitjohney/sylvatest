@@ -55,10 +55,7 @@ metadata:
     release-time: "{{ $time }}"
 spec:
 {{ .Values.unit_kustomization_spec_default | toYaml | indent 2 }}
-  sourceRef:
-    kind: GitRepository
-    # GitRepository created by templates/gitrepository-self.yaml unless an existing repository is used
-    name: {{ hasKey (index .Values.git_repo_templates "sylva-core") "existing_gitrepository" | ternary (index .Values.git_repo_templates "sylva-core").existing_gitrepository "sylva-core" }}
+  sourceRef: {{ index .Values.source_templates "sylva-core" | dig "existing_source" (dict "kind" "GitRepository" "name" "sylva-core") | toYaml | nindent 4 }}
   path: ./kustomize-units/sylva-units-status
   dependsOn: {{ $deps | toYaml | nindent 4 }}
   wait: true

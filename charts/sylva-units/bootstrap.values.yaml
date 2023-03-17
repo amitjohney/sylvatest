@@ -83,7 +83,7 @@ units:
               kubectl get secret management-cluster-kubeconfig -o jsonpath='{.data.value}' | base64 -d > management-cluster-kubeconfig
 
               echo "-- Copy secrets and configmaps from bootstrap to management cluster"
-              kubectl get configmaps,secrets,gitrepository \
+              kubectl get configmaps,secrets,gitrepository,ocirepository \
                 -l copy-from-bootstrap-to-management= \
                 -o json \
                   | jq '.items[] | del(.metadata.labels."helm.toolkit.fluxcd.io/name") | del(.metadata.labels."copy-from-bootstrap-to-management") | del(.metadata.labels."helm.toolkit.fluxcd.io/namespace") | del(.metadata.resourceVersion) | del(.metadata.uid) | del(.metadata.creationTimestamp)' \
@@ -121,8 +121,8 @@ units:
       values: |
         {{- $chartValues := (lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units").spec.values -}}
         {{- $disableCluster := dict "units" (dict "cluster" (dict "enabled" false)) -}}
-        {{- $gitRepoSelf := dict "git_repo_templates" (dict "sylva-core" (dict "existing_gitrepository" "sylva-core")) -}}
-        {{- mergeOverwrite $chartValues $disableCluster $gitRepoSelf | include "preserve-type" -}}
+        {{- $sourceSelf := dict "source_templates" (dict "sylva-core" (dict "existing_source" (dict "name" "sylva-core" "kind" "GitRepository"))) -}}
+        {{- mergeOverwrite $chartValues $disableCluster $sourceSelf | include "preserve-type" -}}
       valuesFrom: '{{ (lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units").spec.valuesFrom | include "preserve-type" }}'
 
   reconcile-sylva-units:
