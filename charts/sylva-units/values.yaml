@@ -224,7 +224,7 @@ units:
 
 # Postgresql deployment for keycloak
   postgres:
-    enabled: yes
+    enabled: '{{ .Values.units.keycloak.enabled | include "preserve-type" }}'
     depends_on:
       namespace-defs: true
     helm_repo_url: https://charts.bitnami.com/bitnami
