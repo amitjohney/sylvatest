@@ -231,16 +231,19 @@ units:
 As this feature is implemented using the helm templating function (aka "tpl") that only returns strings, you should pass it to the "preserve-type" template if want to prevent the result from being transformed to a string:
 
 ```yaml
-git_auth_default:
-  username: your_user_name
-  password: glpat-XXXXX
-
 source_templates:
   sylva-core:
-    kind: OCIRepository
+    kind: GitRepository
     spec:
       ...
-    auth: '{{ .Values.git_auth_default | include "preserve-type" }}'
+    auth:
+      username: foo
+      password: pass
+
+  other-repo:
+    spec:
+      ...
+    auth: '{{ (index .Values.source_templates "sylva-core").auth | include "preserve-type" }}'  # copy auth from "sylva-core" source, preserving dict type
 ```
 
 There is also a special "set-only-if" template that enable to conditionally add an item to a list or dict:
