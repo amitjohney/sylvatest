@@ -282,3 +282,29 @@ cleanup-kubeadm-capo:
     ENV_NAME: "kubeadm-capo"
   needs:
     - test-kubeadm-capo
+
+scheduled-cleanup-capo:
+  stage: delete
+  image:
+    name: registry.gitlab.com/t6306/components/docker-images/ci-image:openstack-client-v1.0
+  script:
+    - !reference [.common-deployment, os_cloud]
+    - OS_ARGS="--os-cloud capo_cloud --insecure --os-compute-api-version 2.26"
+    - |
+      for VM in $(openstack ${OS_ARGS} server list -f value -c Name); do
+        openstack ${OS_ARGS} server show $VM -c tags -f json | jq .tags[] >> tags.txt
+      done
+    - cat tags.txt | sort | uniq > unique_tags.txt
+    - |
+      while read -r CAPO_TAG; do
+        sh ./tools/openstack-cleanup.sh capo_cloud ${CAPO_TAG}
+      done <unique_tags.txt
+    - |
+      if [[ $(openstack ${OS_ARGS} server list-f value -c Name) ]]; then
+          echo "There are still machines left in SylvaCore.CI OpenStack tenant. Please have cloud administrator check."
+          exit 1
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+  tags:
+    - falcon
