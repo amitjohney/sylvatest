@@ -463,6 +463,11 @@ units:
     kustomization_spec:
       path: ./kustomize-units/capi
       wait: true
+      postBuild:
+        substitute:
+          force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
+          # defined in upstream manifests used from kustomize-units/capi
+          CLUSTER_TOPOLOGY: "true"
 
   capd:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" }}'
@@ -473,7 +478,10 @@ units:
       path: '{{ ternary "./kustomize-units/capd/base" "./kustomize-units/capd/rke2" (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") }}'
       postBuild:
         substitute:
+          force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
+          # defined in upstream manifests used from kustomize-units/capd/base
           CAPD_DOCKER_HOST: '{{ .Values.cluster.capd.docker_host }}'
+          CLUSTER_TOPOLOGY: "true"
       wait: true
 
   capo:
@@ -517,6 +525,11 @@ units:
     kustomization_spec:
       path: ./kustomize-units/cabpk
       wait: true
+      postBuild:
+        substitute:
+          force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
+          # defined in upstream manifests used from kustomize-units/cabpk
+          CLUSTER_TOPOLOGY: "true"
 
   cabpr:  # RKE2
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
