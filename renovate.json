@@ -57,6 +57,13 @@
       "matchStrings": [
         "#\\s?renovate: registryUrl=(?<registryUrl>.*?) image=(?<depName>.*?)\\s?\\s*image:.*:(?<currentValue>[\\w+\\.\\-]*)"
       ]
+    },
+    {
+      "datasourceTemplate": "docker",
+      "fileMatch": ["vault.yaml"],
+      "matchStrings": [
+        "spec:\\n[\\w\\W]*?.*image: (?<depName>.*)\\:(?<currentValue>.*)"
+      ]
     }
   ]
 }
