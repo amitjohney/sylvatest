@@ -15,14 +15,6 @@ metadata:
 spec:
     {{ $secret_ref := dict "secretRef" (dict "name" "source-repo-auth-sylva-core") -}}
     {{- $spec := dict -}}
-    {{- $spec = mergeOverwrite $spec ($repo_def.kind | eq "GitRepository" | ternary $envAll.Values.git_repo_spec_default $envAll.Values.oci_repo_spec_default) $repo_def.spec $secret_ref -}}
-    {{- if not (hasKey $spec "url") -}}
-        {{- if not (hasKey $repo_def "base_url") -}}
-            {{- fail (printf "repository template '%s' has neither '.spec.url' nor '.base_url' defined" $repo_name) -}}
-        {{- end -}}
-        {{- $_ := set $spec "url" (printf "%s/%s.git" $repo_def.base_url $unit_name) -}}
-    {{- else if hasKey $repo_def "base_url" -}}
-        {{- fail (printf "repository template '%s' has both '.spec.url' and '.base_url' defined" $repo_name) -}}
-    {{- end }}
+    {{- $spec = mergeOverwrite $spec ($repo_def.kind | eq "GitRepository" | ternary $envAll.Values.git_repo_spec_default $envAll.Values.oci_repo_spec_default) $repo_def.spec $secret_ref }}
 {{ $spec | toYaml | indent 2 }}
 {{- end -}}
