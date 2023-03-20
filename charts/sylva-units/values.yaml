@@ -185,7 +185,7 @@ units:
         installCRDs: true
 
   trivy-operator:
-    enabled: yes
+    enabled: no
     helm_repo_url: https://aquasecurity.github.io/helm-charts/
     helmrelease_spec:
       chart:
