@@ -11,33 +11,23 @@ units:
     enabled: yes
 
   cluster:
-    repo: cluster-vsphere
     kustomization_spec:
-    helmrelease_spec:
-      chart:
-        spec:
-          chart: .
-      interval: 10m0s
-      releaseName: management-cluster
-      targetNamespace: default
-      valuesFrom:
-        - kind: Secret
-          name: management-cluster-secrets
-          valuesKey: values
-    helm_secret_values:
-      vsphere:
-        username: '{{ .Values.cluster.capv.username }}'
-        password: '{{ .Values.cluster.capv.password }}'
-        datacenter: '{{ .Values.cluster.capv.dataCenter }}'
-        network: '{{ .Values.cluster.capv.network }}'
-        server: '{{ .Values.cluster.capv.server }}'
-        tlsThumbprint: '{{ .Values.cluster.capv.tlsThumbprint }}'
+      path: ./kustomize-units/cluster-manifests/kubeadm-capv/base
+      postBuild:
+        substitute:
+          SSH_KEY: '{{ .Values.cluster.capv.ssh_key }}'
+          VS_USERNAME: '{{ .Values.cluster.capv.username }}'
+    kustomization_substitute_secrets:
+      VS_PASSWORD: '{{ .Values.cluster.capv.password }}'
 
 cluster:
   name: management-cluster
+  k8s_version: v1.24.10
+  control_plane_replicas: 1
+  worker_replicas: 3
 
   # image reference depends provider
-  image: "ubuntu-2004-kube-v1.22.8"
+  image: "ubuntu-2004-kube-v1.24.10"
 
   # for now, the choice below needs to be made
   # consistently with the choice of a matching kustomization path
@@ -54,8 +44,19 @@ cluster:
     network: # replace me
     # -- VSphere server dns name
     server: # replace me
+    # -- VSphere datastore name
+    dataStore: # replace me
     # -- VSphere https TLS thumbprint
     tlsThumbprint: # replace me
+    # -- SSH public key for VM access
+    ssh_key: # replace me
+    # -- VSphere folder
+    folder: # replace me
+    # -- VSphere resoucepool
+    resourcePool: # replace me
+    # -- VSphere storage policy name
+    storagePolicyName: # replace me
+
 
   cluster_external_ip: # replace me
 

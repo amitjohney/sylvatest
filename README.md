@@ -314,8 +314,18 @@ Before trigerring bootstrap.sh, some prerequisites need to be satisfied.
           network: # replace me
           # -- VSphere server dns name
           server: # replace me
+          # -- VSphere datastore name
+          dataStore: # replace me
           # -- VSphere https TLS thumbprint
           tlsThumbprint: # replace me
+          # -- SSH public key for VM access
+          ssh_key: # replace me
+          # -- VSphere folder
+          folder: # replace me
+          # -- VSphere resoucepool
+          resourcePool: # replace me
+          # -- VSphere storage policy name
+          storagePolicyName: # replace me
 
         cluster_external_ip: # replace me
 
@@ -334,65 +344,6 @@ Before trigerring bootstrap.sh, some prerequisites need to be satisfied.
   ```
 
 > **_NOTE:_** If your bootstrap cluster machine is behind a corporate proxy, then all the above proxies should be included as environment variables before running bootstrap.sh
-
-- The deployment of the management cluster on vSphere uses the [cluster-vsphere](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/cluster-vsphere) Helm Chart to configure and install the relevant manifests. The file `environment-values/my-capv-env/management-cluster-capv-values.yaml` provides the values for the chart. Adapt it to suit your environment.
-  - The provided file contains the minimum set of values required to setup the cluster. There are a few values that depends on the specific vSphere environment and have to be filled:
-    - Specify the API server endpoint. It must corresponds to the value provided to `cluster_external_ip`.
-
-    ```yaml
-    cluster:
-    controlPlaneEndpoint:
-      # -- IP or DNS name of the kubernetes endpoint
-      host: # set the same value as ./values.yaml:cluster.cluster_external_ip
-    ```
-
-    - In case your environment is behind a corporate proxy, replace the proxy placeholders with the values that apply to your setup
-    - To access the VMs of the cluster via SSH, provide your SSH key:
-
-    ```yaml
-    # Vsphere VMs configuration
-    machines:
-      # -- users to create on machines
-      # see https://github.com/kubernetes-sigs/cluster-api/blob/main/bootstrap/kubeadm/api/v1beta1/kubeadmconfig_types.go#L257 for documentation about user config object
-      users:
-      - name: capv
-        sshAuthorizedKeys:
-        - ssh-rsa <your ssh key>
-          <username>@<hostname>
-        sudo: ALL=(ALL) NOPASSWD:ALL
-    ```
-
-    - Provide a few additional values specific to the vSphere environment:
-
-    ```yaml
-    # Control plane VMs configuration
-    controlPlane:
-      ...
-      # -- Control plane VSphere resource pool
-      resourcePool: # replace me
-      # -- Control plane VSphere machine template to clone, must contain kubeadm at the same version as specified in kubernetes.version
-      template: # replace me, use the same value used for the above image field
-      # -- Control plane VSphere folder to store VM
-      folder: # replace me
-      # -- Control plane VSphere datastore to create/locate machine
-      dataStore: # replace me
-    
-    ...
-
-    workers:
-    # -- Name of the standard worker pool, you can define as many others pools as required
-      worker-md-0:
-        ...
-        # -- workers VSphere resource pool
-        resourcePool: # replace me
-        # -- workers VSphere machine template to clone, must contain kubeadm at the same version as specified in kubernetes.version
-        template: # replace me, use the same value used for the above image field
-        # -- workers VSphere folder to store VM
-        folder: # replace me
-        # -- workers VSphere datastore to create/locate machine
-        dataStore: # replace me
-
-    ```
 
 - Run the bootstrap script:
 

@@ -709,6 +709,9 @@ properties:
                 server:  # -------------------------------
                   type: string
 
+                dataStore:  # -------------------------------
+                  type: string
+
                 tlsThumbprint:  # -------------------------------
                   type: string
 
@@ -716,6 +719,18 @@ properties:
                   type: string
 
                 password:  # -------------------------------
+                  type: string
+
+                ssh_key:  # -------------------------------
+                  type: string
+
+                folder:  # -------------------------------
+                  type: string
+
+                resourcePool:  # -------------------------------
+                  type: string
+
+                storagePolicyName:  # -------------------------------
                   type: string
 
   proxies:  # -------------------------------
