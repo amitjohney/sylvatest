@@ -43,7 +43,10 @@ spec:
       name: ${CLUSTER_NAME}-cp-template
       namespace: default
   kubeadmConfigSpec:
-    preKubeadmCommands: []
+    preKubeadmCommands:
+      - echo "fs.inotify.max_user_watches = 524288" >> /etc/sysctl.conf
+      - echo "fs.inotify.max_user_instances = 512" >> /etc/sysctl.conf
+      - sysctl --system
     files: []
     clusterConfiguration:
       apiServer:
