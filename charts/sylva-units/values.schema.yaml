@@ -626,10 +626,10 @@ properties:
                                   type: string
                                 password:  # -------------------------------
                                   type: string
-                                region:  # -------------------------------
-                                  anyOf:
-                                    - type: string
-                                    - type: "null"
+                            region_name:  # -------------------------------
+                              anyOf:
+                                - type: string
+                                - type: "null"
                             verify:  # -------------------------------
                               type: boolean
 

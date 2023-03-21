@@ -1258,7 +1258,7 @@ cluster:
             project_name: # replace me
             username: # replace me
             password: # replace me
-            region: # optional
+          region_name: # optional
           verify: # e.g. false
     #cacert: # cert used to validate CA of OpenStack APIs
     storageClass:
