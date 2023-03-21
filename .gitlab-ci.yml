@@ -306,5 +306,7 @@ scheduled-cleanup-capo:
       fi
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: always
+      allow_failure: false
   tags:
     - falcon
