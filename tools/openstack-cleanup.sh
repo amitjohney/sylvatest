@@ -25,6 +25,13 @@ openstack ${OS_ARGS} security group list --tags ${CAPO_TAG} -f value -c ID | xar
 
 openstack ${OS_ARGS} stack list --tags ${CAPO_TAG} -f value -c ID | xargs -r openstack ${OS_ARGS} stack delete || true
 
+for vol in $(openstack ${OS_ARGS} volume list --status available -f value -c Name | grep ^pvc); do
+    vol_property=$(openstack ${OS_ARGS} volume show $vol -c properties -f json | jq '.properties."cinder.csi.openstack.org/cluster"' -r)
+    if [ "${vol_property}" = "${CAPO_TAG}" ]; then
+        openstack ${OS_ARGS} volume delete $vol --purge
+    fi
+done
+
 if [[ $(openstack ${OS_ARGS} server list --tags ${CAPO_TAG}) ]]; then
     echo "There CAPO machines tagged ${CAPO_TAG} were not removed, please try again"
     exit 1
