@@ -569,6 +569,7 @@ units:
       install:
         createNamespace: true
       values:
+        clusterID: '{{ .Values.cluster.capo.resources_tag }}'
         storageClass:
           enabled: false
           delete:
