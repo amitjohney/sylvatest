@@ -711,15 +711,19 @@ units:
       # these healthchecks are added so that this unit does not become ready before
       # a few things that Rancher sets up behind the scene is ready
       healthChecks:
-        - kind: CustomResourceDefinition
+        - apiVersion: apiextensions.k8s.io/v1
+          kind: CustomResourceDefinition
           name: clusters.provisioning.cattle.io  # this is because capi-rancher-import needs this
-        - kind: Deployment
+        - apiVersion: apps/v1
+          kind: Deployment
           name: rancher-webhook
           namespace: cattle-system
-        - kind: Service
+        - apiVersion: v1
+          kind: Service
           name: rancher-webhook
           namespace: cattle-system
-        - kind: Service
+        - apiVersion: v1
+          kind: Service
           name: webhook-service
           namespace: cattle-system
 
