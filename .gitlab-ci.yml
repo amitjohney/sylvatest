@@ -291,8 +291,15 @@ scheduled-cleanup-capo:
     - !reference [.common-deployment, os_cloud]
     - |
       for STACK in $(openstack --os-cloud capo_cloud stack list -f value -c "Stack Name" | grep '^capo-cluster' ); do
-        CAPO_TAG=$(openstack --os-cloud capo_cloud stack show $STACK -c tags -f json | jq .tags[])
-        sh ./tools/openstack-cleanup.sh capo_cloud ${CAPO_TAG}
+        STACK_TIME=$(date -d "$(openstack --os-cloud capo_cloud stack show $STACK -c creation_time -f value | tr T ' ' | tr -d Z )" +%s)
+        THIS_TIME=$(date +%s)
+        if [ $((THIS_TIME-STACK_TIME)) -gt 7200 ]; then
+            CAPO_TAG=$(openstack --os-cloud capo_cloud stack show $STACK -c tags -f json | jq .tags[])
+            sh ./tools/openstack-cleanup.sh capo_cloud ${CAPO_TAG}
+            openstack ${OS_ARGS} volume delete $vol --purge
+        else
+            echo "The resources tagged ${CAPO_TAG} were created less than 2 hours ago and will not deleted at this time."
+        fi
       done
     - |
       if [ -n "$(openstack --os-cloud capo_cloud server list -f value -c ID)" ]; then
