@@ -296,7 +296,7 @@ scheduled-cleanup-capo:
         if [ $((THIS_TIME-STACK_TIME)) -gt 7200 ]; then
             CAPO_TAG=$(openstack --os-cloud capo_cloud stack show $STACK -c tags -f json | jq .tags[])
             sh ./tools/openstack-cleanup.sh capo_cloud ${CAPO_TAG}
-            openstack ${OS_ARGS} volume delete $vol --purge
+            openstack --os-cloud capo_cloud volume delete $vol --purge
         else
             echo "The resources tagged ${CAPO_TAG} were created less than 2 hours ago and will not deleted at this time."
         fi
