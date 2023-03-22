@@ -243,7 +243,7 @@ source_templates:
   other-repo:
     spec:
       ...
-    auth: '{{ (index .Values.source_templates "sylva-core").auth | include "preserve-type" }}'  # copy auth from "sylva-core" source, preserving dict type
+    auth: '{{ dig "sylva-core" "auth" dict .Values.source_templates | include "preserve-type" }}'  # copy auth from "sylva-core" source, preserving dict type, defaulting to an empty dict
 ```
 
 There is also a special "set-only-if" template that enable to conditionally add an item to a list or dict:
@@ -269,5 +269,69 @@ units:
           - 2
           - '{{ tuple 3 (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | include "set-only-if" }}'
 ```
+
+It is also possible, with some constraints to refer to values that are themselves templated (aka "nested templating").
+
+```yaml
+a: foobar             # this is a plain, non templated, value
+b: "{{ .Values.a }}"  # this is a templated value, without "nesting"
+c: "{{ .Values.b }}"  # this is a templated value, _with_ "nesting" (ie. b is a template)
+```
+
+When doing nested templating, sometimes we want to force interpretation before manipulating the data.
+For this to be possible, you **must** use some helpers, as illustrated by the following examples:
+
+* processing a value that should be a _string_ after template evaluation:
+
+  * this **DOES NOT WORK**:
+
+    ```yaml
+    a: foobar
+    b: "{{ .Values.a }}"
+    # WRONG nested templating: it gives the base64 of the '{{ .Values.a }}' string, not the base64 of "foobar"
+    d-broken: '{{ .Values.b | b64enc }}'  # WRONG
+    ```
+
+  * ... you need to do this instead:
+
+    ```yaml
+    a: foobar
+    b: "{{ .Values.a }}"
+    # working version (gives the base64 of "foobar"):
+    d: '{{ tuple . .Values.b | include "interpret-as-string" | b64enc }}'
+    ```
+
+* processing a value that should be a _boolean_ after template evaluation:
+
+  * this **DOES NOT WORK**:
+
+    ```yaml
+    a: false
+    b: "{{ .Values.a }}"
+    # WRONG nested templating: it gives the boolean 'not' of the '{{ .Values.a }}' string, which will always evaluate to _false_ (because the string is not empty)
+    e-broken: '{{ not .Values.b }}'
+    ```
+
+  * ... you need to do this instead:
+
+    ```yaml
+    a: false
+    b: "{{ .Values.a }}"
+    # working version:
+    e: '{{ not (tuple . .Values.b | include "interpret-for-test") | include "as-bool" }}'
+    ```
+
+  * for the `enabled` and `depends_on.*` fields, the syntax is simplified (the framework calls the helpers for you, when possible):
+
+  ```yaml
+  units:
+    # ...
+    foo-unit:
+      # simple case where the value isn't manipulated
+      enabled: '{{ .Values.units.bar.enabled }}'  # simple case where the value isn't manipulated
+      depends_on:
+        # need to use "interpret-for-test" if the value is manipulated, but no need to use 'as-bool'
+        x: '{{ not (tuple . .Values.xyz.baz.enabled | include "interpret-for-test") }}'
+  ```
 
 For more details on templating features & limitations, refer to [`_interpret-values.tpl`](templates/_interpret-values.tpl)

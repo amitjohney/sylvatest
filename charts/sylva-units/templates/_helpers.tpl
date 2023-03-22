@@ -89,7 +89,7 @@ Usage:
 {{ if tuple $envAll "unit-name" | include "unit-enabled" }}
 
 */}}
-{{ define "unit-enabled" }}
+{{- define "unit-enabled" -}}
   {{- $envAll := index . 0 -}}
   {{- $unit_name := index . 1 -}}
 
@@ -100,16 +100,12 @@ Usage:
   {{- else -}}
       {{- $unit_def := index $envAll.Values.units $unit_name -}}
       {{- if $unit_def -}}
-          {{- $unit_enabled = dig "enabled" true $unit_def -}}
+          {{- $unit_enabled = index (tuple $envAll $unit_def.enabled $unit_name | include "interpret-as-bool" | fromJson) "encapsulated-result" -}}
       {{- end -}}
-  {{- end -}}
-
-  {{- if not (kindIs "bool" $unit_enabled) -}}
-    {{- fail (printf "units.%s.enabled is not a boolean (is a %s: %s)" $unit_name (kindOf $unit_enabled) $unit_enabled) -}}
   {{- end -}}
 
   {{- if $unit_enabled -}}
 true
-  {{- else -}}
+  {{- else -}} {{- /* we "emulate" a 'false' value by returning an empty string which the caller will evaluate as False */ -}}
   {{- end -}}
-{{ end }}
+{{- end -}}

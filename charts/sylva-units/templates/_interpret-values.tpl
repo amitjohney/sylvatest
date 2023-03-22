@@ -95,9 +95,9 @@ value: "prefix-{{ 42 }}"                                    -> will also produce
 
 {{ define "interpret-values-gotpl" }}
 {{ $envAll := . }}
-{{ range until 3 }}
+{{/* .Values._internal is interpreted first, values compute have the same value once and for all */}}
+{{ $_ := set $envAll.Values "_internal" (index (tuple $envAll $envAll.Values._internal | include "interpret-inner-gotpl" | fromJson) "result") }}
 {{ $_ := set $envAll "Values" (index (tuple $envAll $envAll.Values | include "interpret-inner-gotpl" | fromJson) "result") }}
-{{ end }}
 {{ $envAll.Values | toJson }}
 {{ end }}
 
@@ -200,6 +200,23 @@ Note well that there are a few limitations:
 
     y: '{{ .Values.bar | include "preserve-type }}' -> will produce the expected content
 
+* when a template refers to values that are themselves templated (aka "nested templating")
+  you need to use helpers in some case:
+
+    a: "foobar"  # this is a plain, non templated value
+    b: "{{ .Values.a }}"  # this is a templated value, without nesting
+    c: "{{ .Values.b }}"  # this is a templated value, _with_ nesting, given that b is itself templated
+
+    # WRONG nested templating (it gives the base64 of the '{{ .Values.a }}' string, not the base64 of "foobar")
+    d-broken: '{{ .Values.b | b64enc }}'  # WRONG
+    # working version (gives the base64 of "foobar"):
+    d-working: '{{ tuple . .Values.b | include "interpret-as-string" | b64enc }}'    
+
+    # WRONG nested templating (it gives the boolean 'not' of the '{{ .Values.a }}' string, which will always evaluate to false, because the string is not empty)
+    e-broken: '{{ not .Values.b }}'  # WRONG
+    # working version:
+    e-working: '{{ not (tuple . .Values.b | include "interpret-for-test")) }}'
+
 * everything looking like "{{ }}" will be interpreted, even non-gotpl stuff
   that you might want to try to put in your manifest because a given unit
   would need that
@@ -212,7 +229,7 @@ Note well that there are a few limitations:
     {{ $kind := kindOf $data }}
     {{ $result := 0 }}
     {{ if (eq $kind "string") }}
-        {{ if regexMatch ".*{{.*}}.*" $data }}
+        {{ if regexMatch ".*{{.+}}.*" $data }}
             {{/* This is where we actually trigger GoTPL interpretation */}}
             {{ $tpl_res := tpl $data $envAll }}
             {{ if (hasPrefix "{\"encapsulated-result\":" $tpl_res) }}
@@ -220,6 +237,8 @@ Note well that there are a few limitations:
             {{ else }}
                 {{ $result = $tpl_res }}
             {{ end }}
+            {{/* recurse to also interpret any nested GoTPL */}}
+            {{ $result = index (tuple $envAll $result | include "interpret-inner-gotpl" | fromJson) "result" }}
         {{ else }}
             {{ $result = $data }}
         {{ end }}
@@ -261,3 +280,178 @@ Note well that there are a few limitations:
 {{ dict "result" $result | toJson }}
 {{ end }}
 
+
+{{/*
+
+interpret-as-string
+
+Usage:
+
+  tuple $envAll $data | include "interpret-as-string"
+
+It is meant to be used in Helm values.
+
+It will fail if the result of the interpretation is not a string.
+
+See the documentation of "interpret-inner-gotpl" which has examples
+explaining the rationale behind this function.
+
+*/}}
+{{- define "interpret-as-string" -}}
+    {{- $envAll := index . 0 -}}
+    {{- $data := index . 1 -}}
+
+    {{- if not (kindIs "string" $data) -}}
+        {{- fail (printf "'interpret-as-string' called on something which is not a string (<%s> is %s)" ($data | toString) (typeOf $data)) -}}
+    {{- end -}}
+
+    {{- $interpreted := index (tuple $envAll $data | include "interpret-inner-gotpl" | fromJson) "result" -}}
+
+    {{- if kindIs "string" $interpreted -}}
+        {{- $interpreted -}}
+    {{- else -}}
+        {{- fail (printf "'interpret-as-string' called on something which did not evaluate as a string (<%s> evaluates to <%s>, a %s)" ($data | toString) ($interpreted|toString) (typeOf $interpreted)) -}}
+    {{- end -}}
+{{- end -}}
+
+
+{{/*
+
+as-bool
+
+This named templates transforms a boolean (or a pseudo-boolean string "true"/"false"/"")
+into a {"encapsulated-result":true} or {"encapsulated-result":false}.
+
+This is used to return something that our template code understands as a typed boolean,
+compensating for the inability of Helm templating ('include "foo" ...') to return typed
+values.
+
+This "as-bool" template is used:
+- in the templating code (in interpret-as-bool below)
+- in 'values.yaml' to enfore the production of a real boolean in manifests
+
+Example (in values.yaml):
+
+  enableBar: '{{ not (tuple . .Values.units.foo.enabled | include "interpret-for-test") | include "as-bool" }}'
+
+This ensures that enableBar will be produced as a boolean (rather than a sting like "true" or "false")
+
+*/}}
+{{- define "as-bool" -}}
+  {{- $data := index . -}}
+  {{- if kindIs "bool" $data -}}
+    {{- dict "encapsulated-result" $data | toJson -}}
+  {{- else if kindIs "string" $data -}}
+    {{- if $data | eq "true" -}}
+      {{- dict "encapsulated-result" true | toJson -}}
+    {{- else if or ($data | eq "false") ($data | eq "") -}}
+      {{- dict "encapsulated-result" false | toJson -}}
+    {{- else -}}
+      {{- fail (printf "can't cast '%s' as a bool" $data) -}}
+    {{- end -}}
+  {{- else -}}
+    {{- fail (printf "can't cast <%s> (type %s) as a bool" $data (kindOf $data)) -}}
+  {{- end -}}
+{{- end -}}
+
+
+{{/*
+
+interpret-as-bool
+
+Usage:
+
+  tuple $envAll $data | include "interpret-as-bool"
+
+This will:
+* recursively interpret $data, insuring that it looks like a boolean
+  (taking into account Helm and gotpl quirks, like the fact that "and foo ''"
+  returns '' not false)
+* return this boolean marshalled into a {"encapsulated-result": result} dict
+
+It will fail if the result of the interpretation does not look like a boolean.
+
+*/}}
+{{- define "interpret-as-bool" -}}
+    {{- $envAll := index . 0 -}}
+    {{- $data := index . 1 -}}
+
+    {{- $debug_context := "" -}}
+    {{- if gt (len .) 2 -}}
+        {{- $debug_context = index . 2 -}}
+    {{- end -}}
+
+    {{/* {{- if $debug_context | eq "capi" -}}
+        {{- fail (printf "interpret-as-bool %s: [%s] is %s" $debug_context $data (kindOf $data)) -}}
+    {{- end -}} */}}
+
+    {{- if kindIs "bool" $data -}}
+        {{- $data | include "as-bool" -}}
+    {{- else -}}
+        {{- if not (kindIs "string" $data) -}}
+            {{- fail (printf "%s 'interpret-as-bool' called on something which is not boolean nor a string (<%s> is a %s)" $debug_context ($data | toString) (typeOf $data)) -}}
+        {{- end -}}
+
+        {{- if or ($data | eq "true") ($data | eq "false") ($data | eq "") -}}
+            {{- $data | include "as-bool" -}}
+        {{- else -}}
+            {{- $interpreted := index (tuple $envAll $data | include "interpret-inner-gotpl" | fromJson) "result" -}}
+
+            {{- if kindIs "bool" $interpreted -}}
+                {{- $data | include "as-bool" -}}
+            {{- else -}}
+                {{- $fail := false -}}
+                {{- if (kindIs "string" $interpreted) -}}
+                    {{- if or ($interpreted | eq "true") ($interpreted | eq "false") ($interpreted | eq "") -}}
+                        {{- $interpreted | include "as-bool" -}}
+                    {{- else -}}
+                        {{- $fail = true -}}
+                    {{- end -}}
+                {{- else -}}
+                    {{- $fail = true -}}
+                {{- end -}}
+                {{- if $fail -}}
+                    {{- fail (printf "%s 'interpret-as-bool' called on something which did not evaluate as a boolean (<%s> evaluates to <%s>, a %s)" $debug_context ($data | toString) ($interpreted|toString) (typeOf $interpreted)) -}}
+                {{- end -}}
+            {{- end -}}
+        {{- end -}}
+    {{- end -}}
+{{- end -}}
+
+
+{{/*
+
+interpret-for-test
+
+Usage:
+
+  tuple $envAll $data | include "interpret-for-test"
+
+It is meant to be used in Helm values.
+
+It evaluates $data as a boolean (recursively), and returns either "true" (string) or "" (emtpy string).
+The use for this template is specific to tests.
+
+See the documentation of "interpret-inner-gotpl" for examples.
+
+*/}}
+{{- define "interpret-for-test" -}}
+    {{- $envAll := index . 0 -}}
+    {{- $data := index . 1 -}}
+
+    {{- $debug_context := "" -}}
+    {{- if gt (len .) 2 -}}
+        {{- $debug_context = index . 2 -}}
+    {{- end -}}
+
+    {{- $value := index (tuple $envAll $data $debug_context | include "interpret-as-bool" | fromJson) "encapsulated-result" -}}
+
+    {{- if not (kindIs "bool" $value) -}}
+        {{- fail (printf "%s weird, 'interpret-for-test' dit not receive a bool from interpret-as-bool (<%s> is a %s)" $debug_context ($value | toString) (typeOf $value)) -}}
+    {{- end -}}
+
+    {{- if $value -}}
+true
+    {{- else -}} {{- /* we "emulate" a 'false' value by returning an empty string which the caller will evaluate as False */ -}}
+    {{- end -}}
+{{- end -}}
