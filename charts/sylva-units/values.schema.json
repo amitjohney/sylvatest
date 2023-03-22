@@ -23,14 +23,24 @@
         }
       ]
     },
+    "boolean-string": {
+      "type": "string",
+      "enum": [
+        "true",
+        "false",
+        ""
+      ]
+    },
     "enabled": {
       "anyOf": [
         {
           "type": "boolean"
         },
         {
-          "type": "string",
-          "pattern": "^{{ .*\\| *include [\"']preserve-type['\"] }}$"
+          "$ref": "#/$defs/gotpl"
+        },
+        {
+          "$ref": "#/$defs/boolean-string"
         }
       ]
     },
@@ -1099,6 +1109,9 @@
           }
         }
       }
+    },
+    "_internal": {
+      "type": "object"
     }
   }
 }

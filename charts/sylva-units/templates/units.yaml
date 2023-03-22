@@ -182,7 +182,7 @@ stringData:
     {{- if hasKey $unit_def "depends_on" -}}
       {{- $dependsOnList := list -}}
       {{- range $dep_unit_name, $is_depend_on := $unit_def.depends_on -}}
-        {{- if $is_depend_on -}}
+        {{- if tuple $envAll $is_depend_on (printf "%s, depends on %s" $unit_name $dep_unit_name) | include "interpret-for-test" -}}
 
           {{- if not (hasKey $envAll.Values.units $dep_unit_name) -}}
             {{- fail (printf "unit '%s' is declared with a dependency on non-existing unit '%s'" $unit_name $dep_unit_name) -}}

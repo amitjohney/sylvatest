@@ -15,7 +15,7 @@ units:
   cluster:
     enabled: yes
     depends_on:
-      reconcile-sylva-units: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'
+      reconcile-sylva-units: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
 
   calico:
     # overload calico definition in bootstrap context to deploy in the management cluster
@@ -35,7 +35,7 @@ units:
       # FIXME; Flux wait/healthcheck on management cluster does not work as expected, it becomes ready as soon as manifests are applied
       # cluster readyness will actually be ensured by the retries on installations of this kustomization for now.
       # maybe cluster CRD is not compatible with kstatus? (see https://fluxcd.io/flux/units/kustomize/kustomization/#health-assessment)
-      calico: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
+      calico: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/flux-system/base
@@ -131,7 +131,7 @@ units:
       valuesFrom: '{{ lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units" | dig "spec" "valuesFrom" list | include "preserve-type" }}'
 
   reconcile-sylva-units:
-    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'
+    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     depends_on:
       capo-cluster-resources: true
     repo: sylva-core
