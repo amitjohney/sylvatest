@@ -294,18 +294,12 @@ scheduled-cleanup-capo:
         STACK_TIME=$(date -d "$(openstack --os-cloud capo_cloud stack show $STACK -c creation_time -f value | tr T ' ' | tr -d Z )" +%s)
         THIS_TIME=$(date +%s)
         if [ $((THIS_TIME-STACK_TIME)) -gt 7200 ]; then
-            CAPO_TAG=$(openstack --os-cloud capo_cloud stack show $STACK -c tags -f json | jq .tags[])
+            CAPO_TAG=$(openstack --os-cloud capo_cloud stack show $STACK -c tags -f json | jq .tags[] -r)
             sh ./tools/openstack-cleanup.sh capo_cloud ${CAPO_TAG}
         else
             echo "The resources tagged ${CAPO_TAG} were created less than 2 hours ago and will not deleted at this time."
         fi
       done
-    - |
-      if [ -n "$(openstack --os-cloud capo_cloud server list -f value -c ID)" ]; then
-          echo "The following servers are still present in SylvaCore.CI OpenStack tenant. Please have cloud administrator check."
-          openstack --os-cloud capo_cloud server list -f value -c Name
-          exit 1
-      fi
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_CAPO_CLEANUP'
       when: always
