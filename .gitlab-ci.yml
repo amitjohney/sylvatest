@@ -300,9 +300,9 @@ scheduled-cleanup-capo:
         sh ./tools/openstack-cleanup.sh capo_cloud ${CAPO_TAG}
       done <unique_tags.txt
     - |
-      if [[ $(openstack ${OS_ARGS} server list-f value -c Name) ]]; then
-          echo "There are still machines left in SylvaCore.CI OpenStack tenant. Please have cloud administrator check."
-          exit 1
+      if openstack ${OS_ARGS} server list -f value -c Name | read REPLY; then
+        echo "There are still the following machines left in SylvaCore.CI OpenStack tenant. Please have cloud administrator check."
+        openstack ${OS_ARGS} server list -f value -c Name
       fi
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
