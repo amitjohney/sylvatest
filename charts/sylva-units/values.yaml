@@ -513,6 +513,13 @@ units:
                     (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
         - '{{ tuple "../../components/capo-root-volume"
                     (and .Values.cluster.capo.rootVolume (eq .Values.cluster.capi_providers.infra_provider "capo"))  | include "set-only-if" }}'
+      patches:
+        - target:
+            kind: KubeadmControlPlane
+          patch: |-
+            - op: add
+              path: /spec/kubeadmConfigSpec/ntp
+              value: {{ .Values.ntp | toJson }}
 
   heat-operator:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'
@@ -1092,6 +1099,13 @@ units:
                     (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
         - '{{ tuple "../../components/capo-root-volume"
                     (and .Values.cluster.capo.rootVolume (eq .Values.cluster.capi_providers.infra_provider "capo"))  | include "set-only-if" }}'
+      patches:
+        - target:
+            kind: KubeadmControlPlane
+          patch: |-
+            - op: add
+              path: /spec/kubeadmConfigSpec/ntp
+              value: {{ .Values.ntp | toJson }}
 
   workload-cluster-calico:
     enabled: '{{ and .Values.env_type_ci (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") | include "preserve-type" }}'
@@ -1316,3 +1330,10 @@ dockerio_registry_mirror: ""
 
 # boolean conditioning which unit we automatically enable in CI tests
 env_type_ci: false
+
+# set ntp ip
+ntp:
+  enabled: false
+  servers:
+    - 1.2.3.4
+

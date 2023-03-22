@@ -896,6 +896,22 @@
     "env_type_ci": {
       "type": "boolean"
     },
+    "ntp": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "servers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "ipv4"
+          }
+        }
+      }
+    },
     "dockerio_registry_mirror": {
       "type": "string",
       "anyOf": [

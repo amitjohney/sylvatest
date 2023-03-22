@@ -34,3 +34,10 @@ proxies:
 
 # add your local docker.io registry mirror to avoid rate limiting if required
 dockerio_registry_mirror: ""
+
+# add ntp servers if you need
+ntp:
+  enabled: false
+  servers:
+  # - 1.2.3.4
+  # - 1.2.3.5
