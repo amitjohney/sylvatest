@@ -303,6 +303,7 @@ scheduled-cleanup-capo:
       if openstack ${OS_ARGS} server list -f value -c Name | read REPLY; then
         echo "There are still the following machines left in SylvaCore.CI OpenStack tenant. Please have cloud administrator check."
         openstack ${OS_ARGS} server list -f value -c Name
+        exit 1
       fi
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
