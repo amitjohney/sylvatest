@@ -289,25 +289,19 @@ scheduled-cleanup-capo:
     name: registry.gitlab.com/t6306/components/docker-images/ci-image:openstack-client-v1.0
   script:
     - !reference [.common-deployment, os_cloud]
-    - OS_ARGS="--os-cloud capo_cloud --insecure --os-compute-api-version 2.26"
     - |
-      for VM in $(openstack ${OS_ARGS} server list -f value -c Name); do
-        openstack ${OS_ARGS} server show $VM -c tags -f json | jq .tags[] >> tags.txt
-      done
-    - cat tags.txt | sort | uniq > unique_tags.txt
-    - |
-      while read -r CAPO_TAG; do
+      for STACK in $(openstack --os-cloud capo_cloud stack list -f value -c "Stack Name" | grep '^capo-cluster' ); do
+        CAPO_TAG=$(openstack --os-cloud capo_cloud stack show $STACK -c tags -f json | jq .tags[])
         sh ./tools/openstack-cleanup.sh capo_cloud ${CAPO_TAG}
-      done <unique_tags.txt
+      done
     - |
-      if openstack ${OS_ARGS} server list -f value -c Name | read REPLY; then
-        echo "There are still the following machines left in SylvaCore.CI OpenStack tenant. Please have cloud administrator check."
-        openstack ${OS_ARGS} server list -f value -c Name
-        exit 1
+      if [ -n "$(openstack --os-cloud capo_cloud server list -f value -c ID)" ]; then
+          echo "The following servers are still present in SylvaCore.CI OpenStack tenant. Please have cloud administrator check."
+          openstack --os-cloud capo_cloud server list -f value -c Name
+          exit 1
       fi
   rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_CAPO_CLEANUP'
       when: always
-      allow_failure: false
   tags:
     - falcon
