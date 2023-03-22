@@ -87,8 +87,8 @@ Note well that there are a few limitations:
 * templates that use "preserve-type" must define the whole key or value field, it can't be compound inline with a string:
   (this wouldn't make sense anyway, as you can't concaternate a string with another type)
 
-value: prefix-{{ 42 | "include preserve-type" }}            -> will produce prefix-{"encapsulated-result":42}
-value: "{{ print "prefix-" 42 | "include preserve-type" }}  -> will produce prefix-42
+value: prefix-{{ 42 | include "preserve-type" }}            -> will produce prefix-{"encapsulated-result":42}
+value: '{{ print "prefix-" 42 | include "preserve-type" }}' -> will produce prefix-42
 value: "prefix-{{ 42 }}"                                    -> will also produce prefix-42
 
 */}}
