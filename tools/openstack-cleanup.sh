@@ -31,7 +31,7 @@ for vol in $(openstack ${OS_ARGS} volume list --status available -f value -c Nam
     fi
 done
 
-if [ -n "$(openstack ${OS_ARGS} server list -f value -c ID)" ]; then
+if [ -n "$(openstack ${OS_ARGS} server list -f value --tags ${CAPO_TAG})" ]; then
     echo "The following CAPO machines tagged ${CAPO_TAG} were not removed, please try again."
     openstack ${OS_ARGS} server list --tags ${CAPO_TAG} -f value -c Name
     exit 1
