@@ -14,6 +14,12 @@ data:
 {{ if hasKey .Values.cluster.capo "worker_az" }}
   WORKER_AZ: {{ .Values.cluster.capo.worker_az }}
 {{ end }}
+{{ if hasKey .Values.cluster.capo "control_plane_servergroup_id" }}
+  CONTROL_PLANE_SERVERGROUP_ID: {{ .Values.cluster.capo.control_plane_servergroup_id }}
+{{ end }}
+{{ if hasKey .Values.cluster.capo "worker_servergroup_id" }}
+  WORKER_SERVERGROUP_ID: {{ .Values.cluster.capo.worker_servergroup_id }}
+{{ end }}
   SSH_KEY_NAME: {{ .Values.cluster.capo.ssh_key_name }}
   CAPO_NETWORK_ID: {{ .Values.cluster.capo.network_id }}
 {{ if gt (len .Values.cluster.capo.rootVolume) 1 }}

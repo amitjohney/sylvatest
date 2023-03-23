@@ -18,17 +18,39 @@ spec:
       network:
         type: string
         description: "Network name"
+      control_plane_affinity_policy:
+        type: string
+        description: "Control plane affinity policy"
+      worker_affinity_policy:
+        type: string
+        description: "Worker affinity policy"
 
     resources:
       port:
         type: OS::Neutron::Port
         properties:
           network: { get_param: network }
+      srvgroup-ctrl-plane:
+        type: OS::Nova::ServerGroup
+        properties:
+          policies:
+            - get_param: control_plane_affinity_policy
+      srvgroup-worker:
+        type: OS::Nova::ServerGroup
+        properties:
+          policies:
+            - get_param: worker_affinity_policy
 
     outputs:
       allocated_ip:
         value: { get_attr: [port, fixed_ips, 0, ip_address] }
         description: IP address allocated to the port
+      control_plane_servergroup_id:
+        value: { get_resource: srvgroup-ctrl-plane }
+        description: Control plane server group ID
+      worker_servergroup_id:
+        value: { get_resource: srvgroup-worker }
+        description: Control plane server group ID
   namePrefix: capo-cluster
   configmapName: capo-cluster-resources
   configmapLabels:
@@ -39,3 +61,5 @@ spec:
   environment:
     parameters:
       network: "${CAPO_NETWORK_ID}"
+      control_plane_affinity_policy: "${CONTROL_PLANE_AFFINITY_POLICY}"
+      worker_affinity_policy: "${WORKER_AFFINITY_POLICY}"

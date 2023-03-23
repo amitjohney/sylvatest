@@ -548,6 +548,8 @@ units:
         substitute:
           CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
           CAPO_TAG: '{{ .Values.cluster.capo.resources_tag }}'
+          CONTROL_PLANE_AFFINITY_POLICY: '{{ .Values.cluster.capo.control_plane_affinity_policy }}'
+          WORKER_AFFINITY_POLICY: '{{ .Values.cluster.capo.worker_affinity_policy }}'
 
   calico:
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
@@ -1038,10 +1040,17 @@ units:
               value:
                 CLUSTER_EXTERNAL_IP:
                   value: { get_attr: [port, fixed_ips, 0, ip_address] }
+                CONTROL_PLANE_SERVERGROUP_ID:
+                  value: { get_resource: srvgroup-ctrl-plane }
+                WORKER_SERVERGROUP_ID:
+                  value: { get_resource: srvgroup-worker }
+
       postBuild:
         substitute:
           CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
           CAPO_TAG: '{{ .Values.cluster.capo.resources_tag }}'
+          CONTROL_PLANE_AFFINITY_POLICY: '{{ .Values.cluster.capo.control_plane_affinity_policy }}'
+          WORKER_AFFINITY_POLICY: '{{ .Values.cluster.capo.worker_affinity_policy }}'
 
   workload-cluster:
     enabled: '{{ .Values.env_type_ci | include "preserve-type" }}'
@@ -1268,6 +1277,8 @@ cluster:
     ssh_key_name: # OpenStack VM SSH key
     network_id:  # OpenStack network to use as external network
     rootVolume: {} # Let this parameter empty if you don't intent to use root volume
+    control_plane_affinity_policy: soft-anti-affinity
+    worker_affinity_policy: soft-anti-affinity
     # otherwise, provide following values
     # diskSize: '20' # Size of the VMs root disk
     # volumeType: '__DEFAULT__' # Type of volume to be created
