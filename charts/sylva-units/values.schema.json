@@ -276,6 +276,14 @@
                 }
               }
             },
+            "annotations": {
+              "type": "object",
+              "patternProperties": {
+                ".*": {
+                  "type": "string"
+                }
+              }
+            },
             "depends_on": {
               "type": "object",
               "patternProperties": {
