@@ -264,6 +264,8 @@ units:
       ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
       default-storage-class: true
       vault-operator: true
+    annotations:
+      sylvactl/readyMessage: "Vault UI can be reached at https://{{ .Values.cluster.vault.external_hostname }} ({{ .Values.cluster.vault.external_hostname }} must resolve to {{ .Values.cluster.cluster_external_ip }})"
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/vault
@@ -317,6 +319,8 @@ units:
       sylva-ca-certs: true
       ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
       postgres: true
+    annotations:
+      sylvactl/readyMessage: "Keycloak UI can be reached at https://{{ .Values.cluster.keycloak.external_hostname }} ({{ .Values.cluster.keycloak.external_hostname }} must resolve to {{ .Values.cluster.cluster_external_ip }})"
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/keycloak
@@ -669,6 +673,8 @@ units:
       k8s-gateway: true
       sylva-ca-certs: true
       ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
+    annotations:
+      sylvactl/readyMessage: "Rancher UI can be reached at https://{{ .Values.cluster.rancher.external_hostname }} ({{ .Values.cluster.rancher.external_hostname }} must resolve to {{ .Values.cluster.cluster_external_ip }})"
     helm_repo_url: https://releases.rancher.com/server-charts/latest
     helmrelease_spec:
       chart:
@@ -894,6 +900,8 @@ units:
     depends_on:
       flux-system: true
       ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
+    annotations:
+      sylvactl/readyMessage: "Fluw Webui can be reached at https://{{ .Values.cluster.flux.external_hostname }} ({{ .Values.cluster.flux.external_hostname }} must resolve to {{ .Values.cluster.cluster_external_ip }})"
     repo: weave-gitops
     helmrelease_spec:
       chart:

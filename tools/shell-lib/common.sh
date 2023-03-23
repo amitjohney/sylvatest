@@ -39,9 +39,10 @@ function retrieve_kubeconfig {
 }
 
 function ensure_sylvactl {
-    if [[ ! -f ./sylvactl ]]; then
+    SYLVACTL_VERSION="v0.0.6-pre"
+    if [[ ! -f ./sylvactl || $(./sylvactl version) != $SYLVACTL_VERSION ]]; then
         echo_b "\U0001F4E5 Downloading sylvactl"
-        curl -qO --progress-bar https://gitlab.com/api/v4/projects/43501695/packages/generic/releases/v0.0.2-pre/sylvactl
+        curl -qO --progress-bar https://gitlab.com/api/v4/projects/43501695/packages/generic/releases/$SYLVACTL_VERSION/sylvactl
         chmod +x ./sylvactl
     fi
 }
