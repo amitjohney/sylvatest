@@ -13,7 +13,7 @@ units:
     enabled: false
 
 cluster:
-  image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/rke2-in-docker:v1-24-4-rke2r1
+  image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/rke2-in-docker:v1-24-6-rke2r1
   capi_providers:
     infra_provider: capd
     bootstrap_provider: cabpr
