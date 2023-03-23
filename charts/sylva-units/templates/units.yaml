@@ -198,7 +198,12 @@ stringData:
     */}}
     {{- if and (hasKey $kustomization_spec "healthChecks")
                (hasKey $unit_def "helmrelease_spec") -}}
-      {{- $_ := set $kustomization_spec "healthChecks" (append $kustomization_spec.healthChecks (dict "namespace" $envAll.Release.Namespace "kind" "HelmRelease" "name" $unit_name)) -}}
+      {{- $_ := set $kustomization_spec "healthChecks" (append $kustomization_spec.healthChecks (dict "namespace" $envAll.Release.Namespace "apiVersion" "helm.toolkit.fluxcd.io/v2beta1" "kind" "HelmRelease" "name" $unit_name)) -}}
+      {{- $_ := set $kustomization_spec "wait" false -}}
+    {{- end -}}
+
+    {{- if and (gt (len (get $kustomization_spec "healthChecks" | default dict)) 0) (get $kustomization_spec "wait" | default false) -}}
+      {{- fail (printf "unit '%s' has healthChecks defined but 'wait' set to true, which is inconsistent because healthChecks are ignored with 'wait: true')" $unit_name) -}}
     {{- end }}
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
