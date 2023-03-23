@@ -44,6 +44,17 @@ spec:
     valuesKey: allocated_ip
     targetPath: cluster.cluster_external_ip
     optional: true
+  - kind: ConfigMap
+    name: capo-cluster-resources
+    valuesKey: control_plane_servergroup_id
+    targetPath: cluster.capo.control_plane_servergroup_id
+    optional: true
+  - kind: ConfigMap
+    name: capo-cluster-resources
+    valuesKey: worker_servergroup_id
+    targetPath: cluster.capo.worker_servergroup_id
+    optional: true
+
   values:
     source_templates:
       sylva-core:
