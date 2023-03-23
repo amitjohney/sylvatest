@@ -282,3 +282,28 @@ cleanup-kubeadm-capo:
     ENV_NAME: "kubeadm-capo"
   needs:
     - test-kubeadm-capo
+
+scheduled-cleanup-capo:
+  stage: delete
+  image:
+    name: registry.gitlab.com/t6306/components/docker-images/ci-image:openstack-client-v1.0
+  script:
+    - !reference [.common-deployment, os_cloud]
+    - |
+      for STACK in $(openstack stack list -f value -c "Stack Name" | grep '^capo-cluster' ); do
+        STACK_TIME=$(date -d "$(openstack stack show $STACK -c creation_time -f value | tr T ' ' | tr -d Z )" +%s)
+        THIS_TIME=$(date +%s)
+        if [ $((THIS_TIME-STACK_TIME)) -gt 7200 ]; then
+            CAPO_TAG=$(openstack stack show $STACK -c tags -f json | jq .tags[] -r)
+            sh ./tools/openstack-cleanup.sh capo_cloud ${CAPO_TAG}
+        else
+            echo "The resources tagged ${CAPO_TAG} were created less than 2 hours ago and will not be deleted at this time."
+        fi
+      done
+  variables:
+    OS_CLOUD: "capo_cloud"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_CAPO_CLEANUP'
+      when: always
+  tags:
+    - falcon
