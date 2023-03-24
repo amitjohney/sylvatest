@@ -8,7 +8,7 @@ default:
   tags:
     - gitlab-org-docker
     # - docker
-  image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image:v1-0-2
+  image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image:v1-0-4
 
 variables:
   DOCKER_TLS_CERTDIR: ""
