@@ -523,6 +523,12 @@ units:
             - op: add
               path: /spec/kubeadmConfigSpec/ntp
               value: {{ .Values.ntp | toJson }}
+        - target:
+            kind: RKE2ControlPlane
+          patch: |-
+            - op: add
+              path: /spec/agentConfig/ntp
+              value: {{ .Values.ntp | toJson }}
 
   heat-operator:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'
@@ -1117,6 +1123,12 @@ units:
           patch: |-
             - op: add
               path: /spec/kubeadmConfigSpec/ntp
+              value: {{ .Values.ntp | toJson }}
+        - target:
+            kind: RKE2ControlPlane
+          patch: |-
+            - op: add
+              path: /spec/agentConfig/ntp
               value: {{ .Values.ntp | toJson }}
 
   workload-cluster-calico:
