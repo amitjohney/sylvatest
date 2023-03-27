@@ -15,11 +15,6 @@
       {{- fail (printf "unit '%s' does not have 'helmrelease_spec' or 'kustomization_spec' defined" $unit_name) -}}
     {{- end -}}
 
-    {{- if (and (hasKey $unit_def "helm_repo_url")
-                (not (hasKey $unit_def "helmrelease_spec"))) -}}
-      {{- fail (printf "unit '%s' has 'helm_repo_url' but no 'helmrelease_spec'" $unit_name) -}}
-    {{- end -}}
-
     {{- if hasKey ($unit_def.kustomization_spec|default dict) "dependsOn" -}}
       {{- fail (printf "units.$unit_name.kustomization_spec.dependsOn is defined, you need to use units.$unit_name.depends_on instead") -}}
     {{- end -}}
@@ -32,9 +27,6 @@
     {{- $kustomization_spec_overrides := dict -}}
 
     {{/************* Generation of Flux sources (GitRepository or OCIRepository or HelmRepository) */}}
-
-    {{- if not (hasKey $unit_def "helm_repo_url") -}}
-      {{/* if no helm_repo_url is set, then we know we'll use a GitRepository or OCIRepository */}}
 
       {{/* sanity checks on the repo definition */}}
       {{- $repo_name := $unit_def.repo | default nil -}}
@@ -61,9 +53,22 @@
         {{- if hasKey $repo_def "auth" }}
           {{- $secret_ref = dict "secretRef" (dict "name" (printf "source-repo-auth-%s" $repo_name)) -}}{{/* Secret is templated in source-repo-auth.yaml */}}
         {{- end -}}
-        {{- $source_ref_override := dict "ref" ($unit_def.ref_override | default dict) -}}
+        {{- $source_ref_override := dict -}}
         {{- $source_repo_spec := dict -}}
-        {{- $source_repo_spec = mergeOverwrite $source_repo_spec ($repo_def.kind | eq "GitRepository" | ternary $envAll.Values.git_repo_spec_default $envAll.Values.oci_repo_spec_default) $repo_def.spec $secret_ref $source_ref_override -}}
+        {{- if $repo_def.kind | eq "HelmRepository" -}}
+            {{- $schema := urlParse $repo_def.spec.url -}}
+            {{- if $schema.scheme | eq "oci" -}}
+                {{- $source_repo_spec = dict "type" "oci" -}}
+            {{- end -}}
+            {{- $source_repo_spec = mergeOverwrite $source_repo_spec $envAll.Values.helm_repo_spec_default -}}
+        {{- else if $repo_def.kind | eq "GitRepository" -}}
+            {{- $source_ref_override := dict "ref" ($unit_def.ref_override | default dict) -}}
+            {{- $source_repo_spec = mergeOverwrite $source_repo_spec $envAll.Values.git_repo_spec_default -}}
+        {{- else if $repo_def.kind | eq "OCIRegistry" -}}
+            {{- $source_ref_override := dict "ref" ($unit_def.ref_override | default dict) -}}
+            {{- $source_repo_spec = mergeOverwrite $source_repo_spec $envAll.Values.oci_repo_spec_default -}}
+        {{- end -}}
+        {{- $source_repo_spec = mergeOverwrite $source_repo_spec $repo_def.spec $secret_ref $source_ref_override -}}
         {{- if not (hasKey $source_repo_spec "url") -}}
           {{- fail (printf "repository template '%s' does not have 'url' defined" $repo_name) -}}
         {{- end }}
@@ -71,7 +76,7 @@
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: {{ $repo_def.kind -}}
-{{/* we create either a GitRepository or OCIRepository*/}}
+{{/* we create either a GitRepository, an OCIRepository or a HelmRepository */}}
 metadata:
   name: {{ $source_repo_name }}
   labels:
@@ -81,34 +86,21 @@ spec: {{ $source_repo_spec | toYaml | nindent 2 }}
 
       {{ end }}
 
-      {{ if hasKey $unit_def "helmrelease_spec" -}}
-        {{ if ne $repo_def.kind "GitRepository" }}
-          {{/* if the source repo is not of type GitRepository then we fail as we don't know how to do that yet */}}
-          {{ fail "Please don't use helm_release_spec for a unit referencing a source repo of type OCIRepository" }}
-        {{ end }}
-        {{/*
-        if helm_release_spec is used and the source repo is of type GitRepository then we inject our GitRepository in it as sourceRef
-        (the Kustomization will in that case, see in 'unit_helmrelease_kustomization_spec_default',
-         use sylva-core defined in 'source-repository-self.yaml' as the GitRepository)
-        */}}
-        {{- $helmrelease_spec_overrides = dict "chart" (dict "spec" (dict "sourceRef" (dict "kind" $repo_def.kind "name" $source_repo_name) "reconcileStrategy" "Revision")) -}}
-      {{- else -}}{{/* if 'helmrelease_spec' isn't used, then the source from 'repo' is used for the Kustomization */}}
-        {{- $kustomization_spec_overrides = dict "sourceRef" (dict "kind" $repo_def.kind "name" $source_repo_name) -}}
-      {{- end }}
+      {{- if $repo_def.kind | eq "HelmRepository" -}}
+          {{- $helmrelease_spec_overrides = dict "chart" (dict "spec" (dict "sourceRef" (dict "kind" $repo_def.kind "name" $source_repo_name))) }}
+      {{- else if $repo_def.kind | eq "GitRepository" -}}
+            {{- if hasKey $unit_def "helmrelease_spec" -}}
+              {{- $helmrelease_spec_overrides = dict "chart" (dict "spec" (dict "sourceRef" (dict "kind" $repo_def.kind "name" $source_repo_name) "reconcileStrategy" "Revision")) -}}
+            {{- else -}} {{/* if 'helmrelease_spec' isn't used, then the source from 'repo' is used for the Kustomization */}}
+              {{- $kustomization_spec_overrides = dict "sourceRef" (dict "kind" $repo_def.kind "name" $source_repo_name) -}}
+            {{- end -}}
+      {{- else if $repo_def.kind | eq "OCIRegistry" -}}
+            {{- if hasKey $unit_def "helmrelease_spec" -}}
+              {{ fail "Please don't use helm_release_spec for a unit referencing a source repo of type OCIRepository" }}
+            {{- end -}}
+            {{- $kustomization_spec_overrides = dict "sourceRef" (dict "kind" $repo_def.kind "name" $source_repo_name) -}}
+      {{- end -}}
 
-    {{ else }}{{/* helm_repo is declared, we generate a HelmRepository */}}
----
-      {{- $helm_repo_spec := dict -}}
-      {{- $helm_repo_spec = mergeOverwrite $helm_repo_spec $envAll.Values.helm_repo_spec_default (dict "url" $unit_def.helm_repo_spec | default dict) (dict "url" $unit_def.helm_repo_url) -}}
-      {{- $helmrelease_spec_overrides = dict "chart" (dict "spec" (dict "sourceRef" (dict "kind" "HelmRepository" "name" (printf "unit-%s" $unit_name)))) }}
-apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: HelmRepository
-metadata:
-  name: unit-{{ $unit_name }}
-  labels:
-{{ $labels | toYaml | indent 4 }}
-spec: {{ $helm_repo_spec | toYaml | nindent 2 }}
-    {{ end -}}
 
     {{/******************* Generation of the Kustomization */}}
 

@@ -185,10 +185,16 @@ on the Git revision (ignoring version field in the Helm chart `Chart.yaml` file)
 ### Component using a Helm chart defined in a Helm repository
 
 ```yaml
+source_templates:
+  cert-manager-repo:
+    kind: HelmRepository
+    spec:
+      url: https://charts.jetstack.io # replace https:// with oci:// to use an OCI repository for Helm charts
+
 units:
 
   cert-manager:
-    helm_repo_url: https://charts.jetstack.io
+    repo: cert-manager-repo
     helmrelease_spec:
       chart:
         spec:   # this will use v1.8.2 of the cert-manager chart found in the Helm repo at https://charts.jetstack.io

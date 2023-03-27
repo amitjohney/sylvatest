@@ -157,14 +157,13 @@ properties:
 
           kind: # -------------------------------
             type: string
-            enum: ["GitRepository", "OCIRepository"]
+            enum: ["GitRepository", "OCIRepository", "HelmRepository"]
 
           spec:  # -------------------------------
             type: object
             # (fields from a spec of a Flux resource)
             required:
               - url
-              - ref
             properties:
 
               url:  # -------------------------------
@@ -322,10 +321,6 @@ properties:
               required:
                 - dependsOn
 
-          helm_repo_url:  # -------------------------------
-            type: string
-            pattern: https?://.*
-
           helm_secret_values:  # -------------------------------
             type: object
 
@@ -343,8 +338,6 @@ properties:
           kustomization_substitute_secrets:
             - kustomization_spec
           helm_secret_values:
-            - helmrelease_spec
-          helm_repo_url:
             - helmrelease_spec
 
         allOf:
@@ -364,12 +357,6 @@ properties:
             # ... for a unit which is explicitly enabled or conditionally enabled we enforce
             # the following:
             - allOf:
-
-              # prevent having both 'repo' and 'helm_repo_url':
-              - not:
-                  required:
-                    - repo
-                    - helm_repo_url
 
               # there are some things we need on kustomization_spec
               # but that aren't needed in the case where we specify helmrelease_spec

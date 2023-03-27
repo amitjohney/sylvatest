@@ -128,14 +128,14 @@
               "type": "string",
               "enum": [
                 "GitRepository",
-                "OCIRepository"
+                "OCIRepository",
+                "HelmRepository"
               ]
             },
             "spec": {
               "type": "object",
               "required": [
-                "url",
-                "ref"
+                "url"
               ],
               "properties": {
                 "url": {
@@ -363,10 +363,6 @@
                 ]
               }
             },
-            "helm_repo_url": {
-              "type": "string",
-              "pattern": "https?://.*"
-            },
             "helm_secret_values": {
               "type": "object"
             },
@@ -388,9 +384,6 @@
               "kustomization_spec"
             ],
             "helm_secret_values": [
-              "helmrelease_spec"
-            ],
-            "helm_repo_url": [
               "helmrelease_spec"
             ]
           },
@@ -420,14 +413,6 @@
                 },
                 {
                   "allOf": [
-                    {
-                      "not": {
-                        "required": [
-                          "repo",
-                          "helm_repo_url"
-                        ]
-                      }
-                    },
                     {
                       "if": {
                         "not": {
