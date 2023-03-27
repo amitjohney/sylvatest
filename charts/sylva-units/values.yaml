@@ -745,10 +745,6 @@ units:
           kind: Service
           name: rancher-webhook
           namespace: cattle-system
-        - apiVersion: v1
-          kind: Service
-          name: webhook-service
-          namespace: cattle-system
 
   rancher-webhook-service:
     enabled: '{{ .Values.units.rancher.enabled | include "preserve-type" }}'
