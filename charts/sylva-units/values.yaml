@@ -1345,9 +1345,9 @@ dockerio_registry_mirror: ""
 # boolean conditioning which unit we automatically enable in CI tests
 env_type_ci: false
 
-# set ntp ip
+# set NTP servers by IP or FQDN and enable their usage for control plane nodes
 ntp:
   enabled: false
   servers:
     - 1.2.3.4
-
+    - europe.pool.ntp.org
