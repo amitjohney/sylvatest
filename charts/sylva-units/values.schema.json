@@ -926,8 +926,16 @@
         "servers": {
           "type": "array",
           "items": {
-            "type": "string",
-            "format": "ipv4"
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "ipv4"
+              },
+              {
+                "type": "string",
+                "format": "hostname"
+              }
+            ]
           }
         }
       }
