@@ -529,6 +529,12 @@ units:
             - op: add
               path: /spec/agentConfig/ntp
               value: {{ .Values.ntp | toJson }}
+        - target:
+            kind: OpenStackCluster
+          patch: |-
+            - op: add
+              path: /spec/controlPlaneAvailabilityZones
+              value: {{ .Values.cluster.capo.control_plane_az | toJson }}
 
   heat-operator:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'
@@ -1126,6 +1132,12 @@ units:
             - op: add
               path: /spec/agentConfig/ntp
               value: {{ .Values.ntp | toJson }}
+        - target:
+            kind: OpenStackCluster
+          patch: |-
+            - op: add
+              path: /spec/controlPlaneAvailabilityZones
+              value: {{ .Values.cluster.capo.control_plane_az | toJson }}
 
   workload-cluster-calico:
     enabled: '{{ and .Values.env_type_ci (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") | include "preserve-type" }}'
