@@ -20,6 +20,7 @@ spec:
       - "https://${RANCHER_DNS}/verify-auth"
     webOrigins:
       - "https://${RANCHER_DNS}"
+    standardFlowEnabled: true
     directAccessGrantsEnabled: true
     defaultClientScopes:
       - "profile"
@@ -41,7 +42,7 @@ spec:
         protocol: openid-connect
         protocolMapper: oidc-audience-mapper
         config:
-          included.client.audience: sylva-admin
+          included.client.audience: rancher
           access.token.claim: "true"
       - name: Group Path
         protocol: openid-connect
