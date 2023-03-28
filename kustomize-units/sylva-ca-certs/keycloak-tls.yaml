@@ -27,5 +27,6 @@ spec:
   dnsNames:
   - ${KEYCLOAK_DNS}
   - localhost
+  - keycloak-service.keycloak.svc.cluster.local
   ipAddresses:
   - 127.0.0.1
