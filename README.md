@@ -1,3 +1,6 @@
+<a href="https://gitlab.com/sylva-projects/sylva-core/-/blob/141-support-ci-for-capv/capv-daily-tests-results/README.md"><img src="https://img.shields.io/endpoint?url=https://runkit.io/fedcicchiello/sylva-on-vsphere-daily-tests/branches/master/kubeadm&style=flat"></img></a>
+<a href="https://gitlab.com/sylva-projects/sylva-core/-/blob/141-support-ci-for-capv/capv-daily-tests-results/README.md"><img src="https://img.shields.io/endpoint?url=https://runkit.io/fedcicchiello/sylva-on-vsphere-daily-tests/branches/master/rke2&style=flat"></img></a>
+
 # Sylva-core project
 
 This project provides the tools and configuration to set up a Sylva management cluster in a declarative way. It relies on [Cluster API](https://cluster-api.sigs.k8s.io/) to manage cluster lifecycle, and uses [Flux](https://fluxcd.io/flux/) to keep clusters and infrastructure components in sync with their definitions in Git.
