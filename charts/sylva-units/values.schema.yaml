@@ -597,7 +597,7 @@ properties:
                   additionalProperties: false
                   properties:
                     diskSize:  # -------------------------------
-                      type: string
+                      type: integer
                     volumeType:  # -------------------------------
                       type: string
 

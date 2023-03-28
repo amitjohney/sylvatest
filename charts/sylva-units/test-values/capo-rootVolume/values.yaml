@@ -1,5 +1,5 @@
 cluster:
   capo:
     rootVolume:
-      diskSize: '50'  # see https://gitlab.com/sylva-projects/sylva-core/-/issues/107
+      diskSize: 50
       volumeType: ssd
