@@ -22,6 +22,14 @@ data:
 {{ end }}
   SSH_KEY_NAME: {{ .Values.cluster.capo.ssh_key_name }}
   CAPO_NETWORK_ID: {{ .Values.cluster.capo.network_id }}
+{{- if gt (len .Values.cluster.capo.additional_networks) 0 }}
+{{- if gt (len .Values.cluster.capo.additional_networks.virtio_network_id) 0 }}
+  VIRTIO_VNIC_NETWORK_ID: {{ .Values.cluster.capo.additional_networks.virtio_network_id }}
+{{- end }}
+{{- if gt (len .Values.cluster.capo.additional_networks.direct_network_id) 0 }}
+  DIRECT_VNIC_NETWORK_ID: {{ .Values.cluster.capo.additional_networks.direct_network_id }}
+{{- end }}
+{{- end }}
 {{ if gt (len .Values.cluster.capo.rootVolume) 1 }}
   DISK_SIZE: {{ .Values.cluster.capo.rootVolume.diskSize | quote }}
   VOLUME_TYPE: {{ .Values.cluster.capo.rootVolume.volumeType }}

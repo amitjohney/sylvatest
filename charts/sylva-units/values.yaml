@@ -1074,6 +1074,8 @@ units:
           K8SGATEWAY_LB_IP: '{{ .Values.cluster.cluster_external_ip }}'   # NOTE: same is used for k8s-gateway DNS svc in management cluster
           CLUSTER_EXTERNAL_DOMAIN: '{{ .Values.cluster.cluster_external_domain }}'
           CAPO_NETWORK_ID: '{{ tuple .Values.cluster.capo.network_id (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
+          VIRTIO_VNIC_NETWORK_ID: '{{ tuple .Values.cluster.capo.additional_networks.virtio_network_id (and (.Values.cluster.capi_providers.infra_provider | eq "capo") (gt (len .Values.cluster.capo.additional_networks.virtio_network_id) 0 )) | include "set-only-if" }}'
+          DIRECT_VNIC_NETWORK_ID: '{{ tuple .Values.cluster.capo.additional_networks.direct_network_id (and (.Values.cluster.capi_providers.infra_provider | eq "capo") (gt (len .Values.cluster.capo.additional_networks.direct_network_id) 0 )) | include "set-only-if" }}'
           SSH_KEY_NAME: '{{ tuple .Values.cluster.capo.ssh_key_name (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
           CAPO_TAG: '{{ tuple .Values.cluster.capo.resources_tag (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
           WORKER_FLAVOR_NAME: '{{ tuple "m1.large" (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
@@ -1111,6 +1113,10 @@ units:
                     (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
         - '{{ tuple "../../components/capo-root-volume"
                     (and .Values.cluster.capo.rootVolume (eq .Values.cluster.capi_providers.infra_provider "capo"))  | include "set-only-if" }}'
+        - '{{ tuple "../../components/capo-additional-networks/virtio"
+                    (get .Values.cluster.capo.additional_networks "virtio_network_id") | include "set-only-if" }}'
+        - '{{ tuple "../../components/capo-additional-networks/direct"
+                    (get .Values.cluster.capo.additional_networks "direct_network_id") | include "set-only-if" }}'
       patches:
         - target:
             kind: KubeadmControlPlane
@@ -1279,6 +1285,10 @@ cluster:
     # worker_az only required to be provided when .Values.cluster.worker_replicas > 0
     ssh_key_name: # OpenStack VM SSH key
     network_id:  # OpenStack network to use as external network
+    additional_networks:
+    # Leave these parameters empty or specify additional networks to be used. Only one network of each type can be added and supported types are virtio or direct
+      virtio_network_id: ""
+      direct_network_id: ""
     rootVolume: {} # Let this parameter empty if you don't intent to use root volume
     control_plane_affinity_policy: soft-anti-affinity
     worker_affinity_policy: soft-anti-affinity

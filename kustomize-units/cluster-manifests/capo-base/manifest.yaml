@@ -4,6 +4,8 @@ kind: OpenStackMachineTemplate
 metadata:
   name: ${CLUSTER_NAME}-control-plane
   namespace: default
+  labels:
+    role: control-plane
 spec:
   template:
     spec:
@@ -50,6 +52,8 @@ kind: OpenStackMachineTemplate
 metadata:
   name: ${CLUSTER_NAME}-worker
   namespace: default
+  labels:
+    role: worker
 spec:
   template:
     spec:
