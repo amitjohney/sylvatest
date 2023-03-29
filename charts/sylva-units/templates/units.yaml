@@ -211,6 +211,7 @@ kind: Kustomization
 metadata:
   name: {{ $unit_name }}
   labels: {{ $labels | toYaml | nindent 4 }}
+  annotations: {{ $unit_def.annotations | default dict | toYaml | nindent 4 }}
 spec: {{ $kustomization_spec | toYaml | nindent 2 }}
   {{- end -}}
 {{ end }}
