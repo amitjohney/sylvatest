@@ -325,7 +325,14 @@ units:
         substitute:
           KEYCLOAK_ADMIN_PASSWORD: '{{ .Values.cluster.admin_password }}'
           KEYCLOAK_DNS: '{{ .Values.cluster.keycloak.external_hostname }}'
-      wait: false  # see https://gitlab.com/sylva-projects/sylva-core/-/issues/144
+      healthChecks:  # cannot use __wait: true__ here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/144
+        # the Keycloak StatefulSet set is produced, by the combination of Keycloak operator
+        # and a Keycloak custom resource, it relies on the postgres DB also deployed by this unit
+        # hence, checking for the health of this component can be done by checking this StatefulSet
+        - apiVersion: apps/v1
+          kind: StatefulSet
+          name: keycloak
+          namespace: keycloak
 
   keycloak-legacy-operator:
     enabled: '{{ .Values.units.keycloak.enabled | include "preserve-type" }}'
@@ -354,7 +361,15 @@ units:
       postBuild:
         substitute:
           RANCHER_DNS: '{{ .Values.cluster.rancher.external_hostname }}'
-      wait: false  # see https://gitlab.com/sylva-projects/sylva-core/-/issues/144
+      healthChecks:  #  cannot use __wait: true__ here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/144
+        - apiVersion: legacy.k8s.keycloak.org/v1alpha1
+          kind: KeycloakRealm
+          name: sylva
+          namespace: keycloak
+        - apiVersion: legacy.k8s.keycloak.org/v1alpha1
+          kind: KeycloakClient
+          name: rancher-client
+          namespace: keycloak
 
   capi:
     enabled: yes
