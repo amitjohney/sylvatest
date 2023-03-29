@@ -585,6 +585,9 @@ properties:
                 network_id:  # -------------------------------
                   type: string
 
+                external_network_id:  # -------------------------------
+                  type: string
+
                 control_plane_servergroup_id:  # -------------------------------
                   type: string
 

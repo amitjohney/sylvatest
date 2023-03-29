@@ -577,6 +577,12 @@ units:
           CAPO_TAG: '{{ .Values.cluster.capo.resources_tag }}'
           CONTROL_PLANE_AFFINITY_POLICY: '{{ .Values.cluster.capo.control_plane_affinity_policy }}'
           WORKER_AFFINITY_POLICY: '{{ .Values.cluster.capo.worker_affinity_policy }}'
+          CAPO_EXTERNAL_NETWORK_ID: '{{ tuple .Values.cluster.capo.external_network_id
+            (and .Values.cluster.capo.external_network_id (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
+      components:
+        - '{{ tuple "../cluster-manifests/components/capo-vip-floating-ip"
+            (and .Values.cluster.capo.external_network_id (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
+
 
   calico:
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
@@ -1314,7 +1320,8 @@ cluster:
     worker_flavor_name: m1.large
     # worker_az only required to be provided when .Values.cluster.worker_replicas > 0
     ssh_key_name: # OpenStack VM SSH key
-    network_id:  # OpenStack network to use as external network
+    network_id:  # OpenStack network used for nodes and VIP port
+    #external_network_id # Can be provided if a FIP is needed in order to reach the management cluster VIP
     additional_networks:
     # Leave these parameters empty or specify additional networks to be used. Only one network of each type can be added and supported types are virtio or direct
       virtio_network_id: ""
