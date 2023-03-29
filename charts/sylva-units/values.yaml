@@ -893,7 +893,7 @@ units:
     enabled: yes
     depends_on:
       flux-system: true
-      ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
+##      ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
     repo: weave-gitops
     helmrelease_spec:
       chart:
@@ -911,6 +911,8 @@ units:
           value: "true"
         - name: WEAVE_GITOPS_FEATURE_CLUSTER
           value: "false"
+        - name: SSL_CERT_FILE #
+          value: /etc/ssl/certs/ca.crt
         installCRDs: true
         rbac:
           additionalRules:
@@ -929,6 +931,21 @@ units:
             - secretName: weave-tls
               hosts:
                 - '{{ .Values.cluster.flux.external_hostname }}'
+        extraVolumes:
+          - name: custom-ca-cert
+            secret:
+              secretName: custom-root-ca
+        extraVolumeMounts:
+          - name: custom-ca-cert
+            mountPath: /etc/ssl/certs
+            readOnly: true
+        oidcSecret:
+          create: true
+          clientID: flux
+          clientSecret: '{{ .Values.cluster.admin_password }}' # Change how we pass this
+          issuerURL: https://keycloak.sylva/auth/realms/sylva # Replace hardcoded dns with variable
+          redirectURL: https://flux.sylva/oauth2/callback  # Replace hardcoded dns with variable
+
     helm_secret_values:
       adminUser:
         create: true
