@@ -6,6 +6,6 @@ namespace: keycloak
 resources:
 - keycloak-realm.yaml
 - keycloak-user.yaml
+- sylva-custom-scopes.yaml
 - rancher-client.yaml
 - flux-client.yaml
-

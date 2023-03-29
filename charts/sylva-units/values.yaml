@@ -348,6 +348,7 @@ units:
     repo: sylva-core
     kustomization_substitute_secrets:
       RANCHER_CLIENT_SECRET: '{{ .Values.cluster.admin_password }}'
+      FLUX_CLIENT_SECRET: '{{ .Values.cluster.admin_password }}' # We need to randomly generate this instead
     kustomization_spec:
       path: ./kustomize-units/keycloak-resources
       targetNamespace: keycloak
@@ -356,6 +357,24 @@ units:
           RANCHER_DNS: '{{ .Values.cluster.rancher.external_hostname }}'
           FLUX_DNS: '{{ .Values.cluster.flux.external_hostname }}'
       wait: false  # see https://gitlab.com/sylva-projects/sylva-core/-/issues/144
+
+  rancher-add-keycloak-provider:
+    enabled: '{{ and (.Values.units.rancher.enabled) (.Values.units.keycloak.enabled) | include "preserve-type" }}'
+    repo: sylva-core
+    depends_on:
+      rancher: true
+      keycloak: true
+      keycloak-resources: true
+    kustomization_substitute_secrets:
+      RANCHER_CLIENT_SECRET: '{{ .Values.cluster.admin_password }}'
+    kustomization_spec:
+      path: ./kustomize-units/keycloak-auth-provider
+      postBuild:
+        substitute:
+          KEYCLOAK_EXTERNAL_URL: '{{ .Values.cluster.keycloak.external_hostname }}'
+          RANCHER_EXTERNAL_URL: '{{ .Values.cluster.rancher.external_hostname }}'
+      wait: true
+
 
   capi:
     enabled: yes
@@ -894,7 +913,7 @@ units:
     enabled: yes
     depends_on:
       flux-system: true
-##      ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
+      ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
     repo: weave-gitops
     helmrelease_spec:
       chart:
@@ -912,7 +931,7 @@ units:
           value: "true"
         - name: WEAVE_GITOPS_FEATURE_CLUSTER
           value: "false"
-        - name: SSL_CERT_FILE #
+        - name: SSL_CERT_FILE
           value: /etc/ssl/certs/ca.crt
         installCRDs: true
         rbac:
@@ -935,7 +954,10 @@ units:
         extraVolumes:
           - name: custom-ca-cert
             secret:
-              secretName: custom-root-ca
+              secretName: weave-tls
+              items:
+                - key: ca.crt
+                  path: ca.crt
         extraVolumeMounts:
           - name: custom-ca-cert
             mountPath: /etc/ssl/certs
@@ -944,9 +966,8 @@ units:
           create: true
           clientID: flux
           clientSecret: '{{ .Values.cluster.admin_password }}' # Change how we pass this
-          issuerURL: https://keycloak.sylva/realms/sylva # Replace hardcoded dns with variable
-          redirectURL: https://flux.sylva/oauth2/callback  # Replace hardcoded dns with variable
-
+          issuerURL: https://{{ .Values.cluster.keycloak.external_hostname }}/realms/sylva
+          redirectURL: https://{{ .Values.cluster.flux.external_hostname }}/oauth2/callback
     helm_secret_values:
       adminUser:
         create: true
