@@ -493,7 +493,6 @@ units:
       path: ./kustomize-units/cluster-manifests/kubeadm-capd/base
       postBuild:
         substitute:
-          REGISTRY_MIRROR: '{{ .Values.dockerio_registry_mirror }}'
           CAPO_TAG: '{{ tuple .Values.cluster.capo.resources_tag (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
         substituteFrom:
         - kind: ConfigMap
@@ -510,13 +509,10 @@ units:
                     (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
         - '{{ tuple "../../components/proxies/RKE2ControlPlane"
                     (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/registry-mirror/KubeadmControlPlane"
-                    (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/registry-mirror/RKE2ControlPlane"
-                    (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
         - '{{ tuple "../../components/capo-root-volume"
                     (and .Values.cluster.capo.rootVolume (eq .Values.cluster.capi_providers.infra_provider "capo"))  | include "set-only-if" }}'
       patches:
+        - '{{ tuple (.Files.Get "elements/registry_mirrors.tpl" | fromYaml) (dig "registry_mirrors" "hosts_config" "" (.Values | merge (dict))) | include "set-only-if" }}'
         - target:
             kind: KubeadmControlPlane
           patch: |-
@@ -1072,7 +1068,6 @@ units:
         substitute:
           CLUSTER_NAME: '{{ .Values.cluster.test_workload_cluster_name }}'
           MACHINE_IMAGE: '{{ .Values.cluster.image }}'
-          REGISTRY_MIRROR: '{{ .Values.dockerio_registry_mirror }}'
           K8SGATEWAY_LB_IP: '{{ .Values.cluster.cluster_external_ip }}'   # NOTE: same is used for k8s-gateway DNS svc in management cluster
           CLUSTER_EXTERNAL_DOMAIN: '{{ .Values.cluster.cluster_external_domain }}'
           CAPO_NETWORK_ID: '{{ tuple .Values.cluster.capo.network_id (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
@@ -1107,13 +1102,10 @@ units:
                     (and (ne .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
         - '{{ tuple "../../components/dns-client/Ubuntu/RKE2ControlPlane"
                     (and (ne .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/registry-mirror/KubeadmControlPlane"
-                    (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/registry-mirror/RKE2ControlPlane"
-                    (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
         - '{{ tuple "../../components/capo-root-volume"
                     (and .Values.cluster.capo.rootVolume (eq .Values.cluster.capi_providers.infra_provider "capo"))  | include "set-only-if" }}'
       patches:
+        - '{{ tuple (.Files.Get "elements/registry_mirrors.tpl" | fromYaml) (dig "registry_mirrors" "hosts_config" "" (.Values | merge (dict))) | include "set-only-if" }}'
         - target:
             kind: KubeadmControlPlane
           patch: |-
@@ -1347,8 +1339,21 @@ proxies:
   http_proxy: ""
   no_proxy: ""
 
-# add your local docker.io registry mirror to avoid rate limiting if required
-dockerio_registry_mirror: ""
+# configure containerd registry mirrors following https://github.com/containerd/containerd/blob/main/docs/hosts.md
+registry_mirrors:
+  default_settings:                          # <<< These settings will apply to all configured mirrors
+    capabilities: ["pull", "resolve"]
+#   skip_verify: true
+#   override_path: true
+# hosts_config:
+#   docker.io:
+#   - mirror_url: http://your.mirror/docker
+#     registry_settings:                     # <<< Host settings can be used to override default_settings
+#       skip_verify: false
+#   registry.k8s.io:
+#   - mirror_url: ...
+#   _default:
+#   - mirror_url: ...
 
 # boolean conditioning which unit we automatically enable in CI tests
 env_type_ci: false
