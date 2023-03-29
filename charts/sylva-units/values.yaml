@@ -943,7 +943,7 @@ units:
           create: true
           clientID: flux
           clientSecret: '{{ .Values.cluster.admin_password }}' # Change how we pass this
-          issuerURL: https://keycloak.sylva/auth/realms/sylva # Replace hardcoded dns with variable
+          issuerURL: https://keycloak.sylva/realms/sylva # Replace hardcoded dns with variable
           redirectURL: https://flux.sylva/oauth2/callback  # Replace hardcoded dns with variable
 
     helm_secret_values:
