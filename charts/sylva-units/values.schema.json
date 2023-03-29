@@ -933,6 +933,38 @@
         "no_proxy"
       ]
     },
+    "registry_mirrors": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "default_settings": {
+          "type": "object"
+        },
+        "hosts_config": {
+          "type": "object",
+          "additionalProperties": false,
+          "patternProperties": {
+            "^[a-z0-9][a-z0-9.-]*[a-z0-9]$": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "registry_settings": {
+                    "type": "object"
+                  },
+                  "mirror_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "pattern": "^(https?://.*|)$"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "units_override_enabled": {
       "type": "array",
       "items": {
@@ -965,17 +997,6 @@
           }
         }
       }
-    },
-    "dockerio_registry_mirror": {
-      "type": "string",
-      "anyOf": [
-        {
-          "format": "uri"
-        },
-        {
-          "const": ""
-        }
-      ]
     }
   }
 }

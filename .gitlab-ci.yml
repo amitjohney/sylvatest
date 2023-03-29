@@ -122,7 +122,7 @@ check-docs-markdown:
     - ip route add $KIND_PREFIX via $DOCKER_IP
     - values_file=environment-values/${ENV_NAME}/values.yaml
     - yq -i '.env_type_ci = true' $values_file
-    - if [[ -n $OS_DOCKERIO_REGISTRY_MIRROR ]]; then yq -i '.dockerio_registry_mirror = strenv(OS_DOCKERIO_REGISTRY_MIRROR)' $values_file; fi
+    - if [[ -n $OS_DOCKERIO_REGISTRY_MIRROR ]]; then yq -i '.registry_mirrors.hosts_config."docker.io"[0].mirror_url=strenv(OS_DOCKERIO_REGISTRY_MIRROR),.registry_mirrors.default_settings.capabilities=["pull", "resolve"]' $values_file; fi
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_common\r\e[0K"
   script_capd:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capd[collapsed=true]\r\e[0KApplying specific capd configuration\e[0m"
