@@ -495,6 +495,7 @@ units:
         substitute:
           REGISTRY_MIRROR: '{{ .Values.dockerio_registry_mirror }}'
           CAPO_TAG: '{{ tuple .Values.cluster.capo.resources_tag (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
+          CONTROL_PLANE_AZ_LIST: '{{ tuple (.Values.cluster.capo.control_plane_az | toJson) (eq .Values.cluster.capi_providers.infra_provider "capo") | include "set-only-if" }}'
         substituteFrom:
         - kind: ConfigMap
           name: cluster-vars
@@ -516,6 +517,8 @@ units:
                     (and .Values.dockerio_registry_mirror (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
         - '{{ tuple "../../components/capo-root-volume"
                     (and .Values.cluster.capo.rootVolume (eq .Values.cluster.capi_providers.infra_provider "capo"))  | include "set-only-if" }}'
+        - '{{ tuple "../../components/capo-control-plane-az"
+                    (and .Values.cluster.capo.control_plane_az (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
       patches:
         - target:
             kind: KubeadmControlPlane
@@ -1084,6 +1087,8 @@ units:
           CONTROL_PLANE_REPLICAS: '{{ tuple "1" (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
           WORKER_REPLICAS: '{{ tuple "0" (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
           WORKER_AZ: '{{ tuple "nova" (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
+          CONTROL_PLANE_AZ_LIST: '{{ tuple (.Values.cluster.capo.control_plane_az | toJson)
+                    (and .Values.cluster.capo.control_plane_az (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
           DISK_SIZE: '{{ tuple .Values.cluster.capo.rootVolume.diskSize
                     (and .Values.cluster.capo.rootVolume (eq .Values.cluster.capi_providers.infra_provider "capo"))  | include "set-only-if" }}'
           VOLUME_TYPE: '{{ tuple .Values.cluster.capo.rootVolume.volumeType
@@ -1119,6 +1124,8 @@ units:
                     (get .Values.cluster.capo.additional_networks "virtio_network_id") | include "set-only-if" }}'
         - '{{ tuple "../../components/capo-additional-networks/direct"
                     (get .Values.cluster.capo.additional_networks "direct_network_id") | include "set-only-if" }}'
+        - '{{ tuple "../../components/capo-control-plane-az"
+                    (and .Values.cluster.capo.control_plane_az (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
       patches:
         - target:
             kind: KubeadmControlPlane

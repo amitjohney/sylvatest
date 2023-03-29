@@ -712,6 +712,12 @@
                   "worker_flavor_name": {
                     "type": "string"
                   },
+                  "control_plane_az": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
                   "worker_az": {
                     "type": "string"
                   },
