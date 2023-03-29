@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+patches:
+- target:
+    kind: OpenStackMachineTemplate
+    labelSelector: role=worker
+  patch: |
+    - op: add
+      path: /spec/template/spec/ports/-
+      value:
+        network:
+          id: ${DIRECT_VNIC_NETWORK_ID}
+        vnicType: "direct"
