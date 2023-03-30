@@ -195,7 +195,7 @@ check-docs-markdown:
   rules: !reference [.common-deployment, rules]
   allow_failure: true
 
-.test-preview-capd:
+test-preview-capd:
   stage: deploy
   services: !reference [.common-deployment, services]
   timeout: 15min
@@ -203,7 +203,17 @@ check-docs-markdown:
     - !reference [.common-deployment, script_common]
     - !reference [.common-deployment, script_capd]
     - ./preview.sh environment-values/${ENV_NAME}
-  artifacts: !reference [.common-deployment, artifacts]
+  artifacts:
+    when: on_failure
+    expire_in: 1 hour
+    paths:
+      - debug-on-exit.log
+      - bootstrap-cluster-dump/
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - preview.sh
+        - tools/shell-lib/common.sh
   variables:
     ENV_NAME: kubeadm-capd
 
