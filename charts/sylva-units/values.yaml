@@ -1344,11 +1344,12 @@ cluster:
       virtio_network_id: ""
       direct_network_id: ""
     rootVolume: {} # Let this parameter empty if you don't intent to use root volume
-    control_plane_affinity_policy: soft-anti-affinity
-    worker_affinity_policy: soft-anti-affinity
     # otherwise, provide following values
     # diskSize: 20 # Size of the VMs root disk
     # volumeType: '__DEFAULT__' # Type of volume to be created
+    control_plane_affinity_policy: soft-anti-affinity
+    worker_affinity_policy: soft-anti-affinity
+    #control_plane_az: # list of OpenStack availability zones to deploy control planes nodes to, otherwise all would be candidates
     clouds_yaml: # (this is a dict, not a YAML string)
       clouds:
         capo_cloud:
