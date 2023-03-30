@@ -635,15 +635,6 @@
             }
           }
         },
-        "metal3": {
-          "type": "object",
-          "properties": {
-            "ironic_ip": {
-              "type": "string",
-              "format": "ipv4"
-            }
-          }
-        },
         "capo": {
           "type": "object"
         },
