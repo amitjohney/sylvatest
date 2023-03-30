@@ -62,7 +62,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3.git
       ref:
-        tag: 0.1.0
+        tag: 0.1.0-test
 
   cluster-vsphere:
     kind: GitRepository
@@ -638,7 +638,6 @@ units:
       components:
         - '{{ tuple "../cluster-manifests/components/capo-vip-floating-ip"
             (and .Values.cluster.capo.external_network_id (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
-
 
   calico:
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
