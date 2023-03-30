@@ -26,5 +26,5 @@ echo_b "\U000023F3 Retrieve the final set of values (after gotpl rendering)"
 kubectl get secrets -n sylva-units-preview sylva-units-values-debug -o template="{{ .data.values }}" | base64 -d
 
 echo_b "\U000023F3 Delete preview chart and namespace"
-kubectl delete -n sylva-units-preview helmrelease/sylva-units gitrepository/sylva-core
+kubectl delete -n sylva-units-preview helmrelease/sylva-units gitrepository/sylva-core configmap/management-cluster-bootstrap-values
 kubectl delete namespace sylva-units-preview

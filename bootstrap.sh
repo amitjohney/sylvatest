@@ -22,7 +22,7 @@ echo_b "\U0001F50E Validate sylva-units values for management cluster"
 validate_sylva_units
 
 echo_b "\U000023F3 Delete preview chart and namespace"
-kubectl delete -n sylva-units-preview helmrelease/sylva-units gitrepository/sylva-core
+kubectl delete -n sylva-units-preview helmrelease/sylva-units gitrepository/sylva-core configmap/management-cluster-bootstrap-values
 kubectl delete namespace sylva-units-preview
 
 echo_b "\U0001F4DD Create bootstrap configmap"
