@@ -13,7 +13,8 @@ kubectl kustomize kustomize-units/flux-system/bootstrap | envsubst | kubectl app
 echo_b "\U000023F3 Wait for Flux to be ready..."
 kubectl wait --for condition=Available --timeout 600s --all-namespaces --all deployment
 
-echo_b "\U0001F4DD Create bootstrap configmap for bootstrap values validation"
+echo_b "\U0001F4DD Create the validation preview namespace and configmap for bootstrap values"
+kubectl create namespace sylva-units-preview
 kubectl -n sylva-units-preview create configmap management-cluster-bootstrap-values --from-file=${BASE_DIR}/charts/sylva-units/bootstrap.values.yaml
 
 echo_b "\U0001F4C1 Create & install sylva-units preview Helm release"
