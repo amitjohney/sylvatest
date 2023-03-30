@@ -755,6 +755,23 @@ units:
       path: ./kustomize-units/rancher-webhook
       wait: true
 
+  rancher-add-keycloak-provider:
+    enabled: '{{ and (.Values.units.rancher.enabled) (.Values.units.keycloak.enabled) | include "preserve-type" }}'
+    repo: sylva-core
+    depends_on:
+      rancher: true
+      keycloak: true
+      keycloak-resources: true
+    kustomization_substitute_secrets:
+      RANCHER_CLIENT_SECRET: '{{ .Values.cluster.admin_password }}'
+    kustomization_spec:
+      path: ./kustomize-units/keycloak-auth-provider
+      postBuild:
+        substitute:
+          KEYCLOAK_EXTERNAL_URL: '{{ .Values.cluster.keycloak.external_hostname }}'
+          RANCHER_EXTERNAL_URL: '{{ .Values.cluster.rancher.external_hostname }}'
+      wait: true
+
   k8s-gateway:
     enabled: yes
     depends_on:
