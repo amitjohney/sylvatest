@@ -14,6 +14,9 @@ variables:
   DOCKER_TLS_CERTDIR: ""
   GITLEAKS_ARGS: '--verbose --log-opts=$CI_COMMIT_SHA'
   DOCKER_HOST: tcp://docker:2375/
+  CI_CAPO_CLEANUP:
+    value: "false"
+    description: "This variable allow to trigger the cleanup of CAPO CI"
 
 # included templates
 include:
