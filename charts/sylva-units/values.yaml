@@ -469,7 +469,7 @@ units:
         services:
           ironic:
             # Specify the IP address used by Ironic service
-            ironicIP: '{{ .Values.cluster.metal3.ironic_ip }}'
+            ironicIP: '{{ .Values.cluster.cluster_external_ip }}'
             # We allow shared IPs because we are exposing (by design) a single cluster external IP
             annotations:
               metallb.universe.tf/allow-shared-ip: '{{ .Values.cluster.cluster_external_ip }}'
@@ -1391,9 +1391,6 @@ cluster:
 
   flux:
     external_hostname: 'flux.{{ .Values.cluster.cluster_external_domain }}'
-
-  metal3:
-    ironic_ip: 66.66.66.66 # replace me (this IP is the IP at which Ironic is made accessible from BMCs or PXE network)
 
   test_workload_cluster_name: first-workload-cluster
 
