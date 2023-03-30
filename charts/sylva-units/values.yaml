@@ -1130,7 +1130,7 @@ units:
           WORKER_AZ: '{{ tuple "nova" (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
           CONTROL_PLANE_AZ_LIST: '{{ tuple (.Values.cluster.capo.control_plane_az | toJson)
                     (and .Values.cluster.capo.control_plane_az (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
-          DISK_SIZE: '{{ tuple .Values.cluster.capo.rootVolume.diskSize
+          DISK_SIZE: '{{ tuple (.Values.cluster.capo.rootVolume.diskSize | toString)
                     (and .Values.cluster.capo.rootVolume (eq .Values.cluster.capi_providers.infra_provider "capo"))  | include "set-only-if" }}'
           VOLUME_TYPE: '{{ tuple .Values.cluster.capo.rootVolume.volumeType
                     (and .Values.cluster.capo.rootVolume (eq .Values.cluster.capi_providers.infra_provider "capo"))  | include "set-only-if" }}'
