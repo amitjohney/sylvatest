@@ -1,0 +1,12 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: OCIRepository
+metadata:
+  name: sylva-core
+  namespace: default
+spec:
+  interval: 5m0s
+  url: oci://registry.gitlab.com/sylva-projects/sylva-core/kustomize-units
+  ref:
+    # in practice this field will have to be patched to contain an existing tag of the
+    # oci://registry.gitlab.com/sylva-projects/sylva-core/kustomize-units OCI container
+    tag: latest
