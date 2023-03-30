@@ -20,11 +20,6 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/args/2
         value: --feature-gates=MachinePool=false,ClusterTopology=false
-      - op: add
-        path: /spec/template/spec/containers/0/env/-
-        value:
-          name: DOCKER_HOST
-          value: ${DOCKER_HOST:-unix:///var/run/docker.sock}
 images:
 # Use custom image build with support of rke2 bootstrap provider
 - name: gcr.io/k8s-staging-cluster-api/capd-manager:main

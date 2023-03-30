@@ -393,7 +393,7 @@ units:
       path: ./kustomize-units/capd
       postBuild:
         substitute:
-          DOCKER_HOST: '{{ .Values.cluster.capd.docker_host }}'
+          CAPD_DOCKER_HOST: '{{ .Values.cluster.capd.docker_host }}'
       wait: true
 
   capo:
