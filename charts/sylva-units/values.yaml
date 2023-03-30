@@ -506,6 +506,11 @@ units:
         httpProxy: '{{ .Values.proxies.https_proxy }}'
         httpsProxy: '{{ .Values.proxies.https_proxy }}'
         noProxy: '{{ .Values.proxies.no_proxy }}'
+        images:
+          ironic:
+            tag: "capm3-v1.3.0"
+          baremetalOperator:
+            tag: "v0.2.0"
         persistence:
           ironic:
             accessMode: "ReadWriteOnce"
