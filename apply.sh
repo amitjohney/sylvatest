@@ -40,8 +40,6 @@ force_reconcile helmrelease sylva-units
 
 echo_b "\U000023F3 Wait for Flux units becoming ready"
 
-ensure_sylvactl
-
-./sylvactl watch --kubeconfig management-cluster-kubeconfig --reconcile --timeout 20m
+sylvactl watch --kubeconfig management-cluster-kubeconfig --reconcile --timeout 20m
 
 echo_b "\U0001F389 All done"
