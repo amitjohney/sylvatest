@@ -12,7 +12,7 @@ spec:
     realm: sylva
     enabled: true
     displayName: Sylva
-    loginTheme: base
+    loginTheme: keycloak
     accountTheme: keycloak
     adminTheme: keycloak
 ---

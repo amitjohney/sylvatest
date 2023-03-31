@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-groups-client-scope
+spec:
+  template:
+    spec:
+      containers:
+      - name: create-client-scope
+        image: cimg/base:edge
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -e
+          echo "Getting access token"
+          KEYCLOAK_BASE_URL="https://keycloak-service.keycloak.svc.cluster.local:8443"
+          ACCESS_TOKEN=$(curl -k -s -X POST \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "username=$(cat /admin-credentials/username)" \
+            -d "password=$(cat /admin-credentials/password)" \
+            -d "grant_type=password" \
+            -d "client_id=admin-cli" \
+            "${KEYCLOAK_BASE_URL}/realms/master/protocol/openid-connect/token" \
+            | jq -r '.access_token')
+          echo ${ACCESS_TOKEN}
+          echo "Creating client scope"
+          curl -k -s -X POST \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+            -d '{
+              "name": "groups",
+              "protocol": "openid-connect",
+              "attributes": {
+                "include.in.token.scope": "true",
+                "default.client.scope": "false"
+              }
+            }' \
+            "${KEYCLOAK_BASE_URL}/admin/realms/sylva/client-scopes"
+        volumeMounts:
+        - name: admin-credentials
+          mountPath: /admin-credentials
+          readOnly: true
+      restartPolicy: Never
+      volumes:
+      - name: admin-credentials
+        secret:
+          secretName: keycloak-initial-admin
+  backoffLimit: 4
+

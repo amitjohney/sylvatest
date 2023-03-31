@@ -411,12 +411,14 @@ units:
     repo: sylva-core
     kustomization_substitute_secrets:
       RANCHER_CLIENT_SECRET: '{{ .Values.cluster.admin_password }}'
+      FLUX_CLIENT_SECRET: '{{ .Values.cluster.admin_password }}' # We need to randomly generate this instead
     kustomization_spec:
       path: ./kustomize-units/keycloak-resources
       targetNamespace: keycloak
       postBuild:
         substitute:
           RANCHER_DNS: '{{ .Values.cluster.rancher.external_hostname }}'
+          FLUX_DNS: '{{ .Values.cluster.flux.external_hostname }}'
       healthChecks:  #  cannot use __wait: true__ here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/144
         - apiVersion: legacy.k8s.keycloak.org/v1alpha1
           kind: KeycloakRealm
@@ -1013,6 +1015,8 @@ units:
           value: "true"
         - name: WEAVE_GITOPS_FEATURE_CLUSTER
           value: "false"
+        - name: SSL_CERT_FILE
+          value: /etc/ssl/certs/ca.crt
         installCRDs: true
         rbac:
           additionalRules:
@@ -1030,8 +1034,24 @@ units:
           tls:
             - secretName: weave-tls
               hosts:
-<<<<<<< HEAD
                 - '{{ .Values.cluster.flux.external_hostname }}'
+        extraVolumes:
+          - name: custom-ca-cert
+            secret:
+              secretName: weave-tls
+              items:
+                - key: ca.crt
+                  path: ca.crt
+        extraVolumeMounts:
+          - name: custom-ca-cert
+            mountPath: /etc/ssl/certs
+            readOnly: true
+        oidcSecret:
+          create: true
+          clientID: flux
+          clientSecret: '{{ .Values.cluster.admin_password }}' # Change how we pass this
+          issuerURL: https://{{ .Values.cluster.keycloak.external_hostname }}/realms/sylva
+          redirectURL: https://{{ .Values.cluster.flux.external_hostname }}/oauth2/callback
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:
@@ -1047,10 +1067,7 @@ units:
                         securityContext:
                           seccompProfile:
                             $patch: delete
-                            type: RuntimeDefault
-=======
-                - '{{ .Values.cluster.flux.external_hostname }}' #
->>>>>>> test flux
+                            type: RuntimeDefault          
     helm_secret_values:
       adminUser:
         create: true
