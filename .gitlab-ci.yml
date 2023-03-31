@@ -170,6 +170,7 @@ check-docs-markdown:
     expire_in: 6 hour
     paths:
       - debug-on-exit.log
+      - latest-results/
       - bootstrap-cluster-dump/
       - management-cluster-dump/
       - bootstrap-cluster-units-report.xml

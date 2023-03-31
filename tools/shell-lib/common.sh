@@ -74,6 +74,12 @@ function exit_trap() {
         if [[ $IN_CI -eq 1 ]]; then
           tools/gci-templates/scripts/units-reports.py --env-type=${CI_JOB_NAME}:bootstrap --input ${CI_PROJECT_DIR}/bootstrap-cluster-dump/flux-kustomizations.yaml --output bootstrap-cluster-units-report.xml
           tools/gci-templates/scripts/units-reports.py --env-type=${CI_JOB_NAME}:management --input ${CI_PROJECT_DIR}/management-cluster-dump/flux-kustomizations.yaml --output management-cluster-units-report.xml
+          mkdir latest-results
+          if [[ $EXIT_CODE -eq 0 ]]; then
+            echo "{ 'schemaVersion': 1, 'label': '${CI_JOB_NAME}', 'message': 'success', 'color': 'green' }" > latest-results/${CI_JOB_NAME}.json
+          else
+            echo "{ 'schemaVersion': 1, 'label': '${CI_JOB_NAME}', 'message': 'failed', 'color': 'red' }" > latest-results/${CI_JOB_NAME}.json
+          fi
         fi
     fi
 
