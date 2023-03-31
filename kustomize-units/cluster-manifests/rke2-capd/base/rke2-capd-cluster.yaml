@@ -40,7 +40,7 @@ spec:
   - echo "fs.inotify.max_user_instances = 512" >> /etc/sysctl.conf
   - sysctl --system
   agentConfig:
-    version: v1.24.4+rke2r1
+    version: ${K8S_VERSION}
     airGapped: true
     kubelet:
       extraArgs:
