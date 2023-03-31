@@ -13,6 +13,6 @@ clientId: rancher
 clientSecret: "${RANCHER_CLIENT_SECRET}"
 enabled: true
 issuer: "https://${KEYCLOAK_EXTERNAL_URL}/realms/sylva"
-rancherUrl: "https://${RANCHER_EXTERNAL_URL}"
+rancherUrl: "https://${RANCHER_EXTERNAL_URL}/verify-auth"
 scope: openid profile email
 type: keyCloakOIDCConfig
