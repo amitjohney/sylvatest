@@ -535,18 +535,7 @@ units:
                     (and .Values.cluster.capo.control_plane_az (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
       patches:
         - '{{ tuple (.Files.Get "elements/registry_mirrors.tpl" | fromYaml) (dig "registry_mirrors" "hosts_config" "" (.Values | merge (dict))) | include "set-only-if" }}'
-        - target:
-            kind: KubeadmControlPlane
-          patch: |-
-            - op: add
-              path: /spec/kubeadmConfigSpec/ntp
-              value: {{ .Values.ntp | toJson }}
-        - target:
-            kind: RKE2ControlPlane
-          patch: |-
-            - op: add
-              path: /spec/agentConfig/ntp
-              value: {{ .Values.ntp | toJson }}
+        - '{{ tuple (.Files.Get "elements/ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
 
   heat-operator:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'
