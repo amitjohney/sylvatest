@@ -8,6 +8,7 @@ metadata:
 data:
   CLUSTER_NAME: {{ .Values.cluster.name }}
   MACHINE_IMAGE: {{ .Values.cluster.image }}
+  K8S_VERSION: {{ .Values.cluster.k8s_version }}
 {{ if eq .Values.cluster.capi_providers.infra_provider "capo" }}
   FLAVOR_NAME: {{ .Values.cluster.capo.flavor_name }}
   WORKER_FLAVOR_NAME: {{ .Values.cluster.capo.worker_flavor_name }}

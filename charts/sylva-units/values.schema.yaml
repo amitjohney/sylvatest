@@ -449,6 +449,9 @@ properties:
       worker_replicas:  # -------------------------------
         type: integer
 
+      k8s_version:  # -------------------------------
+        type: string
+
       cis_benchmark_scan_profile:  # -------------------------------
         type: string
 

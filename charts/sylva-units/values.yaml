@@ -1116,6 +1116,7 @@ units:
       postBuild:
         substitute:
           CLUSTER_NAME: '{{ .Values.cluster.test_workload_cluster_name }}'
+          K8S_VERSION: '{{ .Values.cluster.k8s_version }}'
           MACHINE_IMAGE: '{{ .Values.cluster.image }}'
           K8SGATEWAY_LB_IP: '{{ .Values.cluster.cluster_external_ip }}'   # NOTE: same is used for k8s-gateway DNS svc in management cluster
           CLUSTER_EXTERNAL_DOMAIN: '{{ .Values.cluster.cluster_external_domain }}'
@@ -1327,6 +1328,9 @@ cluster:
 
   # cis benchmark is only for rke2 so far, e.g. rke2-cis-1.23-profile-hardened
   cis_benchmark_scan_profile: '{{ eq .Values.cluster.capi_providers.bootstrap_provider "cabpr" | ternary "rke2-cis-1.23-profile-hardened" "no-scan-profile-defined-for-kubeadm-cluster" }}'
+
+  # kubernetes version to be used
+  k8s_version: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.24.6+rke2r1" "v1.23.6" }}'
 
   # Nodes number for controlplane and workers
   control_plane_replicas: 3

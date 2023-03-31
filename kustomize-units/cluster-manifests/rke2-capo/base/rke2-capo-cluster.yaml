@@ -212,7 +212,7 @@ spec:
   - echo "fs.inotify.max_user_instances = 512" >> /etc/sysctl.conf
   - sysctl --system
   agentConfig:
-    version: v1.24.6+rke2r1
+    version: ${K8S_VERSION}
     kubelet:
       extraArgs:
       - "provider-id=openstack:///{{ ds.meta_data.uuid }}"
@@ -249,7 +249,7 @@ spec:
     matchLabels: null
   template:
     spec:
-      version: v1.24.6+rke2r1
+      version: ${K8S_VERSION}
       failureDomain: ${WORKER_AZ}
       bootstrap:
         configRef:

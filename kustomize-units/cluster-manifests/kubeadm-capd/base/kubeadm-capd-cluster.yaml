@@ -35,7 +35,7 @@ metadata:
   namespace: default
 spec:
   replicas: 1
-  version: v1.24.4
+  version: ${K8S_VERSION}
   machineTemplate:
     infrastructureRef:
       apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
