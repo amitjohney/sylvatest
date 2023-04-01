@@ -390,7 +390,7 @@ units:
     depends_on:
       cert-manager: true
     kustomization_spec:
-      path: ./kustomize-units/capd
+      path: '{{ ternary "./kustomize-units/capd/base" "./kustomize-units/capd/rke2" (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") }}'
       postBuild:
         substitute:
           DOCKER_HOST: '{{ .Values.cluster.capd.docker_host }}'
