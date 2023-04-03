@@ -2,6 +2,12 @@ set -eu
 set -o pipefail
 
 export BASE_DIR="$(realpath $(dirname $0))"
+export PATH=${BASE_DIR}/bin:${PATH}
+
+SYLVACTL_VERSION="v0.0.6-pre"
+SYLVA_TOOLBOX_VERSION="v0.0.2"
+SYLVA_TOOLBOX_IMAGE=${SYLVA_TOOLBOX_IMAGE:-container-images/sylva-toolbox}
+SYLVA_TOOLBOX_REGISTRY=${SYLVA_TOOLBOX_REGISTRY:-registry.gitlab.com/sylva-projects/sylva-elements}
 
 if [[ -n "${CI_JOB_NAME:-}" ]]; then
   export IN_CI=1
@@ -38,14 +44,30 @@ function retrieve_kubeconfig {
     umask $orig_umask
 }
 
-function ensure_sylvactl {
-    SYLVACTL_VERSION="v0.0.6-pre"
-    if [[ ! -f ./sylvactl || $(./sylvactl version) != $SYLVACTL_VERSION ]]; then
-        echo_b "\U0001F4E5 Downloading sylvactl"
-        curl -qO --progress-bar https://gitlab.com/api/v4/projects/43501695/packages/generic/releases/$SYLVACTL_VERSION/sylvactl
-        chmod +x ./sylvactl
+function ensure_sylva_toolbox {
+    if ! command -v docker >/dev/null; then
+        echo "You must install docker prior to launch sylva"
+        exit 1
+    fi
+    if [[ ! -f  ${BASE_DIR}/bin/sylva-toolbox-version || $(awk -F : '$1=="sylva-toolbox" {print $2}' ${BASE_DIR}/bin/sylva-toolbox-version) != $SYLVA_TOOLBOX_VERSION ]]; then
+        echo_b "\U0001F4E5 Installing sylva-toolbox binaries"
+        mkdir -p ${BASE_DIR}/bin
+        docker run --rm ${SYLVA_TOOLBOX_REGISTRY}/${SYLVA_TOOLBOX_IMAGE}:${SYLVA_TOOLBOX_VERSION} | tar xz -C ${BASE_DIR}/bin
     fi
 }
+[[ $IN_CI -eq 0 ]] && ensure_sylva_toolbox
+
+function ensure_sylvactl {
+    if [[ ! -f ${BASE_DIR}/bin/sylvactl || $(sylvactl version) != $SYLVACTL_VERSION ]]; then
+        echo_b "\U0001F4E5 Downloading sylvactl"
+        mkdir -p ${BASE_DIR}/bin
+        curl -q --progress-bar https://gitlab.com/api/v4/projects/43501695/packages/generic/releases/$SYLVACTL_VERSION/sylvactl -o ${BASE_DIR}/bin/sylvactl
+        chmod +x ${BASE_DIR}/bin/sylvactl
+    fi
+    # Remove sylvactl that was previously installed in root directory
+    rm -f ${BASE_DIR}/sylvactl
+}
+ensure_sylvactl
 
 function background_watch() {
   local output_prefix=$1

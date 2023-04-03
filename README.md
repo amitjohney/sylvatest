@@ -112,13 +112,7 @@ Deploying clusters in Docker using CAPD (click to expand)
 
 Event if it is not representative of any real-life deployment use-case, running clusters in Docker is useful to enable the testing of lifecycle management of clusters without any infrastructure requirement.
 
-It can be used to test that stack on a laptop or in [GitLab-ci](.gitlab-ci.yml). You just have to install following prerequisites:
-
-- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-on-linux)
-- [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
-- [Docker](https://docs.docker.com/engine/install/)
-
-and then clone this [project](https://gitlab.com/sylva-projects/sylva-core).
+It can be used to test that stack on a laptop or in [GitLab-ci](.gitlab-ci.yml). You just have to [install Docker](https://docs.docker.com/engine/install/) as a prerequisite, and then clone this [project](https://gitlab.com/sylva-projects/sylva-core).
 
 Then you'll have to create a kind cluster with access to Docker socket:
 

@@ -38,10 +38,8 @@ kubectl annotate --overwrite helmrelease/sylva-units reconcile.fluxcd.io/request
 retrieve_kubeconfig &
 KUBECONFIG_PID=$!
 
-ensure_sylvactl
-
 echo_b "\U000023F3 Wait for management cluster to be ready"
-./sylvactl watch --reconcile --timeout 30m Kustomization/default/sylva-units
+sylvactl watch --reconcile --timeout 30m Kustomization/default/sylva-units
 
 if kill $KUBECONFIG_PID &>/dev/null; then
     echo_b "\U00002717 Failed to retrieve management-cluster kubeconfig"
