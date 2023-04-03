@@ -62,7 +62,7 @@ spec:
       identityRef:
         kind: Secret
         name: management-cluster-cloud-config
-      image: ${MACHINE_IMAGE}
+      image: ${WORKER_MACHINE_IMAGE}
       sshKeyName: ${SSH_KEY_NAME}
       serverGroupID: ${WORKER_SERVERGROUP_ID}
       securityGroups:

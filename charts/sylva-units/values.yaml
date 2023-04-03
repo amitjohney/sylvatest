@@ -1109,6 +1109,7 @@ units:
           CLUSTER_NAME: '{{ .Values.cluster.test_workload_cluster_name }}'
           K8S_VERSION: '{{ .Values.cluster.k8s_version }}'
           MACHINE_IMAGE: '{{ .Values.cluster.image }}'
+          WORKER_MACHINE_IMAGE: '{{ .Values.cluster.worker_machine_image | default .Values.cluster.image }}'
           K8SGATEWAY_LB_IP: '{{ .Values.cluster.cluster_external_ip }}'   # NOTE: same is used for k8s-gateway DNS svc in management cluster
           CLUSTER_EXTERNAL_DOMAIN: '{{ .Values.cluster.cluster_external_domain }}'
           CAPO_NETWORK_ID: '{{ tuple .Values.cluster.capo.network_id (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
@@ -1297,8 +1298,10 @@ cluster:
   # Admin password that will be configured by default on various units
   admin_password: '{{ randAlphaNum 64 }}'
 
-  # image reference depends provider
+  # image reference depends provider, used for control plane nodes
   image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/rke2-in-docker:v1-24-4-rke2r1
+
+  # worker_machine_image: "Ubuntu 20.04 Pack"         # Openstack image for worker nodes
 
   # for now, the choice below needs to be made
   # consistently with the choice of a matching kustomization path
