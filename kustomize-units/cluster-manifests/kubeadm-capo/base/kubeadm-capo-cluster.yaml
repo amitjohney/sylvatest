@@ -137,7 +137,14 @@ spec:
           kubeletExtraArgs:
             provider-id: 'openstack:///{{ ds.meta_data.uuid }}'
           name: '{{ ds.meta_data.name }}'
-      preKubeadmCommands: []
+      preKubeadmCommands:
+        - echo "fs.inotify.max_user_watches = 524288" >> /etc/sysctl.conf
+        - echo "fs.inotify.max_user_instances = 512" >> /etc/sysctl.conf
+        - sysctl --system
+        # Remove default mirroring configuration for k8s.gcr.io as it can't coexist with registry config dir
+        - sed -i '/k8s.gcr.io/d' /etc/containerd/config.toml
+        - grep -q config_path /etc/containerd/config.toml || echo "[plugins.\"io.containerd.grpc.v1.cri\".registry]\n  config_path = \"/etc/containerd/registry.d\"" >>  /etc/containerd/config.toml
+        - systemctl restart containerd.service
 ---
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: MachineDeployment
