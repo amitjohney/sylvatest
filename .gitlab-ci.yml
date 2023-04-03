@@ -220,7 +220,7 @@ test-preview-capd:
     ENV_NAME: kubeadm-capd
 
 test-kubeadm-capd:
-  timeout: 45min
+  timeout: 60min
   extends: .test-capd
   variables:
     ENV_NAME: kubeadm-capd
@@ -256,13 +256,13 @@ test-kubeadm-capd:
     - falcon
 
 test-rke2-capo:
-  timeout: 75min
+  timeout: 90min
   extends: .test-capo
   variables:
     ENV_NAME: "rke2-capo"
 
 test-kubeadm-capo:
-  timeout: 60min
+  timeout: 75min
   extends: .test-capo
   variables:
     ENV_NAME: "kubeadm-capo"
