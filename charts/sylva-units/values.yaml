@@ -390,7 +390,7 @@ units:
     depends_on:
       cert-manager: true
     kustomization_spec:
-      path: ./kustomize-units/capd
+      path: '{{ ternary "./kustomize-units/capd/base" "./kustomize-units/capd/rke2" (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") }}'
       postBuild:
         substitute:
           DOCKER_HOST: '{{ .Values.cluster.capd.docker_host }}'
@@ -536,19 +536,8 @@ units:
         - '{{ tuple "../../components/capo-control-plane-az"
                     (and .Values.cluster.capo.control_plane_az (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
       patches:
-        - '{{ tuple (.Files.Get "elements/registry_mirrors.tpl" | fromYaml) (dig "registry_mirrors" "hosts_config" "" (.Values | merge (dict))) | include "set-only-if" }}'
-        - target:
-            kind: KubeadmControlPlane
-          patch: |-
-            - op: add
-              path: /spec/kubeadmConfigSpec/ntp
-              value: {{ .Values.ntp | toJson }}
-        - target:
-            kind: RKE2ControlPlane
-          patch: |-
-            - op: add
-              path: /spec/agentConfig/ntp
-              value: {{ .Values.ntp | toJson }}
+        - '{{ tuple (.Files.Get "elements/registry-mirrors.tpl" | fromYaml) (dig "registry_mirrors" "hosts_config" "" (.Values | merge (dict))) | include "set-only-if" }}'
+        - '{{ tuple (.Files.Get "elements/ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
 
   heat-operator:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'
@@ -1169,7 +1158,7 @@ units:
         - '{{ tuple "../../components/capo-control-plane-az"
                     (and .Values.cluster.capo.control_plane_az (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
       patches:
-        - '{{ tuple (.Files.Get "elements/registry_mirrors.tpl" | fromYaml) (dig "registry_mirrors" "hosts_config" "" (.Values | merge (dict))) | include "set-only-if" }}'
+        - '{{ tuple (.Files.Get "elements/registry-mirrors.tpl" | fromYaml) (dig "registry_mirrors" "hosts_config" "" (.Values | merge (dict))) | include "set-only-if" }}'
         - target:
             kind: KubeadmControlPlane
           patch: |-
