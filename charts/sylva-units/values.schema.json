@@ -515,6 +515,9 @@
         "image": {
           "type": "string"
         },
+        "worker_machine_image": {
+          "type": "string"
+        },
         "capi_providers": {
           "type": "object",
           "additionalProperties": false,
