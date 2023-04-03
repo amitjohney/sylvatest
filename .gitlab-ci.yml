@@ -131,18 +131,6 @@ check-docs-markdown:
     - yq -i '.cluster.capd.docker_host = strenv(DOCKER_HOST)' $values_file
     - export CLUSTER_EXTERNAL_IP=$(echo $KIND_PREFIX | awk -F"." '{print $1"."$2"."$3".100"}')
     - yq -i '.cluster.cluster_external_ip = strenv(CLUSTER_EXTERNAL_IP)' $values_file
-    # for now, some units don't work on generic workers
-    # (see https://gitlab.com/sylva-projects/sylva-core/-/issues/2)
-    - |
-      if [[ ! $CI_RUNNER_TAGS =~ ".*capd-bm.*" ]]; then
-        echo "disable some units to allow capd jobs to run on generic gitlab runners"
-        yq -i '.units.workload-cluster.enabled=false' $values_file
-        yq -i '.units.workload-cluster-calico.enabled=false' $values_file
-        yq -i '.units.monitoring.enabled=false' $values_file
-        yq -i '.units.keycloak.enabled=false' $values_file
-        yq -i '.units.flux-webui.enabled=false' $values_file
-        yq -i '.units.capi-rancher-import.enabled=false' $values_file
-      fi
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capd\r\e[0K"
   post_deployment_common:
     - kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}' | xargs --no-run-if-empty -n1 kubectl --kubeconfig management-cluster-kubeconfig logs || true
