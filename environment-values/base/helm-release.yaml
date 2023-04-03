@@ -10,7 +10,7 @@ spec:
   interval: 120m
   ref:
     commit: CURRENT_COMMIT # Placeholder that will be replaced by bootstrap.sh and apply.sh commands
-  url: https://gitlab.com/sylva-projects/sylva-core.git
+  url: SYLVA_CORE_REPO
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease

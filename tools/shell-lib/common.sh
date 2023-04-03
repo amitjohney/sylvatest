@@ -64,6 +64,7 @@ else
 fi
 
 export CURRENT_COMMIT=${CI_COMMIT_SHA:-$(git rev-parse HEAD)}
+export SYLVA_CORE_REPO=$(git remote get-url origin)
 
 function exit_trap() {
     EXIT_CODE=$?
@@ -91,6 +92,10 @@ function force_reconcile() {
   kubectl annotate --overwrite $kinds $name_or_selector reconcile.fluxcd.io/requestedAt=$(date -uIs) | sed -e 's/^/  /'
 }
 
+function define_source() {
+  sed "s/CURRENT_COMMIT/${CURRENT_COMMIT}/" "$@" | sed "s,SYLVA_CORE_REPO,${SYLVA_CORE_REPO},g" "$@"
+}
+
 function validate_sylva_units() {
   # Create & install sylva-units preview Helm release
   PREVIEW_DIR=${BASE_DIR}/sylva-units-preview
@@ -103,7 +108,7 @@ function validate_sylva_units() {
         components:
         - $(realpath --relative-to=${PREVIEW_DIR} ./environment-values/preview)
 EOF
-  kubectl kustomize ${PREVIEW_DIR} | sed "s/CURRENT_COMMIT/${CURRENT_COMMIT}/" | kubectl apply -f -
+  kubectl kustomize ${PREVIEW_DIR} | define_source | kubectl apply -f -
   rm -Rf ${PREVIEW_DIR}
 
   # this is just to force-refresh in a dev environment with a new commit (or refreshed parameters)

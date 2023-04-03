@@ -28,7 +28,7 @@ echo_b "\U0001F4DD Create bootstrap configmap"
 kubectl create configmap management-cluster-bootstrap-values --from-file=${BASE_DIR}/charts/sylva-units/bootstrap.values.yaml --dry-run=client -o yaml | kubectl apply -f -
 
 echo_b "\U0001F4DC Install sylva-units Helm release"
-kubectl kustomize ${ENV_PATH} | sed "s/CURRENT_COMMIT/${CURRENT_COMMIT}/" | kubectl apply -f -
+kubectl kustomize ${ENV_PATH} | define_source | kubectl apply -f -
 
 # this is just to force-refresh in a dev environment with a new commit (or refreshed parameters)
 kubectl annotate --overwrite gitrepository/sylva-core reconcile.fluxcd.io/requestedAt="$(date -uIs)"
