@@ -527,6 +527,8 @@ units:
       components:
         - '{{ tuple "../../components/proxies/KubeadmControlPlane"
                     (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
+        - '{{ tuple "../../components/proxies/KubeadmConfigTemplate"
+                    (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
         - '{{ tuple "../../components/proxies/RKE2ControlPlane"
                     (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
         - '{{ tuple "../../components/capo-root-volume"
@@ -1149,6 +1151,8 @@ units:
         - '{{ tuple "../../components/dns-client/kind/RKE2ControlPlane"
                     (and (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
         - '{{ tuple "../../components/proxies/KubeadmControlPlane"
+                    (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
+        - '{{ tuple "../../components/proxies/KubeadmConfigTemplate"
                     (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
         - '{{ tuple "../../components/proxies/RKE2ControlPlane"
                     (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'

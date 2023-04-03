@@ -137,6 +137,7 @@ spec:
           kubeletExtraArgs:
             provider-id: 'openstack:///{{ ds.meta_data.uuid }}'
           name: '{{ ds.meta_data.name }}'
+      preKubeadmCommands: []
 ---
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: MachineDeployment
