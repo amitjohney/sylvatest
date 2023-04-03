@@ -4,9 +4,22 @@ units:
   cluster:
     kustomization_spec:
       path: ./kustomize-units/cluster-manifests/kubeadm-capd/base
+
+  # Disabling some units for lightweight deployment testing
   workload-cluster:
+    enabled: false
     kustomization_spec:
       path: ./kustomize-units/cluster-manifests/kubeadm-capd/base
+  workload-cluster-calico:
+    enabled: false
+  monitoring:
+    enabled: false
+  keycloak:
+    enabled: false
+  flux-webui:
+    enabled: false
+  capi-rancher-import:
+    enabled: false
 
 cluster:
   capi_providers:
