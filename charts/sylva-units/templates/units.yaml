@@ -99,6 +99,10 @@ spec: {{ $source_repo_spec | toYaml | nindent 2 }}
     {{ else }}{{/* helm_repo is declared, we generate a HelmRepository */}}
 ---
       {{- $helm_repo_spec := dict -}}
+      {{- $schema := urlParse $unit_def.helm_repo_url -}}
+        {{- if $schema.scheme | eq "oci" -}}
+          {{- $helm_repo_spec = dict "type" "oci" -}}
+        {{- end -}}
       {{- $helm_repo_spec = mergeOverwrite $helm_repo_spec $envAll.Values.helm_repo_spec_default (dict "url" $unit_def.helm_repo_spec | default dict) (dict "url" $unit_def.helm_repo_url) -}}
       {{- $helmrelease_spec_overrides = dict "chart" (dict "spec" (dict "sourceRef" (dict "kind" "HelmRepository" "name" (printf "unit-%s" $unit_name)))) }}
 apiVersion: source.toolkit.fluxcd.io/v1beta2
