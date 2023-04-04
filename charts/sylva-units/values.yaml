@@ -251,7 +251,7 @@ units:
       chart:
         spec:
           chart: vault-operator
-          version: v1.19.0
+          version: 1.19.0
       targetNamespace: vault
       install:
         createNamespace: true
@@ -281,7 +281,7 @@ units:
       chart:
         spec:
           chart: rancher-cis-benchmark-crd
-          version: v3.0.0
+          version: 3.0.0
       targetNamespace: cis-operator-system
       install:
         createNamespace: true
@@ -295,7 +295,7 @@ units:
       chart:
         spec:
           chart: rancher-cis-benchmark
-          version: v3.0.0
+          version: 3.0.0
       targetNamespace: cis-operator-system
 
   # this allows for running a CIS scan for management cluster
