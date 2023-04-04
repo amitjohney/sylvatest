@@ -41,7 +41,11 @@ data:
   VS_DC_NAME: {{ .Values.cluster.capv.dataCenter }}
   VS_NETWORK: {{ .Values.cluster.capv.network }}
   VS_SERVER: {{ .Values.cluster.capv.server }}
+  VS_DATASTORE: {{ .Values.cluster.capv.dataStore }}
   VS_TLS_THUMBPRINT: {{ .Values.cluster.capv.tlsThumbprint }}
+  VS_FOLDER: {{ .Values.cluster.capv.folder }}
+  VS_RESOURCEPOOL: {{ .Values.cluster.capv.resourcePool }}
+  VS_STORAGEPOLICY_NAME: {{ .Values.cluster.capv.storagePolicyName }}
 {{ end }}
   CLUSTER_EXTERNAL_IP: {{ .Values.cluster.cluster_external_ip }}
   CONTROL_PLANE_REPLICAS: {{ .Values.cluster.control_plane_replicas | quote }}
