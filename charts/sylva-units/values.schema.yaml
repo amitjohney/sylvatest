@@ -330,7 +330,7 @@ properties:
 
           helm_repo_url:  # -------------------------------
             type: string
-            pattern: https?://.*
+            pattern: (https?|oci)://.*
 
           helm_secret_values:  # -------------------------------
             type: object
