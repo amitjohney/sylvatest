@@ -7,12 +7,12 @@ spec:
     spec:
       containers:
       - name: create-client-scope
-        image: cimg/base:edge
+        image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/kube-job:v1.0.0
         command: ["/bin/sh", "-c"]
         args:
         - |
           set -e
-          echo "Getting access token"
+          echo "-- Retrieve Keycloak access token"
           KEYCLOAK_BASE_URL="https://keycloak-service.keycloak.svc.cluster.local:8443"
           ACCESS_TOKEN=$(curl -k -s -X POST \
             -H "Content-Type: application/x-www-form-urlencoded" \
@@ -22,8 +22,11 @@ spec:
             -d "client_id=admin-cli" \
             "${KEYCLOAK_BASE_URL}/realms/master/protocol/openid-connect/token" \
             | jq -r '.access_token')
-          echo ${ACCESS_TOKEN}
-          echo "Creating client scope"
+          if [ -z "${ACCESS_TOKEN-unset}" ]; then
+              echo "ACCESS_TOKEN is set to the empty string, will try again"
+              exit 1
+          fi
+          echo "-- Create client scope"
           curl -k -s -X POST \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${ACCESS_TOKEN}" \
@@ -36,6 +39,7 @@ spec:
               }
             }' \
             "${KEYCLOAK_BASE_URL}/admin/realms/sylva/client-scopes"
+          echo "-- All done"
         volumeMounts:
         - name: admin-credentials
           mountPath: /admin-credentials
@@ -46,4 +50,3 @@ spec:
         secret:
           secretName: keycloak-initial-admin
   backoffLimit: 4
-
