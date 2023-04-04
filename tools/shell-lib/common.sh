@@ -4,8 +4,8 @@ set -o pipefail
 export BASE_DIR="$(realpath $(dirname $0))"
 export PATH=${BASE_DIR}/bin:${PATH}
 
-SYLVACTL_VERSION="v0.0.6-pre"
-SYLVA_TOOLBOX_VERSION="v0.0.2"
+SYLVACTL_VERSION="v0.1.0"
+SYLVA_TOOLBOX_VERSION="v0.1.0"
 SYLVA_TOOLBOX_IMAGE=${SYLVA_TOOLBOX_IMAGE:-container-images/sylva-toolbox}
 SYLVA_TOOLBOX_REGISTRY=${SYLVA_TOOLBOX_REGISTRY:-registry.gitlab.com/sylva-projects/sylva-elements}
 
