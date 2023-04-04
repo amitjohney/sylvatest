@@ -1299,7 +1299,7 @@ cluster:
   admin_password: '{{ randAlphaNum 64 }}'
 
   # image reference depends provider, used for control plane nodes
-  image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/rke2-in-docker:v1-24-4-rke2r1
+  image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/rke2-in-docker:v1-24-12-rke2r1
 
   # worker_machine_image: "Ubuntu 20.04 Pack"         # Openstack image for worker nodes
 
@@ -1315,7 +1315,7 @@ cluster:
   cis_benchmark_scan_profile: '{{ eq .Values.cluster.capi_providers.bootstrap_provider "cabpr" | ternary "rke2-cis-1.23-profile-hardened" "no-scan-profile-defined-for-kubeadm-cluster" }}'
 
   # kubernetes version to be used
-  k8s_version: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.24.6+rke2r1" "v1.23.6" }}'
+  k8s_version: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.24.12+rke2r1" "v1.24.12" }}'
 
   # Nodes number for controlplane and workers
   control_plane_replicas: 3
