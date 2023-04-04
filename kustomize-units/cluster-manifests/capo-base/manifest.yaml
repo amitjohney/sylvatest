@@ -19,6 +19,7 @@ spec:
       serverGroupID: ${CONTROL_PLANE_SERVERGROUP_ID}
       securityGroups:
         - name: default
+        - name: ${CONTROL_PLANE_SECURITY_GROUP_NAME}
       ports:
         - network:
             id: ${CAPO_NETWORK_ID}
@@ -67,6 +68,7 @@ spec:
       serverGroupID: ${WORKER_SERVERGROUP_ID}
       securityGroups:
       - name: default
+      - name: ${WORKER_SECURITY_GROUP_NAME}
       ports:
         - network:
             id: ${CAPO_NETWORK_ID}

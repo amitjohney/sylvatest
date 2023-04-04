@@ -568,6 +568,8 @@ units:
           CAPO_TAG: '{{ .Values.cluster.capo.resources_tag }}'
           CONTROL_PLANE_AFFINITY_POLICY: '{{ .Values.cluster.capo.control_plane_affinity_policy }}'
           WORKER_AFFINITY_POLICY: '{{ .Values.cluster.capo.worker_affinity_policy }}'
+          CONTROL_PLANE_SECURITY_GROUP_NAME: 'capo-cluster-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}'
+          WORKER_SECURITY_GROUP_NAME: 'capo-cluster-security-group-worker-{{ .Values.cluster.capo.resources_tag }}'
           CAPO_EXTERNAL_NETWORK_ID: '{{ tuple .Values.cluster.capo.external_network_id
             (and .Values.cluster.capo.external_network_id (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
       components:
@@ -1085,6 +1087,26 @@ units:
                   value: { get_resource: srvgroup-ctrl-plane }
                 WORKER_SERVERGROUP_ID:
                   value: { get_resource: srvgroup-worker }
+            - op: replace
+              path: /spec/template/parameters/control_plane_rules
+              value:
+                type: json
+                description: "Security group rules associated with the control plane VMs"
+                default:
+                  direction: [ingress, ingress, ingress, egress]
+                  port: ['80', '443', '22', '53']
+                  protocol: [tcp, tcp, tcp, udp]
+                  remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
+            - op: replace
+              path: /spec/template/parameters/worker_rules
+              value:
+                type: json
+                description: "Security group rules associated with the worker VMs"
+                default:
+                  direction: [ingress, ingress, ingress, egress]
+                  port: ['80', '443', '22', '53']
+                  protocol: [tcp, tcp, tcp, udp]
+                  remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
 
       postBuild:
         substitute:
@@ -1092,6 +1114,8 @@ units:
           CAPO_TAG: '{{ .Values.cluster.capo.resources_tag }}'
           CONTROL_PLANE_AFFINITY_POLICY: '{{ .Values.cluster.capo.control_plane_affinity_policy }}'
           WORKER_AFFINITY_POLICY: '{{ .Values.cluster.capo.worker_affinity_policy }}'
+          CONTROL_PLANE_SECURITY_GROUP_NAME: 'workload-cluster-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}'
+          WORKER_SECURITY_GROUP_NAME: 'workload-cluster-security-group-worker-{{ .Values.cluster.capo.resources_tag }}'
 
   workload-cluster:
     enabled: '{{ .Values.env_type_ci | include "preserve-type" }}'
@@ -1127,6 +1151,8 @@ units:
                     (and .Values.cluster.capo.rootVolume (eq .Values.cluster.capi_providers.infra_provider "capo"))  | include "set-only-if" }}'
           VOLUME_TYPE: '{{ tuple .Values.cluster.capo.rootVolume.volumeType
                     (and .Values.cluster.capo.rootVolume (eq .Values.cluster.capi_providers.infra_provider "capo"))  | include "set-only-if" }}'
+          CONTROL_PLANE_SECURITY_GROUP_NAME: 'workload-cluster-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}'
+          WORKER_SECURITY_GROUP_NAME: 'workload-cluster-security-group-worker-{{ .Values.cluster.capo.resources_tag }}'
         substituteFrom:
           - kind: ConfigMap
             name: proxy-env-vars
