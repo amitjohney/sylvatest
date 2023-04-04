@@ -315,3 +315,10 @@ publish-artifacts:
     - tools/oci/build-kustomize-units-artifact.sh $CI_COMMIT_TAG
   only:
     - tags
+
+push-helm-artifacts:
+  stage: build
+  script:
+    - tools/oci/push-helm-charts-artifacts.sh "oci://${CI_REGISTRY_IMAGE}"
+  only:
+    - tags
