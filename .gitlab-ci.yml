@@ -15,6 +15,8 @@ variables:
   DOCKER_TLS_CERTDIR: ""
   GITLEAKS_ARGS: '--verbose --log-opts=$CI_COMMIT_SHA'
   DOCKER_HOST: tcp://docker:2375/
+  CAPO_TAG: ${ENV_NAME}-${CI_COMMIT_SHORT_SHA}
+  ENVIRONMENT_TAG: ${CAPO_TAG}-${CI_COMMIT_REF_SLUG}
 
 # included templates
 include:
@@ -221,7 +223,6 @@ test-kubeadm-capd:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capo[collapsed=true]\r\e[0KApplying specific capo configuration\e[0m"
     - !reference [.common-deployment, os_cloud]
     - yq -i eval-all 'select(fileIndex==0).cluster.capo.clouds_yaml = select(fileIndex==1) | select(fileIndex==0)' environment-values/${ENV_NAME}/secrets.yaml ~/.config/openstack/clouds.yml
-    - export CAPO_TAG="${CI_PIPELINE_ID}-${ENV_NAME}"
     - yq -i '.cluster.capo.resources_tag = strenv(CAPO_TAG)' $values_file
     - git config --global credential.helper cache
     # the CI_COMPONENT_* variables below are set in the gitlab runner configuration
@@ -231,7 +232,8 @@ test-kubeadm-capd:
     - export CI_COMPONENT="https://${CI_COMPONENT_REPO}//sylva-core-ci/falcon-${ENV_NAME}?ref=main"
     - if [ $(yq '.components | length' environment-values/$ENV_NAME/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' environment-values/$ENV_NAME/kustomization.yaml; fi
     - yq -i '.components += strenv(CI_COMPONENT)' environment-values/$ENV_NAME/kustomization.yaml
-    - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capd\r\e[0K"
+    - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capo\r\e[0K"
+    - echo "Resource tag used here = $CAPO_TAG"
     - ./bootstrap.sh environment-values/${ENV_NAME}
     - !reference [.common-deployment, post_deployment_common]
   artifacts: !reference [.common-deployment, artifacts]
@@ -248,12 +250,22 @@ test-rke2-capo:
   extends: .test-capo
   variables:
     ENV_NAME: "rke2-capo"
+  environment:
+    name: $ENVIRONMENT_TAG
+    action: start
+    auto_stop_in: 2h
+    on_stop: cleanup-rke2-capo-manual
 
 test-kubeadm-capo:
   timeout: 75min
   extends: .test-capo
   variables:
     ENV_NAME: "kubeadm-capo"
+  environment:
+    name: $ENVIRONMENT_TAG
+    action: start
+    auto_stop_in: 2h
+    on_stop: cleanup-kubeadm-capo-manual
 
 .cleanup-capo:
   stage: delete
@@ -261,7 +273,7 @@ test-kubeadm-capo:
     name: registry.gitlab.com/t6306/components/docker-images/ci-image:openstack-client-v1.0
   script:
     - !reference [.common-deployment, os_cloud]
-    - sh ./tools/openstack-cleanup.sh capo_cloud "${CI_PIPELINE_ID}-${ENV_NAME}"
+    - sh ./tools/openstack-cleanup.sh capo_cloud "${CAPO_TAG}"
   rules:
     - if: $CI_PIPELINE_SOURCE == 'web'
     - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_DEPLOYMENTS'
@@ -276,6 +288,9 @@ cleanup-rke2-capo:
     ENV_NAME: "rke2-capo"
   needs:
     - test-rke2-capo
+  environment:
+    name: $ENVIRONMENT_TAG
+    action: stop
 
 cleanup-kubeadm-capo:
   extends: .cleanup-capo
@@ -283,6 +298,24 @@ cleanup-kubeadm-capo:
     ENV_NAME: "kubeadm-capo"
   needs:
     - test-kubeadm-capo
+  environment:
+    name: $ENVIRONMENT_TAG
+    action: stop
+
+cleanup-rke2-capo-manual:
+  extends: cleanup-rke2-capo
+  needs: []
+  rules:
+    - when: manual
+      allow_failure: true
+
+cleanup-kubeadm-capo-manual:
+  extends: cleanup-kubeadm-capo
+  needs: []
+  rules:
+    - when: manual
+      allow_failure: true
+
 
 scheduled-cleanup-capo:
   stage: delete
