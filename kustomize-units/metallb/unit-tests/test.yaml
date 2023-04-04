@@ -1,0 +1,6 @@
+metallb_test:
+  extends: .unit-tests
+  script:
+    - mkdir results
+    - echo metallb_test > results/metallb_result
+

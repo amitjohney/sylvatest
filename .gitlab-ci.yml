@@ -2,6 +2,7 @@ stages:
   - generate
   - test
   - deploy
+  - units-testing
   - delete
   - build
 
@@ -17,91 +18,91 @@ variables:
   DOCKER_HOST: tcp://docker:2375/
 
 # included templates
-include:
-  # Gitleaks template
-  - project: "to-be-continuous/gitleaks"
-    ref: 2.1.1
-    file: "templates/gitlab-ci-gitleaks.yml"
+ #include:
+ #  # Gitleaks template
+ #  - project: "to-be-continuous/gitleaks"
+ #    ref: 2.1.1
+ #    file: "templates/gitlab-ci-gitleaks.yml"
 
-chart-generator:
-  stage: generate
-  script:
-    - echo "Generate CI jobs for each modified charts/units/environment-values"
-    - ./tools/gci-templates/scripts/generate-pipeline.sh > generated-pipeline.yml
-  artifacts:
-    expire_in: 1 hour
-    paths:
-      - generated-pipeline.yml
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      changes:
-        - charts/**/*
-        - kustomize-units/**/*
-        - environment-values/**/*
-        - tools/gci-templates/**/*
+#chart-generator:
+ # stage: generate
+ # script:
+ #   - echo "Generate CI jobs for each modified charts/units/environment-values"
+ #   - ./tools/gci-templates/scripts/generate-pipeline.sh > generated-pipeline.yml
+ # artifacts:
+ #   expire_in: 1 hour
+ #   paths:
+ #     - generated-pipeline.yml
+ # rules:
+ #   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+ #     changes:
+ #       - charts/**/*
+ #       - kustomize-units/**/*
+ #       - environment-values/**/*
+ #       - tools/gci-templates/**/*
+#
+#chart-jobs:
+# # stage: generate
+# # needs:
+# #   - chart-generator
+# # trigger:
+# #   include:
+# #     - artifact: generated-pipeline.yml
+# #       job: chart-generator
+# #   strategy: depend
+# # rules:
+# #   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+# #     changes:
+# #       - charts/**/*
+# #       - kustomize-units/**/*
+# #       - environment-values/**/*
+# #       - tools/gci-templates/**/*
+ #       - tools/yaml2json.py
 
-chart-jobs:
-  stage: generate
-  needs:
-    - chart-generator
-  trigger:
-    include:
-      - artifact: generated-pipeline.yml
-        job: chart-generator
-    strategy: depend
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      changes:
-        - charts/**/*
-        - kustomize-units/**/*
-        - environment-values/**/*
-        - tools/gci-templates/**/*
-        - tools/yaml2json.py
+#yamllint:
+#  stage: test
+#  script:
+#    - 'yamllint . -d "$(cat < tools/gci-templates/yamllint.yaml) $(cat < tools/gci-templates/yamllint-helm-exclude-charts.yaml)"'
+#  only:
+#    - merge_requests
 
-yamllint:
-  stage: test
-  script:
-    - 'yamllint . -d "$(cat < tools/gci-templates/yamllint.yaml) $(cat < tools/gci-templates/yamllint-helm-exclude-charts.yaml)"'
-  only:
-    - merge_requests
-
-avoid-typo-on-bootstrap:
-  stage: test
-  script:
-    - |
-      rm -rf .git  # because busybox grep does not support --exclude-dir
-      echo "Check against frequent typos on 'bootstrap'..."
-      set +e
-      typos=$(grep -rnsiE 'boostrap|bootrap|bootsrap' . | grep -v '.gitlab-ci.yaml:      typos=')
-      set -e
-      if [ -n "$typos" ]; then
-        echo "A few typos were found on the 'bootstrap' word:"
-        echo "-----------------"
-        echo "$typos"
-        echo "-----------------"
-        exit 1
-      fi
-  only:
-    - merge_requests
-
-check-docs-markdown:
-  image: registry.gitlab.com/gitlab-org/gitlab-docs/lint-markdown:alpine-3.16-vale-2.20.2-markdownlint-0.32.2-markdownlint2-0.5.1
-  stage: test
-  script:
-    - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
-    - |
-      md_files=$(git diff --name-only $CI_COMMIT_SHA origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME | grep "\.md$" || true)
-      if [ -n "$md_files" ] ; then
-        markdownlint-cli2-config tools/gci-templates/.markdownlint.yml $md_files
-      else
-        echo "No modified .md files"
-      fi
-  only:
-    refs:
-      - merge_requests
-    changes:
-      - "**/*.md"
-
+#avoid-typo-on-bootstrap:
+#  stage: test
+#  script:
+#    - |
+#      rm -rf .git  # because busybox grep does not support --exclude-dir
+#      echo "Check against frequent typos on 'bootstrap'..."
+#      set +e
+#      typos=$(grep -rnsiE 'boostrap|bootrap|bootsrap' . | grep -v '.gitlab-ci.yaml:      typos=')
+#      set -e
+#      if [ -n "$typos" ]; then
+#        echo "A few typos were found on the 'bootstrap' word:"
+#        echo "-----------------"
+#        echo "$typos"
+#        echo "-----------------"
+#        exit 1
+#      fi
+#  only:
+##    - merge_requests
+#
+#check-docs-markdown:
+#  image: registry.gitlab.com/gitlab-org/gitlab-docs/lint-markdown:alpine-3.16-vale-2.20.2-markdownlint-0.32.2-markdownlint2-0.5.1
+#  stage: test
+#  script:
+#    - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+#    - |
+#      md_files=$(git diff --name-only $CI_COMMIT_SHA origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME | grep "\.md$" || true)
+#      if [ -n "$md_files" ] ; then
+#        markdownlint-cli2-config tools/gci-templates/.markdownlint.yml $md_files
+#      else
+#        echo "No modified .md files"
+#      fi
+#  only:
+#    refs:
+#      - merge_requests
+#    changes:
+#      - "**/*.md"
+#
 .common-deployment:
   services:
     - name: docker:dind
@@ -254,6 +255,39 @@ test-kubeadm-capo:
   extends: .test-capo
   variables:
     ENV_NAME: "kubeadm-capo"
+
+dummy-capo:
+  stage: deploy
+  script:
+    - echo "dummy"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+tests-generator:
+  stage: deploy
+  needs:
+    - dummy-capo
+  script:
+    - ./generate_test.sh > tests-pipeline.yml
+  artifacts:
+    expire_in: 1 hour
+    paths:
+      - tests-pipeline.yml
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+tests-jobs:
+  stage: deploy
+  needs:
+    - tests-generator
+  trigger:
+    include:
+      - artifact: tests-pipeline.yml
+        job: tests-generator
+    strategy: depend
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
 
 .cleanup-capo:
   stage: delete

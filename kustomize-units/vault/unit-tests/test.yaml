@@ -1,0 +1,5 @@
+vault_test:
+  extends: .unit-tests
+  script:
+    - mkdir results
+    - echo vault_test > results/vault_result
