@@ -342,7 +342,7 @@ units:
           SCAN_PROFILE: '{{ .Values.cluster.cis_benchmark_scan_profile }}'
 
   keycloak:
-    enabled: yes
+    enabled: no
     depends_on:
       sylva-ca: true
       sylva-ca-certs: true
