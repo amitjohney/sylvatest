@@ -536,7 +536,8 @@ units:
         - '{{ tuple "../../components/capo-control-plane-az"
                     (and .Values.cluster.capo.control_plane_az (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
       patches:
-        - '{{ tuple (.Files.Get "elements/registry-mirrors.tpl" | fromYaml) (dig "registry_mirrors" "hosts_config" "" (.Values | merge (dict))) | include "set-only-if" }}'
+        - '{{ tuple (.Files.Get "elements/controlplane-registry-mirrors.tpl" | fromYaml) (dig "registry_mirrors" "hosts_config" "" (.Values | merge (dict))) | include "set-only-if" }}'
+        - '{{ tuple (.Files.Get "elements/configtemplate-registry-mirrors.tpl" | fromYaml) (dig "registry_mirrors" "hosts_config" "" (.Values | merge (dict))) | include "set-only-if" }}'
         - '{{ tuple (.Files.Get "elements/ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
 
   heat-operator:
@@ -1185,7 +1186,8 @@ units:
         - '{{ tuple "../../components/capo-control-plane-az"
                     (and .Values.cluster.capo.control_plane_az (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
       patches:
-        - '{{ tuple (.Files.Get "elements/registry-mirrors.tpl" | fromYaml) (dig "registry_mirrors" "hosts_config" "" (.Values | merge (dict))) | include "set-only-if" }}'
+        - '{{ tuple (.Files.Get "elements/controlplane-registry-mirrors.tpl" | fromYaml) (dig "registry_mirrors" "hosts_config" "" (.Values | merge (dict))) | include "set-only-if" }}'
+        - '{{ tuple (.Files.Get "elements/configtemplate-registry-mirrors.tpl" | fromYaml) (dig "registry_mirrors" "hosts_config" "" (.Values | merge (dict))) | include "set-only-if" }}'
         - '{{ tuple (.Files.Get "elements/ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
 
   workload-cluster-calico:
