@@ -86,7 +86,7 @@ else
 fi
 
 export CURRENT_COMMIT=${CI_COMMIT_SHA:-$(git rev-parse HEAD)}
-export SYLVA_CORE_REPO=$(git remote get-url origin)
+export SYLVA_CORE_REPO=${SYLVA_CORE_REPO:-$(git remote get-url origin | sed 's|^git@\([^:]\+\):|https://\1/|')}
 
 function exit_trap() {
     EXIT_CODE=$?
