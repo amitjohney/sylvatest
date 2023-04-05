@@ -336,7 +336,7 @@ units:
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/cis-operator-scan
-      wait: true
+      wait: false
       postBuild:
         substitute:
           SCAN_PROFILE: '{{ .Values.cluster.cis_benchmark_scan_profile }}'
