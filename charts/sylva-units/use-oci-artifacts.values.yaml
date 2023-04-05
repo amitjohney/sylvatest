@@ -1,0 +1,76 @@
+# This file is here mostly for documentation purposes
+#
+# It is meant to be use when deploying Sylva from OCI registry artifacts.
+#
+# In such a context the 'sylva-units' chart is deploy from an OCI registry artifact
+# build by tools/oci/build-sylva-units-artifact.sh, and this tool also
+# populates this file so that all external sources definitions (from source_templates and helm_repo_url)
+# will point to OCI Registry artifacts.
+#
+#
+# ************************ Helm-based units relying on 'helm_repo_url' *********
+#
+# for those units, we just need to override the URL with the OCI registry URL
+#
+# Example:
+#
+# Unit definition:
+#
+#   cert-manager:
+#     enabled: yes
+#     helm_repo_url: https://charts.jetstack.io
+#     helmrelease_spec:
+#     chart:
+#       spec:
+#         chart: cert-manager
+#         version: v1.11.0
+#
+# Produced override to use the OCI registry:
+#
+#    cert-manager:
+#      helm_repo_url: '{{ sylva_core_oci_registry }}'
+#
+#
+# ************************* Helm-based units relying on 'repo' *********
+#
+# For such units, we:
+# * replace 'repo: xxx' by 'helm_repo_url'
+# * inject the version found in source_templates.xxx.spec.ref.tag into the unit helmrelease_spec.chart.spec.version
+#
+# Example:
+#
+# For unit 'local-path-provisioner'...
+#
+# source_templates:
+#   local-path-provisioner:
+#     kind: GitRepository
+#     spec:
+#       url: https://github.com/rancher/local-path-provisioner.git
+#       ref:
+#         tag: v0.0.23
+# units:
+#   local-path-provisioner:
+#     enabled: yes
+#     repo: local-path-provisioner
+#     helmrelease_spec:
+#       chart:
+#         spec:
+#           chart: deploy/chart/local-path-provisioner
+#
+# ...We produce this override:
+#
+#   local-path-provisioner:
+#     repo: null
+#     helm_repo_url: '{{ sylva_core_oci_registry }}'
+#     helmrelease_spec:
+#       chart:
+#         spec:
+#           chart: local-path-provisioner
+#           version: v0.0.23
+
+# this value can be overriden to use an alternate OCI registry
+sylva_core_oci_registry: oci://registry.gitlab.com/sylva-projects/sylva-core
+
+###########################################################################################################
+#### actual content produced at OCI-artifact buildind time by tools/oci/build-sylva-units-artifact.sh  ####
+###########################################################################################################

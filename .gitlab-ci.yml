@@ -309,7 +309,7 @@ scheduled-cleanup-capo:
   tags:
     - falcon
 
-publish-artifacts:
+publish-kustomize-units-artifact:
   stage: build
   script:
     - tools/oci/build-kustomize-units-artifact.sh $CI_COMMIT_TAG
@@ -320,5 +320,12 @@ push-helm-artifacts:
   stage: build
   script:
     - tools/oci/push-helm-charts-artifacts.sh "oci://${CI_REGISTRY_IMAGE}"
+  only:
+    - tags
+
+publish-sylva-units-artifact:
+  stage: build
+  script:
+    - tools/oci/build-sylva-units-artifact.sh $CI_COMMIT_TAG
   only:
     - tags

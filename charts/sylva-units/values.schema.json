@@ -266,7 +266,14 @@
               "$ref": "#/$defs/enabled"
             },
             "repo": {
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             },
             "labels": {
               "type": "object",
@@ -372,8 +379,15 @@
               }
             },
             "helm_repo_url": {
-              "type": "string",
-              "pattern": "(https?|oci)://.*"
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "(https?|oci)://.*"
+                },
+                {
+                  "$ref": "#/$defs/gotpl"
+                }
+              ]
             },
             "helm_secret_values": {
               "type": "object"
@@ -433,7 +447,12 @@
                         "required": [
                           "repo",
                           "helm_repo_url"
-                        ]
+                        ],
+                        "properties": {
+                          "repo": {
+                            "type": "string"
+                          }
+                        }
                       }
                     },
                     {
@@ -947,6 +966,11 @@
         "https_proxy",
         "no_proxy"
       ]
+    },
+    "sylva_core_oci_registry": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^oci://.*$"
     },
     "registry_mirrors": {
       "type": "object",

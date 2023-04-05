@@ -255,7 +255,9 @@ properties:
             $ref: "#/$defs/enabled"
 
           repo:  # -------------------------------
-            type: string
+            anyOf:
+              - type: string
+              - type: "null"
 
           labels:  # -------------------------------
             type: object
@@ -329,8 +331,10 @@ properties:
                 - dependsOn
 
           helm_repo_url:  # -------------------------------
-            type: string
-            pattern: (https?|oci)://.*
+            anyOf:
+              - type: string
+                pattern: (https?|oci)://.*
+              - $ref: "#/$defs/gotpl"
 
           helm_secret_values:  # -------------------------------
             type: object
@@ -371,11 +375,14 @@ properties:
             # the following:
             - allOf:
 
-              # prevent having both 'repo' and 'helm_repo_url':
+              # prevent having both 'repo' fully specified (not null) and 'helm_repo_url':
               - not:
                   required:
                     - repo
                     - helm_repo_url
+                  properties:  # to allow 'helm_repo_url' when 'repo' is null (fail validation of this sub-schema only if repo is a string)
+                    repo:
+                      type: string
 
               # there are some things we need on kustomization_spec
               # but that aren't needed in the case where we specify helmrelease_spec
@@ -746,6 +753,11 @@ properties:
       - http_proxy
       - https_proxy
       - no_proxy
+
+  sylva_core_oci_registry:  # -------------------------------
+    type: string
+    format: uri
+    pattern: "^oci://.*$"
 
   registry_mirrors:  # -------------------------------
     type: object
