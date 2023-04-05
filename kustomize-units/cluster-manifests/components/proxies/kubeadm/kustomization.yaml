@@ -6,6 +6,23 @@ kind: Component
 # Use a json patch merge and assume that files list will be defined
 patches:
 - target:
+    kind: KubeadmControlPlane
+  patch: |-
+    - op: add
+      path: /spec/kubeadmConfigSpec/files/-
+      value:
+        path: /etc/systemd/system/containerd.service.d/proxy.conf
+        owner: root
+        permissions: "0644"
+        content: |
+          [Service]
+          Environment="HTTP_PROXY=${http_proxy}"
+          Environment="HTTPS_PROXY=${https_proxy}"
+          Environment="NO_PROXY=${no_proxy}"
+    - op: add
+      path: /spec/kubeadmConfigSpec/preKubeadmCommands/-
+      value: systemctl daemon-reload && systemctl restart containerd.service
+- target:
     kind: KubeadmConfigTemplate
   patch: |-
     - op: add
