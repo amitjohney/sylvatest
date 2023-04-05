@@ -29,8 +29,7 @@ In following readme, we assume that the reader is familiar with [cluster-api](ht
 
 ### Requirements
 
-- The Sylva clusters must have access to the internet (through proxy if required) to be able to fetch kustomization maintained in the Sylva repositories and container images.
-- You must first use a temporary kind cluster that can access to both internet and the infrastructure where you want to deploy the Sylva clusters.
+- In order to be able to fetch Sylva and 3rd party artifacts, the Sylva clusters must have access to the internet (through an HTTP proxy if required), or to a registry that is mirroring all the required images and OCI artifacts.
 
 ### Defining your environment values
 
@@ -110,23 +109,11 @@ This mechanism is quite powerful, as it enables to adapt values to various conte
 Deploying clusters in Docker using CAPD (click to expand)
 </summary>
 
-Event if it is not representative of any real-life deployment use-case, running clusters in Docker is useful to enable the testing of lifecycle management of clusters without any infrastructure requirement.
+Even if it is not representative of any real-life deployment use-case, running clusters in Docker is useful to enable the testing of lifecycle management of clusters without any infrastructure requirement.
 
 It can be used to test that stack on a laptop or in [GitLab-ci](.gitlab-ci.yml). You just have to [install Docker](https://docs.docker.com/engine/install/) as a prerequisite, and then clone this [project](https://gitlab.com/sylva-projects/sylva-core).
 
-Then you'll have to create a kind cluster with access to Docker socket:
-
-```shell
-cat <<EOF | kind create cluster --name capd --config=-
-kind: Cluster
-apiVersion: kind.x-k8s.io/v1alpha4
-nodes:
-- role: control-plane
-  extraMounts:
-    - hostPath: /var/run/docker.sock
-      containerPath: /var/run/docker.sock
-EOF
-```
+The `bootstrap.sh` script which you'll use below, will create for you a kind cluster that will be used as the bootstrap cluster.
 
 As we'll be creating a fair amount of containers, it is recommended to increase the filesystem watcher limit in order to avoid reaching the limit.
 
@@ -134,6 +121,12 @@ As we'll be creating a fair amount of containers, it is recommended to increase 
 echo "fs.inotify.max_user_watches = 524288" | sudo tee -a /etc/sysctl.conf
 echo "fs.inotify.max_user_instances = 512" | sudo tee -a /etc/sysctl.conf
 sudo sysctl -p /etc/sysctl.conf
+```
+
+You should also add your user to Docker group, it'll allow you to run the rest of the stack without privileges:
+
+```shell
+sudo usermod -aG docker $USER
 ```
 
 Then you may adapt your environment values (in `environment-values/kubeadm-capd/values.yaml`)
@@ -174,21 +167,10 @@ The workflow is quite similar to previous one with Docker, you'll only have to p
 
 Before triggering bootstrap.sh, certain prerequisites need to be done/followed
 
-- Create a **bootstrap vm** using OpenStack or use existing vm.
+- Create a **bootstrap vm** using OpenStack or use any exiting linux environment
 - Set the **proxies** environment variables (http_proxy, https_proxy, no_proxy) if using corporate proxy
-- Install **kubectl** and **[kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)**
+- Install **Docker** and add your user to the `docker` group
 - Clone **sylva-core** project on bootstrap vm
-- Create **kind** cluster using the below command.
-
-  ```shell
-  kind create cluster --name bootstrap
-  ```
-
-  Note that you can create multiple kind clusters on a single bootstrap vm. You just need to switch the context to the cluster you want to work with
-
-  ```shell
-  kind export kubeconfig --name <cluster-name>
-  ```
 
 - Reserve a pair of **neutron ports** or allocate **floating IP's**.
   These will be used as external IPs for management and sample workload cluster. These ports should be created in a network that is reachable from the bootstrap cluster (typically an external network).
@@ -262,19 +244,8 @@ Before trigerring bootstrap.sh, some prerequisites need to be satisfied.
 
 - Create a **bootstrap vm** using OpenStack, vsphere or use an existing vm.
 - Set the **proxies** environment variables (http_proxy, https_proxy, no_proxy) if using corporate proxy
-- Install **kubectl** and **[kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)**
+- Install **Docker** and add your user to the `docker` group
 - Clone **sylva-core** project on bootstrap vm
-- Create **kind** cluster using the below command.
-
-  ```shell
-   kind create cluster --name bootstrap
-  ```
-
-  Note that you can create multiple kind clusters on a single bootstrap vm. You just need to switch the context to the cluster you want to work with
-
-  ```shell
-   kind export kubeconfig --name <cluster-name>
-  ```
 
 - Create your own copy of **environment-values** (this will prevent you from accidentally committing your secrets).
 
