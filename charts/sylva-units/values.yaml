@@ -910,9 +910,6 @@ units:
       chart:
         spec:
           chart: charts/capi-rancher-import
-          reconcileStrategy: Revision
-          valuesFiles:
-            - charts/capi-rancher-import/values.yaml
       interval: 1m0s
       values:
         securityContext:
