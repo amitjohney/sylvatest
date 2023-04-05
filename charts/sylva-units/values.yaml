@@ -582,11 +582,9 @@ units:
           name: management-cluster
           namespace: default
       components:
-        - '{{ tuple "../../components/proxies/KubeadmControlPlane"
+        - '{{ tuple "../../components/proxies/kubeadm"
                     (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/proxies/KubeadmConfigTemplate"
-                    (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/proxies/RKE2ControlPlane"
+        - '{{ tuple "../../components/proxies/rke2"
                     (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
         - '{{ tuple "../../components/capo-root-volume"
                     (and .Values.cluster.capo.rootVolume (eq .Values.cluster.capi_providers.infra_provider "capo"))  | include "set-only-if" }}'
@@ -1252,11 +1250,9 @@ units:
                     (and (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
         - '{{ tuple "../../components/dns-client/kind/RKE2ControlPlane"
                     (and (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/proxies/KubeadmControlPlane"
+        - '{{ tuple "../../components/proxies/kubeadm"
                     (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/proxies/KubeadmConfigTemplate"
-                    (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/proxies/RKE2ControlPlane"
+        - '{{ tuple "../../components/proxies/rke2"
                     (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
         - '{{ tuple "../../components/dns-client/Ubuntu/KubeadmControlPlane"
                     (and (ne .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
