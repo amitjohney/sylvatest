@@ -1046,7 +1046,7 @@ units:
                     value: '{{ .Values.cluster.test_workload_cluster_name }}'
 
   workload-capo-cluster-resources:
-    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'
+    enabled: '{{ and (.Values.cluster.capi_providers.infra_provider | eq "capo") (index .Values.units "workload-cluster" "enabled") | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
       heat-operator: true
@@ -1124,8 +1124,7 @@ units:
       capi: true
       '{{ .Values.cluster.capi_providers.infra_provider }}': true
       '{{ .Values.cluster.capi_providers.bootstrap_provider }}': true
-      rancher: true
-      first-login-rancher: true
+      workload-capo-cluster-resources: '{{ index .Values.units "workload-capo-cluster-resources" "enabled" | include "preserve-type" }}'
     kustomization_spec:
       path: ./kustomize-units/cluster-manifests/kubeadm-capd/base
       postBuild:
@@ -1249,7 +1248,7 @@ units:
     enabled: '{{ index .Values.units "workload-cluster" "enabled" | include "preserve-type" }}'
     repo: sylva-core
     depends_on:
-      first-login-rancher: true
+      rancher: true
       workload-cluster: true
       workload-cluster-calico: '{{ index .Values.units "workload-cluster-calico" "enabled" | include "preserve-type" }}'
     kustomization_spec:
