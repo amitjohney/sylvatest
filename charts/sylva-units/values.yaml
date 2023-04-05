@@ -1397,6 +1397,26 @@ units:
           CLUSTER_EXTERNAL_IP: '{{ .Values.cluster.cluster_external_ip }}'
           CLUSTER_EXTERNAL_DOMAIN: '{{ .Values.cluster.cluster_external_domain }}'
 
+  neuvector:
+    enabled: true
+    helm_repo_url: https://neuvector.github.io/neuvector-helm/
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: core
+          version: 2.4.3
+      targetNamespace: neuvector
+      install:
+        createNamespace: true
+      values:
+        controller:
+          replicas: 1
+        ranchersso:
+          enabled: false
+        pvc:
+          enabled: false
+        k3s:
+          enabled: true
 
 ## stuff related to the 'cluster' unit
 
