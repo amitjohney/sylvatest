@@ -183,6 +183,17 @@ units:
         createNamespace: true
       values:
         installCRDs: true
+        securityContext:
+          seccompProfile: null
+        webhook:
+          securityContext:
+            seccompProfile: null
+        cainjector:
+          securityContext:
+            seccompProfile: null
+        startupapicheck:
+          securityContext:
+            seccompProfile: null
 
   trivy-operator:
     enabled: no
@@ -196,11 +207,29 @@ units:
       install:
         createNamespace: true
       values:
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          privileged: false
+          readOnlyRootFilesystem: true
+          runAsGroup: 10000
+          runAsUser: 10000
+        serviceAccount:
+          annotations: {}
+          create: true
+          name: trivy-operator
         trivy:
           httpProxy: '{{ .Values.proxies.https_proxy }}'
           httpsProxy: '{{ .Values.proxies.https_proxy }}'
           noProxy: '{{ .Values.proxies.no_proxy }}'
           severity: UNKNOWN,HIGH,CRITICAL
+        trivyOperator:
+          scanJobPodTemplatePodSecurityContext:
+            runAsGroup: 10000
+            runAsUser: 10000
+
 
 # sylva-ca provides a Certificate Authority for Components of the management cluster
   sylva-ca:
@@ -350,6 +379,20 @@ units:
         substitute:
           KEYCLOAK_ADMIN_PASSWORD: '{{ .Values.cluster.admin_password }}'
       wait: true
+      patches:
+        - patch: |
+            apiVersion: apps/v1
+            kind: Deployment
+            metadata:
+              name: keycloak-realm-operator
+            spec:
+              template:
+                spec:
+                  securityContext:
+                    runAsUser: 10000
+          target:
+            kind: Deployment
+            name: keycloak-realm-operator
 
   keycloak-resources:
     enabled: '{{ .Values.units.keycloak.enabled | include "preserve-type" }}'
@@ -495,6 +538,20 @@ units:
       values:
         storageClass:
           defaultClass: '{{ index .Values.units "cinder-csi" "enabled" | not | include "preserve-type" }}'
+      postRenderers:
+        - kustomize:
+            patchesStrategicMerge:
+              - kind: Deployment
+                apiVersion: apps/v1
+                metadata:
+                  name: local-path-provisioner
+                spec:
+                  template:
+                    spec:
+                      containers:
+                      - name: local-path-provisioner
+                        securityContext:
+                          runAsUser: 1000
 
   cluster:
     enabled: yes
@@ -535,6 +592,8 @@ units:
                     (and .Values.cluster.capo.rootVolume (eq .Values.cluster.capi_providers.infra_provider "capo"))  | include "set-only-if" }}'
         - '{{ tuple "../../components/capo-control-plane-az"
                     (and .Values.cluster.capo.control_plane_az (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
+        - '{{ tuple "../../components/rke2-cis-profile"
+                    (and .Values.cluster.cis_profile (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
       patches:
         - '{{ tuple (.Files.Get "elements/controlplane-registry-mirrors.tpl" | fromYaml) (dig "registry_mirrors" "hosts_config" "" (.Values | merge (dict))) | include "set-only-if" }}'
         - '{{ tuple (.Files.Get "elements/configtemplate-registry-mirrors.tpl" | fromYaml) (dig "registry_mirrors" "hosts_config" "" (.Values | merge (dict))) | include "set-only-if" }}'
@@ -590,8 +649,17 @@ units:
           chart: tigera-operator
           version: v3.24.5
 
+  cinder-csi-psp:
+    enabled: '{{ and (.Values.cluster.cis_profile | eq "cis-1.6") (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "preserve-type" }}'
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/cinder-csi-psp
+      wait: true
+
   cinder-csi:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'
+    depends_on:
+      cinder-csi-psp: '{{ .Values.cluster.cis_profile | eq "cis-1.6" | include "preserve-type" }}'
     helm_repo_url: https://kubernetes.github.io/cloud-provider-openstack
     helmrelease_spec:
       chart:
@@ -600,7 +668,7 @@ units:
           version: 2.3.0
       targetNamespace: cinder-csi
       install:
-        createNamespace: true
+        createNamespace: false
       values:
         clusterID: '{{ .Values.cluster.capo.resources_tag }}'
         storageClass:
@@ -847,6 +915,8 @@ units:
             - charts/capi-rancher-import/values.yaml
       interval: 1m0s
       values:
+        securityContext:
+          runAsUser: 1
         conf:
           env:
             - name: URL_REMAP
@@ -968,6 +1038,22 @@ units:
             - secretName: weave-tls
               hosts:
                 - '{{ .Values.cluster.flux.external_hostname }}'
+      postRenderers:
+        - kustomize:
+            patchesStrategicMerge:
+              - kind: Deployment
+                apiVersion: apps/v1
+                metadata:
+                  name: flux-webui-weave-gitops
+                spec:
+                  template:
+                    spec:
+                      containers:
+                      - name: weave-gitops
+                        securityContext:
+                          seccompProfile:
+                            $patch: delete
+                            type: RuntimeDefault
     helm_secret_values:
       adminUser:
         create: true
@@ -1133,6 +1219,8 @@ units:
         substitute:
           CLUSTER_NAME: '{{ .Values.cluster.test_workload_cluster_name }}'
           K8S_VERSION: '{{ .Values.cluster.k8s_version }}'
+          CIS_PROFILE: '{{ tuple .Values.cluster.cis_profile
+                    (and .Values.cluster.cis_profile (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr")) | include "set-only-if" }}'
           MACHINE_IMAGE: '{{ .Values.cluster.image }}'
           WORKER_MACHINE_IMAGE: '{{ .Values.cluster.worker_machine_image | default .Values.cluster.image }}'
           K8SGATEWAY_LB_IP: '{{ .Values.cluster.cluster_external_ip }}'   # NOTE: same is used for k8s-gateway DNS svc in management cluster
@@ -1185,6 +1273,8 @@ units:
                     (get .Values.cluster.capo.additional_networks "direct_network_id") | include "set-only-if" }}'
         - '{{ tuple "../../components/capo-control-plane-az"
                     (and .Values.cluster.capo.control_plane_az (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
+        - '{{ tuple "../../components/rke2-cis-profile"
+                    (and .Values.cluster.cis_profile (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
       patches:
         - '{{ tuple (.Files.Get "elements/controlplane-registry-mirrors.tpl" | fromYaml) (dig "registry_mirrors" "hosts_config" "" (.Values | merge (dict))) | include "set-only-if" }}'
         - '{{ tuple (.Files.Get "elements/configtemplate-registry-mirrors.tpl" | fromYaml) (dig "registry_mirrors" "hosts_config" "" (.Values | merge (dict))) | include "set-only-if" }}'
@@ -1322,6 +1412,9 @@ units:
 cluster:
   name: management-cluster
   # TODO: derive kubeconfig secret name from this ^
+
+  # cis profile to be used. Curently supported only for rke2 clusters. "cis-1.6" for k8s prior to 1.25, "cis-1.23" for 1.25+
+  #cis_profile: cis-1.6
 
   # Admin password that will be configured by default on various units
   admin_password: '{{ randAlphaNum 64 }}'
