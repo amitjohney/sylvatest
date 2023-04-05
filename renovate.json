@@ -64,6 +64,17 @@
       "matchStrings": [
         "spec:\\n[\\w\\W]*?.*image: (?<depName>.*)\\:(?<currentValue>.*)"
       ]
+    },
+    {
+      "fileMatch": "tools/shell-lib/common.sh",
+      "matchStringsStrategy": "combination",
+      "matchStrings": [
+        "SYLVA_TOOLBOX_VERSION=.(?<currentValue>.*).",
+        "SYLVA_TOOLBOX_IMAGE:-(?<depName>.*).",
+        "SYLVA_TOOLBOX_REGISTRY:-(?<registryUrl>.*)."
+      ],
+      "registryUrlTemplate": "https://{{{ registryUrl }}}",
+      "datasourceTemplate": "docker"
     }
   ]
 }
