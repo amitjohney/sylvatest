@@ -13,7 +13,7 @@ spec:
     enabled: true
     email: sylva-admin@example.com
     firstName: sylva
-    lastName: sylva
+    lastName: ""
     credentials:
       - type: password
         value: "${RANCHER_CLIENT_SECRET}"

@@ -32,8 +32,8 @@ if [[ -z $API_KEY ]]; then
 fi
 EULA_DATE=$(date --utc +%FT%T.%3NZ)
 curl --insecure 'https://rancher.cattle-system.svc.cluster.local/v3/settings/server-url' -H 'Content-Type: application/json' -H "Authorization: Bearer $API_KEY" -X PUT --data-binary '{"name":"server-url","value":"'$RANCHER_EXTERNAL_URL'"}' | jq .
-curl --insecure 'https://rancher.cattle-system.svc.cluster.local/v3/settings/server-url' -H 'Content-Type: application/json' -H "Authorization: Bearer $API_KEY" -X PUT --data-binary '{"name":"eula-agreed","value":"'$EULA_DATE'"}' | jq .
-curl --insecure 'https://rancher.cattle-system.svc.cluster.local/v3/settings/server-url' -H 'Content-Type: application/json' -H "Authorization: Bearer $API_KEY" -X PUT --data-binary '{"name":"telemetry-opt","value":"out"}' | jq .
-curl --insecure 'https://rancher.cattle-system.svc.cluster.local/v3/settings/server-url' -H 'Content-Type: application/json' -H "Authorization: Bearer $API_KEY" -X PUT --data-binary '{"name":"first-login","value":"false"}' | jq .
+curl --insecure 'https://rancher.cattle-system.svc.cluster.local/v3/settings' -H 'Content-Type: application/json' -H "Authorization: Bearer $API_KEY" -X POST --data-binary '{"name":"eula-agreed","value":"'$EULA_DATE'"}' | jq .
+curl --insecure 'https://rancher.cattle-system.svc.cluster.local/v3/settings/telemetry-opt' -H 'Content-Type: application/json' -H "Authorization: Bearer $API_KEY" -X PUT --data-binary '{"name":"telemetry-opt","value":"out"}' | jq .
+curl --insecure 'https://rancher.cattle-system.svc.cluster.local/v3/settings/first-login' -H 'Content-Type: application/json' -H "Authorization: Bearer $API_KEY" -X PUT --data-binary '{"name":"first-login","value":"false"}' | jq .
 
 echo "-- All done"
