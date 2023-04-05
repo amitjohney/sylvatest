@@ -1397,8 +1397,22 @@ units:
           CLUSTER_EXTERNAL_IP: '{{ .Values.cluster.cluster_external_ip }}'
           CLUSTER_EXTERNAL_DOMAIN: '{{ .Values.cluster.cluster_external_domain }}'
 
-  neuvector:
+  neuvector-crd:
     enabled: true
+    helm_repo_url: https://neuvector.github.io/neuvector-helm/
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: crd
+          version: 2.4.3
+      targetNamespace: neuvector
+      install:
+        createNamespace: true
+
+  neuvector-core:
+    enabled: true
+    depends_on:
+      neuvector-crd: true
     helm_repo_url: https://neuvector.github.io/neuvector-helm/
     helmrelease_spec:
       chart:
@@ -1417,6 +1431,12 @@ units:
           enabled: false
         k3s:
           enabled: true
+        crdwebhook:
+          enabled: false
+        manager:
+          ingress:
+            enabled: true
+            host: neuvector.mysylva.orange
 
 ## stuff related to the 'cluster' unit
 
