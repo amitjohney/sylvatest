@@ -1,0 +1,239 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+patches:
+- target:
+    kind: RKE2ControlPlane
+  patch: |
+    - op: add
+      path: /spec/files/-
+      value:
+        path: /var/lib/rancher/rke2/server/manifests/metallb-psp.yaml
+        owner: "root:root"
+        permissions: "0644"
+        content: |
+          ---
+          apiVersion: policy/v1beta1
+          kind: PodSecurityPolicy
+          metadata:
+            labels:
+              app.kubernetes.io/instance: metallb
+              app.kubernetes.io/name: metallb
+            name: metallb-speaker
+          spec:
+            allowPrivilegeEscalation: false
+            allowedCapabilities:
+            - NET_ADMIN
+            - NET_RAW
+            allowedHostPaths: []
+            defaultAddCapabilities: []
+            defaultAllowPrivilegeEscalation: false
+            fsGroup:
+              rule: RunAsAny
+            hostIPC: false
+            hostNetwork: true
+            hostPID: false
+            hostPorts:
+            - max: 7472
+              min: 7472
+            - max: 7946
+              min: 7946
+            privileged: true
+            readOnlyRootFilesystem: true
+            requiredDropCapabilities:
+            - ALL
+            runAsUser:
+              rule: RunAsAny
+            seLinux:
+              rule: RunAsAny
+            supplementalGroups:
+              rule: RunAsAny
+            volumes:
+            - configMap
+            - downwardAPI
+            - projected
+            - secret
+            - emptyDir
+          ---
+          apiVersion: rbac.authorization.k8s.io/v1
+          kind: Role
+          metadata:
+            name: metallb-speaker-role
+            namespace: metallb-system
+          rules:
+          - apiGroups:
+            - policy
+            resourceNames:
+            - metallb-speaker
+            resources:
+            - podsecuritypolicies
+            verbs:
+            - use
+          ---
+          apiVersion: rbac.authorization.k8s.io/v1
+          kind: RoleBinding
+          metadata:
+            name: metallb-speaker-rb
+            namespace: metallb-system
+          roleRef:
+            apiGroup: rbac.authorization.k8s.io
+            kind: Role
+            name: metallb-speaker-role
+          subjects:
+          - kind: ServiceAccount
+            name: metallb-speaker
+      when:
+        key: ${CIS_PROFILE}
+        value: "cis-1.6"
+- target:
+    kind: RKE2ControlPlane
+  patch: |
+    - op: add
+      path: /spec/files/-
+      value:
+        path: /var/lib/rancher/rke2/server/manifests/cert-manager-psp.yaml
+        owner: "root:root"
+        permissions: "0644"
+        content: |
+          ---
+          apiVersion: policy/v1beta1
+          kind: PodSecurityPolicy
+          metadata:
+            annotations:
+              meta.helm.sh/release-name: cert-manager
+              meta.helm.sh/release-namespace: cert-manager
+              seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
+            labels:
+              app.kubernetes.io/managed-by: Helm
+            name: cert-manager
+          spec:
+            privileged: false
+            allowPrivilegeEscalation: false
+            allowedCapabilities: []  # default set of capabilities are implicitly allowed
+            volumes:
+            - 'configMap'
+            - 'emptyDir'
+            - 'projected'
+            - 'secret'
+            - 'downwardAPI'
+            hostNetwork: false
+            hostIPC: false
+            hostPID: false
+            runAsUser:
+              rule: 'MustRunAs'
+              ranges:
+              - min: 1000
+                max: 1000
+            seLinux:
+              rule: 'RunAsAny'
+            supplementalGroups:
+              rule: 'MustRunAs'
+              ranges:
+              - min: 1000
+                max: 1000
+            fsGroup:
+              rule: 'MustRunAs'
+              ranges:
+              - min: 1000
+                max: 1000
+
+- target:
+    kind: RKE2ControlPlane
+  patch: |
+    - op: add
+      path: /spec/files/-
+      value:
+        path: /var/lib/rancher/rke2/server/manifests/tigera-psp.yaml
+        owner: "root:root"
+        permissions: "0644"
+        content: |
+          ---
+          apiVersion: policy/v1beta1
+          kind: PodSecurityPolicy
+          metadata:
+            annotations:
+              meta.helm.sh/release-name: rke2-calico
+              meta.helm.sh/release-namespace: kube-system
+              seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
+            labels:
+              app.kubernetes.io/managed-by: Helm
+            name: tigera-operator
+          spec:
+            allowPrivilegeEscalation: false
+            fsGroup:
+              ranges:
+              - max: 65535
+                min: 1
+              rule: MustRunAs
+            hostNetwork: true
+            hostPorts:
+            - max: 65535
+              min: 0
+            requiredDropCapabilities:
+            - ALL
+            runAsUser:
+              rule: MustRunAsNonRoot
+            seLinux:
+              rule: RunAsAny
+            supplementalGroups:
+              ranges:
+              - max: 65535
+                min: 1
+              rule: MustRunAs
+            volumes:
+            - hostPath
+            - configMap
+            - emptyDir
+            - projected
+            - secret
+            - downwardAPI
+            - persistentVolumeClaim
+      when:
+        key: ${CIS_PROFILE}
+        value: "cis-1.6"
+- target:
+    kind: RKE2ControlPlane
+  patch: |
+    - op: add
+      path: /spec/files/-
+      value:
+        path: /var/lib/rancher/rke2/server/manifests/vault-psp.yaml
+        owner: "root:root"
+        permissions: "0644"
+        content: |
+          ---
+          apiVersion: policy/v1beta1
+          kind: PodSecurityPolicy
+          metadata:
+            annotations:
+              meta.helm.sh/release-name: vault
+              meta.helm.sh/release-namespace: vault
+            labels:
+              app.kubernetes.io/managed-by: Helm
+            name: vault
+          spec:
+            privileged: false
+            allowPrivilegeEscalation: false
+            allowedCapabilities:
+            - IPC_LOCK
+            - SETFCAP
+            runAsUser:
+              rule: 'MustRunAs'
+              ranges:
+              - min: 1000
+                max: 1000
+            seLinux:
+              rule: 'RunAsAny'
+            supplementalGroups:
+              rule: 'MustRunAs'
+              ranges:
+              - min: 1000
+                max: 1000
+            fsGroup:
+              rule: 'MustRunAs'
+              ranges:
+              - min: 1000
+                max: 1000
+      when:
+        key: ${CIS_PROFILE}
+        value: "cis-1.6"

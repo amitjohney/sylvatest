@@ -1,0 +1,136 @@
+---
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: cinder-csi-controllerplugin
+spec:
+  allowPrivilegeEscalation: false
+  allowedHostPaths:
+  - pathPrefix: /etc/cacert
+    readOnly: true
+  fsGroup:
+    ranges:
+    - max: 65535
+      min: 1
+    rule: MustRunAs
+  requiredDropCapabilities:
+  - ALL
+  runAsUser:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    ranges:
+    - max: 65535
+      min: 1
+    rule: MustRunAs
+  volumes:
+  - configMap
+  - emptyDir
+  - projected
+  - secret
+  - downwardAPI
+  - persistentVolumeClaim
+  - hostPath
+---
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: cinder-csi-nodeplugin
+spec:
+  allowPrivilegeEscalation: true
+  allowedCapabilities:
+  - SYS_ADMIN
+  allowedHostPaths:
+  - pathPrefix:
+      /var/lib/kubelet/plugins/cinder.csi.openstack.org
+    readOnly: false
+  - pathPrefix:
+      /var/lib/kubelet/plugins_registry/
+    readOnly: false
+  - pathPrefix: /var/lib/kubelet
+    readOnly: false
+  - pathPrefix: /dev
+    readOnly: false
+  - pathPrefix: /etc/cacert
+    readOnly: true
+  fsGroup:
+    rule: RunAsAny
+  hostNetwork: true
+  hostPorts:
+  - max: 9808
+    min: 9808
+  privileged: true
+  runAsUser:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  volumes:
+  - configMap
+  - emptyDir
+  - projected
+  - secret
+  - downwardAPI
+  - persistentVolumeClaim
+  - hostPath
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cinder-csi-controllerplugin-psp
+  namespace: cinder-csi
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cinder-csi-controllerplugin-psp
+subjects:
+- kind: ServiceAccount
+  name: csi-cinder-controller-sa
+  namespace: cinder-csi
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cinder-csi-nodeplugin-psp
+  namespace: cinder-csi
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cinder-csi-nodeplugin-psp
+subjects:
+- kind: ServiceAccount
+  name: csi-cinder-node-sa
+  namespace: cinder-csi
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cinder-csi-controllerplugin-psp
+  namespace: cinder-csi
+rules:
+- apiGroups:
+  - policy
+  resourceNames:
+  - cinder-csi-controllerplugin
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cinder-csi-nodeplugin-psp
+  namespace: cinder-csi
+rules:
+- apiGroups:
+  - policy
+  resourceNames:
+  - cinder-csi-nodeplugin
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+

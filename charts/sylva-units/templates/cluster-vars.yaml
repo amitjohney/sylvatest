@@ -47,6 +47,9 @@ data:
   VS_RESOURCEPOOL: {{ .Values.cluster.capv.resourcePool }}
   VS_STORAGEPOLICY_NAME: {{ .Values.cluster.capv.storagePolicyName }}
 {{ end }}
+{{ if  hasKey .Values.cluster "cis_profile" }}
+  CIS_PROFILE: {{ .Values.cluster.cis_profile }}
+{{ end }}
   CLUSTER_EXTERNAL_IP: {{ .Values.cluster.cluster_external_ip }}
   CONTROL_PLANE_REPLICAS: {{ .Values.cluster.control_plane_replicas | quote }}
   WORKER_REPLICAS: {{ .Values.cluster.worker_replicas | quote }}

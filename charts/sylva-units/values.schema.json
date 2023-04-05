@@ -518,6 +518,10 @@
         "worker_machine_image": {
           "type": "string"
         },
+        "cis_profile": {
+          "type": "string",
+          "pattern": "cis-1.6|cis-1.23"
+        },
         "capi_providers": {
           "type": "object",
           "additionalProperties": false,
