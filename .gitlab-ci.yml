@@ -108,22 +108,19 @@ check-docs-markdown:
       alias: docker
   script_common:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_common[collapsed=true]\r\e[0KRunning common deployment steps\e[0m"
-    - DOCKER_IP=$(getent hosts docker | awk '{print $1}')
+    - export DOCKER_IP=$(getent hosts docker | awk '{print $1}')
+    - export KIND_CLUSTER_NAME=bootstrap-${CI_PIPELINE_ID}-${ENV_NAME}
+    - export ENV_PATH=environment-values/${ENV_NAME}
+    - values_file=environment-values/${ENV_NAME}/values.yaml
     - |
-      # create a cluster with access to API endpoint through docker-in-docker address
-      cat <<EOF | kind create cluster --name bootstrap-${CI_PIPELINE_ID}-${ENV_NAME} --config=-
-      kind: Cluster
-      apiVersion: kind.x-k8s.io/v1alpha4
-      networking:
-        apiServerAddress: "$DOCKER_IP"
-        apiServerPort: 6443
-      EOF
-    - kubectl cluster-info --context kind-bootstrap-${CI_PIPELINE_ID}-${ENV_NAME}
+      if [[ -n $OS_DOCKERIO_REGISTRY_MIRROR ]]; then
+        yq -i '.registry_mirrors.hosts_config."docker.io"[0].mirror_url=strenv(OS_DOCKERIO_REGISTRY_MIRROR)' $values_file
+      fi
+    - ./tools/kind/bootstrap-cluster.sh
+    - kubectl cluster-info --context kind-$KIND_CLUSTER_NAME
     - KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
     - ip route add $KIND_PREFIX via $DOCKER_IP
-    - values_file=environment-values/${ENV_NAME}/values.yaml
     - yq -i '.env_type_ci = true' $values_file
-    - if [[ -n $OS_DOCKERIO_REGISTRY_MIRROR ]]; then yq -i '.registry_mirrors.hosts_config."docker.io"[0].mirror_url=strenv(OS_DOCKERIO_REGISTRY_MIRROR),.registry_mirrors.default_settings.capabilities=["pull", "resolve"]' $values_file; fi
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_common\r\e[0K"
   script_capd:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capd[collapsed=true]\r\e[0KApplying specific capd configuration\e[0m"

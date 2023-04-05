@@ -9,6 +9,9 @@ fi
 
 check_pivot_has_ran
 
+echo_b "\U0001F503 Preparing bootstrap cluster"
+tools/kind/bootstrap-cluster.sh
+
 echo_b "\U0001F503 Bootstraping flux"
 kubectl kustomize kustomize-units/flux-system/bootstrap | envsubst | kubectl apply -f -
 

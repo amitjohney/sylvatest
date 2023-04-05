@@ -7,6 +7,9 @@ if ! command -v helm &>/dev/null; then
     exit 1
 fi
 
+echo_b "\U0001F503 Preparing bootstrap cluster"
+tools/kind/bootstrap-cluster.sh
+
 echo_b "\U0001F5D8 Bootstraping flux"
 kubectl kustomize kustomize-units/flux-system/bootstrap | envsubst | kubectl apply -f -
 

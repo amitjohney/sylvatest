@@ -82,7 +82,7 @@ if ! [[ $# -eq 1 && -f ${1}/kustomization.yaml ]]; then
     echo "This script expects to find a kustomisation in [env_name] directory to generate management-cluster configuration and secrets"
     exit 1
 else
-    ENV_PATH=$(readlink -f $1)
+    export ENV_PATH=$(readlink -f $1)
 fi
 
 export CURRENT_COMMIT=${CI_COMMIT_SHA:-$(git rev-parse HEAD)}
