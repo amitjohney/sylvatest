@@ -30,7 +30,10 @@ if [[ -z $API_KEY ]]; then
     echo "API_KEY is set to the empty string, will try again"
     exit 1
 fi
-
+EULA_DATE=$(date --utc +%FT%T.%3NZ)
 curl --insecure 'https://rancher.cattle-system.svc.cluster.local/v3/settings/server-url' -H 'Content-Type: application/json' -H "Authorization: Bearer $API_KEY" -X PUT --data-binary '{"name":"server-url","value":"'$RANCHER_EXTERNAL_URL'"}' | jq .
+curl --insecure 'https://rancher.cattle-system.svc.cluster.local/v3/settings/server-url' -H 'Content-Type: application/json' -H "Authorization: Bearer $API_KEY" -X PUT --data-binary '{"name":"eula-agreed","value":"'$EULA_DATE'"}' | jq .
+curl --insecure 'https://rancher.cattle-system.svc.cluster.local/v3/settings/server-url' -H 'Content-Type: application/json' -H "Authorization: Bearer $API_KEY" -X PUT --data-binary '{"name":"telemetry-opt","value":"out"}' | jq .
+curl --insecure 'https://rancher.cattle-system.svc.cluster.local/v3/settings/server-url' -H 'Content-Type: application/json' -H "Authorization: Bearer $API_KEY" -X PUT --data-binary '{"name":"first-login","value":"false"}' | jq .
 
 echo "-- All done"
