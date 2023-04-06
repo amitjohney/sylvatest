@@ -1,0 +1,9 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: sylva-core
+  namespace: default
+spec:
+  interval: 5m0s
+  type: oci
+  url: oci://registry.gitlab.com/sylva-projects/sylva-core
