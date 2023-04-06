@@ -94,6 +94,7 @@ echo "Preparing use-oci-artifacts.values.yaml values override file..."
 # shellcheck disable=SC2016
 yq eval-all -i '
     select(fileIndex==1).units as $reference_units |
+    select(fileIndex==0).units as $units |
     ( select(fileIndex==0).units =
         (([ $reference_units | ... comments="" | to_entries | .[] | select(.value | has("helm_repo_url")) ]
           | map({
@@ -102,7 +103,7 @@ yq eval-all -i '
                 "helm_repo_url": "{{ .Values.sylva_core_oci_registry }}"
               }
             })
-        ) | from_entries)
+        ) | from_entries) * $units
     )
     | select(fileIndex==0)' \
     use-oci-artifacts.values.yaml values.yaml
@@ -168,7 +169,7 @@ yq eval-all -i '
                      }
                    }
                  })
-            | from_entries
+            | unique_by(.key) | from_entries
         ) * $units
     )
     | select(fileIndex==0)' \
