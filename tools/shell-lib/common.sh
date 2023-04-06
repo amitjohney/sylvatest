@@ -138,11 +138,9 @@ EOF
   kubectl annotate --overwrite -n sylva-units-preview helmrelease/sylva-units reconcile.fluxcd.io/requestedAt="$(date -uIs)"
 
   echo "Wait for Helm release to be ready"
-  for flux_resource in gitrepository/sylva-core helmchart/sylva-units-preview-sylva-units helmrelease/sylva-units; do
-    if ! kubectl wait --for condition=Ready --timeout 100s -n sylva-units-preview $flux_resource; then
-        echo "Resource $flux_resource did not become ready in time"
-        kubectl get -n sylva-units-preview $flux_resource -o yaml
-        exit 1
-    fi
-  done
+  if ! sylvactl watch --timeout 120s -n sylva-units-preview HelmRelease/sylva-units-preview/sylva-units; then
+    echo "Resource helmrelease/sylva-units did not become ready in time"
+    kubectl get -n sylva-units-preview helmrelease/sylva-units -o yaml 2>/dev/null
+    exit 1
+  fi
 }

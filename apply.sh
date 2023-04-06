@@ -28,6 +28,13 @@ if ! (kubectl get namespace flux-system >/dev/null); then
     kubectl wait --for condition=Available --timeout 600s -n flux-system --all deployment
 fi
 
+echo_b "\U0001F50E Validate sylva-units values for management cluster"
+validate_sylva_units
+
+echo_b "\U000023F3 Delete preview chart and namespace"
+kubectl delete -n sylva-units-preview helmrelease/sylva-units gitrepository/sylva-core
+kubectl delete namespace sylva-units-preview
+
 echo_b "\U0001F512 Create or update management cluster secrets and configmaps"
 kubectl kustomize ${ENV_PATH} | define_source | kubectl apply -f -
 
