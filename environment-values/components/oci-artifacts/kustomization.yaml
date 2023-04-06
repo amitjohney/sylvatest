@@ -31,10 +31,10 @@ patches:
 - target:
     kind: HelmRelease
     name: sylva-units
+  # those patches should produce, the equivalent of what the inject_bootstrap_values
+  # does when creating the HelmRelease in bootstrap cluster, without bootstrap.values.yaml
   patch: |
-    - op: remove
-      path: /spec/chart/spec/valuesFiles/0
-    - op: add
+    - op: replace
       path: /spec/chart/spec/valuesFiles/0
       value: values.yaml
     - op: add

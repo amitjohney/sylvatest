@@ -29,10 +29,6 @@ spec:
         - charts/sylva-units/values.yaml
   interval: 10m0s
   valuesFrom:
-  - optional: true # NOTE: this configmap will only be created in bootstrap cluster
-    kind: ConfigMap
-    name: management-cluster-bootstrap-values
-    valuesKey: bootstrap.values.yaml
   - kind: Secret
     name: management-cluster-secrets
     valuesKey: secrets
