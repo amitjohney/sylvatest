@@ -1,0 +1,47 @@
+---
+
+units:
+  cluster:
+    kustomization_spec:
+      path: ./kustomize-units/cluster-manifests/rke2-capo/base
+  workload-cluster:
+    kustomization_spec:
+      path: ./kustomize-units/cluster-manifests/rke2-capo/base
+      postBuild:
+        substitute:
+          CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
+          FLAVOR_NAME: '{{ .Values.cluster.capo.flavor_name }}'
+          SSH_KEY_NAME: '{{ .Values.cluster.capo.ssh_key_name }}'
+
+cluster:
+  image: "Ubuntu 20.04 Pack" # image name provided by falcon-rke2 remote target unit, but can be overwritten
+  capi_providers:
+    infra_provider: capo
+    bootstrap_provider: cabpr
+  capo:
+    ssh_key_name: caas-key-pair
+    network_id: c314d52c-80fe-42b6-9092-55be383d1951 # network id is provided by falcon-rke2 remote target unit if Kustomize remote target is used, but can be overwritten
+    ## If cinder CSI is used, provide a name for the storage class and the storage type from OpenStack
+    storageClass:
+      name: "cinder-ceph-ssd"
+      type: "ceph_ssd"
+
+proxies:
+  # put your own proxy settings here if you need
+  http_proxy: "http://172.20.73.196:3128"
+  https_proxy: "http://172.20.73.196:3128"
+  no_proxy: "127.0.0.0/8,localhost,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+
+# configure containerd registry mirrors following https://github.com/containerd/containerd/blob/main/docs/hosts.md
+# see charts/syla-units/values.yaml for a more detailled example
+# registry_mirrors:
+#   hosts_config:
+#     docker.io:
+#     - mirror_url: http://your.mirror/docker
+
+# add ntp servers if you need
+ntp:
+  enabled: false
+  servers:
+  # - 1.2.3.4
+  # - 1.2.3.5

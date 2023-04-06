@@ -59,7 +59,7 @@ $defs:
   username-password:
     anyOf:
       - type: object
-        additionalProperties: false
+        additionalProperties: true
         patternProperties:
           "^(username|password)$":
             type: string
@@ -79,7 +79,7 @@ $defs:
 # lines with '# -------------------------------' correspond to keys in values.yaml
 # (the rest being the JSONSchema language itself)
 
-additionalProperties: false
+additionalProperties: true
 
 # the default values.yaml covers all required keys, so in general
 # no top-level key will be missing, this check is here only to
@@ -124,12 +124,12 @@ properties:
 
   source_templates:  # -------------------------------
     type: object
-    additionalProperties: false
+    additionalProperties: true
     patternProperties:
 
       "^[a-z0-9][a-z0-9.-]*[a-z0-9]$":  # -------------------------------
         type: object
-        additionalProperties: false
+        additionalProperties: true
         anyOf:
           - required:
             - spec
@@ -190,7 +190,7 @@ properties:
 
                   ref:  # -------------------------------
                     type: object
-                    additionalProperties: false
+                    additionalProperties: true
                     anyOf:
                       - required:
                         - branch
@@ -214,7 +214,7 @@ properties:
 
                   ref:  # -------------------------------
                     type: object
-                    additionalProperties: false
+                    additionalProperties: true
                     anyOf:
                       - required:
                         - digest
@@ -248,7 +248,7 @@ properties:
 
       "^[a-z0-9][a-z0-9-]*[a-z0-9]$":  # -------------------------------
         type: object
-        additionalProperties: false
+        additionalProperties: true
         properties:
 
           enabled:  # -------------------------------
@@ -341,7 +341,7 @@ properties:
 
           kustomization_substitute_secrets:  # -------------------------------
             type: object
-            additionalProperties: false
+            additionalProperties: true
             patternProperties:
               "^.*$":
                 type: string
@@ -416,7 +416,7 @@ properties:
 
   cluster:  # -------------------------------
     type: object
-    additionalProperties: false
+    additionalProperties: true
     required:
       - capi_providers
       - image
@@ -434,7 +434,7 @@ properties:
         pattern: "cis-1.6|cis-1.23"
       capi_providers:  # -------------------------------
         type: object
-        additionalProperties: false
+        additionalProperties: true
         properties:
           infra_provider:  # -------------------------------
             enum:
@@ -469,7 +469,7 @@ properties:
 
       flux_webui: # -------------------------------
         type: object
-        additionalProperties: false
+        additionalProperties: true
         properties:
           admin_user:  # -------------------------------
             type: string
@@ -478,7 +478,7 @@ properties:
 
       rancher: # -------------------------------
         type: object
-        additionalProperties: false
+        additionalProperties: true
         properties:
 
           external_hostname:  # -------------------------------
@@ -489,7 +489,7 @@ properties:
 
       vault: # -------------------------------
         type: object
-        additionalProperties: false
+        additionalProperties: true
         properties:
 
           external_hostname:  # -------------------------------
@@ -500,7 +500,7 @@ properties:
 
       keycloak: # -------------------------------
         type: object
-        additionalProperties: false
+        additionalProperties: true
         properties:
 
           external_hostname:  # -------------------------------
@@ -511,7 +511,7 @@ properties:
 
       flux: # -------------------------------
         type: object
-        additionalProperties: false
+        additionalProperties: true
         properties:
 
           external_hostname:  # -------------------------------
@@ -522,7 +522,7 @@ properties:
 
       capd:  # -------------------------------
         type: object
-        additionalProperties: false
+        additionalProperties: true
         properties:
           docker_host:  # -------------------------------
             type: string
@@ -570,7 +570,7 @@ properties:
           properties:
             capo:  # -------------------------------
               type: object
-              additionalProperties: false
+              additionalProperties: true
               properties:
 
                 flavor_name:  # -------------------------------
@@ -616,7 +616,7 @@ properties:
 
                 additional_networks:  # -------------------------------
                   type: object
-                  additionalProperties: false
+                  additionalProperties: true
                   properties:
                     virtio_network_id:
                       type: string
@@ -625,7 +625,7 @@ properties:
 
                 rootVolume:  # -------------------------------
                   type: object
-                  additionalProperties: false
+                  additionalProperties: true
                   properties:
                     diskSize:  # -------------------------------
                       type: integer
@@ -634,12 +634,12 @@ properties:
 
                 clouds_yaml:  # -------------------------------
                   type: object
-                  additionalProperties: false
+                  additionalProperties: true
                   properties:
 
                     clouds:  # -------------------------------
                       type: object
-                      additionalProperties: false
+                      additionalProperties: true
                       required:
                         - capo_cloud
                       patternProperties:
@@ -664,7 +664,7 @@ properties:
                               properties:
                                 auth_url:  # -------------------------------
                                   type: string
-                                  format: uri
+                                  #format: uri
                                 user_domain_name:  # -------------------------------
                                   type: string
                                 project_domain_name:  # -------------------------------
@@ -680,14 +680,14 @@ properties:
                                 - type: string
                                 - type: "null"
                             verify:  # -------------------------------
-                              type: boolean
+                              type: string
 
                 cacert:  # -------------------------------
                   type: string
 
                 storageClass:  # -------------------------------
                   type: object
-                  additionalProperties: false
+                  additionalProperties: true
                   properties:
                     name:  # -------------------------------
                       type: string
@@ -707,7 +707,7 @@ properties:
           properties:
             capv:  # -------------------------------
               type: object
-              additionalProperties: false
+              additionalProperties: true
               properties:
 
                 dataCenter:  # -------------------------------
@@ -745,7 +745,7 @@ properties:
 
   proxies:  # -------------------------------
     type: object
-    additionalProperties: false
+    additionalProperties: true
     patternProperties:
       https?_proxy:  # -------------------------------
         type: string
@@ -764,19 +764,19 @@ properties:
 
   registry_mirrors:  # -------------------------------
     type: object
-    additionalProperties: false
+    additionalProperties: true
     properties:
       default_settings:  # -------------------------------
         type: object
       hosts_config:  # -------------------------------
         type: object
-        additionalProperties: false
+        additionalProperties: true
         patternProperties:
           "^[a-z0-9][a-z0-9.-]*[a-z0-9]$":  # -------------------------------
             type: array
             items:
               type: object
-              additionalProperties: false
+              additionalProperties: true
               properties:
                 registry_settings: # -------------------------------
                   type: object
@@ -795,7 +795,7 @@ properties:
 
   ntp:  # -------------------------------
     type: object
-    additionalProperties: false
+    additionalProperties: true
     patternProperties:
       enabled:
         type: boolean

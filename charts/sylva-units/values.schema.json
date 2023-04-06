@@ -11,7 +11,7 @@
       "anyOf": [
         {
           "type": "object",
-          "additionalProperties": false,
+          "additionalProperties": true,
           "patternProperties": {
             "^(username|password)$": {
               "type": "string"
@@ -39,7 +39,7 @@
       "pattern": ".*{{ .* }}.*"
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "required": [
     "registry_secret",
     "git_repo_spec_default",
@@ -84,11 +84,11 @@
     },
     "source_templates": {
       "type": "object",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "patternProperties": {
         "^[a-z0-9][a-z0-9.-]*[a-z0-9]$": {
           "type": "object",
-          "additionalProperties": false,
+          "additionalProperties": true,
           "anyOf": [
             {
               "required": [
@@ -166,7 +166,7 @@
                     "properties": {
                       "ref": {
                         "type": "object",
-                        "additionalProperties": false,
+                        "additionalProperties": true,
                         "anyOf": [
                           {
                             "required": [
@@ -210,7 +210,7 @@
                     "properties": {
                       "ref": {
                         "type": "object",
-                        "additionalProperties": false,
+                        "additionalProperties": true,
                         "anyOf": [
                           {
                             "required": [
@@ -260,7 +260,7 @@
       "patternProperties": {
         "^[a-z0-9][a-z0-9-]*[a-z0-9]$": {
           "type": "object",
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "enabled": {
               "$ref": "#/$defs/enabled"
@@ -394,7 +394,7 @@
             },
             "kustomization_substitute_secrets": {
               "type": "object",
-              "additionalProperties": false,
+              "additionalProperties": true,
               "patternProperties": {
                 "^.*$": {
                   "type": "string"
@@ -519,7 +519,7 @@
     },
     "cluster": {
       "type": "object",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "required": [
         "capi_providers",
         "image"
@@ -543,7 +543,7 @@
         },
         "capi_providers": {
           "type": "object",
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "infra_provider": {
               "enum": [
@@ -583,7 +583,7 @@
         },
         "flux_webui": {
           "type": "object",
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "admin_user": {
               "type": "string"
@@ -595,7 +595,7 @@
         },
         "rancher": {
           "type": "object",
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "external_hostname": {
               "anyOf": [
@@ -612,7 +612,7 @@
         },
         "vault": {
           "type": "object",
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "external_hostname": {
               "anyOf": [
@@ -629,7 +629,7 @@
         },
         "keycloak": {
           "type": "object",
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "external_hostname": {
               "anyOf": [
@@ -646,7 +646,7 @@
         },
         "flux": {
           "type": "object",
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "external_hostname": {
               "anyOf": [
@@ -663,7 +663,7 @@
         },
         "capd": {
           "type": "object",
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "docker_host": {
               "type": "string",
@@ -732,7 +732,7 @@
             "properties": {
               "capo": {
                 "type": "object",
-                "additionalProperties": false,
+                "additionalProperties": true,
                 "properties": {
                   "flavor_name": {
                     "type": "string"
@@ -780,7 +780,7 @@
                   },
                   "additional_networks": {
                     "type": "object",
-                    "additionalProperties": false,
+                    "additionalProperties": true,
                     "properties": {
                       "virtio_network_id": {
                         "type": "string"
@@ -792,7 +792,7 @@
                   },
                   "rootVolume": {
                     "type": "object",
-                    "additionalProperties": false,
+                    "additionalProperties": true,
                     "properties": {
                       "diskSize": {
                         "type": "integer"
@@ -804,11 +804,11 @@
                   },
                   "clouds_yaml": {
                     "type": "object",
-                    "additionalProperties": false,
+                    "additionalProperties": true,
                     "properties": {
                       "clouds": {
                         "type": "object",
-                        "additionalProperties": false,
+                        "additionalProperties": true,
                         "required": [
                           "capo_cloud"
                         ],
@@ -833,8 +833,7 @@
                                 ],
                                 "properties": {
                                   "auth_url": {
-                                    "type": "string",
-                                    "format": "uri"
+                                    "type": "string"
                                   },
                                   "user_domain_name": {
                                     "type": "string"
@@ -864,7 +863,7 @@
                                 ]
                               },
                               "verify": {
-                                "type": "boolean"
+                                "type": "string"
                               }
                             }
                           }
@@ -877,7 +876,7 @@
                   },
                   "storageClass": {
                     "type": "object",
-                    "additionalProperties": false,
+                    "additionalProperties": true,
                     "properties": {
                       "name": {
                         "type": "string"
@@ -911,7 +910,7 @@
             "properties": {
               "capv": {
                 "type": "object",
-                "additionalProperties": false,
+                "additionalProperties": true,
                 "properties": {
                   "dataCenter": {
                     "type": "string"
@@ -955,7 +954,7 @@
     },
     "proxies": {
       "type": "object",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "patternProperties": {
         "https?_proxy": {
           "type": "string",
@@ -978,20 +977,20 @@
     },
     "registry_mirrors": {
       "type": "object",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "default_settings": {
           "type": "object"
         },
         "hosts_config": {
           "type": "object",
-          "additionalProperties": false,
+          "additionalProperties": true,
           "patternProperties": {
             "^[a-z0-9][a-z0-9.-]*[a-z0-9]$": {
               "type": "array",
               "items": {
                 "type": "object",
-                "additionalProperties": false,
+                "additionalProperties": true,
                 "properties": {
                   "registry_settings": {
                     "type": "object"
@@ -1019,7 +1018,7 @@
     },
     "ntp": {
       "type": "object",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "patternProperties": {
         "enabled": {
           "type": "boolean"
