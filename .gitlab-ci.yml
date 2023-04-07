@@ -263,7 +263,7 @@ test-kubeadm-capo:
     name: registry.gitlab.com/sylva-projects/sylva-elements/container-images/openstack-client:v0.0.1
   script:
     - !reference [.common-deployment, os_cloud]
-    - sh ./tools/openstack-cleanup.sh capo_cloud "${CI_PIPELINE_ID}-${ENV_NAME}"
+    - ./tools/openstack-cleanup.sh capo_cloud "${CI_PIPELINE_ID}-${ENV_NAME}"
   rules:
     - if: $CI_PIPELINE_SOURCE == 'web'
     - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_DEPLOYMENTS'
