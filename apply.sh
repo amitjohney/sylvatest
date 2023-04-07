@@ -31,10 +31,10 @@ fi
 echo_b "\U0001F50E Validate sylva-units values for management cluster"
 validate_sylva_units
 
-echo_b "\U000023F3 Delete preview chart and namespace"
+echo_b "\U0001F5D1 Delete preview chart and namespace"
 cleanup_preview
 
-echo_b "\U0001F512 Create or update management cluster secrets and configmaps"
+echo_b "\U0001F4DC Update sylva-units Helm release and associated resources"
 kubectl kustomize ${ENV_PATH} | define_source | kubectl apply -f -
 
 echo_b "\U0001F3AF Trigger reconciliation of Flux units"
