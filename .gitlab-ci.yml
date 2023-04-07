@@ -15,6 +15,7 @@ variables:
   DOCKER_TLS_CERTDIR: ""
   GITLEAKS_ARGS: '--verbose --log-opts=$CI_COMMIT_SHA'
   DOCKER_HOST: tcp://docker:2375/
+  CAPO_PLATFORM_TAG: capo-ci
 
 # included templates
 include:
@@ -238,7 +239,7 @@ test-kubeadm-capd:
     - !reference [.common-deployment, rules]
   allow_failure: true
   tags:
-    - falcon
+    - $CAPO_PLATFORM_TAG
 
 test-rke2-capo:
   timeout: 90min
@@ -265,7 +266,7 @@ test-kubeadm-capo:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
   allow_failure: true
   tags:
-    - falcon
+    - $CAPO_PLATFORM_TAG
 
 cleanup-rke2-capo:
   extends: .cleanup-capo
@@ -304,7 +305,7 @@ scheduled-cleanup-capo:
     - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_CAPO_CLEANUP'
       when: always
   tags:
-    - falcon
+    - $CAPO_PLATFORM_TAG
 
 publish-kustomize-units-artifact:
   stage: build
