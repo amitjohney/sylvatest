@@ -37,7 +37,7 @@ OCI_REGISTRY=${OCI_REGISTRY:-oci://registry.gitlab.com/sylva-projects/sylva-core
 helm_chart_version="${1:-0.0.0-git+$(git rev-parse --short HEAD)}"
 
 artifact_dir=$(mktemp -d -t sylva-units-XXXXXX)
-#trap "rm -rf $artifact_dir" EXIT INT
+trap "rm -rf $artifact_dir" EXIT INT
 
 echo "(working in $artifact_dir)"
 echo
