@@ -83,7 +83,7 @@ spec: {{ $source_repo_spec | toYaml | nindent 2 }}
         {{- if $schema.scheme | eq "oci" -}}
           {{- $helm_repo_spec = dict "type" "oci" -}}
         {{- end -}}
-      {{- $helm_repo_spec = mergeOverwrite $helm_repo_spec $envAll.Values.helm_repo_spec_default (dict "url" $unit_def.helm_repo_spec | default dict) (dict "url" $unit_def.helm_repo_url) -}}
+      {{- $helm_repo_spec = mergeOverwrite $helm_repo_spec $envAll.Values.helm_repo_spec_default (dict "url" $unit_def.helm_repo_url) -}}
 
       {{/*
       we inject a sourceRef pointing to our dynamically created HelmRepository
