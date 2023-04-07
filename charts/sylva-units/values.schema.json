@@ -51,7 +51,8 @@
     "units",
     "cluster",
     "proxies",
-    "env_type_ci"
+    "env_type_ci",
+    "registry_mirrors"
   ],
   "properties": {
     "fullnameOverride": {
