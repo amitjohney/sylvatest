@@ -310,6 +310,7 @@ spec:
           YXJ5TmFtZSA9ICJ7eyR2LkJpbmFyeU5hbWV9fSIKe3tlbmR9fQo=
       preRKE2Commands: []
       agentConfig:
+        version: ${K8S_VERSION}
         cisProfile: ${CIS_PROFILE}
         kubelet:
           extraArgs:
