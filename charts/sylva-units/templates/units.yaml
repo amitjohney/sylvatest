@@ -8,26 +8,6 @@
     {{- $_ := set $labels "sylva-units.unit" $unit_name -}}
     {{- $_ := mergeOverwrite $labels (include "sylva-units.labels" $envAll | fromYaml) }}
 
-    {{/************ Sanity checks */}}
-
-    {{- if (not (or (hasKey $unit_def "helmrelease_spec")
-                    (hasKey $unit_def "kustomization_spec"))) -}}
-      {{- fail (printf "unit '%s' does not have 'helmrelease_spec' or 'kustomization_spec' defined" $unit_name) -}}
-    {{- end -}}
-
-    {{- if (and (hasKey $unit_def "helm_repo_url")
-                (not (hasKey $unit_def "helmrelease_spec"))) -}}
-      {{- fail (printf "unit '%s' has 'helm_repo_url' but no 'helmrelease_spec'" $unit_name) -}}
-    {{- end -}}
-
-    {{- if hasKey ($unit_def.kustomization_spec|default dict) "dependsOn" -}}
-      {{- fail (printf "units.$unit_name.kustomization_spec.dependsOn is defined, you need to use units.$unit_name.depends_on instead") -}}
-    {{- end -}}
-
-    {{- if hasKey ($unit_def.helmrelease_spec|default dict) "dependsOn" -}}
-      {{- fail (printf "units.$unit_name.helmrelease_spec.dependsOn is defined, you need to use units.$unit_name.depends_on instead") -}}
-    {{- end -}}
-
     {{- $helmrelease_spec_overrides := dict -}}
     {{- $kustomization_spec_overrides := dict -}}
 
@@ -37,10 +17,7 @@
       {{/* if no helm_repo_url is set, then we know we'll use a GitRepository or OCIRepository */}}
 
       {{/* sanity checks on the repo definition */}}
-      {{- $repo_name := $unit_def.repo | default nil -}}
-      {{- if not $repo_name -}}
-        {{- fail (printf "units.%s.repo isn't defined" $unit_name) -}}
-      {{- end -}}
+      {{- $repo_name := $unit_def.repo -}}
 
       {{- if not (hasKey $envAll.Values.source_templates $repo_name) -}}
         {{- fail (printf "units.%s.repo refers to '%s' that isn't defined in .source_templates" $unit_name $repo_name) -}}
