@@ -12,6 +12,7 @@ units:
           CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
           FLAVOR_NAME: '{{ .Values.cluster.capo.flavor_name }}'
           SSH_KEY_NAME: '{{ .Values.cluster.capo.ssh_key_name }}'
+          WORKER_REPLICAS: '1'
 
 cluster:
   image: "Ubuntu 20.04 Pack" # image name provided by falcon-rke2 remote target unit, but can be overwritten
@@ -25,6 +26,7 @@ cluster:
     storageClass:
       name: "cinder-ceph-ssd"
       type: "ceph_ssd"
+  worker_replicas: 1
 
 proxies:
   # put your own proxy settings here if you need
