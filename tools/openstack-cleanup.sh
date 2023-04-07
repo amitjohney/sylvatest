@@ -15,7 +15,10 @@ if openstack ${OS_ARGS} endpoint list &> /dev/null; then
     exit 1
 fi
 
-openstack ${OS_ARGS} server list --tags ${CAPO_TAG} -f value -c Name | awk '{print $1}' | xargs -tr openstack ${OS_ARGS} server delete --wait
+for SERVER in $(openstack ${OS_ARGS} server list --tags ${CAPO_TAG} -f value -c Name); do
+  openstack ${OS_ARGS} server delete --wait ${SERVER}
+  openstack ${OS_ARGS} volume delete ${SERVER}-root --purge || true
+done
 
 openstack ${OS_ARGS} port list --tags ${CAPO_TAG} -f value -c name -c status -c device_owner -c id | awk '$2=="DOWN" {print $4}' | xargs -tr openstack ${OS_ARGS} port delete || true
 
@@ -23,7 +26,7 @@ openstack ${OS_ARGS} security group list --tags ${CAPO_TAG} -f value -c ID | xar
 
 openstack ${OS_ARGS} stack list --tags ${CAPO_TAG} -f value -c ID | xargs -tr openstack ${OS_ARGS} stack delete || true
 
-for vol in $(openstack ${OS_ARGS} volume list --status available -f value -c Name | grep ^pvc); do
+for vol in $(openstack ${OS_ARGS} volume list --status available -f value -c Name | grep '^pvc'); do
     vol_property=$(openstack ${OS_ARGS} volume show $vol -c properties -f json | jq '.properties."cinder.csi.openstack.org/cluster"' -r)
     if [ "${vol_property}" = "${CAPO_TAG}" ]; then
         echo "openstack ${OS_ARGS} volume delete $vol --purge"
