@@ -106,7 +106,7 @@ unit_helmrelease_kustomization_spec_default:
   path: ./kustomize-units/helmrelease-generic
   # sourceRef: '{{ index .Values.source_templates "sylva-core" | dig "existing_source" (dict "kind" "GitRepository" "name" "sylva-core") | toYaml | nindent 4 }}'
   sourceRef:
-    kind: '{{ dig "source_templates" "sylva-core" "existing_source" "kind" "GitRepository" (.Values | merge (dict)) }}'
+    kind: '{{ dig "source_templates" "sylva-core" "existing_source" "kind" "OCIRepository" (.Values | merge (dict)) }}'
     # GitRepository by templates/source-repository-self.yaml unless existing_source is used
     name: '{{ dig "source_templates" "sylva-core" "existing_source" "name" "sylva-core" (.Values | merge (dict)) }}'
 
