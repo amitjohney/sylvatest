@@ -952,6 +952,21 @@ units:
     depends_on:
       rancher: true
     kustomization_spec:
+      path: ./kustomize-units/first-login-rancher
+      postBuild:
+        substitute:
+          RANCHER_EXTERNAL_URL: '{{ .Values.cluster.rancher.external_hostname }}'
+          CURRENT_TIME: '{{ now | date "2006-01-02T15:04:05.999Z" }}'
+      wait: true
+
+  update-rancher-admin:
+    enabled: '{{ and .Values.units.rancher.enabled .Values.units.keycloak.enabled | include "preserve-type" }}'
+    repo: sylva-core
+    depends_on:
+      rancher: true
+      rancher-add-keycloak-provider: true
+      keycloak-resources: true
+    kustomization_spec:
       path: ./kustomize-units/kube-job
       wait: true
       force: true
@@ -962,7 +977,7 @@ units:
         patch: |
           - op: replace
             path: /metadata/name
-            value: first-login-rancher-job
+            value: update-rancher-admin-job
           - op: replace
             path: /spec/backoffLimit
             value: 10
@@ -973,23 +988,7 @@ units:
           - op: replace
             path: /data/kube-job.sh
             value: |
-          {{ .Files.Get "scripts/first-login-rancher.sh" | indent 4 }}
-      - target:
-          kind: Job
-          name: kube-job
-        patch: |
-          apiVersion: batch/v1
-          kind: Job
-          metadata:
-            name: ignored
-          spec:
-            template:
-              spec:
-                containers:
-                - name: run-script
-                  env:
-                  - name: RANCHER_EXTERNAL_URL
-                    value: https://{{ .Values.cluster.rancher.external_hostname }}
+          {{ .Files.Get "scripts/update-rancher-user.sh" | indent 4 }}
 
   flux-webui:
     enabled: yes
