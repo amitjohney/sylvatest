@@ -52,8 +52,10 @@
 
 
       {{- $source_repo_name := ""}}
+      {{- $source_repo_kind := ""}}
       {{- if hasKey $repo_def "existing_source" -}}
         {{- $source_repo_name = $repo_def.existing_source.name -}}
+        {{- $source_repo_kind = $repo_def.existing_source.kind -}}
       {{- else -}}
         {{- $source_repo_name = printf "unit-%s" $unit_name -}}
 
@@ -93,7 +95,7 @@ spec: {{ $source_repo_spec | toYaml | nindent 2 }}
         */}}
         {{- $helmrelease_spec_overrides = dict "chart" (dict "spec" (dict "sourceRef" (dict "kind" $repo_def.kind "name" $source_repo_name) "reconcileStrategy" "Revision")) -}}
       {{- else -}}{{/* if 'helmrelease_spec' isn't used, then the source from 'repo' is used for the Kustomization */}}
-        {{- $kustomization_spec_overrides = dict "sourceRef" (dict "kind" $repo_def.kind "name" $source_repo_name) -}}
+        {{- $kustomization_spec_overrides = dict "sourceRef" (dict "kind" $source_repo_kind "name" $source_repo_name) -}}
       {{- end }}
 
     {{ else }}{{/* helm_repo is declared, we generate a HelmRepository */}}
@@ -104,7 +106,15 @@ spec: {{ $source_repo_spec | toYaml | nindent 2 }}
           {{- $helm_repo_spec = dict "type" "oci" -}}
         {{- end -}}
       {{- $helm_repo_spec = mergeOverwrite $helm_repo_spec $envAll.Values.helm_repo_spec_default (dict "url" $unit_def.helm_repo_spec | default dict) (dict "url" $unit_def.helm_repo_url) -}}
-      {{- $helmrelease_spec_overrides = dict "chart" (dict "spec" (dict "sourceRef" (dict "kind" "HelmRepository" "name" (printf "unit-%s" $unit_name)))) }}
+
+      {{/*
+      we inject a sourceRef pointing to our dynamically created HelmRepository
+      (unless the unit definition provides a chart.spec.sourceRef, which we do in the
+      specific case of bootstrap/mgmt handover, see bootstrap.values.yaml 'sylva-units' unit)
+      */}}
+      {{- if not ($unit_def.helmrelease_spec | dig "chart" "spec" "sourceRef" dict) -}}
+        {{- $helmrelease_spec_overrides = dict "chart" (dict "spec" (dict "sourceRef" (dict "kind" "HelmRepository" "name" (printf "unit-%s" $unit_name)))) -}}
+      {{- end }}
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:

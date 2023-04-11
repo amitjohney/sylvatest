@@ -32,17 +32,14 @@ echo_b "\U0001F50E Validate sylva-units values for management cluster"
 validate_sylva_units
 
 echo_b "\U000023F3 Delete preview chart and namespace"
-kubectl delete -n sylva-units-preview helmrelease/sylva-units gitrepository/sylva-core
-kubectl delete namespace sylva-units-preview
+cleanup_preview
 
 echo_b "\U0001F512 Create or update management cluster secrets and configmaps"
 kubectl kustomize ${ENV_PATH} | define_source | kubectl apply -f -
 
 echo_b "\U0001F3AF Trigger reconciliation of Flux units"
 
-# this is just to force-refresh with a new commit (or refreshed parameters)
-
-force_reconcile gitrepository sylva-core
+# this is just to force-refresh on refreshed parameters
 force_reconcile helmrelease sylva-units
 
 echo_b "\U000023F3 Wait for Flux units becoming ready"
