@@ -83,7 +83,7 @@ units:
               kubectl get secret management-cluster-kubeconfig -o jsonpath='{.data.value}' | base64 -d > management-cluster-kubeconfig
 
               echo "-- Copy secrets and configmaps from bootstrap to management cluster"
-              kubectl get configmaps,secrets,gitrepository,ocirepository \
+              kubectl get configmaps,secrets,gitrepository,ocirepository,helmrepository \
                 -l copy-from-bootstrap-to-management= \
                 -o json \
                   | jq '.items[] | del(.metadata.labels."helm.toolkit.fluxcd.io/name") | del(.metadata.labels."copy-from-bootstrap-to-management") | del(.metadata.labels."helm.toolkit.fluxcd.io/namespace") | del(.metadata.resourceVersion) | del(.metadata.uid) | del(.metadata.creationTimestamp)' \
@@ -109,21 +109,26 @@ units:
       releaseName: sylva-units
       chart:
         spec:
-          #sourceRef:
-          #  namespace: default
           chart: charts/sylva-units
           reconcileStrategy: Revision
+          # copy sourceRef from bootstrap HelmRelease:
+          sourceRef: '{{ lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units" | dig "spec" "chart" "spec" "sourceRef" dict | include "preserve-type" }}'
+          # we copy the valuesFiles from the bootstrap HelmRelease, skipping
+          # the bootstrap.values.yaml file (with or without the 'charts/sylva-units/'
+          # prefix which is or isn't there depending on whether this is a deployment
+          # relying on OCI artifacts)
+          valuesFiles: |
+            {{- without (lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units" | dig "spec" "chart" "spec" "valuesFiles" list) "bootstrap.values.yaml" "charts/sylva-units/bootstrap.values.yaml" | include "preserve-type" -}}
       interval: 1m0s
       # copy values and valuesFrom from current sylva-units HelmRelease
       # for now we keep the 'cluster' unit disabled, it produces CAPI resources
       # defining the management cluster, which we can't define before having done the pivot
       # (this value override is reverted after pivot by the pivot job below)
       values: |
-        {{- $chartValues := (lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units").spec.values -}}
+        {{- $chartValues := lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units" | dig "spec" "values" dict -}}
         {{- $disableCluster := dict "units" (dict "cluster" (dict "enabled" false)) -}}
-        {{- $sourceSelf := dict "source_templates" (dict "sylva-core" (dict "existing_source" (dict "name" "sylva-core" "kind" "GitRepository"))) -}}
-        {{- mergeOverwrite $chartValues $disableCluster $sourceSelf | include "preserve-type" -}}
-      valuesFrom: '{{ (lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units").spec.valuesFrom | include "preserve-type" }}'
+        {{- mergeOverwrite $chartValues $disableCluster | include "preserve-type" -}}
+      valuesFrom: '{{ lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units" | dig "spec" "valuesFrom" list | include "preserve-type" }}'
 
   reconcile-sylva-units:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'

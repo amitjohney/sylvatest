@@ -22,20 +22,17 @@ echo_b "\U0001F50E Validate sylva-units values for management cluster"
 validate_sylva_units
 
 echo_b "\U000023F3 Delete preview chart and namespace"
-kubectl delete -n sylva-units-preview helmrelease/sylva-units gitrepository/sylva-core
-kubectl delete namespace sylva-units-preview
-
-echo_b "\U0001F4DD Create bootstrap configmap"
-# NOTE(feleouet): as use the same kustomisation for bootstrap and management cluster, pass bootstrap environment values as configmap
-# as it won't be labelled with copy-from-bootstrap-to-management, it won't be copied to management-cluster
-kubectl create configmap management-cluster-bootstrap-values --from-file=${BASE_DIR}/charts/sylva-units/bootstrap.values.yaml --dry-run=client -o yaml | kubectl apply -f -
+cleanup_preview
 
 echo_b "\U0001F4DC Install sylva-units Helm release"
-kubectl kustomize ${ENV_PATH} | define_source | kubectl apply -f -
+kubectl kustomize ${ENV_PATH} | \
+  define_source | \
+  inject_bootstrap_values | \
+  kubectl apply -f -
 
-# this is just to force-refresh in a dev environment with a new commit (or refreshed parameters)
-kubectl annotate --overwrite gitrepository/sylva-core reconcile.fluxcd.io/requestedAt="$(date -uIs)"
-kubectl annotate --overwrite helmrelease/sylva-units reconcile.fluxcd.io/requestedAt="$(date -uIs)"
+echo_b "\U0001F3AF Trigger reconciliation of Flux units"
+# this is just to force-refresh on refreshed parameters
+force_reconcile helmrelease sylva-units
 
 # Attempt to retrieve management-cluster-kubeconfig in background
 retrieve_kubeconfig &

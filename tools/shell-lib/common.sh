@@ -110,12 +110,40 @@ trap exit_trap EXIT
 function force_reconcile() {
   local kinds=$1
   local name_or_selector=$2
+  local namespace=${3:-default}
   echo "force reconciliation of $1 $2"
-  kubectl annotate --overwrite $kinds $name_or_selector reconcile.fluxcd.io/requestedAt=$(date -uIs) | sed -e 's/^/  /'
+  kubectl annotate -n $namespace --overwrite $kinds $name_or_selector reconcile.fluxcd.io/requestedAt=$(date -uIs) | sed -e 's/^/  /'
 }
 
 function define_source() {
   sed "s/CURRENT_COMMIT/${CURRENT_COMMIT}/" "$@" | sed "s,SYLVA_CORE_REPO,${SYLVA_CORE_REPO},g" "$@"
+}
+
+function inject_bootstrap_values() {
+  # this function transforms the output of 'kubectl kustomize ${ENV_PATH}'
+  # to add bootstrap.values.yaml into the valuesFiles field of the HelmRelease
+  #
+  # this field is not exactly the same depending on whether we use a GitRepository as sources
+  # or a HelmRepository (which is what we use for a deployment from OCI artifacts)
+
+  # additionally, in the case of an OCI-based deployment, we need to insert "bootstrap.values.yaml"
+  # before the "use-oci-artifacts.values.yaml" which has to be the last element to have
+  # precedence over what is defined in "bootstrap.values.yaml"
+
+  # shellcheck disable=SC2016
+  yq eval-all '
+    (select(.kind == "HelmRepository" and .spec.type == "oci") | length > 0 | to_yaml | trim) as $oci
+    | select(.kind == "HelmRelease").spec.chart.spec.valuesFiles = ([
+      {"true":"","false":"charts/sylva-units/"}[$oci] + "values.yaml",
+      {"true":"","false":"charts/sylva-units/"}[$oci] + "bootstrap.values.yaml"
+    ] + {"true":["use-oci-artifacts.values.yaml"],"false":[]}[$oci])
+    | select(.kind == "HelmRelease").spec.chart.spec.valuesFiles = (select(.kind == "HelmRelease").spec.chart.spec.valuesFiles | unique)
+  '
+  # explanations on the code above:
+  # - ... as $oci on the first line produces a boolean (or nearly, see below)
+  # - we use the {true: A, false: B}[x] construct to emulate the behavior of 'if x then A else B' (jq has such an if/else statement, but yq does not)
+  # - the keys of this true/false map are actually strings, because yq does not support booleans as indexes
+  # - this is why $oci is made into a string ('| to_yaml | trim' emulates '|tostring' which is not provided by yq)
 }
 
 function validate_sylva_units() {
@@ -130,12 +158,17 @@ function validate_sylva_units() {
         components:
         - $(realpath --relative-to=${PREVIEW_DIR} ./environment-values/preview)
 EOF
-  kubectl kustomize ${PREVIEW_DIR} | define_source | kubectl apply -f -
+
+  # for bootstrap cluster, we need to inject bootstrap values
+  # (for mgmt cluster, we do not so we "pipe through" with "cat")
+  kubectl kustomize ${PREVIEW_DIR} \
+    | define_source \
+    | (if [[ ${KUBECONFIG:-} =~ management-cluster-kubeconfig$ ]]; then cat ; else inject_bootstrap_values ; fi) \
+    | kubectl apply -f -
   rm -Rf ${PREVIEW_DIR}
 
-  # this is just to force-refresh in a dev environment with a new commit (or refreshed parameters)
-  kubectl annotate --overwrite -n sylva-units-preview gitrepository/sylva-core reconcile.fluxcd.io/requestedAt="$(date -uIs)"
-  kubectl annotate --overwrite -n sylva-units-preview helmrelease/sylva-units reconcile.fluxcd.io/requestedAt="$(date -uIs)"
+  # this is just to force-refresh in a dev environment with  refreshed parameters
+  force_reconcile helmrelease sylva-units sylva-units-preview
 
   echo "Wait for Helm release to be ready"
   if ! sylvactl watch --timeout 120s -n sylva-units-preview HelmRelease/sylva-units-preview/sylva-units; then
@@ -143,4 +176,11 @@ EOF
     kubectl get -n sylva-units-preview helmrelease/sylva-units -o yaml 2>/dev/null
     exit 1
   fi
+}
+
+function cleanup_preview() {
+  kubectl get -n sylva-units-preview helmrelease/sylva-units gitrepository/sylva-core helmrepository/sylva-core ocirepository/sylva-core -o name \
+       2> >(grep -v 'not found' >&2) || true \
+    | xargs --no-run-if-empty kubectl delete -n sylva-units-preview
+  kubectl delete namespace sylva-units-preview
 }
