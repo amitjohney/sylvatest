@@ -122,8 +122,6 @@ All the provided values will be applied by Flux to the chart, in the following o
 - `spec.chart.spec.valuesFiles`
 - items in `spec.valuesFrom` (in the specified order)
 - `spec.values`
-- items in spec.valuesFrom (in the specified order)
-- spec.values
 
 Keep in mind that these values will be merged by helm over default values of the chart (as in json-merge, not strategic merge) so list/arrays will be overriden, for example:
 
