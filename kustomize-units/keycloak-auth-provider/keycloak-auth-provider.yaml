@@ -6,9 +6,6 @@ metadata:
   annotations:
     management.cattle.io/auth-provider-cleanup: unlocked
 accessMode: unrestricted
-allowedPrincipalIds:
-- keycloakoidc_user://sylva-admin
-- keycloakoidc_group://infra-admins
 authEndpoint: "https://${KEYCLOAK_EXTERNAL_URL}/realms/sylva/protocol/openid-connect/auth"
 clientId: rancher
 clientSecret: "${RANCHER_CLIENT_SECRET}"
