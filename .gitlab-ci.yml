@@ -168,7 +168,9 @@ check-docs-markdown:
     - if: $CI_PIPELINE_SOURCE == 'web'
     - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_DEPLOYMENTS'
     - if: $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
+      allow_failure: true
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      allow_failure: true
       when: manual
 
 .test-capd:
@@ -181,7 +183,6 @@ check-docs-markdown:
     - !reference [.common-deployment, post_deployment_common]
   artifacts: !reference [.common-deployment, artifacts]
   rules: !reference [.common-deployment, rules]
-  allow_failure: true
 
 test-preview-capd:
   stage: deploy
@@ -237,7 +238,6 @@ test-kubeadm-capd:
     - if: $CI_MERGE_REQUEST_LABELS =~ /renovate/
       when: manual
     - !reference [.common-deployment, rules]
-  allow_failure: true
   tags:
     - $CAPO_PLATFORM_TAG
 
