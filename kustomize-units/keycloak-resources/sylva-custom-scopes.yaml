@@ -16,8 +16,8 @@ spec:
           KEYCLOAK_BASE_URL="https://keycloak-service.keycloak.svc.cluster.local:8443"
           ACCESS_TOKEN=$(curl -k -s -X POST \
             -H "Content-Type: application/x-www-form-urlencoded" \
-            -d "username=$(cat /admin-credentials/username)" \
-            -d "password=$(cat /admin-credentials/password)" \
+            -d "username=${KEYCLOAK_INITIAL_USERNAME}" \
+            -d "password=${KEYCLOAK_INITIAL_PASSWORD}" \
             -d "grant_type=password" \
             -d "client_id=admin-cli" \
             "${KEYCLOAK_BASE_URL}/realms/master/protocol/openid-connect/token" \
@@ -40,13 +40,16 @@ spec:
             }' \
             "${KEYCLOAK_BASE_URL}/admin/realms/sylva/client-scopes"
           echo "-- All done"
-        volumeMounts:
-        - name: admin-credentials
-          mountPath: /admin-credentials
-          readOnly: true
+        env:
+        - name: KEYCLOAK_INITIAL_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-initial-admin
+              key: username
+        - name: KEYCLOAK_INITIAL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-initial-admin
+              key: password
       restartPolicy: Never
-      volumes:
-      - name: admin-credentials
-        secret:
-          secretName: keycloak-initial-admin
   backoffLimit: 4

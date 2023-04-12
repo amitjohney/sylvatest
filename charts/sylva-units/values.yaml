@@ -1049,7 +1049,7 @@ units:
         oidcSecret:
           create: true
           clientID: flux
-          clientSecret: '{{ .Values.cluster.admin_password }}' # Change how we pass this
+          clientSecret: '{{ .Values.cluster.admin_password }}'
           issuerURL: https://{{ .Values.cluster.keycloak.external_hostname }}/realms/sylva
           redirectURL: https://{{ .Values.cluster.flux.external_hostname }}/oauth2/callback
       _postRenderers:
