@@ -700,6 +700,8 @@ properties:
                       type: string
                     type:  # -------------------------------
                       type: string
+                  required:
+                    - type
 
                 resources_tag:  # -------------------------------
                   type: string
