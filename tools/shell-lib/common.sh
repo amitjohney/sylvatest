@@ -4,8 +4,8 @@ set -o pipefail
 export BASE_DIR="$(realpath $(dirname $0))"
 export PATH=${BASE_DIR}/bin:${PATH}
 
-SYLVACTL_VERSION="v0.1.0"
-SYLVA_TOOLBOX_VERSION="v0.1.0"
+SYLVACTL_VERSION="v0.1.2"
+SYLVA_TOOLBOX_VERSION="v0.1.2"
 SYLVA_TOOLBOX_IMAGE=${SYLVA_TOOLBOX_IMAGE:-container-images/sylva-toolbox}
 SYLVA_TOOLBOX_REGISTRY=${SYLVA_TOOLBOX_REGISTRY:-registry.gitlab.com/sylva-projects/sylva-elements}
 
@@ -171,7 +171,7 @@ EOF
   force_reconcile helmrelease sylva-units sylva-units-preview
 
   echo "Wait for Helm release to be ready"
-  if ! sylvactl watch --timeout 120s -n sylva-units-preview HelmRelease/sylva-units-preview/sylva-units; then
+  if ! sylvactl watch --timeout 120s --ignore-suspended -n sylva-units-preview HelmRelease/sylva-units-preview/sylva-units; then
     echo "Resource helmrelease/sylva-units did not become ready in time"
     kubectl get -n sylva-units-preview helmrelease/sylva-units -o yaml 2>/dev/null
     exit 1
