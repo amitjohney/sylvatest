@@ -1,7 +1,7 @@
 {{/* This source (GitRepository or OCIRegistry) is referred to from 'unit_helmrelease_kustomization_spec_default' */}}
 {{- $envAll := set . "Values" (include "interpret-values-gotpl" . | fromJson) -}}
 {{- $repo_name := "sylva-core" -}}
-{{- if not (hasKey (index .Values.source_templates "sylva-core") "existing_source") -}}
+{{- if not (get (index .Values.source_templates "sylva-core") "existing_source") -}}
     {{- $unit_name := "sylva-core" -}}
     {{- $repo_def := deepCopy (index $envAll.Values.source_templates $repo_name) -}}
 ---
@@ -12,7 +12,10 @@ metadata:
   labels:
 {{ include "sylva-units.labels" $envAll | indent 4 }}
 spec:
-    {{ $secret_ref := dict "secretRef" (dict "name" "source-repo-auth-sylva-core") -}}
+    {{ $secret_ref := dict -}}
+    {{- if hasKey $repo_def "auth" }}
+      {{- $secret_ref = dict "secretRef" (dict "name" (printf "source-repo-auth-%s" $repo_name)) -}}{{/* Secret is templated in source-repo-auth.yaml */}}
+    {{- end -}}
     {{- $spec := dict -}}
     {{- $spec = mergeOverwrite $spec ($repo_def.kind | eq "GitRepository" | ternary $envAll.Values.git_repo_spec_default $envAll.Values.oci_repo_spec_default) $repo_def.spec $secret_ref }}
 {{ $spec | toYaml | indent 2 }}

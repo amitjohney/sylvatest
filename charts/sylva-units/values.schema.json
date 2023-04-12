@@ -92,7 +92,8 @@
           "anyOf": [
             {
               "required": [
-                "spec"
+                "spec",
+                "kind"
               ]
             },
             {
@@ -103,23 +104,30 @@
           ],
           "properties": {
             "existing_source": {
-              "type": "object",
-              "required": [
-                "name",
-                "kind"
-              ],
-              "properties": {
-                "name": {
-                  "type": "string"
+              "anyOf": [
+                {
+                  "type": "null"
                 },
-                "kind": {
-                  "type": "string",
-                  "enum": [
-                    "GitRepository",
-                    "OCIRepository"
-                  ]
+                {
+                  "type": "object",
+                  "required": [
+                    "name",
+                    "kind"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "GitRepository",
+                        "OCIRepository"
+                      ]
+                    }
+                  }
                 }
-              }
+              ]
             },
             "auth": {
               "$ref": "#/$defs/username-password"
@@ -139,8 +147,15 @@
               ],
               "properties": {
                 "url": {
-                  "type": "string",
-                  "format": "uri"
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    }
+                  ]
                 }
               },
               "not": {
@@ -229,8 +244,11 @@
                           }
                         ],
                         "patternProperties": {
-                          "(diges|semver|tag)": {
+                          "(digest|semver|tag)": {
                             "type": "string"
+                          },
+                          "branch": {
+                            "type": "null"
                           }
                         }
                       }

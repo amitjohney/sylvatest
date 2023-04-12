@@ -51,13 +51,14 @@
       {{- $repo_def := deepCopy (index $envAll.Values.source_templates $repo_name) -}}
 
 
-      {{- $source_repo_name := ""}}
-      {{- $source_repo_kind := ""}}
-      {{- if hasKey $repo_def "existing_source" -}}
+      {{- $source_repo_name := "-undefined-" -}}
+      {{- $source_repo_kind := "-undefined-" -}}
+      {{- if get $repo_def "existing_source" -}}
         {{- $source_repo_name = $repo_def.existing_source.name -}}
         {{- $source_repo_kind = $repo_def.existing_source.kind -}}
       {{- else -}}
         {{- $source_repo_name = printf "unit-%s" $unit_name -}}
+        {{- $source_repo_kind = $repo_def.kind -}}
 
         {{- $secret_ref := dict }}
         {{- if hasKey $repo_def "auth" }}
@@ -84,9 +85,9 @@ spec: {{ $source_repo_spec | toYaml | nindent 2 }}
       {{ end }}
 
       {{ if hasKey $unit_def "helmrelease_spec" -}}
-        {{ if ne $repo_def.kind "GitRepository" }}
+        {{ if eq $repo_def.kind "OCIRepository" }}
           {{/* if the source repo is not of type GitRepository then we fail as we don't know how to do that yet */}}
-          {{ fail "Please don't use helm_release_spec for a unit referencing a source repo of type OCIRepository" }}
+          {{ fail (printf "You cannot use helm_release_spec for a unit using 'repo' and referencing a source repo of type OCIRepository (unit '%s')" $unit_name) }}
         {{ end }}
         {{/*
         if helm_release_spec is used and the source repo is of type GitRepository then we inject our GitRepository in it as sourceRef

@@ -104,12 +104,13 @@ unit_helmrelease_spec_default:  # default for the .spec of a HelmRelease
 # generated a unit with a "helmrelease_spec" field
 unit_helmrelease_kustomization_spec_default:
   path: ./kustomize-units/helmrelease-generic
-  # sourceRef: '{{ index .Values.source_templates "sylva-core" | dig "existing_source" (dict "kind" "GitRepository" "name" "sylva-core") | toYaml | nindent 4 }}'
-  sourceRef:
-    kind: '{{ dig "source_templates" "sylva-core" "existing_source" "kind" "GitRepository" (.Values | merge (dict)) }}'
-    # GitRepository by templates/source-repository-self.yaml unless existing_source is used
-    name: '{{ dig "source_templates" "sylva-core" "existing_source" "name" "sylva-core" (.Values | merge (dict)) }}'
-
+  sourceRef: >-
+    {{- $existing_source := get (index .Values.source_templates "sylva-core") "existing_source" -}}
+    {{- if $existing_source -}}
+      {{- $existing_source | include "preserve-type" -}}
+    {{- else -}}
+      {{- dict "kind" (index .Values.source_templates "sylva-core" | dig "kind" "GitRepository") "name" "sylva-core" | include "preserve-type" -}}
+    {{- end -}}
   wait: true
 
 # this defines Flux HelmRelease objects, and for each  # FIXME
