@@ -1067,7 +1067,7 @@ units:
                         securityContext:
                           seccompProfile:
                             $patch: delete
-                            type: RuntimeDefault          
+                            type: RuntimeDefault
     helm_secret_values:
       adminUser:
         create: true
