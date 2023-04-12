@@ -1467,7 +1467,7 @@ cluster:
     #cacert: # cert used to validate CA of OpenStack APIs
     storageClass:
       name: cinder-csi  # name of the storageClass to be created
-      type: xxx  # this is a cinder volume type e.g. 'ceph_sas' (must exist in OpenStack)
+      #type: xxx  # please provide the cinder volume type, e.g. 'ceph_sas' (must exist in OpenStack)
     resources_tag: '{{ eq .Values.cluster.capi_providers.infra_provider "capo" | ternary (printf "sylva-%s" .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.username) "" }}' # tag set for OpenStack resources in management and test workload cluster
 
   cluster_external_ip: 55.55.55.55
