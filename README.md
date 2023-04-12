@@ -170,21 +170,7 @@ Before triggering bootstrap.sh, certain prerequisites need to be done/followed
 - Create a **bootstrap vm** using OpenStack or use any exiting linux environment
 - Set the **proxies** environment variables (http_proxy, https_proxy, no_proxy) if using corporate proxy
 - Install **Docker** and add your user to the `docker` group
-- Clone **sylva-core** project on bootstrap vm
-
-- Reserve a pair of **neutron ports** or allocate **floating IP's**.
-  These will be used as external IPs for management and sample workload cluster. These ports should be created in a network that is reachable from the bootstrap cluster (typically an external network).
-
-  ```shell
-  openstack port create --network c314d52c-80fe-42b6-9092-55be383d1951 management-cluster-external
-  openstack port create --network c314d52c-80fe-42b6-9092-55be383d1951 workload-cluster-external
-  ```
-
-  ```shell
-  openstack floating ip create <management-cluster-vip-name>
-  openstack floating ip create <sample-workload-cluster-vip-name>
-  ```
-
+- Clone **sylva-core** project on the **bootstrap vm**
 - Create your own copy of **environment-values** (this will prevent you from accidentally committing your secrets).
 
   ```shell
@@ -194,40 +180,43 @@ Before triggering bootstrap.sh, certain prerequisites need to be done/followed
 - Provide your **OpenStack credentials** in `environment-values/my-capo-env/secrets.yaml`
 
   ```shell
-  auth_url: # replace me
-    user_domain_name: # replace me
-    project_domain_name: # replace me
-    project_name: # replace me
-    username: # replace me
-    password: # replace me
+  cluster:
+    flux_webui:
+      admin_password: "FluxPass"
+    admin_password: "RancherPass"
+    capo:
+      clouds_yaml:
+        clouds:
+          capo_cloud:
+            auth:
+              auth_url: "https://my.openstack/v3"
+              user_domain_name: Default
+              password: Your.Password # update me
+              username: Your.Username # update me
+              project_name: "Your.Project" # update me
+              project_domain_name: Default
+            verify: false
   ```
 
 > **_NOTE:_** obviously, the `secrets.yaml` file is sensitive and meant to be ignored by Git (see `.gitignore`). However, for the sake of security, it can be good idea to [secure these files with SOPS](./sops-howto.md) to mitigate the risk of leakage.
 
-- Adapt `environment-values/my-capo-env/values.yaml` to suit your environment:
+- Adapt `environment-values/my-capo-env/values.yaml` by changing the values:
 
   ```yaml
   ...
-      workload-cluster:
-          kustomization_spec:
-            postBuild:
-              substitute:
-                CLUSTER_EXTERNAL_IP: 1.2.2.1 # IP address of workload-cluster external port
+  cluster:
+    image: my_base_image
+    flavor:
+      infra_provider: capo
+      bootstrap_provider: cabpk
+    capo:
+      ssh_key_name: my_key_name # put the name of your nova SSH keypair here, you'll need it if you intent to ssh to cluster nodes
+      network_id: my_network_id # The id of the network in which cluster nodes will be created
 
-      cluster:
-        image: capo-ubuntu-2004-kube-v1.23.6-calico-3.23.1 # Image build with image-builder and uploaded in glance
-        flavor:
-          infra_provider: capo #capd pr capo
-          bootstrap_provider: cabpk # cabpr (RKE2) or cabpk (kubeadm)
-        capo:
-          ssh_key_name: # put the name of your nova SSH keypair here, you'll need it if you intent to ssh to cluster nodes
-          network_id: c314d52c-80fe-42b6-9092-55be383d1951 # The id of the network in which cluster nodes will be created (must be the same as the one in which you've reserved external IPs)
-          cluster_external_ip: 1.2.3.4  # IP address of management-cluster-external port
-
-      proxies:
-        http_proxy: http://your.company.proxy.url  #replace me
-        https_proxy: http://your.company.proxy.url  #replace me
-        no_proxy: 127.0.0.1,localhost,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8
+  proxies:
+    http_proxy: http://your.company.proxy.url  #replace me
+    https_proxy: http://your.company.proxy.url  #replace me
+    no_proxy: 127.0.0.1,localhost,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8,.sylva
   ```
 
 - Run the bootstrap script:
