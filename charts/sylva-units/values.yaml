@@ -761,7 +761,7 @@ units:
       chart:
         spec:
           chart: rancher
-          version: 2.7.2-rc8
+          version: 2.7.2
       targetNamespace: cattle-system
       interval: 10m0s
       upgrade:
