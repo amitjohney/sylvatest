@@ -411,7 +411,7 @@ units:
     repo: sylva-core
     kustomization_substitute_secrets:
       RANCHER_CLIENT_SECRET: '{{ .Values.cluster.admin_password }}'
-      FLUX_CLIENT_SECRET: '{{ .Values.cluster.admin_password }}' # We need to randomly generate this instead
+      FLUX_CLIENT_SECRET: '{{ .Values.cluster.admin_password }}'
     kustomization_spec:
       path: ./kustomize-units/keycloak-resources
       targetNamespace: keycloak
