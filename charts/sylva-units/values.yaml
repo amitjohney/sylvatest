@@ -1015,8 +1015,6 @@ units:
           value: "true"
         - name: WEAVE_GITOPS_FEATURE_CLUSTER
           value: "false"
-        - name: SSL_CERT_FILE
-          value: /etc/ssl/certs/ca.crt
         installCRDs: true
         rbac:
           additionalRules:
