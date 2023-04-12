@@ -73,6 +73,19 @@ sylva_core_oci_registry: oci://registry.gitlab.com/sylva-projects/sylva-core
 
 source_templates:
 
+  sylva-core:
+    existing_source: null
+    kind: OCIRepository
+    spec:
+      url: '{{ .Values.sylva_core_oci_registry }}/kustomize-units'
+      ref:
+        # by default, for the kustomize-units OCI artifact, we use the same
+        # tag as the one used for the sylva-units Helm chart
+        # (.Chart.Version is the chart version followed by "+<n>" with <n> being
+        # the Helm release iteration, so we need to remove it)
+        branch: null
+        tag: '{{ regexReplaceAll "[+][0-9]+$" .Chart.Version "" }}'
+
   capi-rancher-import:
     kind: OCIRepository
     spec:

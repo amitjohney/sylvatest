@@ -55,7 +55,7 @@ metadata:
     release-time: "{{ $time }}"
 spec:
 {{ .Values.unit_kustomization_spec_default | toYaml | indent 2 }}
-  sourceRef: {{ index .Values.source_templates "sylva-core" | dig "existing_source" (dict "kind" "GitRepository" "name" "sylva-core") | toYaml | nindent 4 }}
+  sourceRef: {{ .Values.unit_helmrelease_kustomization_spec_default.sourceRef | toYaml | nindent 4 }}
   path: ./kustomize-units/sylva-units-status
   dependsOn: {{ $deps | toYaml | nindent 4 }}
   wait: true
