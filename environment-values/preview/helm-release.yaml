@@ -29,3 +29,11 @@ spec:
               name: required-but-unused
             spec:
               suspend: true
+        - target:
+            kind: OCIRepository
+          patch: |-
+            kind: OCIRepository
+            metadata:
+              name: required-but-unused
+            spec:
+              suspend: true
