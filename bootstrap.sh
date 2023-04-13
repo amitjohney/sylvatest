@@ -12,11 +12,7 @@ check_pivot_has_ran
 echo_b "\U0001F503 Preparing bootstrap cluster"
 tools/kind/bootstrap-cluster.sh
 
-echo_b "\U0001F503 Bootstraping flux"
-kubectl kustomize kustomize-units/flux-system/bootstrap | envsubst | kubectl apply -f -
-
-echo_b "\U000023F3 Wait for Flux to be ready..."
-kubectl wait --for condition=Available --timeout 600s -n flux-system --all deployment
+ensure_flux
 
 echo_b "\U0001F50E Validate sylva-units values for management cluster"
 validate_sylva_units
