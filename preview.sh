@@ -10,11 +10,7 @@ fi
 echo_b "\U0001F503 Preparing bootstrap cluster"
 tools/kind/bootstrap-cluster.sh
 
-echo_b "\U0001F5D8 Bootstraping flux"
-kubectl kustomize kustomize-units/flux-system/bootstrap | envsubst | kubectl apply -f -
-
-echo_b "\U000023F3 Wait for Flux to be ready..."
-kubectl wait --for condition=Available --timeout 600s --all-namespaces --all deployment
+ensure_flux
 
 echo_b "\U0001F4C1 Create & install sylva-units preview Helm release"
 validate_sylva_units

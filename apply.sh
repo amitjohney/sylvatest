@@ -20,13 +20,7 @@ if ! (kubectl get nodes > /dev/null); then
     exit -1
 fi
 
-if ! (kubectl get namespace flux-system >/dev/null); then
-    echo_b "\U0001F5D8 Bootstraping flux"
-    kubectl kustomize kustomize-units/flux-system | envsubst | kubectl apply -f -
-
-    echo_b "\U000023F3 Wait for Flux to be ready..."
-    kubectl wait --for condition=Available --timeout 600s -n flux-system --all deployment
-fi
+ensure_flux
 
 echo_b "\U0001F50E Validate sylva-units values for management cluster"
 validate_sylva_units

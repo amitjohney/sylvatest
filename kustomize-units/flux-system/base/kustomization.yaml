@@ -2,35 +2,28 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - https://github.com/fluxcd/flux2/releases/download/v0.41.2/install.yaml
-patches:
-  - patch: |
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: all
-      spec:
-        template:
-          spec:
-            containers:
-              - name: manager
-                securityContext:
-                  seccompProfile:
-                    $patch: delete
-                env:
-                  - name: "http_proxy"
-                    value: "${http_proxy}"
-                  - name: "https_proxy"
-                    value: "${https_proxy}"
-                  - name: "no_proxy"
-                    value: "localhost,${no_proxy},.cluster.local.,.cluster.local,.svc"
-    target:
-      kind: Deployment
-      labelSelector: app.kubernetes.io/part-of=flux
+components:
+  - ../components/common
 
-  - patch: |
-      - op: add
-        path: /spec/template/spec/containers/0/args/-
-        value: --feature-gates=OOMWatch=true
-    target:
-      kind: Deployment
-      name: helm-controller
+patches:
+- target:
+    labelSelector: app.kubernetes.io/component=notification-controller
+  patch: |-
+    $patch: delete
+    kind: _unused_
+    metadata:
+      name: _unused_
+- target:
+    labelSelector: app.kubernetes.io/component=image-automation-controller
+  patch: |-
+    $patch: delete
+    kind: _unused_
+    metadata:
+      name: _unused_
+- target:
+    labelSelector: app.kubernetes.io/component=image-reflector-controller
+  patch: |-
+    $patch: delete
+    kind: _unused_
+    metadata:
+      name: _unused_
