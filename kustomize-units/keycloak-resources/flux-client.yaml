@@ -15,11 +15,11 @@ spec:
     protocol: openid-connect
     publicClient: false
     clientAuthenticatorType: client-secret
-    secret: ${FLUX_CLIENT_SECRET}
+    secret: ${FLUX_WEBUI_CLIENT_SECRET}
     redirectUris:
-      - "https://${FLUX_DNS}/oauth2/callback"
+      - "https://${FLUX_WEBUI_DNS}/oauth2/callback"
     webOrigins:
-      - "https://${FLUX_DNS}"
+      - "https://${FLUX_WEBUI_DNS}"
     directAccessGrantsEnabled: true
     standardFlowEnabled: true
     attributes:

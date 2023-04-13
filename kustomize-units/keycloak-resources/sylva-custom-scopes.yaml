@@ -14,6 +14,8 @@ spec:
         args:
         - |
           set -e
+          set -o pipefail
+
           echo "-- Retrieve Keycloak access token"
           KEYCLOAK_BASE_URL="https://keycloak-service.keycloak.svc.cluster.local:8443"
           ACCESS_TOKEN=$(curl -k -s -X POST \

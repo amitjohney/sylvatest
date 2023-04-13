@@ -411,14 +411,14 @@ units:
     repo: sylva-core
     kustomization_substitute_secrets:
       RANCHER_CLIENT_SECRET: '{{ .Values.cluster.admin_password }}'
-      FLUX_CLIENT_SECRET: '{{ .Values.cluster.admin_password }}'
+      FLUX_WEBUI_CLIENT_SECRET: '{{ .Values.cluster.admin_password }}'
     kustomization_spec:
       path: ./kustomize-units/keycloak-resources
       targetNamespace: keycloak
       postBuild:
         substitute:
           RANCHER_DNS: '{{ .Values.cluster.rancher.external_hostname }}'
-          FLUX_DNS: '{{ .Values.cluster.flux.external_hostname }}'
+          FLUX_WEBUI_DNS: '{{ .Values.cluster.flux.external_hostname }}'
       healthChecks:  #  cannot use __wait: true__ here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/144
         - apiVersion: legacy.k8s.keycloak.org/v1alpha1
           kind: KeycloakRealm
@@ -744,7 +744,7 @@ units:
           RANCHER_DNS: '{{ .Values.cluster.rancher.external_hostname }}'
           VAULT_DNS: '{{ .Values.cluster.vault.external_hostname }}'
           KEYCLOAK_DNS: '{{ .Values.cluster.keycloak.external_hostname }}'
-          FLUX_DNS: '{{ .Values.cluster.flux.external_hostname }}'
+          FLUX_WEBUI_DNS: '{{ .Values.cluster.flux.external_hostname }}'
       wait: true
 
   rancher:
