@@ -21,5 +21,5 @@ helm get values -n sylva-units-preview sylva-units
 echo_b "\U000023F3 Retrieve the final set of values (after gotpl rendering)"
 kubectl get secrets -n sylva-units-preview sylva-units-values-debug -o template="{{ .data.values }}" | base64 -d
 
-echo_b "\U000023F3 Delete preview chart and namespace"
+echo_b "\U0001F5D1 Delete preview chart and namespace"
 cleanup_preview

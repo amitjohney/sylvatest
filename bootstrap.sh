@@ -17,10 +17,10 @@ ensure_flux
 echo_b "\U0001F50E Validate sylva-units values for management cluster"
 validate_sylva_units
 
-echo_b "\U000023F3 Delete preview chart and namespace"
+echo_b "\U0001F5D1 Delete preview chart and namespace"
 cleanup_preview
 
-echo_b "\U0001F4DC Install sylva-units Helm release"
+echo_b "\U0001F4DC Install sylva-units Helm release and associated resources"
 kubectl kustomize ${ENV_PATH} | \
   define_source | \
   inject_bootstrap_values | \
@@ -34,7 +34,7 @@ force_reconcile helmrelease sylva-units
 retrieve_kubeconfig &
 KUBECONFIG_PID=$!
 
-echo_b "\U000023F3 Wait for management cluster to be ready"
+echo_b "\U000023F3 Wait for bootstrap units and management cluster to be ready"
 sylvactl watch --reconcile --timeout 30m Kustomization/default/sylva-units
 
 if kill $KUBECONFIG_PID &>/dev/null; then
