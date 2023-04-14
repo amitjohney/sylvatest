@@ -24,7 +24,7 @@ units:
     helmrelease_spec:
       kubeConfig:
         secretRef:
-          name: management-cluster-kubeconfig
+          name: '{{ .Values.cluster.name }}-kubeconfig'
     labels:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
 
@@ -41,7 +41,7 @@ units:
       path: ./kustomize-units/flux-system/base
       kubeConfig:
         secretRef:
-          name: management-cluster-kubeconfig
+          name: '{{ .Values.cluster.name }}-kubeconfig'
       targetNamespace: flux-system
       wait: true
       postBuild:
@@ -80,7 +80,7 @@ units:
               set -e
 
               echo "-- Retrieve target cluster kubeconfig"
-              kubectl get secret management-cluster-kubeconfig -o jsonpath='{.data.value}' | base64 -d > management-cluster-kubeconfig
+              kubectl get secret {{ .Values.cluster.name }}-kubeconfig -o jsonpath='{.data.value}' | base64 -d > management-cluster-kubeconfig
 
               echo "-- Copy secrets and configmaps from bootstrap to management cluster"
               kubectl get configmaps,secrets,gitrepository,helmrepository \
@@ -104,7 +104,7 @@ units:
     kustomization_spec:
       kubeConfig:
         secretRef:
-          name: management-cluster-kubeconfig
+          name: '{{ .Values.cluster.name }}-kubeconfig'
     helmrelease_spec:
       releaseName: sylva-units
       chart:
@@ -201,7 +201,7 @@ units:
               kubectl annotate --overwrite kustomizations.kustomize.toolkit.fluxcd.io cluster pivot/started=true
 
               echo "-- Retrieve target cluster kubeconfig"
-              kubectl get secret management-cluster-kubeconfig -o jsonpath='{.data.value}' | base64 -d > management-cluster-kubeconfig
+              kubectl get secret {{ .Values.cluster.name }}-kubeconfig -o jsonpath='{.data.value}' | base64 -d > management-cluster-kubeconfig
 
               echo "-- Wait for cluster and machines to be ready as it is a required condition to move"
               kubectl wait --for condition=ControlPlaneReady --timeout 600s --all cluster

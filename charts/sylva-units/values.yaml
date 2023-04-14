@@ -580,7 +580,7 @@ units:
       healthChecks:
         - apiVersion: cluster.x-k8s.io/v1beta1
           kind: Cluster
-          name: management-cluster
+          name: '{{ .Values.cluster.name }}'
           namespace: default
       components:
         - '{{ tuple "../../components/proxies/kubeadm"
@@ -1403,7 +1403,6 @@ units:
 
 cluster:
   name: management-cluster
-  # TODO: derive kubeconfig secret name from this ^
 
   # cis profile to be used. Curently supported only for rke2 clusters. "cis-1.6" for k8s prior to 1.25, "cis-1.23" for 1.25+
   #cis_profile: cis-1.6
