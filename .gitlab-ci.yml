@@ -288,16 +288,22 @@ scheduled-cleanup-capo:
     name: registry.gitlab.com/sylva-projects/sylva-elements/container-images/openstack-client:v0.0.1
   script:
     - !reference [.common-deployment, os_cloud]
+    - touch tags.txt exclude-tags.txt
     - |
       for STACK in $(openstack stack list -f value -c "Stack Name" | grep '^capo-cluster' ); do
-        STACK_TIME=$(date -d "$(openstack stack show $STACK -c creation_time -f value | tr T ' ' | tr -d Z )" +%s)
+        STACK_TIME=$(date -d "$(openstack stack show ${STACK} -c creation_time -f value | tr T ' ' | tr -d Z )" +%s)
         THIS_TIME=$(date +%s)
+        # we'll only consider for cleanup tags applied to resources created more than 2 hours ago
         if [ $((THIS_TIME-STACK_TIME)) -gt 7200 ]; then
-            CAPO_TAG=$(openstack stack show $STACK -c tags -f json | jq .tags[] -r)
-            sh ./tools/openstack-cleanup.sh capo_cloud ${CAPO_TAG}
+            openstack stack show ${STACK} -c tags -f json | jq .tags[] -r >> tags.txt
         else
-            echo "The resources tagged ${CAPO_TAG} were created less than 2 hours ago and will not be deleted at this time."
+            openstack stack show ${STACK} -c tags -f json | jq .tags[] -r >> exclude-tags.txt
         fi
+      done
+    - |
+      # skip the cleanup for resources with tags present in exclude-tags.txt
+      comm -3 -2 tags.txt exclude-tags.txt | sort -u | while read -r CAPO_TAG; do
+        ./tools/openstack-cleanup.sh capo_cloud ${CAPO_TAG}
       done
   variables:
     OS_CLOUD: "capo_cloud"
