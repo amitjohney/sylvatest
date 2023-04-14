@@ -38,7 +38,7 @@ function check_pivot_has_ran() {
 function retrieve_kubeconfig {
     orig_umask=$(umask)
     umask og-rw
-    until kubectl get secret management-cluster-kubeconfig -o jsonpath='{.data.value}' 2>/dev/null | base64 -d > management-cluster-kubeconfig; do
+    until kubectl get secret $(kubectl get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}' 2>/dev/null)-kubeconfig -o jsonpath='{.data.value}' 2>/dev/null | base64 -d > management-cluster-kubeconfig; do
         sleep 2
     done
     umask $orig_umask

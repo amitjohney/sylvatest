@@ -121,6 +121,10 @@ check-docs-markdown:
     - kubectl cluster-info --context kind-$KIND_CLUSTER_NAME
     - KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
     - ip route add $KIND_PREFIX via $DOCKER_IP
+    - export MANAGEMENT_CLUSTER_NAME="management-cluster-${CI_PIPELINE_ID}-${ENV_NAME}"
+    - yq -i '.cluster.name = strenv(MANAGEMENT_CLUSTER_NAME)' $values_file
+    - export TEST_WORKLOAD_CLUSTER_NAME="first-workload-cluster-${CI_PIPELINE_ID}-${ENV_NAME}"
+    - yq -i '.cluster.test_workload_cluster_name = strenv(TEST_WORKLOAD_CLUSTER_NAME)' $values_file
     - yq -i '.env_type_ci = true' $values_file
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_common\r\e[0K"
   script_capd:
