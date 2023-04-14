@@ -65,7 +65,7 @@ if [ -d $chart_dir/test-values ] && [ -n "$test_dirs" ] ; then
 
     if [[ $exit_code -ne $expected_exit_code ]]; then
       echo $error_message
-      exit
+      exit -1
     else
       echo $success_message
     fi
