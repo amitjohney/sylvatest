@@ -68,8 +68,9 @@
 #           chart: local-path-provisioner
 #           version: v0.0.23
 
-# this value can be overriden to use an alternate OCI registry
-sylva_core_oci_registry: oci://registry.gitlab.com/sylva-projects/sylva-core
+# this value can be overriden to use an alternate OCI registry, by default we'll reuse the same registry as HelmRepository of sylva-core
+sylva_base_oci_registry: '{{ lookup "source.toolkit.fluxcd.io/v1beta2" "HelmRepository" "default" "sylva-core" | dig "spec" "url" "oci://registry.gitlab.com/sylva-projects/sylva-core" | dir }}'
+sylva_core_oci_registry: '{{ sylva_base_oci_registry }}/sylva-core'
 
 source_templates:
 
@@ -92,9 +93,9 @@ source_templates:
       # in OCI deployment, this is only used for 'cattle_agent_kustomize_source' below
       # we piggyback on the 'url' field here to make it easily tunable
       #
-      # this URL also has to be overridden for a deployment to point to a OCI registry
-      # other than registry.gitlab.com
-      url: oci://registry.gitlab.com/sylva-projects/sylva-elements/helm-charts/capi-rancher-import/cattle-kustomize
+      # this URL can be overridden for a deployment to point to an OCI registry
+      # other than the one derived from sylva_base_oci_registry
+      url: '{{ sylva_base_oci_registry }}/sylva-elements/helm-charts/capi-rancher-import/cattle-kustomize'
 
 units:
 
