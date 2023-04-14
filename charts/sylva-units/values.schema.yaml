@@ -766,6 +766,11 @@ properties:
       - https_proxy
       - no_proxy
 
+  sylva_base_oci_registry:  # -------------------------------
+    type: string
+    format: uri
+    pattern: "^oci://.*$"
+
   sylva_core_oci_registry:  # -------------------------------
     type: string
     format: uri
