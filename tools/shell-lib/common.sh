@@ -46,7 +46,7 @@ function retrieve_kubeconfig {
 
 function ensure_flux {
     if ! kubectl get namespace flux-system &>/dev/null; then
-        echo_b "\U0001F503 Bootstraping flux"
+        echo_b "\U0001F503 Install flux"
         flux install --components "source-controller,kustomize-controller,helm-controller" --namespace=flux-system --export > kustomize-units/flux-system/offline/manifests.yaml
         kubectl kustomize kustomize-units/flux-system/offline | envsubst | kubectl apply -f -
         command -v git &>/dev/null && git checkout HEAD -- kustomize-units/flux-system/offline/manifests.yaml
