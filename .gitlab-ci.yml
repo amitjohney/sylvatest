@@ -289,7 +289,7 @@ cleanup-kubeadm-capo:
 scheduled-cleanup-capo:
   stage: delete
   image:
-    name: registry.gitlab.com/sylva-projects/sylva-elements/container-images/openstack-client:v0.0.1
+    name: registry.gitlab.com/sylva-projects/sylva-elements/container-images/openstack-client:v0.0.2
   script:
     - !reference [.common-deployment, os_cloud]
     - touch tags.txt exclude-tags.txt
