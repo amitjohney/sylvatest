@@ -12,6 +12,22 @@
       "gitlab-ci\\.yml$"
     ]
   },
+  "packageRules": [
+    {
+      "matchPackageNames": [
+        "rancher-cis-benchmark",
+        "rancher-cis-benchmark-crd"
+      ],
+      "groupName": "rancher-cis-benchmark"
+    },
+    {
+      "matchPackageNames": [
+        "rancher-monitoring",
+        "rancher-monitoring-crd"
+      ],
+      "groupName": "rancher-monitoring"
+    }
+  ],
   "regexManagers": [
     {
       "fileMatch": "kustomization.yaml",
