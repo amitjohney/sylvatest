@@ -264,7 +264,7 @@ test-kubeadm-capo:
     name: registry.gitlab.com/sylva-projects/sylva-elements/container-images/openstack-client:v0.0.2
   script:
     - !reference [.common-deployment, os_cloud]
-    - ./tools/openstack-cleanup.sh capo_cloud "${CI_PIPELINE_ID}-${ENV_NAME}"
+    - bash -vx ./tools/openstack-cleanup.sh capo_cloud "${CI_PIPELINE_ID}-${ENV_NAME}"
   rules:
     - if: $CI_PIPELINE_SOURCE == 'web'
     - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_DEPLOYMENTS'
@@ -295,6 +295,7 @@ scheduled-cleanup-capo:
     - !reference [.common-deployment, os_cloud]
     - touch tags.txt exclude-tags.txt
     - |
+      set -vx
       for STACK in $(openstack stack list -f value -c "Stack Name" | grep '^capo-cluster' ); do
         STACK_TIME=$(date -d "$(openstack stack show ${STACK} -c creation_time -f value | tr T ' ' | tr -d Z )" +%s)
         THIS_TIME=$(date +%s)
@@ -306,8 +307,13 @@ scheduled-cleanup-capo:
         fi
       done
     - |
+      echo Tags:
+      cat tags.txt
+      echo Exclude Tags:
+      cat exclude-tags.txt
       # skip the cleanup for resources with tags present in exclude-tags.txt
       comm -3 -2 tags.txt exclude-tags.txt | sort -u | while read -r CAPO_TAG; do
+        echo clean ${CAPO_TAG}
         ./tools/openstack-cleanup.sh capo_cloud ${CAPO_TAG}
       done
   variables:
