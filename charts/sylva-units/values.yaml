@@ -127,12 +127,15 @@ units:
   #   helmrelease_spec:  # optionnal, contains a partial spec for a FluxCD HelmRelease, all the
   #                      # key things are generated from unit_helmrelease_spec_default
   #                      # and from other fields in the unit definition
+  #     _postRenderers: # this field can be used in this file, it will be merged into user-provided 'postRenderers'
   #   kustomization_spec:  # contains a partial spec for a FluxCD Kustomization, most of the
   #                        # things are generated from unit_kustomization_spec_default
   #     # sourceRef is generated from .git_repo field
   #     path: ./path-to-unit-under-repo
   #     # the final path will hence be:
   #     # - <git repo template>.spec.url + <unit>.spec.path  (if <git repo template> has spec.url defined)
+  #     _patches: # this field can be used in this file, it will be merged into user-provided 'patches'
+  #     _components: # this field can be used in this file, it will be merged into user-provided 'components'
   #
   #   helm_secret_values: # (dict), if set what is put here is injected in HelmRelease.valuesFrom as a Secret
   #   kustomization_substitute_secrets: # (dict), if set what is put here is injected in Kustomization.postBuild.substituteFrom as a Secret
@@ -380,7 +383,7 @@ units:
         substitute:
           KEYCLOAK_ADMIN_PASSWORD: '{{ .Values.cluster.admin_password }}'
       wait: true
-      patches:
+      _patches:
         - patch: |
             apiVersion: apps/v1
             kind: Deployment
@@ -539,7 +542,7 @@ units:
       values:
         storageClass:
           defaultClass: '{{ index .Values.units "cinder-csi" "enabled" | not | include "preserve-type" }}'
-      postRenderers:
+      _postRenderers:
         - kustomize:
             patchesStrategicMerge:
               - kind: Deployment
@@ -582,7 +585,7 @@ units:
           kind: Cluster
           name: '{{ .Values.cluster.name }}'
           namespace: default
-      components:
+      _components:
         - '{{ tuple "../../components/proxies/kubeadm"
                     (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
         - '{{ tuple "../../components/proxies/rke2"
@@ -593,7 +596,7 @@ units:
                     (and .Values.cluster.capo.control_plane_az (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
         - '{{ tuple "../../components/rke2-cis-profile"
                     (and .Values.cluster.cis_profile (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
-      patches:
+      _patches:
         - '{{ tuple (.Files.Get "elements/controlplane-registry-mirrors.tpl" | fromYaml) (.Values.registry_mirrors | dig "hosts_config" "") | include "set-only-if" }}'
         - '{{ tuple (.Files.Get "elements/configtemplate-registry-mirrors.tpl" | fromYaml) (.Values.registry_mirrors | dig "hosts_config" "") | include "set-only-if" }}'
         - '{{ tuple (.Files.Get "elements/ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
@@ -631,7 +634,7 @@ units:
           WORKER_SECURITY_GROUP_NAME: 'capo-cluster-security-group-worker-{{ .Values.cluster.capo.resources_tag }}'
           CAPO_EXTERNAL_NETWORK_ID: '{{ tuple .Values.cluster.capo.external_network_id
             (and .Values.cluster.capo.external_network_id (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
-      components:
+      _components:
         - '{{ tuple "../cluster-manifests/components/capo-vip-floating-ip"
             (and .Values.cluster.capo.external_network_id (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
 
@@ -788,7 +791,7 @@ units:
           namespaceList:
             - cattle-fleet-system
             - rancher-operator-system
-      postRenderers:
+      _postRenderers:
         - kustomize:
             patchesStrategicMerge:
               - kind: Deployment
@@ -971,7 +974,7 @@ units:
       path: ./kustomize-units/kube-job
       wait: true
       force: true
-      patches:
+      _patches:
       - target:
           kind: Job
           name: kube-job
@@ -1033,7 +1036,7 @@ units:
             - secretName: weave-tls
               hosts:
                 - '{{ .Values.cluster.flux.external_hostname }}'
-      postRenderers:
+      _postRenderers:
         - kustomize:
             patchesStrategicMerge:
               - kind: Deployment
@@ -1091,7 +1094,7 @@ units:
       path: ./kustomize-units/kube-job
       wait: true
       force: true
-      patches:
+      _patches:
       - target:
           kind: Job
           name: kube-job
@@ -1141,7 +1144,7 @@ units:
           kind: ConfigMap
           namespace: default
           name: workload-capo-cluster-resources
-      patches:
+      _patches:
         - target:
             kind: HeatStack
           patch: |
@@ -1244,7 +1247,7 @@ units:
             name: workload-capo-cluster-resources
             optional: true
       wait: true
-      components:
+      _components:
         - '{{ tuple "../../components/dns-client/kind/KubeadmControlPlane"
                     (and (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
         - '{{ tuple "../../components/dns-client/kind/RKE2ControlPlane"
@@ -1267,7 +1270,7 @@ units:
                     (and .Values.cluster.capo.control_plane_az (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
         - '{{ tuple "../../components/rke2-cis-profile"
                     (and .Values.cluster.cis_profile (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
-      patches:
+      _patches:
         - '{{ tuple (.Files.Get "elements/controlplane-registry-mirrors.tpl" | fromYaml) (.Values.registry_mirrors | dig "hosts_config" "") | include "set-only-if" }}'
         - '{{ tuple (.Files.Get "elements/configtemplate-registry-mirrors.tpl" | fromYaml) (.Values.registry_mirrors | dig "hosts_config" "") | include "set-only-if" }}'
         - '{{ tuple (.Files.Get "elements/ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
@@ -1309,7 +1312,7 @@ units:
       values:
         rke2-whereabouts:
           enabled: true
-      postRenderers:
+      _postRenderers:
         - kustomize:
             patchesStrategicMerge:
               - kind: DaemonSet
@@ -1385,7 +1388,7 @@ units:
     kustomization_spec:
       path: ./kustomize-units/coredns
       wait: true
-      patches:
+      _patches:
         - target:
             kind: ConfigMap
             name: coredns

@@ -104,13 +104,30 @@ spec: {{ $helm_repo_spec | toYaml | nindent 2 }}
 
     {{/******************* Generation of the Kustomization */}}
 
+    {{- $patches := list -}}
+
     {{/* here, if "helmrelease_spec" is used, we define the spec of the inner HelmRelease */}}
     {{- if hasKey $unit_def "helmrelease_spec" -}}
       {{/* this is where we refer to ./kustomize-units/helmrelease-generic */}}
       {{- $kustomization_spec_overrides = mergeOverwrite $kustomization_spec_overrides $envAll.Values.unit_helmrelease_kustomization_spec_default -}}
 
+      {{/* combine '_postRenderers' with 'postRenderers' */}}
+      {{- $post_renderers := concat ($unit_def.helmrelease_spec | dig "_postRenderers" list)
+                                    ($unit_def.helmrelease_spec | dig "postRenderers" list) -}}
+
+      {{/* here we workaround the fact that 'concat', when only given empty lists,
+      returns some internal go object that does not render as "[]", but as "null"
+      */}}
+      {{- if not $post_renderers -}}
+        {{- $post_renderers = list -}} {{/* reset to a simple empty list */}}
+      {{- end -}}
+
+      {{/* ensure that we clean _postRenderers from the rendered resources */}}
+      {{- $_ := unset $unit_def.helmrelease_spec "_postRenderers" -}}
+
+      {{/* produce the HelmRelease specification, merging the different sources we have */}}
       {{- $helmrelease_spec := dict "releaseName" $unit_name -}}
-      {{- $helmrelease_spec := mergeOverwrite $helmrelease_spec $envAll.Values.unit_helmrelease_spec_default $unit_def.helmrelease_spec $helmrelease_spec_overrides -}}
+      {{- $helmrelease_spec := mergeOverwrite $helmrelease_spec $envAll.Values.unit_helmrelease_spec_default $unit_def.helmrelease_spec $helmrelease_spec_overrides (dict "postRenderers" $post_renderers) -}}
 
       {{- if hasKey $unit_def "helm_secret_values" -}}
         {{/* if the unit has "helm_secret_values" defined, then
@@ -135,7 +152,7 @@ stringData:
 
       {{/* inject the HelmRelease spec via a patch in the Kustomization: */}}
       {{- $patch := include "helmrelease-kustomization-patch-template" (tuple $unit_name $helmrelease_spec $labels) | fromYaml -}}
-      {{- $_ := set $kustomization_spec_overrides "patches" (list $patch) -}}
+      {{- $patches = list $patch -}}
     {{- end -}}
 
     {{- $kustomization_spec := dict -}}
@@ -180,8 +197,31 @@ stringData:
       {{- $_ := set $dependsOn "dependsOn" $dependsOnList -}}
     {{- end -}}
 
+    {{/* combine '_patches' with 'patches' and the $patches computed earlier in this template */}}
+    {{- $patches := concat $patches ($unit_def | dig "kustomization_spec" "_patches" list)
+                                    ($unit_def | dig "kustomization_spec" "patches" list) -}}
+    {{/* combine '_components' with 'components' */}}
+    {{- $components := concat ($unit_def | dig "kustomization_spec" "_components" list)
+                              ($unit_def | dig "kustomization_spec" "components" list) -}}
+
+    {{/* ensure that we clean _patches and _components from the rendered resources */}}
+    {{- if hasKey $unit_def "kustomization_spec" -}}
+      {{- $_ := unset $unit_def.kustomization_spec "_patches" -}}
+      {{- $_ := unset $unit_def.kustomization_spec "_components" -}}
+    {{- end -}}
+
+    {{/* here we workaround the fact that 'concat', when only given empty lists,
+     returns some internal go object that does not render as "[]", but as "null"
+    */}}
+    {{- if not $patches -}}
+      {{- $patches = list -}} {{/* reset to a simple empty list */}}
+    {{- end -}}
+    {{- if not $components -}}
+      {{- $components = list -}} {{/* reset to a simple empty list */}}
+    {{- end -}}
+
     {{/* finalize the definition of the Kustomization spec by merging everything we have */}}
-    {{- $kustomization_spec = mergeOverwrite $kustomization_spec $envAll.Values.unit_kustomization_spec_default ($unit_def.kustomization_spec | default dict) $dependsOn $kustomization_spec_overrides -}}
+    {{- $kustomization_spec = mergeOverwrite $kustomization_spec $envAll.Values.unit_kustomization_spec_default ($unit_def.kustomization_spec | default dict) $dependsOn $kustomization_spec_overrides (dict "patches" $patches) (dict "components" $components) -}}
 
     {{/* 
     if healthChecks is specified on kustomization_spec while helmrelease_spec is defined,

@@ -296,6 +296,18 @@ properties:
               path:  # -------------------------------
                 type: string
 
+              _patches:  # -------------------------------
+                type: array
+                items:
+                  anyOf:
+                  - type: object
+                  - $ref: "#/$defs/gotpl"
+
+              _components:  # -------------------------------
+                type: array
+                items:
+                  type: string
+
             allOf:
               # prevent having dependsOn here (we want it at the upper level with 'depends_on')
               - not:
@@ -332,6 +344,13 @@ properties:
                     properties:
                       chart:  # -------------------------------
                         type: string
+
+              _postRenderers: # -------------------------------
+                type: array
+                items:
+                  anyOf:
+                  - type: object
+                  - $ref: "#/$defs/gotpl"
 
             # prevent having dependsOn here (we want it at the upper level with 'depends_on')
             not:
