@@ -7,7 +7,7 @@ PLATFORM=$1
 if [ ! -z $PLATFORM ]; then
   OS_ARGS="--os-cloud $PLATFORM"
 fi
-OS_ARGS="$OS_ARGS --insecure"
+OS_ARGS="$OS_ARGS --insecure --os-compute-api-version 2.26"
 CAPO_TAG=${2:-sylva-$(openstack ${OS_ARGS} configuration show -f json | jq -r '."auth.username"')}
 
 if openstack ${OS_ARGS} endpoint list &> /dev/null; then
