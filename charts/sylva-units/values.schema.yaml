@@ -97,6 +97,7 @@ required:
   - cluster
   - proxies
   - env_type_ci
+  - registry_mirrors
 
 properties:
 

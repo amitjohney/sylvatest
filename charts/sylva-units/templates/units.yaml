@@ -8,26 +8,6 @@
     {{- $_ := set $labels "sylva-units.unit" $unit_name -}}
     {{- $_ := mergeOverwrite $labels (include "sylva-units.labels" $envAll | fromYaml) }}
 
-    {{/************ Sanity checks */}}
-
-    {{- if (not (or (hasKey $unit_def "helmrelease_spec")
-                    (hasKey $unit_def "kustomization_spec"))) -}}
-      {{- fail (printf "unit '%s' does not have 'helmrelease_spec' or 'kustomization_spec' defined" $unit_name) -}}
-    {{- end -}}
-
-    {{- if (and (hasKey $unit_def "helm_repo_url")
-                (not (hasKey $unit_def "helmrelease_spec"))) -}}
-      {{- fail (printf "unit '%s' has 'helm_repo_url' but no 'helmrelease_spec'" $unit_name) -}}
-    {{- end -}}
-
-    {{- if hasKey ($unit_def.kustomization_spec|default dict) "dependsOn" -}}
-      {{- fail (printf "units.$unit_name.kustomization_spec.dependsOn is defined, you need to use units.$unit_name.depends_on instead") -}}
-    {{- end -}}
-
-    {{- if hasKey ($unit_def.helmrelease_spec|default dict) "dependsOn" -}}
-      {{- fail (printf "units.$unit_name.helmrelease_spec.dependsOn is defined, you need to use units.$unit_name.depends_on instead") -}}
-    {{- end -}}
-
     {{- $helmrelease_spec_overrides := dict -}}
     {{- $kustomization_spec_overrides := dict -}}
 
@@ -37,10 +17,7 @@
       {{/* if no helm_repo_url is set, then we know we'll use a GitRepository or OCIRepository */}}
 
       {{/* sanity checks on the repo definition */}}
-      {{- $repo_name := $unit_def.repo | default nil -}}
-      {{- if not $repo_name -}}
-        {{- fail (printf "units.%s.repo isn't defined" $unit_name) -}}
-      {{- end -}}
+      {{- $repo_name := $unit_def.repo -}}
 
       {{- if not (hasKey $envAll.Values.source_templates $repo_name) -}}
         {{- fail (printf "units.%s.repo refers to '%s' that isn't defined in .source_templates" $unit_name $repo_name) -}}
@@ -106,7 +83,7 @@ spec: {{ $source_repo_spec | toYaml | nindent 2 }}
         {{- if $schema.scheme | eq "oci" -}}
           {{- $helm_repo_spec = dict "type" "oci" -}}
         {{- end -}}
-      {{- $helm_repo_spec = mergeOverwrite $helm_repo_spec $envAll.Values.helm_repo_spec_default (dict "url" $unit_def.helm_repo_spec | default dict) (dict "url" $unit_def.helm_repo_url) -}}
+      {{- $helm_repo_spec = mergeOverwrite $helm_repo_spec $envAll.Values.helm_repo_spec_default (dict "url" $unit_def.helm_repo_url) -}}
 
       {{/*
       we inject a sourceRef pointing to our dynamically created HelmRepository
@@ -133,7 +110,7 @@ spec: {{ $helm_repo_spec | toYaml | nindent 2 }}
       {{- $kustomization_spec_overrides = mergeOverwrite $kustomization_spec_overrides $envAll.Values.unit_helmrelease_kustomization_spec_default -}}
 
       {{- $helmrelease_spec := dict "releaseName" $unit_name -}}
-      {{- $helmrelease_spec := mergeOverwrite $helmrelease_spec $envAll.Values.unit_helmrelease_spec_default ($unit_def.helmrelease_spec | default dict) $helmrelease_spec_overrides -}}
+      {{- $helmrelease_spec := mergeOverwrite $helmrelease_spec $envAll.Values.unit_helmrelease_spec_default $unit_def.helmrelease_spec $helmrelease_spec_overrides -}}
 
       {{- if hasKey $unit_def "helm_secret_values" -}}
         {{/* if the unit has "helm_secret_values" defined, then
