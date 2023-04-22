@@ -240,6 +240,7 @@ test-kubeadm-capd:
   artifacts: !reference [.common-deployment, artifacts]
   rules:
     - if: $CI_MERGE_REQUEST_LABELS =~ /renovate/
+      allow_failure: true
       when: manual
     - !reference [.common-deployment, rules]
   tags:
