@@ -4,6 +4,6 @@ kind: Kustomization
 namespace: vault
 
 resources:
-- https://raw.githubusercontent.com/banzaicloud/bank-vaults/1.15.3/operator/deploy/rbac.yaml
+- https://raw.githubusercontent.com/banzaicloud/bank-vaults/1.19.0/operator/deploy/rbac.yaml
 - vault.yaml
 
