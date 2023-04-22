@@ -261,7 +261,7 @@ test-kubeadm-capo:
 .cleanup-capo:
   stage: delete
   image:
-    name: registry.gitlab.com/sylva-projects/sylva-elements/container-images/openstack-client:v0.0.1
+    name: registry.gitlab.com/sylva-projects/sylva-elements/container-images/openstack-client:v0.0.2
   script:
     - !reference [.common-deployment, os_cloud]
     - sh ./tools/openstack-cleanup.sh capo_cloud "${CI_PIPELINE_ID}-${ENV_NAME}"
