@@ -3,6 +3,9 @@
   "extends": [
     "config:base"
   ],
+  "dependencyDashboardLabels": [
+    "renovate"
+  ],
   "labels": [
     "run-e2e-tests",
     "renovate"
