@@ -69,7 +69,7 @@
     },
     {
       "datasourceTemplate": "docker",
-      "fileMatch": ["kubeadm-capo-cluster.yaml"],
+      "fileMatch": ["kubeadm-capo-cluster.yaml", "kubeadm-capv-cluster.yaml"],
       "matchStrings": [
         "#\\s?renovate: registryUrl=(?<registryUrl>.*?) image=(?<depName>.*?)\\s?\\s*image:.*:(?<currentValue>[\\w+\\.\\-]*)"
       ]
