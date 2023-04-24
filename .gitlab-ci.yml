@@ -307,7 +307,7 @@ scheduled-cleanup-capo:
       done
     - |
       # skip the cleanup for resources with tags present in exclude-tags.txt
-      comm -3 -2 tags.txt exclude-tags.txt | sort -u | while read -r CAPO_TAG; do
+      comm -3 -2 <(sort tags.txt) <(sort exclude-tags.txt) | sort -u | while read -r CAPO_TAG; do
         ./tools/openstack-cleanup.sh capo_cloud ${CAPO_TAG}
       done
   variables:
