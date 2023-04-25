@@ -669,7 +669,6 @@ units:
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
     helm_repo_url: https://rke2-charts.rancher.io
     helmrelease_spec:
-      targetNamespace: tigera-operator
       chart:
         spec:
           chart: rke2-calico-crd
@@ -681,7 +680,6 @@ units:
       calico-crd: true
     helm_repo_url: https://rke2-charts.rancher.io
     helmrelease_spec:
-      targetNamespace: tigera-operator
       chart:
         spec:
           chart: rke2-calico
@@ -959,6 +957,7 @@ units:
       metallb-config: '{{ .Values.units.metallb.enabled }}'
     helm_repo_url: https://rke2-charts.rancher.io
     helmrelease_spec:
+      targetNamespace: kube-system
       chart:
         spec:
           chart: rke2-ingress-nginx
@@ -1324,7 +1323,6 @@ units:
       workload-cluster: true
     helm_repo_url: https://rke2-charts.rancher.io
     helmrelease_spec:
-      targetNamespace: tigera-operator
       chart:
         spec:
           chart: rke2-calico-crd
@@ -1339,7 +1337,6 @@ units:
       workload-cluster-calico-crd: true
     helm_repo_url: https://rke2-charts.rancher.io
     helmrelease_spec:
-      targetNamespace: tigera-operator
       chart:
         spec:
           chart: rke2-calico
