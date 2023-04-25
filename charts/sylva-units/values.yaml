@@ -684,6 +684,10 @@ units:
         spec:
           chart: rke2-calico
           version: v3.25.001
+      values:
+        installation:
+          calicoNetwork:
+            bgp: Enabled
 
   cinder-csi-psp:
     enabled: '{{ and (.Values.cluster.cis_profile | eq "cis-1.6") (tuple . (index .Values.units "cinder-csi" "enabled") | include "interpret-for-test") }}'
@@ -1344,6 +1348,10 @@ units:
       kubeConfig:
         secretRef:
           name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
+      values:
+        installation:
+          calicoNetwork:
+            bgp: Enabled
 
   workload-cluster-multus:
     enabled: false
