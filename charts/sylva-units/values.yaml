@@ -665,14 +665,23 @@ units:
         - '{{ tuple "../cluster-manifests/components/capo-vip-floating-ip"
             (and .Values.cluster.capo.external_network_id (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
 
-
-  calico:
+  calico-crd:
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
     helm_repo_url: https://rke2-charts.rancher.io
     helmrelease_spec:
       targetNamespace: tigera-operator
-      install:
-        createNamespace: true
+      chart:
+        spec:
+          chart: rke2-calico-crd
+          version: v3.25.001
+
+  calico:
+    enabled: '{{ index .Values.units "calico-crd" "enabled" }}'
+    depends_on:
+      calico-crd: true
+    helm_repo_url: https://rke2-charts.rancher.io
+    helmrelease_spec:
+      targetNamespace: tigera-operator
       chart:
         spec:
           chart: rke2-calico
@@ -1309,19 +1318,32 @@ units:
         - '{{ tuple (.Files.Get "elements/controlplane-ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
         - '{{ tuple (.Files.Get "elements/configtemplate-ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
 
-  workload-cluster-calico:
+  workload-cluster-calico-crd:
     enabled: '{{ and (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") (tuple . (index .Values.units "workload-cluster" "enabled") | include "interpret-for-test") }}'
     depends_on:
       workload-cluster: true
-    helm_repo_url: https://projectcalico.docs.tigera.io/charts
+    helm_repo_url: https://rke2-charts.rancher.io
     helmrelease_spec:
       targetNamespace: tigera-operator
-      install:
-        createNamespace: true
       chart:
         spec:
-          chart: tigera-operator
-          version: v3.24.5
+          chart: rke2-calico-crd
+          version: v3.25.001
+      kubeConfig:
+        secretRef:
+          name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
+
+  workload-cluster-calico:
+    enabled: '{{ index .Values.units "workload-cluster-calico-crd" "enabled" }}'
+    depends_on:
+      workload-cluster-calico-crd: true
+    helm_repo_url: https://rke2-charts.rancher.io
+    helmrelease_spec:
+      targetNamespace: tigera-operator
+      chart:
+        spec:
+          chart: rke2-calico
+          version: v3.25.001
       kubeConfig:
         secretRef:
           name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
