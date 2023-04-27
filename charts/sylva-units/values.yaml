@@ -596,7 +596,8 @@ units:
       patches:
         - '{{ tuple (.Files.Get "elements/controlplane-registry-mirrors.tpl" | fromYaml) (.Values.registry_mirrors | dig "hosts_config" "") | include "set-only-if" }}'
         - '{{ tuple (.Files.Get "elements/configtemplate-registry-mirrors.tpl" | fromYaml) (.Values.registry_mirrors | dig "hosts_config" "") | include "set-only-if" }}'
-        - '{{ tuple (.Files.Get "elements/ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
+        - '{{ tuple (.Files.Get "elements/controlplane-ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
+        - '{{ tuple (.Files.Get "elements/configtemplate-ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
 
   heat-operator:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | include "preserve-type" }}'
@@ -1270,7 +1271,8 @@ units:
       patches:
         - '{{ tuple (.Files.Get "elements/controlplane-registry-mirrors.tpl" | fromYaml) (.Values.registry_mirrors | dig "hosts_config" "") | include "set-only-if" }}'
         - '{{ tuple (.Files.Get "elements/configtemplate-registry-mirrors.tpl" | fromYaml) (.Values.registry_mirrors | dig "hosts_config" "") | include "set-only-if" }}'
-        - '{{ tuple (.Files.Get "elements/ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
+        - '{{ tuple (.Files.Get "elements/controlplane-ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
+        - '{{ tuple (.Files.Get "elements/configtemplate-ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
 
   workload-cluster-calico:
     enabled: '{{ and .Values.env_type_ci (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") | include "preserve-type" }}'
