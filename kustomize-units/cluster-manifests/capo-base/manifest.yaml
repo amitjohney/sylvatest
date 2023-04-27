@@ -42,8 +42,6 @@ spec:
     name: management-cluster-cloud-config
   managedSecurityGroups: true
   disableAPIServerFloatingIP: true
-  apiServerLoadBalancer:
-    enabled: false
   allowAllInClusterTraffic: true
   tags:
   - ${CAPO_TAG}
