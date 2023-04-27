@@ -4,13 +4,13 @@ kind: Kustomization
 namespace: keycloak
 
 resources:
-- https://raw.githubusercontent.com/keycloak/keycloak-realm-operator/main/deploy/crds/legacy.k8s.keycloak.org_externalkeycloaks_crd.yaml
-- https://raw.githubusercontent.com/keycloak/keycloak-realm-operator/main/deploy/crds/legacy.k8s.keycloak.org_keycloakclients_crd.yaml
-- https://raw.githubusercontent.com/keycloak/keycloak-realm-operator/main/deploy/crds/legacy.k8s.keycloak.org_keycloakrealms_crd.yaml
-- https://raw.githubusercontent.com/keycloak/keycloak-realm-operator/main/deploy/crds/legacy.k8s.keycloak.org_keycloakusers_crd.yaml
-- https://raw.githubusercontent.com/keycloak/keycloak-realm-operator/main/deploy/role.yaml
-- https://raw.githubusercontent.com/keycloak/keycloak-realm-operator/main/deploy/role_binding.yaml
-- https://raw.githubusercontent.com/keycloak/keycloak-realm-operator/main/deploy/service_account.yaml
-- https://raw.githubusercontent.com/keycloak/keycloak-realm-operator/main/deploy/operator.yaml
+- https://raw.githubusercontent.com/keycloak/keycloak-realm-operator/1.0.0/deploy/crds/legacy.k8s.keycloak.org_externalkeycloaks_crd.yaml
+- https://raw.githubusercontent.com/keycloak/keycloak-realm-operator/1.0.0/deploy/crds/legacy.k8s.keycloak.org_keycloakclients_crd.yaml
+- https://raw.githubusercontent.com/keycloak/keycloak-realm-operator/1.0.0/deploy/crds/legacy.k8s.keycloak.org_keycloakrealms_crd.yaml
+- https://raw.githubusercontent.com/keycloak/keycloak-realm-operator/1.0.0/deploy/crds/legacy.k8s.keycloak.org_keycloakusers_crd.yaml
+- https://raw.githubusercontent.com/keycloak/keycloak-realm-operator/1.0.0/deploy/role.yaml
+- https://raw.githubusercontent.com/keycloak/keycloak-realm-operator/1.0.0/deploy/role_binding.yaml
+- https://raw.githubusercontent.com/keycloak/keycloak-realm-operator/1.0.0/deploy/service_account.yaml
+- https://raw.githubusercontent.com/keycloak/keycloak-realm-operator/1.0.0/deploy/operator.yaml
 - external-keycloak.yaml
 
