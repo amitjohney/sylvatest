@@ -117,8 +117,7 @@ check-docs-markdown:
       if [[ -n $OS_DOCKERIO_REGISTRY_MIRROR ]]; then
         yq -i '.registry_mirrors.hosts_config."docker.io"[0].mirror_url=strenv(OS_DOCKERIO_REGISTRY_MIRROR)' $values_file
       fi
-    - ./tools/kind/bootstrap-cluster.sh
-    - kubectl cluster-info --context kind-$KIND_CLUSTER_NAME
+    - docker network create --attachable kind
     - KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
     - ip route add $KIND_PREFIX via $DOCKER_IP
     - export MANAGEMENT_CLUSTER_NAME="management-cluster-${CI_PIPELINE_ID}-${ENV_NAME}"
