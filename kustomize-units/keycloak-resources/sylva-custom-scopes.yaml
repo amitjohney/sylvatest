@@ -30,6 +30,18 @@ spec:
               echo "ACCESS_TOKEN is set to the empty string, will try again"
               exit 1
           fi
+
+          echo "-- Check that sylva realm is was already created by keycloak-operator"
+          NON_MASTER_REALM=$(curl -k -s -X GET \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+            "${KEYCLOAK_BASE_URL}/admin/realms" \
+            | jq -r '.[] | select( (.realm | test("^master$")|not) ).realm')
+          if [ "$NON_MASTER_REALM" != "sylva" ]; then
+              echo "The sylva realm is not yet ready, will try again"
+              exit 1
+          fi
+
           echo "-- Create client scope"
           curl -k -s -X POST \
             -H "Content-Type: application/json" \
@@ -56,4 +68,4 @@ spec:
               name: keycloak-initial-admin
               key: password
       restartPolicy: Never
-  backoffLimit: 4
+  backoffLimit: 15
