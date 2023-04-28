@@ -1128,6 +1128,53 @@ units:
                   - name: CLUSTER_NAME
                     value: '{{ .Values.cluster.test_workload_cluster_name }}'
 
+  # this is a Job attempt to check successful config of SSO login for Rancher and Flux UIs
+  check-sso-login:
+    enabled: true
+    repo: sylva-core
+    depends_on:
+      update-rancher-admin: true
+      flux-webui: true
+    kustomization_spec:
+      path: ./kustomize-units/kube-job
+      wait: true
+      force: true
+      patches:
+      - target:
+          kind: Job
+          name: kube-job
+        patch: |
+          - op: replace
+            path: /metadata/name
+            value: check-sso-login-job
+          - op: replace
+            path: /spec/backoffLimit
+            value: 10
+      - target:
+          kind: ConfigMap
+          name: job-scripts
+        patch: |
+          - op: replace
+            path: /data/kube-job.sh
+            value: |
+          {{ .Files.Get "scripts/check-sso-login.sh" | indent 4 }}
+      - target:
+          kind: Job
+          name: kube-job
+        patch: |
+          apiVersion: batch/v1
+          kind: Job
+          metadata:
+            name: ignored
+          spec:
+            template:
+              spec:
+                containers:
+                - name: run-script
+                  env:
+                  - name: CLUSTER_NAME
+                    value: '{{ .Values.cluster.test_workload_cluster_name }}'
+
   workload-capo-cluster-resources:
     enabled: '{{ and (.Values.cluster.capi_providers.infra_provider | eq "capo") (index .Values.units "workload-cluster" "enabled") | include "preserve-type" }}'
     repo: sylva-core
