@@ -89,9 +89,23 @@ spec:
           nodeSelector:
             node-role.kubernetes.io/control-plane: "true"
           valuesContent: |-
-            controller.nodeSelector:
-              node-role.kubernetes.io/control-plane: "true"
-            controller.tolerations:
+            controller:
+              nodeSelector:
+                node-role.kubernetes.io/control-plane: "true"
+              tolerations:
+              - key: node.cloudprovider.kubernetes.io/uninitialized
+                value: "true"
+                effect: NoSchedule
+              - effect: NoExecute
+                key: node-role.kubernetes.io/etcd
+              - effect: NoSchedule
+                key: node-role.kubernetes.io/master
+              - effect: NoSchedule
+                key: node-role.kubernetes.io/control-plane
+            speaker:
+              nodeSelector:
+                node-role.kubernetes.io/control-plane: "true"
+              tolerations:
               - key: node.cloudprovider.kubernetes.io/uninitialized
                 value: "true"
                 effect: NoSchedule
