@@ -7,6 +7,8 @@ if [[ ${KUBECONFIG:-} =~ management-cluster-kubeconfig ]]; then
     exit -1
 fi
 
+validate_input_values
+
 check_pivot_has_ran
 
 echo_b "\U0001F503 Preparing bootstrap cluster"

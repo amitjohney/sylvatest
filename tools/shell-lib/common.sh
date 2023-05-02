@@ -5,7 +5,7 @@ export BASE_DIR="$(realpath $(dirname $0))"
 export PATH=${BASE_DIR}/bin:${PATH}
 
 SYLVACTL_VERSION="v0.1.3"
-SYLVA_TOOLBOX_VERSION="v0.1.3"
+SYLVA_TOOLBOX_VERSION="v0.1.4"
 SYLVA_TOOLBOX_IMAGE=${SYLVA_TOOLBOX_IMAGE:-container-images/sylva-toolbox}
 SYLVA_TOOLBOX_REGISTRY=${SYLVA_TOOLBOX_REGISTRY:-registry.gitlab.com/sylva-projects/sylva-elements}
 
@@ -33,6 +33,11 @@ function check_pivot_has_ran() {
       { echo_b "\U000274C The pivot job is in progress. Please wait for it to finish."; exit 1;} || echo
     fi
   fi
+}
+
+function validate_input_values {
+  echo_b "\U0001F50E Validate input files"
+  yamllint -c tools/yaml-lint-config $ENV_PATH
 }
 
 function retrieve_kubeconfig {
