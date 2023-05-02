@@ -7,6 +7,8 @@ if ! command -v helm &>/dev/null; then
     exit 1
 fi
 
+validate_input_values
+
 echo_b "\U0001F503 Preparing bootstrap cluster"
 tools/kind/bootstrap-cluster.sh
 
