@@ -452,3 +452,74 @@ true
     {{- else -}} {{- /* we "emulate" a 'false' value by returning an empty string which the caller will evaluate as False */ -}}
     {{- end -}}
 {{- end -}}
+
+
+
+
+
+
+
+
+
+
+
+{{- define "as-int-internal" -}}
+  {{- $data := index . -}}
+
+  {{- $debug_context := "" -}}
+  {{- if gt (len .) 1 -}}
+    {{- $debug_context = printf " [%s]" (index . 1) -}}
+  {{- end -}}
+
+  {{- if kindIs "int64" $data -}}
+    {{- dict "encapsulated-result" $data | toJson -}}
+  {{- else -}}
+    {{- fail (printf "can't cast <%s> (type %s) as an integer bool%s" $data (kindOf $data) $debug_context) -}}
+  {{- end -}}
+{{- end -}}
+
+{{- define "as-int" -}}
+  {{- $data := index . -}}
+  {{- tuple $data | include "as-int-internal" -}}
+{{- end -}}
+
+
+{{/*
+
+interpret-as-int
+
+Usage:
+
+  tuple $envAll $data | include "interpret-as-int"
+
+This will:
+* recursively interpret $data, insuring that it looks like an integer
+* return this integer marshalled into a {"encapsulated-result": result} dict
+
+It will fail if the result of the interpretation does not look like an integer.
+
+*/}}
+{{- define "interpret-as-int" -}}
+    {{- $envAll := index . 0 -}}
+    {{- $data := index . 1 -}}
+
+    {{- $debug_context := "" -}}
+    {{- if gt (len .) 2 -}}
+        {{- $debug_context = printf ", %s" (index . 2) -}}
+    {{- end -}}
+
+    {{- if kindIs "int64" $data -}}
+        {{- $data | include "as-int" -}}
+    {{- else -}}
+        {{- if not (kindIs "string" $data) -}}
+            {{- fail (printf "'interpret-as-int' called on something which isn't an integer or a string (<%s> is a %s)%s" $debug_context ($data | toString) (typeOf $data)) -}}
+        {{- end -}}
+
+        {{- if regexMatch "" $data -}}
+            {{- $data | include "as-int" -}}
+        {{- else -}}
+            {{- $interpreted := index (tuple $envAll $data | include "interpret-inner-gotpl" | fromJson) "result" -}}
+            {{- tuple $interpreted (printf "result of interpretation of '%s'%s" $data $debug_context) | include "as-int-internal" -}}
+        {{- end -}}
+    {{- end -}}
+{{- end -}}

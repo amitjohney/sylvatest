@@ -65,3 +65,6 @@ units:
     helmrelease_spec:
       values:
         thisIsABoolean: '{{ not (tuple . .Values.units.bang.enabled | include "interpret-for-test") | include "as-bool" }}'
+        thisIsAnInteger-A: '{{ .Values.cluster.control_plane_replicas }}'
+        thisIsAnInteger-B: '{{ .Values.cluster.control_plane_replicas | include "interpret-as-int" | add 42 }}'
+
