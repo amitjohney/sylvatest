@@ -237,3 +237,57 @@ patches:
       when:
         key: ${CIS_PROFILE}
         value: "cis-1.6"
+- target:
+    kind: RKE2ControlPlane
+  patch: |
+    - op: add
+      path: /spec/files/-
+      value:
+        path: /var/lib/rancher/rke2/server/manifests/cis-operator-psp.yaml
+        owner: "root:root"
+        permissions: "0644"
+        content: |
+          ---
+          apiVersion: policy/v1beta1
+          kind: PodSecurityPolicy
+          metadata:
+            annotations:
+              meta.helm.sh/release-name: cis-operator
+              meta.helm.sh/release-namespace: kube-system
+              seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
+            labels:
+              app.kubernetes.io/managed-by: Helm
+            name: cis-operator
+          spec:
+            allowPrivilegeEscalation: false
+            fsGroup:
+              ranges:
+              - max: 65535
+                min: 1
+              rule: MustRunAs
+            hostNetwork: true
+            hostPorts:
+            - max: 65535
+              min: 0
+            requiredDropCapabilities:
+            - ALL
+            runAsUser:
+              rule: RunAsAny
+            seLinux:
+              rule: RunAsAny
+            supplementalGroups:
+              ranges:
+              - max: 65535
+                min: 1
+              rule: MustRunAs
+            volumes:
+            - hostPath
+            - configMap
+            - emptyDir
+            - projected
+            - secret
+            - downwardAPI
+            - persistentVolumeClaim
+      when:
+        key: ${CIS_PROFILE}
+        value: "cis-1.6"
