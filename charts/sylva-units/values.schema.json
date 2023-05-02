@@ -333,6 +333,25 @@
               "properties": {
                 "path": {
                   "type": "string"
+                },
+                "_patches": {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "object"
+                      },
+                      {
+                        "$ref": "#/$defs/gotpl"
+                      }
+                    ]
+                  }
+                },
+                "_components": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
                 }
               },
               "allOf": [
@@ -388,6 +407,19 @@
                         }
                       }
                     }
+                  }
+                },
+                "_postRenderers": {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "object"
+                      },
+                      {
+                        "$ref": "#/$defs/gotpl"
+                      }
+                    ]
                   }
                 }
               },

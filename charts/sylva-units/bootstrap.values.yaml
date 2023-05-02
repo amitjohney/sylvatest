@@ -61,7 +61,7 @@ units:
       path: ./kustomize-units/kube-job
       wait: true
       force: true
-      patches:
+      _patches:
       - target:
           kind: Job
           name: kube-job
@@ -139,7 +139,7 @@ units:
       path: ./kustomize-units/kube-job
       wait: true
       force: true
-      patches:
+      _patches:
       - target:
           kind: Job
           name: kube-job
@@ -178,7 +178,7 @@ units:
       path: ./kustomize-units/kube-job
       wait: true
       force: true
-      patches:
+      _patches:
       - target:
           kind: Job
           name: kube-job

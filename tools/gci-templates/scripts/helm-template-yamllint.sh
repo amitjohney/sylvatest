@@ -74,3 +74,32 @@ if [ -d $chart_dir/test-values ] && [ -n "$test_dirs" ] ; then
     echo -e "\e[0Ksection_end:`date +%s`:helm_more_values\r\e[0K"
   done
 fi
+
+# for sylva-units, we also want to ensure things about the default values
+# in particular that they use _patches, _components and _postRenderers
+# instead of their equivalents without the '_'
+if [[ $HELM_NAME == "sylva-units" ]]; then
+  for value_file in $chart_dir/values.yaml $(ls $chart_dir/*.values.yaml); do
+    echo -e "\e[0Ksection_start:`date +%s`:additional_check_$value_file\r\e[0K--------------- checking patches/components/postRenderers in $value_file ..."
+    echo "--- "
+    postRenderers=$(yq eval '[.units | to_entries | .[] | select(.value.helmrelease_spec.postRenderers)] | map(.key) | join(", ")' $value_file)
+    if [[ -n $postRenderers ]]; then
+      echo "Some units defined in $value_file use helmrelease_spec.postRenderers, although they should use helmrelease_spec._postRenderers instead: $postRenderers"
+      exit -1
+    fi
+
+    components=$(yq eval '[.units | to_entries | .[] | select(.value.kustomization_spec.components)] | map(.key) | join(", ")' $value_file)
+    if [[ -n $components ]]; then
+      echo "Some units defined in $value_file use kustomization_spec.components, although they should use kustomization_spec._components instead: $components"
+      exit -1
+    fi
+
+    patches=$(yq eval '[.units | to_entries | .[] | select(.value.kustomization_spec.patches)] | map(.key) | join(", ")' $value_file)
+    if [[ -n $patches ]]; then
+      echo "Some units defined in $value_file use kustomization_spec.patches, although they should use kustomization_spec._patches instead: $patches"
+      exit -1
+    fi
+
+    echo -e "\e[0Ksection_end:`date +%s`:additional_check_$value_file\r\e[0K"    
+  done
+fi
