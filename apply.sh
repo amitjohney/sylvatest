@@ -10,8 +10,10 @@
 
 source $(dirname $0)/tools/shell-lib/common.sh
 
+MGMT_CLUSTER_KUBECONFIG=
 if [[ -f management-cluster-kubeconfig ]]; then
     export KUBECONFIG=${KUBECONFIG:-management-cluster-kubeconfig}
+    MGMT_CLUSTER_KUBECONFIG="--kubeconfig management-cluster-kubeconfig"
 fi
 
 if ! (kubectl get nodes > /dev/null); then
@@ -38,6 +40,6 @@ force_reconcile helmrelease sylva-units
 
 echo_b "\U000023F3 Wait for Flux units becoming ready"
 
-sylvactl watch --kubeconfig management-cluster-kubeconfig --reconcile --timeout 20m
+sylvactl watch ${MGMT_CLUSTER_KUBECONFIG} --reconcile --timeout 20m
 
 echo_b "\U0001F389 All done"
