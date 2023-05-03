@@ -7,13 +7,6 @@ components:
 
 patches:
 - target:
-    labelSelector: app.kubernetes.io/component=notification-controller
-  patch: |-
-    $patch: delete
-    kind: _unused_
-    metadata:
-      name: _unused_
-- target:
     labelSelector: app.kubernetes.io/component=image-automation-controller
   patch: |-
     $patch: delete
