@@ -584,6 +584,9 @@
           "type": "string",
           "format": "ipv4"
         },
+        "display_external_ip": {
+          "type": "string"
+        },
         "cluster_external_domain": {
           "type": "string",
           "format": "hostname"
@@ -770,6 +773,18 @@
                   },
                   "ssh_key_name": {
                     "type": "string"
+                  },
+                  "floating_ip": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "ipv4"
+                      },
+                      {
+                        "type": "string",
+                        "maxLength": 0
+                      }
+                    ]
                   },
                   "network_id": {
                     "type": "string"

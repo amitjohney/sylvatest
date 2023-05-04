@@ -295,7 +295,7 @@ units:
       default-storage-class: true
       vault-operator: true
     annotations:
-      sylvactl/readyMessage: "Vault UI can be reached at https://{{ .Values.cluster.vault.external_hostname }} ({{ .Values.cluster.vault.external_hostname }} must resolve to {{ .Values.cluster.cluster_external_ip }})"
+      sylvactl/readyMessage: "Vault UI can be reached at https://{{ .Values.cluster.vault.external_hostname }} ({{ .Values.cluster.vault.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/vault
@@ -350,7 +350,7 @@ units:
       ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
       postgres: true
     annotations:
-      sylvactl/readyMessage: "Keycloak UI can be reached at https://{{ .Values.cluster.keycloak.external_hostname }} ({{ .Values.cluster.keycloak.external_hostname }} must resolve to {{ .Values.cluster.cluster_external_ip }})"
+      sylvactl/readyMessage: "Keycloak UI can be reached at https://{{ .Values.cluster.keycloak.external_hostname }} ({{ .Values.cluster.keycloak.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/keycloak
@@ -755,7 +755,7 @@ units:
       sylva-ca-certs: true
       ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
     annotations:
-      sylvactl/readyMessage: "Rancher UI can be reached at https://{{ .Values.cluster.rancher.external_hostname }} ({{ .Values.cluster.rancher.external_hostname }} must resolve to {{ .Values.cluster.cluster_external_ip }})"
+      sylvactl/readyMessage: "Rancher UI can be reached at https://{{ .Values.cluster.rancher.external_hostname }} ({{ .Values.cluster.rancher.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
     helm_repo_url: https://releases.rancher.com/server-charts/latest
     helmrelease_spec:
       chart:
@@ -997,7 +997,7 @@ units:
       flux-system: true
       ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "preserve-type" }}'
     annotations:
-      sylvactl/readyMessage: "Fluw Webui can be reached at https://{{ .Values.cluster.flux.external_hostname }} ({{ .Values.cluster.flux.external_hostname }} must resolve to {{ .Values.cluster.cluster_external_ip }})"
+      sylvactl/readyMessage: "Fluw Webui can be reached at https://{{ .Values.cluster.flux.external_hostname }} ({{ .Values.cluster.flux.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
     repo: weave-gitops
     helmrelease_spec:
       chart:
@@ -1440,6 +1440,7 @@ cluster:
     ssh_key_name: # OpenStack VM SSH key
     network_id:  # OpenStack network used for nodes and VIP port
     #external_network_id # Can be provided if a FIP is needed in order to reach the management cluster VIP
+    floating_ip: ""
     additional_networks:
     # Leave these parameters empty or specify additional networks to be used. Only one network of each type can be added and supported types are virtio or direct
       virtio_network_id: ""
@@ -1469,8 +1470,10 @@ cluster:
       #type: xxx  # please provide the cinder volume type, e.g. 'ceph_sas' (must exist in OpenStack)
     resources_tag: '{{ eq .Values.cluster.capi_providers.infra_provider "capo" | ternary (printf "sylva-%s" .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.username) "" }}' # tag set for OpenStack resources in management and test workload cluster
 
+
   cluster_external_ip: 55.55.55.55
   cluster_external_domain: sylva
+  display_external_ip: '{{ .Values.cluster.capo.floating_ip | eq "" | ternary .Values.cluster.cluster_external_ip .Values.cluster.capo.floating_ip }}'
 
   capd:
     docker_host: unix:///var/run/docker.sock

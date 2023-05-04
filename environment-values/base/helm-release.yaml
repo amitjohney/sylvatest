@@ -42,6 +42,11 @@ spec:
     optional: true
   - kind: ConfigMap
     name: capo-cluster-resources
+    valuesKey: allocated_fip
+    targetPath: cluster.capo.floating_ip
+    optional: true
+  - kind: ConfigMap
+    name: capo-cluster-resources
     valuesKey: control_plane_servergroup_id
     targetPath: cluster.capo.control_plane_servergroup_id
     optional: true
