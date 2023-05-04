@@ -330,6 +330,11 @@ units:
           chart: rancher-cis-benchmark
           version: 4.0.0
       targetNamespace: cis-operator-system
+      values:
+        global:
+          cattle:
+            psp:
+              enabled: true
 
   # this allows for running a CIS scan for management cluster
   # generates a report which can be viewed and downloaded in CSV from the Rancher UI, at https://rancher.sylva/dashboard/c/local/cis/cis.cattle.io.clusterscan
@@ -1410,7 +1415,7 @@ cluster:
   name: management-cluster
 
   # cis profile to be used. Curently supported only for rke2 clusters. "cis-1.6" for k8s prior to 1.25, "cis-1.23" for 1.25+
-  #cis_profile: cis-1.6
+  cis_profile: cis-1.6
 
   # Admin password that will be configured by default on various units
   admin_password: '{{ randAlphaNum 64 }}'
