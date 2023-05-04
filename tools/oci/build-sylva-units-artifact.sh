@@ -86,7 +86,7 @@ echo "Preparing use-oci-artifacts.values.yaml values override file..."
 # Produced override to use the OCI registry:
 #
 #    cert-manager:
-#      helm_repo_url: '{{ sylva_core_oci_registry }}'
+#      helm_repo_url: '{{ .Values.sylva_core_oci_registry }}'
 #
 # Note that 'sylva_core_oci_registry' defaults to 'oci://registry.gitlab.com/sylva-projects/sylva-core'
 # and can be overriden at deployment time
@@ -138,7 +138,7 @@ yq eval-all -i '
 #
 #   local-path-provisioner:
 #     repo: null
-#     helm_repo_url: '{{ sylva_core_oci_registry }}'
+#     helm_repo_url: '{{ .Values.sylva_core_oci_registry }}'
 #     helmrelease_spec:
 #       chart:
 #         spec:
