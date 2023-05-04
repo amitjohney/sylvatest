@@ -786,6 +786,14 @@ properties:
       - https_proxy
       - no_proxy
 
+  no_proxy_additional:
+    type: object
+    additionalProperties: false
+    patternProperties:
+      ".*":
+        type: boolean
+
+
   sylva_base_oci_registry:  # -------------------------------
     type: string
     format: uri

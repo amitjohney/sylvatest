@@ -227,7 +227,7 @@ units:
         trivy:
           httpProxy: '{{ .Values.proxies.https_proxy }}'
           httpsProxy: '{{ .Values.proxies.https_proxy }}'
-          noProxy: '{{ .Values.proxies.no_proxy }}'
+          noProxy: '{{ include "sylva-units.no_proxy" . }}'
           severity: UNKNOWN,HIGH,CRITICAL
         trivyOperator:
           scanJobPodTemplatePodSecurityContext:
@@ -509,7 +509,7 @@ units:
         # ironicIPADownloaderBaseURI:
         httpProxy: '{{ .Values.proxies.https_proxy }}'
         httpsProxy: '{{ .Values.proxies.https_proxy }}'
-        noProxy: '{{ .Values.proxies.no_proxy }}'
+        noProxy: '{{ include "sylva-units.no_proxy" . }}'
         persistence:
           ironic:
             accessMode: "ReadWriteOnce"
@@ -787,7 +787,7 @@ units:
         features: embedded-cluster-api=false,provisioningv2=true
         debug: true
         proxy: '{{ get .Values.proxies "https_proxy" }}'
-        noProxy: '{{ get .Values.proxies "no_proxy" }}'
+        noProxy: '{{ include "sylva-units.no_proxy" . }}'
         postDelete:
           namespaceList:
             - cattle-fleet-system
@@ -1506,6 +1506,10 @@ proxies:
   https_proxy: ""
   http_proxy: ""
   no_proxy: ""
+
+# disable default values for no_proxy (localhost,.svc,.cluster.local.,.cluster.local,.sylva)
+# Ex: localhost: false
+no_proxy_additional: {}
 
 # configure containerd registry mirrors following https://github.com/containerd/containerd/blob/main/docs/hosts.md
 registry_mirrors:

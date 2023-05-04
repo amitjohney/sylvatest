@@ -6,6 +6,7 @@ metadata:
   labels:
 {{ include "sylva-units.labels" $envAll | indent 4 }}
 data:
-{{- range tuple "http_proxy" "https_proxy" "no_proxy" }}
+{{- range tuple "http_proxy" "https_proxy" }}
   {{ . }}: {{ get $envAll.Values.proxies . | quote }}
 {{- end }}
+  no_proxy: {{ include "sylva-units.no_proxy" . | quote }}
