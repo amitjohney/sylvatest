@@ -787,14 +787,18 @@ properties:
       - no_proxy
 
   sylva_base_oci_registry:  # -------------------------------
-    type: string
-    format: uri
-    pattern: "^oci://.*$"
+    anyOf:
+      - type: string
+        format: uri
+        pattern: "^oci://.*$"
+      - $ref: "#/$defs/string-with-gotpl"
 
   sylva_core_oci_registry:  # -------------------------------
-    type: string
-    format: uri
-    pattern: "^oci://.*$"
+    anyOf:
+      - type: string
+        format: uri
+        pattern: "^oci://.*$"
+      - $ref: "#/$defs/string-with-gotpl"
 
   registry_mirrors:  # -------------------------------
     type: object
