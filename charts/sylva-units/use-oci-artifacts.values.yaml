@@ -69,7 +69,7 @@
 #           version: v0.0.23
 
 # this value can be overriden to use an alternate OCI registry, by default we'll reuse the same registry as HelmRepository of sylva-core
-sylva_base_oci_registry: '{{ lookup "source.toolkit.fluxcd.io/v1beta2" "HelmRepository" "default" "sylva-core" | dig "spec" "url" "oci://registry.gitlab.com/sylva-projects/sylva-core" | dir }}'
+sylva_base_oci_registry: '{{ lookup "source.toolkit.fluxcd.io/v1beta2" "HelmRepository" "default" "sylva-core" | dig "spec" "url" "oci://registry.gitlab.com/sylva-projects/sylva-core" | dir | replace "oci:/" "oci://" }}'
 sylva_core_oci_registry: '{{ .Values.sylva_base_oci_registry }}/sylva-core'
 
 source_templates:
