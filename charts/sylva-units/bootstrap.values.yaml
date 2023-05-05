@@ -30,6 +30,8 @@ units:
 
   calico:
     # overload calico definition in bootstrap context to deploy in the management cluster
+    depends_on:
+      cluster: true
     helmrelease_spec:
       kubeConfig:
         secretRef:

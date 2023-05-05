@@ -1338,6 +1338,7 @@ units:
   workload-cluster-calico:
     enabled: '{{ index .Values.units "workload-cluster-calico-crd" "enabled" }}'
     depends_on:
+      workload-cluster: true
       workload-cluster-calico-crd: true
     helm_repo_url: https://rke2-charts.rancher.io
     helmrelease_spec:
