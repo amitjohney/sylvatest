@@ -65,12 +65,15 @@ $defs:
             type: string
       - $ref: "#/$defs/gotpl"
 
+  boolean-string:
+    type: string
+    enum: ["true", "false", ""]
+
   enabled:
     anyOf:
       - type: boolean
-      - type: string
-        pattern:
-          ^{{ .*\| *include ["']preserve-type['"] }}$
+      - $ref: "#/$defs/gotpl"
+      - $ref: "#/$defs/boolean-string"
 
   string-with-gotpl:
     type: string
@@ -842,3 +845,5 @@ properties:
             - type: string
               format: hostname
 
+  _internal:
+    type: object
