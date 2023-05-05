@@ -10,8 +10,6 @@ units:
     enabled: false
     kustomization_spec:
       path: ./kustomize-units/cluster-manifests/kubeadm-capd/base
-  workload-cluster-calico-crd:
-    enabled: false
   workload-cluster-calico:
     enabled: false
   monitoring:
