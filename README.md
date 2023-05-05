@@ -49,7 +49,7 @@ source_templates: # defines Flux GitRepository/OCIRepository resources
 units: # defines Flux Kustomizations & HelmReleases
   [...]
   capo:
-    enabled: '{{ eq .Values.cluster.capi_providers.infra_provider "capo" | include "preserve-type" }}'
+    enabled: '{{ eq .Values.cluster.capi_providers.infra_provider "capo" }}'
     repo: sylva-core
     depends_on:
       cert-manager: true
@@ -78,7 +78,7 @@ As user-provided parameters are merged over default chart values, we can also ea
 units:
   [...]
   cabpr:  # RKE2
-    enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | include "preserve-type" }}'
+    enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
     repo: sylva-core
     depends_on:
       cert-manager: true
