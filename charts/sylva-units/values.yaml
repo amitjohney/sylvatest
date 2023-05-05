@@ -1322,11 +1322,7 @@ units:
         - '{{ tuple (.Files.Get "elements/configtemplate-ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
 
   workload-cluster-calico-crd:
-<<<<<<< HEAD
     enabled: '{{ and (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") (tuple . (index .Values.units "workload-cluster" "enabled") | include "interpret-for-test") }}'
-=======
-    enabled: '{{ index .Values.units "workload-cluster-calico" "enabled" }}'
->>>>>>> make workload-cluster-calico-crd unit enabled only if workload-cluster-calico is
     depends_on:
       workload-cluster: true
     helm_repo_url: https://rke2-charts.rancher.io

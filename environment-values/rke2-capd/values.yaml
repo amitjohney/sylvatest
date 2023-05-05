@@ -9,7 +9,7 @@ units:
     enabled: false
     kustomization_spec:
       path: ./kustomize-units/cluster-manifests/rke2-capd/base
-  workload-cluster-calico:
+  workload-cluster-calico-crd:
     enabled: false
   monitoring:
     enabled: false
