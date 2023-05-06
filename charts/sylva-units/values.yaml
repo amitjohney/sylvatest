@@ -410,15 +410,10 @@ units:
       keycloak-legacy-operator: true
     repo: sylva-core
     kustomization_substitute_secrets:
-      RANCHER_CLIENT_SECRET: '{{ .Values.cluster.admin_password }}'
-      FLUX_WEBUI_CLIENT_SECRET: '{{ .Values.cluster.admin_password }}'
+      SSO_PASSWORD: '{{ .Values.cluster.admin_password }}'
     kustomization_spec:
       path: ./kustomize-units/keycloak-resources
       targetNamespace: keycloak
-      postBuild:
-        substitute:
-          RANCHER_DNS: '{{ .Values.cluster.rancher.external_hostname }}'
-          FLUX_WEBUI_DNS: '{{ .Values.cluster.flux.external_hostname }}'
       healthChecks:  #  cannot use __wait: true__ here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/144
         - apiVersion: legacy.k8s.keycloak.org/v1alpha1
           kind: KeycloakRealm
@@ -428,6 +423,34 @@ units:
           kind: KeycloakClient
           name: rancher-client
           namespace: keycloak
+
+  keycloak-client-resources:
+    enabled: '{{ .Values.units.keycloak.enabled }}'
+    depends_on:
+      keycloak: true
+      keycloak-legacy-operator: true
+      keycloak-resources: true
+    repo: sylva-core
+    kustomization_substitute_secrets:
+      RANCHER_CLIENT_SECRET: '{{ .Values.cluster.admin_password }}'
+      FLUX_WEBUI_CLIENT_SECRET: '{{ .Values.cluster.admin_password }}'
+    kustomization_spec:
+      path: ./kustomize-units/keycloak-client-resources
+      targetNamespace: keycloak
+      postBuild:
+        substitute:
+          RANCHER_DNS: '{{ .Values.cluster.rancher.external_hostname }}'
+          FLUX_WEBUI_DNS: '{{ .Values.cluster.flux.external_hostname }}'      
+      wait: true      
+      # healthChecks:  #  cannot use __wait: true__ here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/144
+      #   - apiVersion: legacy.k8s.keycloak.org/v1alpha1
+      #     kind: KeycloakClient
+      #     name: rancher-client
+      #     namespace: keycloak
+      #   - apiVersion: legacy.k8s.keycloak.org/v1alpha1
+      #     kind: KeycloakClient
+      #     name: flux-client
+      #     namespace: keycloak
 
   capi:
     enabled: yes

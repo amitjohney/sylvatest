@@ -68,4 +68,4 @@ spec:
               name: keycloak-initial-admin
               key: password
       restartPolicy: Never
-  backoffLimit: 15
+  backoffLimit: 10

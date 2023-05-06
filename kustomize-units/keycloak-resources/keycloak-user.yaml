@@ -16,6 +16,5 @@ spec:
     lastName: sylva
     credentials:
       - type: password
-        value: "${RANCHER_CLIENT_SECRET}"
+        value: "${SSO_PASSWORD}"
         temporary: false
-
