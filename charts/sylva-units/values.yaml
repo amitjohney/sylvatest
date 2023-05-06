@@ -666,7 +666,7 @@ units:
             (and .Values.cluster.capo.external_network_id (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
 
   calico-crd:
-    enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
+    enabled: '{{ index .Values.units "calico" "enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io
     helmrelease_spec:
       chart:
@@ -675,7 +675,7 @@ units:
           version: v3.25.001
 
   calico:
-    enabled: '{{ index .Values.units "calico-crd" "enabled" }}'
+    enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
     depends_on:
       calico-crd: true
     helm_repo_url: https://rke2-charts.rancher.io
@@ -1322,7 +1322,7 @@ units:
         - '{{ tuple (.Files.Get "elements/configtemplate-ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
 
   workload-cluster-calico-crd:
-    enabled: '{{ and (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") (tuple . (index .Values.units "workload-cluster" "enabled") | include "interpret-for-test") }}'
+    enabled: '{{ index .Values.units "workload-cluster-calico" "enabled" }}'
     depends_on:
       workload-cluster: true
     helm_repo_url: https://rke2-charts.rancher.io
@@ -1336,7 +1336,7 @@ units:
           name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
 
   workload-cluster-calico:
-    enabled: '{{ index .Values.units "workload-cluster-calico-crd" "enabled" }}'
+    enabled: '{{ and (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") (tuple . (index .Values.units "workload-cluster" "enabled") | include "interpret-for-test") }}'
     depends_on:
       workload-cluster: true
       workload-cluster-calico-crd: true
