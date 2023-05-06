@@ -67,5 +67,8 @@ spec:
             secretKeyRef:
               name: keycloak-initial-admin
               key: password
+        securityContext:
+          runAsUser: 65534
+          runAsGroup: 65534
       restartPolicy: Never
   backoffLimit: 10
