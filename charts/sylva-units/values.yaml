@@ -419,10 +419,6 @@ units:
           kind: KeycloakRealm
           name: sylva
           namespace: keycloak
-        - apiVersion: legacy.k8s.keycloak.org/v1alpha1
-          kind: KeycloakClient
-          name: rancher-client
-          namespace: keycloak
 
   keycloak-client-resources:
     enabled: '{{ .Values.units.keycloak.enabled }}'
