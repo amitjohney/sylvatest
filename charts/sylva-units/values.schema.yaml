@@ -821,6 +821,12 @@ properties:
         pattern: "^oci://.*$"
       - $ref: "#/$defs/string-with-gotpl"
 
+  metallb_helm_oci_url: # -------------------------------
+    anyOf:
+      - type: string
+        pattern: "^oci://.*"
+      - $ref: "#/$defs/string-with-gotpl"
+
   registry_mirrors:  # -------------------------------
     type: object
     additionalProperties: false

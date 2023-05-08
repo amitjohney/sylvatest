@@ -73,8 +73,9 @@ spec:
           name: metallb
           namespace: metallb-system
         spec:
-          chart: metallb
-          repo: https://metallb.github.io/metallb
+          chart: ${METALLB_HELM_CHART}
+          repo: ${METALLB_HELM_REPO:-""}
+          version: 0.13.9
           targetNamespace: metallb-system
           valuesContent: |-
             controller:
