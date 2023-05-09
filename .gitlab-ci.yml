@@ -1,9 +1,9 @@
 stages:
   - generate
+  - build
   - test
   - deploy
   - delete
-  - build
 
 default:
   tags:
@@ -129,6 +129,24 @@ check-docs-markdown:
     - export CLUSTER_EXTERNAL_IP=$(echo $KIND_PREFIX | awk -F"." '{print $1"."$2"."$3".100"}')
     - yq -i '.cluster.cluster_external_ip = strenv(CLUSTER_EXTERNAL_IP)' $values_file
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capd\r\e[0K"
+  oci_configuration:
+    - |
+      if [ ${OCI_TAG} ]; then
+      echo "Applying OCI configuration for tag: ${OCI_TAG}"
+      if [ $(yq '.components | length' environment-values/$ENV_NAME/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' environment-values/$ENV_NAME/kustomization.yaml; fi
+      yq -i '.components += "../components/oci-artifacts"' $ENV_PATH/kustomization.yaml
+      cat <<EOF>> $ENV_PATH/kustomization.yaml
+      patches:
+      - target:
+          kind: HelmRelease
+          name: sylva-units
+        patch: |
+          - op: replace
+            path: /spec/chart/spec/version
+            value: ${OCI_TAG}
+      EOF
+      cat $ENV_PATH/kustomization.yaml
+      fi
   post_deployment_common:
     - kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}' | xargs --no-run-if-empty -n1 kubectl --kubeconfig management-cluster-kubeconfig logs || true
   os_cloud:
@@ -164,6 +182,9 @@ check-docs-markdown:
       - bootstrap-cluster-units-report.xml
       - management-cluster-units-report.xml
   rules:
+    - if: $CI_COMMIT_TAG
+      variables:
+        OCI_TAG: $CI_COMMIT_TAG
     - if: $CI_PIPELINE_SOURCE == 'web'
     - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_DEPLOYMENTS'
     - if: $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
@@ -171,6 +192,13 @@ check-docs-markdown:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
       allow_failure: true
       when: manual
+  needs:
+    - job: push-helm-artifacts
+      optional: true
+    - job: publish-kustomize-units-artifact
+      optional: true
+    - job: publish-sylva-units-artifact
+      optional: true
 
 .test-capd:
   stage: deploy
@@ -178,10 +206,12 @@ check-docs-markdown:
   script:
     - !reference [.common-deployment, script_common]
     - !reference [.common-deployment, script_capd]
+    - !reference [.common-deployment, oci_configuration]
     - ./bootstrap.sh environment-values/${ENV_NAME}
     - !reference [.common-deployment, post_deployment_common]
   artifacts: !reference [.common-deployment, artifacts]
   rules: !reference [.common-deployment, rules]
+  needs: !reference [.common-deployment, needs]
 
 test-preview-capd:
   stage: deploy
@@ -190,6 +220,7 @@ test-preview-capd:
   script:
     - !reference [.common-deployment, script_common]
     - !reference [.common-deployment, script_capd]
+    - !reference [.common-deployment, oci_configuration]
     - ./preview.sh environment-values/${ENV_NAME}
   artifacts:
     when: on_failure
@@ -204,6 +235,7 @@ test-preview-capd:
         - tools/shell-lib/common.sh
   variables:
     ENV_NAME: kubeadm-capd
+  needs: !reference [.common-deployment, needs]
 
 test-kubeadm-capd:
   timeout: 60min
@@ -232,6 +264,7 @@ test-kubeadm-capd:
     - yq -e '.registry_mirrors' $(basename ${CI_COMPONENT_REPO} .git)/${CI_COMPONENT_REPO_PATH}-base/values.yaml > registry_mirrors.yml
     - yq -i eval-all 'select(fileIndex==0).registry_mirrors = select(fileIndex==1) | select(fileIndex==0)' $values_file registry_mirrors.yml
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capo\r\e[0K"
+    - !reference [.common-deployment, oci_configuration]
     - ./bootstrap.sh environment-values/${ENV_NAME}
     - !reference [.common-deployment, post_deployment_common]
   artifacts: !reference [.common-deployment, artifacts]
@@ -240,6 +273,7 @@ test-kubeadm-capd:
       allow_failure: true
       when: manual
     - !reference [.common-deployment, rules]
+  needs: !reference [.common-deployment, needs]
   tags:
     - $CAPO_PLATFORM_TAG
 
@@ -263,6 +297,7 @@ test-kubeadm-capo:
     - !reference [.common-deployment, os_cloud]
     - ./tools/openstack-cleanup.sh capo_cloud "${CI_PIPELINE_ID}-${ENV_NAME}"
   rules:
+    - if: $CI_COMMIT_TAG
     - if: $CI_PIPELINE_SOURCE == 'web'
     - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_DEPLOYMENTS'
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
