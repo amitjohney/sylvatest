@@ -586,6 +586,7 @@ units:
         substitute:
           CAPO_TAG: '{{ tuple .Values.cluster.capo.resources_tag (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
           CONTROL_PLANE_AZ_LIST: '{{ tuple (.Values.cluster.capo.control_plane_az | toJson) (eq .Values.cluster.capi_providers.infra_provider "capo") | include "set-only-if" }}'
+          AIR_GAPPED: '{{ .Values.cluster.air_gapped }}'
           METALLB_HELM_CHART: '{{ .Values.metallb_helm_oci_url | default "metallb" }}'
           # if metallb_helm_oci_url is unset/empty, then set METALLB_HELM_REPO, but if it's set then leave METALLB_HELM_REPO empty
           METALLB_HELM_REPO: '{{ empty .Values.metallb_helm_oci_url | ternary "https://metallb.github.io/metallb" "" }}'
