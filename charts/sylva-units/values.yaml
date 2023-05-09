@@ -1253,6 +1253,11 @@ units:
           - kind: ConfigMap
             name: workload-capo-cluster-resources
             optional: true
+      healthChecks:
+        - apiVersion: cluster.x-k8s.io/v1beta1
+          kind: Cluster
+          name: '{{ .Values.cluster.name }}'
+          namespace: default
       wait: false
       _components:
         - '{{ tuple "../../components/dns-client/kind/KubeadmControlPlane"
