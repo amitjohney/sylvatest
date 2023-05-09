@@ -462,6 +462,8 @@ properties:
       cis_profile:  # -------------------------------
         type: string
         pattern: "cis-1.6|cis-1.23"
+      air_gapped:  # -------------------------------
+        type: boolean
       capi_providers:  # -------------------------------
         type: object
         additionalProperties: false

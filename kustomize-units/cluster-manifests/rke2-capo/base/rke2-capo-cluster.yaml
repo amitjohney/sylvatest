@@ -225,6 +225,7 @@ spec:
   agentConfig:
     version: ${K8S_VERSION}
     cisProfile: ${CIS_PROFILE}
+    airGapped: ${AIR_GAPPED:-false}
     kubelet:
       extraArgs:
       - "provider-id=openstack:///{{ ds.meta_data.uuid }}"
@@ -315,6 +316,7 @@ spec:
       agentConfig:
         version: ${K8S_VERSION}
         cisProfile: ${CIS_PROFILE}
+        airGapped: ${AIR_GAPPED:-false}
         kubelet:
           extraArgs:
             - "provider-id=openstack:///{{ ds.meta_data.uuid }}"
