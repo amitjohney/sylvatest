@@ -644,18 +644,29 @@ units:
         - '{{ tuple "../cluster-manifests/components/capo-vip-floating-ip"
             (and .Values.cluster.capo.external_network_id (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
 
+  calico-crd:
+    enabled: '{{ index .Values.units "calico" "enabled" }}'
+    helm_repo_url: https://rke2-charts.rancher.io
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: rke2-calico-crd
+          version: v3.25.001
 
   calico:
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
-    helm_repo_url: https://projectcalico.docs.tigera.io/charts
+    depends_on:
+      calico-crd: true
+    helm_repo_url: https://rke2-charts.rancher.io
     helmrelease_spec:
-      targetNamespace: tigera-operator
-      install:
-        createNamespace: true
       chart:
         spec:
-          chart: tigera-operator
-          version: v3.24.5
+          chart: rke2-calico
+          version: v3.25.001
+      values:
+        installation:
+          calicoNetwork:
+            bgp: Enabled
 
   cinder-csi-psp:
     enabled: '{{ and (.Values.cluster.cis_profile | eq "cis-1.6") (tuple . (index .Values.units "cinder-csi" "enabled") | include "interpret-for-test") }}'
@@ -927,12 +938,13 @@ units:
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
     depends_on:
       metallb-config: '{{ .Values.units.metallb.enabled }}'
-    helm_repo_url: https://kubernetes.github.io/ingress-nginx
+    helm_repo_url: https://rke2-charts.rancher.io
     helmrelease_spec:
+      targetNamespace: kube-system
       chart:
         spec:
-          chart: ingress-nginx
-          version: 4.5.2
+          chart: rke2-ingress-nginx
+          version: 4.1.008
       interval: 1m0s
       values:
         controller:
@@ -1271,22 +1283,38 @@ units:
         - '{{ tuple (.Files.Get "elements/controlplane-ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
         - '{{ tuple (.Files.Get "elements/configtemplate-ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
 
+  workload-cluster-calico-crd:
+    enabled: '{{ index .Values.units "workload-cluster-calico" "enabled" }}'
+    depends_on:
+      workload-cluster: true
+    helm_repo_url: https://rke2-charts.rancher.io
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: rke2-calico-crd
+          version: v3.25.001
+      kubeConfig:
+        secretRef:
+          name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
+
   workload-cluster-calico:
     enabled: '{{ and (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") (tuple . (index .Values.units "workload-cluster" "enabled") | include "interpret-for-test") }}'
     depends_on:
       workload-cluster: true
-    helm_repo_url: https://projectcalico.docs.tigera.io/charts
+      workload-cluster-calico-crd: true
+    helm_repo_url: https://rke2-charts.rancher.io
     helmrelease_spec:
-      targetNamespace: tigera-operator
-      install:
-        createNamespace: true
       chart:
         spec:
-          chart: tigera-operator
-          version: v3.24.5
+          chart: rke2-calico
+          version: v3.25.001
       kubeConfig:
         secretRef:
           name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
+      values:
+        installation:
+          calicoNetwork:
+            bgp: Enabled
 
   workload-cluster-multus:
     enabled: false
