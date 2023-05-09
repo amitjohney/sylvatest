@@ -19,3 +19,21 @@ patches:
     - op: add
       path: /spec/kubeadmConfigSpec/preKubeadmCommands/-
       value: systemctl restart systemd-resolved
+- target:
+    kind: KubeadmConfigTemplate
+  patch: |-
+    - op: add
+      path: /spec/template/spec/files/-
+      value:
+        path: /etc/systemd/resolved.conf
+        content: |
+          [Resolve]
+          DNS=${K8SGATEWAY_LB_IP}
+          Domains=~${CLUSTER_EXTERNAL_DOMAIN}
+- target:
+    kind: KubeadmConfigTemplate
+  patch: |-
+    - op: add
+      path: /spec/template/spec/preKubeadmCommands/-
+      value: systemctl restart systemd-resolved
+
