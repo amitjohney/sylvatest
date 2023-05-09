@@ -288,6 +288,9 @@ units:
       targetNamespace: vault
       install:
         createNamespace: true
+      values:
+        psp:
+          enabled: true
 
 # Vault assumes that the certificates vault-tls have been issued
   vault:
