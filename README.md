@@ -179,11 +179,8 @@ Before triggering bootstrap.sh, certain prerequisites need to be done/followed
 
 - Provide your **OpenStack credentials** in `environment-values/my-capo-env/secrets.yaml`
 
-  ```shell
+  ```yaml
   cluster:
-    flux_webui:
-      admin_password: "FluxPass"
-    admin_password: "RancherPass"
     capo:
       clouds_yaml:
         clouds:
@@ -244,7 +241,7 @@ Before trigerring bootstrap.sh, some prerequisites need to be satisfied.
 
 - Provide your **vCenter credentials** in `environment-values/my-capv-env/secrets.yaml`
 
-    ```shell
+    ```yaml
       username: # replace me
       password: # replace me
    ```
@@ -312,6 +309,29 @@ Before trigerring bootstrap.sh, some prerequisites need to be satisfied.
    ```
 
 </details>
+
+### Defining your environment secrets
+
+Beyond the secrets specific to the Cluster API infra provider (covered above), you need to set in the `secrets.yaml` file
+of your environment values the admin password that will be used for the different services (Rancher, Flux Web UI, Keycloak example accounts).
+
+`secrets.yaml`:
+
+```yaml
+  cluster:
+    admin_password: "RancherPass"
+```
+
+If you don't do this, a random password will be set, which you can retrieve with:
+
+```
+kubectl get secrets sylva-units-values-debug -o yaml | yq .data.values | base64 -d | yq .cluster.admin_password
+```
+
+However, as of today we have nothing to guarantee that this secret will not be dynamically regenerated when you update sylva-units (e.g. with `apply.sh`).
+
+**Note well** that this reflects the current state of Sylva, but does not match the target, which is to rely on Vault to
+have per-service distinct randomly generated secrets.
 
 ### Deploying the management cluster from scratch (Bootstrap workflow)
 
