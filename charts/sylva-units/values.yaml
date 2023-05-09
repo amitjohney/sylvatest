@@ -1247,6 +1247,7 @@ units:
           METALLB_HELM_CHART: '{{ .Values.metallb_helm_oci_url | default "metallb" }}'
           # if metallb_helm_oci_url is unset/empty, then set METALLB_HELM_REPO, but if it's set then leave METALLB_HELM_REPO empty
           METALLB_HELM_REPO: '{{ empty .Values.metallb_helm_oci_url | ternary "https://metallb.github.io/metallb" "" }}'
+          AIR_GAPPED: '{{ .Values.cluster.air_gapped }}'
         substituteFrom:
           - kind: ConfigMap
             name: proxy-env-vars
@@ -1416,6 +1417,9 @@ units:
 cluster:
   name: management-cluster
 
+  # can be set to true to do an RKE2 deployment disconnected from the Internet:
+  air_gapped: false
+
   # cis profile to be used. Curently supported only for rke2 clusters. "cis-1.6" for k8s prior to 1.25, "cis-1.23" for 1.25+
   cis_profile: cis-1.6
 
@@ -1481,7 +1485,6 @@ cluster:
       name: cinder-csi  # name of the storageClass to be created
       #type: xxx  # please provide the cinder volume type, e.g. 'ceph_sas' (must exist in OpenStack)
     resources_tag: '{{ eq .Values.cluster.capi_providers.infra_provider "capo" | ternary (printf "sylva-%s" .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.username) "" }}' # tag set for OpenStack resources in management and test workload cluster
-
 
   cluster_external_ip: 55.55.55.55
   cluster_external_domain: sylva
