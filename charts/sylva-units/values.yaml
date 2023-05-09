@@ -1341,7 +1341,7 @@ units:
                     app: whereabouts
 
   workload-cluster-import:
-    enabled: '{{ index .Values.units "workload-cluster" "enabled" }}'
+    enabled: '{{ and (tuple . (index .Values.units "workload-cluster" "enabled") | include "interpret-for-test") (tuple . .Values.units.rancher.enabled | include "interpret-for-test") }}'
     repo: sylva-core
     depends_on:
       rancher: true
