@@ -1256,7 +1256,7 @@ units:
       healthChecks:
         - apiVersion: cluster.x-k8s.io/v1beta1
           kind: Cluster
-          name: '{{ .Values.cluster.name }}'
+          name: '{{ .Values.cluster.test_workload_cluster_name }}'
           namespace: default
       wait: false
       _components:
