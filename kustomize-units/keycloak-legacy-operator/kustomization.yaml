@@ -14,3 +14,7 @@ resources:
 - https://raw.githubusercontent.com/keycloak/keycloak-realm-operator/1.0.0/deploy/operator.yaml
 - external-keycloak.yaml
 
+images:
+- name: quay.io/keycloak/keycloak-realm-operator
+  newName: quay.io/keycloak/keycloak-realm-operator
+  newTag: 1.0.0
