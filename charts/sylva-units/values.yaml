@@ -1253,7 +1253,12 @@ units:
           - kind: ConfigMap
             name: workload-capo-cluster-resources
             optional: true
-      wait: true
+      wait: false
+      healthChecks:
+        - apiVersion: cluster.x-k8s.io/v1beta1
+          kind: Cluster
+          name: '{{ .Values.cluster.test_workload_cluster_name }}'
+          namespace: default
       _components:
         - '{{ tuple "../../components/dns-client/kind/KubeadmControlPlane"
                     (and (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
