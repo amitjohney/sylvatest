@@ -27,7 +27,7 @@ RED='\033[0;31m'
 NC='\033[0m'
 echo -e "\e[0Ksection_start:`date +%s`:lint_schema\r\e[0K--------------- Lint Schema YAML file"
 echo "Lint $chart_dir/values.schema.yaml ..."
-yamllint --no-warnings -c ${BASE_DIR}/tools/gci-templates/yamllint.yaml $chart_dir/values.schema.yaml
+yamllint --no-warnings -c ${BASE_DIR}/tools/gci-templates/linter-configuration/yamllint.yaml $chart_dir/values.schema.yaml
 echo "   DONE"
 echo -e "\e[0Ksection_end:`date +%s`:lint_schema\r\e[0K"
 

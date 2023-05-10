@@ -38,7 +38,7 @@ echo -e "\e[0Ksection_start:`date +%s`:helm_base_values\r\e[0K--------------- Ch
 yq eval '{"units": .units | ... comments="" | to_entries | map({"key":.key,"value":{"enabled":true}}) | from_entries}' $chart_dir/values.yaml > /tmp/all-units-enabled.yaml
 
 helm template ${HELM_NAME} $chart_dir --values /tmp/all-units-enabled.yaml \
-| yamllint - -d "$(cat < ${BASE_DIR}/tools/gci-templates/yamllint.yaml) $(cat < ${BASE_DIR}/tools/gci-templates/yamllint-helm-template-rules)"
+| yamllint - -d "$(cat < ${BASE_DIR}/tools/gci-templates/linter-configuration/yamllint.yaml) $(cat < ${BASE_DIR}/tools/gci-templates/linter-configuration/yamllint-helm-template-rules)"
 
 echo OK
 echo -e "\e[0Ksection_end:`date +%s`:helm_base_values\r\e[0K"
@@ -50,7 +50,7 @@ if [ -d $chart_dir/test-values ] && [ -n "$test_dirs" ] ; then
 
     set +e
     helm template ${HELM_NAME} $chart_dir $(ls $dir/*.y*ml | grep -v test-spec.yaml | sed -e 's/^/--values /') \
-      | yamllint - -d "$(cat < ${BASE_DIR}/tools/gci-templates/yamllint.yaml) $(cat < ${BASE_DIR}/tools/gci-templates/yamllint-helm-template-rules)"
+      | yamllint - -d "$(cat < ${BASE_DIR}/tools/gci-templates/linter-configuration/yamllint.yaml) $(cat < ${BASE_DIR}/tools/gci-templates/linter-configuration/yamllint-helm-template-rules)"
     exit_code=$?
     set -e
 
