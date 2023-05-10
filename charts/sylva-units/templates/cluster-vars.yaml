@@ -12,7 +12,7 @@ data:
   WORKER_MACHINE_IMAGE: {{ .Values.cluster.worker_machine_image | default .Values.cluster.image }}
 {{ if eq .Values.cluster.capi_providers.infra_provider "capo" }}
   FLAVOR_NAME: {{ .Values.cluster.capo.flavor_name }}
-  WORKER_FLAVOR_NAME: {{ .Values.cluster.capo.worker_flavor_name }}
+  WORKER_FLAVOR_NAME: {{ .Values.cluster.capo.worker_flavor_name | default .Values.cluster.capo.flavor_name }}
 {{ if hasKey .Values.cluster.capo "worker_az" }}
   WORKER_AZ: {{ .Values.cluster.capo.worker_az }}
 {{ end }}
