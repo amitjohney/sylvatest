@@ -1,0 +1,11 @@
+apiVersion: management.cattle.io/v3
+kind: GlobalRoleBinding
+metadata:
+  name: grb-infra-admins
+  annotations:
+    cleanup.cattle.io/grbUpgradeCluster: "true"
+    lifecycle.cattle.io/create.mgmt-auth-grb-controller: "true"
+  finalizers:
+  - controller.cattle.io/mgmt-auth-grb-controller
+globalRoleName: admin
+groupPrincipalName: keycloakoidc_group://infra-admins
