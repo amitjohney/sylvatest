@@ -36,4 +36,3 @@ patches:
     - op: add
       path: /spec/template/spec/preKubeadmCommands/-
       value: systemctl restart systemd-resolved
-
