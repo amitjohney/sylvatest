@@ -15,6 +15,20 @@ spec:
     loginTheme: base
     accountTheme: keycloak
     adminTheme: keycloak
+    groups:
+    - name: infra-admins
+    users:
+    - username: sylva-admin
+      email: sylva-admin@example.com
+      firstName: sylva
+      lastName: sylva
+      groups:
+      - infra-admins
+      credentials:
+      - type: password
+        value: "${RANCHER_CLIENT_SECRET}"
+        temporary: false
+      enabled: true
 ---
 apiVersion: legacy.k8s.keycloak.org/v1alpha1
 kind: KeycloakRealm
