@@ -305,10 +305,35 @@ units:
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/vault
-      wait: true
       postBuild:
         substitute:
           VAULT_DNS: '{{ .Values.cluster.vault.external_hostname }}'
+      healthChecks:  # sometimes this kustomization seems correctly applied while vault pod is not running, see https://gitlab.com/sylva-projects/sylva-core/-/issues/250
+      # so we replace wait:true by checking for the Vault components health
+        - apiVersion: apps/v1
+          kind: StatefulSet
+          name: vault
+          namespace: vault
+        - apiVersion: apps/v1
+          kind: Deployment
+          name: vault-operator
+          namespace: vault
+        - apiVersion: v1
+          kind: Service
+          name: vault-operator
+          namespace: vault
+        - apiVersion: v1
+          kind: Service
+          name: vault
+          namespace: vault
+        - apiVersion: v1
+          kind: Service
+          name: vault-configurer
+          namespace: vault
+        - apiVersion: apps/v1
+          kind: Deployment
+          name: vault-configurer
+          namespace: vault
 
   cis-operator-crd:
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
