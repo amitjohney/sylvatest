@@ -37,7 +37,7 @@ function check_pivot_has_ran() {
 
 function validate_input_values {
   echo_b "\U0001F50E Validate input files"
-  yamllint -c tools/yaml-lint-config $ENV_PATH
+  yq --header-preprocess=false $ENV_PATH/*.yaml 1> /dev/null
 }
 
 function retrieve_kubeconfig {
