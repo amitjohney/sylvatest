@@ -8,7 +8,6 @@ stages:
 default:
   tags:
     - gitlab-org-docker
-    # - docker
   image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image:v1-0-5
 
 variables:
@@ -17,39 +16,13 @@ variables:
   DOCKER_HOST: tcp://docker:2375/
   CAPO_PLATFORM_TAG: capo-ci
 
-# included templates
 include:
-  # Gitleaks template
   - project: "to-be-continuous/gitleaks"
     ref: 2.1.1
     file: "templates/gitlab-ci-gitleaks.yml"
 
-chart-generator:
+.generator-base:
   stage: generate
-  script:
-    - echo "Generate CI jobs for each modified charts/units/environment-values"
-    - ./tools/gci-templates/scripts/generate-pipeline.sh > generated-pipeline.yml
-  artifacts:
-    expire_in: 1 hour
-    paths:
-      - generated-pipeline.yml
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      changes:
-        - charts/**/*
-        - kustomize-units/**/*
-        - environment-values/**/*
-        - tools/gci-templates/**/*
-
-chart-jobs:
-  stage: generate
-  needs:
-    - chart-generator
-  trigger:
-    include:
-      - artifact: generated-pipeline.yml
-        job: chart-generator
-    strategy: depend
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       changes:
@@ -59,15 +32,39 @@ chart-jobs:
         - tools/gci-templates/**/*
         - tools/yaml2json.py
 
-yamllint:
+chart-generator:
+  extends: .generator-base
+  script:
+    - echo "Generate CI jobs for each modified charts/units/environment-values"
+    - ./tools/gci-templates/scripts/generate-pipeline.sh > generated-pipeline.yml
+  artifacts:
+    expire_in: 1 hour
+    paths:
+      - generated-pipeline.yml
+
+chart-jobs:
+  extends: .generator-base
+  needs:
+    - chart-generator
+  trigger:
+    include:
+      - artifact: generated-pipeline.yml
+        job: chart-generator
+    strategy: depend
+
+.lint-base:
   stage: test
+  needs: []
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+
+yamllint:
+  extends: .lint-base
   script:
     - 'yamllint . -d "$(cat < tools/gci-templates/yamllint.yaml) $(cat < tools/gci-templates/yamllint-helm-exclude-charts.yaml)"'
-  only:
-    - merge_requests
 
 avoid-typo-on-bootstrap:
-  stage: test
+  extends: .lint-base
   script:
     - |
       rm -rf .git  # because busybox grep does not support --exclude-dir
@@ -82,12 +79,10 @@ avoid-typo-on-bootstrap:
         echo "-----------------"
         exit 1
       fi
-  only:
-    - merge_requests
 
 check-docs-markdown:
+  extends: .lint-base
   image: registry.gitlab.com/gitlab-org/gitlab-docs/lint-markdown:alpine-3.16-vale-2.20.2-markdownlint-0.32.2-markdownlint2-0.5.1
-  stage: test
   script:
     - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
     - |
@@ -97,11 +92,10 @@ check-docs-markdown:
       else
         echo "No modified .md files"
       fi
-  only:
-    refs:
-      - merge_requests
-    changes:
-      - "**/*.md"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      changes:
+        - "**/*.md"
 
 .common-deployment:
   services:
