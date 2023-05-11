@@ -11,55 +11,21 @@
     {{- $helmrelease_spec_overrides := dict -}}
     {{- $kustomization_spec_overrides := dict -}}
 
-    {{/************* Generation of Flux sources (GitRepository or OCIRepository or HelmRepository) */}}
-
     {{- if not (hasKey $unit_def "helm_repo_url") -}}
       {{/* if no helm_repo_url is set, then we know we'll use a GitRepository or OCIRepository */}}
+      {{/* the GitRepository or OCIRepository used here are generated in 'sources.yaml' */}}
 
-      {{/* sanity checks on the repo definition */}}
       {{- $repo_name := $unit_def.repo -}}
+      {{- $repo_def := index $envAll.Values.source_templates $repo_name -}}{{/* ??? */}}
 
-      {{- if not (hasKey $envAll.Values.source_templates $repo_name) -}}
-        {{- fail (printf "units.%s.repo refers to '%s' that isn't defined in .source_templates" $unit_name $repo_name) -}}
-      {{- end -}}
-
-      {{/* definition of the repo specification */}}
-
-      {{- $repo_def := deepCopy (index $envAll.Values.source_templates $repo_name) -}}
-
-
-      {{- $source_repo_name := "-undefined-" -}}
-      {{- $source_repo_kind := "-undefined-" -}}
+      {{- $sourceRef := dict -}}
       {{- if get $repo_def "existing_source" -}}
-        {{- $source_repo_name = $repo_def.existing_source.name -}}
-        {{- $source_repo_kind = $repo_def.existing_source.kind -}}
+        {{- $_ = set $sourceRef "name" $repo_def.existing_source.name -}}
+        {{- $_ = set $sourceRef "kind" $repo_def.existing_source.kind -}}
       {{- else -}}
-        {{- $source_repo_name = printf "unit-%s" $unit_name -}}
-        {{- $source_repo_kind = $repo_def.kind -}}
-
-        {{- $secret_ref := dict }}
-        {{- if hasKey $repo_def "auth" }}
-          {{- $secret_ref = dict "secretRef" (dict "name" (printf "source-repo-auth-%s" $repo_name)) -}}{{/* Secret is templated in source-repo-auth.yaml */}}
-        {{- end -}}
-        {{- $source_ref_override := dict "ref" ($unit_def.ref_override | default dict) -}}
-        {{- $source_repo_spec := dict -}}
-        {{- $source_repo_spec = mergeOverwrite $source_repo_spec ($repo_def.kind | eq "GitRepository" | ternary $envAll.Values.git_repo_spec_default $envAll.Values.oci_repo_spec_default) $repo_def.spec $secret_ref $source_ref_override -}}
-        {{- if not (hasKey $source_repo_spec "url") -}}
-          {{- fail (printf "repository template '%s' does not have 'url' defined" $repo_name) -}}
-        {{- end }}
-
----
-apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: {{ $repo_def.kind -}}
-{{/* we create either a GitRepository or OCIRepository*/}}
-metadata:
-  name: {{ $source_repo_name }}
-  labels:
-    sylva-units.repo: {{ $repo_name }}
-{{ $labels | toYaml | indent 4 }}
-spec: {{ $source_repo_spec | toYaml | nindent 2 }}
-
-      {{ end }}
+        {{- $_ = set $sourceRef "name" $repo_name -}}
+        {{- $_ = set $sourceRef "kind" $repo_def.kind -}}
+      {{- end -}}
 
       {{ if hasKey $unit_def "helmrelease_spec" -}}
         {{ if eq $repo_def.kind "OCIRepository" }}
@@ -68,16 +34,16 @@ spec: {{ $source_repo_spec | toYaml | nindent 2 }}
         {{ end }}
         {{/*
         if helm_release_spec is used and the source repo is of type GitRepository then we inject our GitRepository in it as sourceRef
-        (the Kustomization will in that case, see in 'unit_helmrelease_kustomization_spec_default',
-         use sylva-core defined in 'source-repository-self.yaml' as the GitRepository)
+        (the Kustomization will in that case, see in 'unit_helmrelease_kustomization_spec_default', use 'sylva-core' as the GitRepository)
         */}}
-        {{- $helmrelease_spec_overrides = dict "chart" (dict "spec" (dict "sourceRef" (dict "kind" $repo_def.kind "name" $source_repo_name) "reconcileStrategy" "Revision")) -}}
+        {{- $helmrelease_spec_overrides = dict "chart" (dict "spec" (dict "sourceRef" $sourceRef
+                                                                          "reconcileStrategy" "Revision")) -}}
       {{- else -}}{{/* if 'helmrelease_spec' isn't used, then the source from 'repo' is used for the Kustomization */}}
-        {{- $kustomization_spec_overrides = dict "sourceRef" (dict "kind" $source_repo_kind "name" $source_repo_name) -}}
+        {{- $kustomization_spec_overrides = dict "sourceRef" $sourceRef -}}
       {{- end }}
 
     {{ else }}{{/* helm_repo is declared, we generate a HelmRepository */}}
----
+
       {{- $helm_repo_spec := dict -}}
       {{- $schema := urlParse $unit_def.helm_repo_url -}}
         {{- if $schema.scheme | eq "oci" -}}
@@ -93,6 +59,7 @@ spec: {{ $source_repo_spec | toYaml | nindent 2 }}
       {{- if not ($unit_def.helmrelease_spec | dig "chart" "spec" "sourceRef" dict) -}}
         {{- $helmrelease_spec_overrides = dict "chart" (dict "spec" (dict "sourceRef" (dict "kind" "HelmRepository" "name" (printf "unit-%s" $unit_name)))) -}}
       {{- end }}
+---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:

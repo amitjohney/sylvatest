@@ -968,7 +968,7 @@ units:
               value: "no"
           cattle_agent_kustomize_source_ref:
             kind: GitRepository
-            name: unit-capi-rancher-import
+            name: capi-rancher-import
             namespace: default
           cattle_agent_kustomize_path: ./cattle-kustomize
 
