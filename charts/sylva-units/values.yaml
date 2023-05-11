@@ -661,7 +661,7 @@ units:
       chart:
         spec:
           chart: rke2-calico-crd
-          version: v3.25.001
+          version: 3.25.001
 
   calico:
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
@@ -672,7 +672,7 @@ units:
       chart:
         spec:
           chart: rke2-calico
-          version: v3.25.001
+          version: 3.25.001
       values:
         installation:
           calicoNetwork:
