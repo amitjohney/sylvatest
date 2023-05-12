@@ -1617,8 +1617,6 @@ _internal:
   rancher_and_keycloak: '{{ and (tuple . .Values.units.rancher.enabled | include "interpret-for-test") (tuple . .Values.units.keycloak.enabled | include "interpret-for-test") }}'
 
   default_storage_class_unit: >-
-    {{- if tuple . (index .Values.units "cinder-csi" "enabled") | include "interpret-for-test" -}}
-      cinder-csi
-    {{- else -}}
-      local-path-provisioner
-    {{- end -}}
+    {{- tuple . (index .Values.units "cinder-csi" "enabled") "cinder-csi" "local-path-provisioner" | include "interpret-ternary" -}}
+  default_storage_class: >-
+    {{- tuple . (index .Values.units "cinder-csi" "enabled") .Values.cluster.capo.storageClass.name "local-path"             | include "interpret-ternary" -}}
