@@ -433,8 +433,6 @@ It is meant to be used in Helm values.
 It evaluates $data as a boolean (recursively), and returns either "true" (string) or "" (empty string).
 The use for this template is specific to tests.
 
-See the documentation of "interpret-inner-gotpl" for examples.
-
 */}}
 {{- define "interpret-for-test" -}}
     {{- $envAll := index . 0 -}}
@@ -450,5 +448,39 @@ See the documentation of "interpret-inner-gotpl" for examples.
     {{- if $value -}}
 true
     {{- else -}} {{- /* we "emulate" a 'false' value by returning an empty string which the caller will evaluate as False */ -}}
+    {{- end -}}
+{{- end -}}
+
+{{/*
+
+interpret-ternary
+
+Usage:
+
+  tuple $envAll $data $value_if_data_interprets_as_true $value_if_data_interprets_as_false | include "interpret-ternary"
+
+It is meant to be used in Helm values.
+
+It evaluates $data as a boolean (recursively), and returns either $value_if_data_interprets_as_true or $value_if_data_interprets_as_false,
+depending on whether $data is true or false after interpretation.
+
+*/}}
+{{- define "interpret-ternary" -}}
+    {{- $envAll := index . 0 -}}
+    {{- $data := index . 1 -}}
+    {{- $true_value := index . 2 -}}
+    {{- $false_value := index . 3 -}}
+
+    {{- $debug_context := "interpret-ternary" -}}
+    {{- if gt (len .) 4 -}}
+        {{- $debug_context = printf "interpret-ternary, %s" (index . 4) -}}
+    {{- end -}}
+
+    {{- $interpreted_data := index (tuple $envAll $data $debug_context | include "interpret-as-bool" | fromJson) "encapsulated-result" -}}
+
+    {{- if $interpreted_data -}}
+      {{- $true_value -}}
+    {{- else -}}
+      {{- $false_value -}}
     {{- end -}}
 {{- end -}}

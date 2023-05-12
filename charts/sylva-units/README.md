@@ -334,4 +334,33 @@ For this to be possible, you **must** use some helpers, as illustrated by the fo
         x: '{{ not (tuple . .Values.xyz.baz.enabled | include "interpret-for-test") }}'
   ```
 
+* processing a value in a `ternary` statement  ("if <condition> then <result> else <another result>")
+
+  * the `ternary` from Sprig GoTPL library is not usable in some cases, because it badly interacts
+    with the behavior of `and` and `or`, which do not always return a boolean, e.g. `and '' true` returns `''`
+
+    * for instance, a statement like `and true '' | ternary "A" "B"` fails
+
+  * this **DOES NOT WORK**:
+
+    ```yaml
+    a: true
+    b: "{{ not .Values.a }}"
+    # WRONG nested templating:
+    #   the condition below should be false ("AND(b,a)" is "AND(not a, a)", ie. "AND(false,true)")
+    #   but since "(tuple . .Values.b | include 'interpret-for-test')" returns '' (the only way we can return something evaluating as false from a template)
+    #   ... and since "and '' true" returns ''
+    #   ... then ternary receives an empty string as input, and fails, because it requires a boolean
+    e-broken: '{{ (and (tuple . .Values.b | include "interpret-for-test") .Values.a) ) | ternary "condition-is-true" "condition-is-false" }}'
+    ```
+
+  * you'll need this instead:
+
+    ```yaml
+    a: true
+    b: "{{ not .Values.a }}"
+    e: '{{ tuple . (and (tuple . .Values.b | include "interpret-for-test") .Values.a) "condition-is-true" "condition-is-false" | include "interpret-ternary" }}'
+                   '------------------ condition -----------------------------------' '--value if true--' '--value if false--'
+    ```
+
 For more details on templating features & limitations, refer to [`_interpret-values.tpl`](templates/_interpret-values.tpl)
