@@ -61,7 +61,7 @@ chart-jobs:
 yamllint:
   extends: .lint-base
   script:
-    - 'yamllint . -d "$(cat < tools/gci-templates/yamllint.yaml) $(cat < tools/gci-templates/yamllint-helm-exclude-charts.yaml)"'
+    - 'yamllint . -d "$(cat < tools/gci-templates/configuration/yamllint.yaml) $(cat < tools/gci-templates/configuration/yamllint-helm-exclude-charts.yaml)"'
 
 avoid-typo-on-bootstrap:
   extends: .lint-base
@@ -88,7 +88,7 @@ check-docs-markdown:
     - |
       md_files=$(git diff --name-only $CI_COMMIT_SHA origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME | grep "\.md$" || true)
       if [ -n "$md_files" ] ; then
-        markdownlint-cli2-config tools/gci-templates/.markdownlint.yml $md_files
+        markdownlint-cli2-config tools/gci-templates/configuration/.markdownlint.yml $md_files
       else
         echo "No modified .md files"
       fi
