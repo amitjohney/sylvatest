@@ -6,7 +6,7 @@ patches:
     kind: HeatStack
   patch: |
     - op: add
-      path: /spec/template/resources/floating-ip
+      path: /spec/heatStack/template/resources/floating-ip
       value:
         type: OS::Neutron::FloatingIP
         properties:
@@ -16,7 +16,7 @@ patches:
     kind: HeatStack
   patch: |
     - op: add
-      path: /spec/template/outputs/allocated_fip
+      path: /spec/heatStack/template/outputs/allocated_fip
       value:
         value: { get_attr: [floating-ip, floating_ip_address] }
         description: Floating IP associated to the port
