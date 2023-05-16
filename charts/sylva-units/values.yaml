@@ -557,13 +557,18 @@ units:
             annotations:
               metallb.universe.tf/allow-shared-ip: '{{ .Values.cluster.cluster_external_ip }}'
         mariadb:
-          auth:
-            # if rootPassword is left empty a random one is generated at each installation but mariadb won't be able to reuse the same PVCs
-            rootPassword: "changeme"
-            # if replicationPassword is left empty a random one is generated at each installation but mariadb won't be able to reuse the same PVCs
-            replicationPassword: "changeme"
           persistence:
             storageClass: local-path
+    helm_secret_values:
+      mariadb:
+        auth:
+          # if rootPassword or replicationPassword are left empty, we use a randomly generated password
+          rootPassword: '{{ .Values._internal.default_password }}'
+          replicationPassword: '{{ .Values._internal.default_password }}'
+          ironicPassword: '{{ .Values._internal.default_password }}'
+      auth:
+        ironicPassword: '{{ .Values._internal.default_password }}'
+        ironicInspectorPassword: '{{ .Values._internal.default_password }}'
 
   local-path-provisioner:
     enabled: yes
