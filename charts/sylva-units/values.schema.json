@@ -618,7 +618,8 @@
                 "capd",
                 "capo",
                 "capv",
-                "capm3"
+                "capm3",
+                "m3capo"
               ]
             },
             "bootstrap_provider": {
@@ -741,6 +742,9 @@
           }
         },
         "capo": {
+          "type": "object"
+        },
+        "m3capo": {
           "type": "object"
         },
         "capv": {
@@ -972,6 +976,123 @@
                     "required": [
                       "type"
                     ]
+                  },
+                  "resources_tag": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "capi_providers": {
+                "properties": {
+                  "infra_provider": {
+                    "const": "m3capo"
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "m3capo": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "flavor_name": {
+                    "type": "string"
+                  },
+                  "ssh_key_name": {
+                    "type": "string"
+                  },
+                  "network_id": {
+                    "type": "string"
+                  },
+                  "image_name": {
+                    "type": "string"
+                  },
+                  "external_network_id": {
+                    "type": "string"
+                  },
+                  "bootstrap_id": {
+                    "type": "string"
+                  },
+                  "clouds_yaml": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "clouds": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "capo_cloud"
+                        ],
+                        "patternProperties": {
+                          "(capo_cloud|.*)": {
+                            "type": "object",
+                            "additionalProperties": true,
+                            "required": [
+                              "auth"
+                            ],
+                            "properties": {
+                              "auth": {
+                                "type": "object",
+                                "additionalProperties": true,
+                                "required": [
+                                  "auth_url",
+                                  "username",
+                                  "password",
+                                  "project_name",
+                                  "project_domain_name",
+                                  "user_domain_name"
+                                ],
+                                "properties": {
+                                  "auth_url": {
+                                    "type": "string",
+                                    "format": "uri"
+                                  },
+                                  "user_domain_name": {
+                                    "type": "string"
+                                  },
+                                  "project_domain_name": {
+                                    "type": "string"
+                                  },
+                                  "project_name": {
+                                    "type": "string"
+                                  },
+                                  "username": {
+                                    "type": "string"
+                                  },
+                                  "password": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "region_name": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "verify": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "cacert": {
+                    "type": "string"
                   },
                   "resources_tag": {
                     "type": "string"

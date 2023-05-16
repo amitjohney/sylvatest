@@ -1,0 +1,72 @@
+---
+apiVersion: heatoperator.sylva/v1
+kind: HeatStack
+metadata:
+  labels:
+    app.kubernetes.io/name: heatstack
+    app.kubernetes.io/instance: heatstack-m3capo-cluster-resources
+    app.kubernetes.io/part-of: heat-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: heat-operator
+  name: heatstack-m3capo-cluster-resources
+  namespace: default
+spec:
+  template:
+    heat_template_version: "2018-08-31"
+
+    parameters:
+      vip_network:
+        type: string
+        description: "Network name"
+      network:
+        type: string
+        description: "Network name"
+      flavor:
+        type: string
+        description: "Flavor name"
+      image:
+        type: string
+        description: "Image name"
+      provision_net_name:
+        type: string
+        description: CIDR for provision network
+        default: "provision"
+    
+    resources:
+      my_indexed_group:
+        type: OS::Heat::ResourceGroup
+        properties:
+          count: 1
+          resource_def:
+            type: OS::Nova::Server
+            properties:
+              name: server_%index%
+              image: { get_param: image }
+              flavor: { get_param: flavor }
+              networks: [ { network : { get_param: provision_net_name } }, { network: { get_param: network } } ]
+
+      vip_port:
+        type: OS::Neutron::Port
+        properties:
+          network: { get_param: vip_network }
+
+    outputs:
+      allocated_ip:
+        value: { get_attr: [vip_port, fixed_ips, 0, ip_address] }
+        description: IP address allocated to the port
+      allocated_fip:
+        value: ""
+
+  namePrefix: m3capo-cluster
+  configmapName: m3capo-cluster-resources
+  configmapLabels:
+    copy-from-bootstrap-to-management: ""
+  identityRef: management-cluster-cloud-config
+  cloudName: capo_cloud
+  tag: ${M3CAPO_TAG}
+  environment:
+    parameters:
+      flavor: "${M3CAPO_FLAVOR_NAME}"
+      image: "${M3CAPO_IMAGE_NAME}"
+      network: "${M3CAPO_NETWORK_ID}"
+      vip_network: "${M3CAPO_NETWORK_ID}"

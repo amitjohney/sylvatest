@@ -15,6 +15,9 @@ units:
   capm3:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
 
+  m3capo:
+    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "m3capo" }}'
+
   capv:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capv" }}'
 

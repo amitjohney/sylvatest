@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sushy-deployment
+  namespace: default
+  labels:
+    app: sushy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sushy
+  template:
+    metadata:
+      labels:
+        app: sushy
+    spec:
+      containers:
+      - name: sushy
+        image: quay.io/remi_letrocquer/sushy:v2
+        command: [ "sushy-emulator", "--debug" ,"--os-cloud", "capo_cloud", "--interface", "$(POD_IP)" ]
+        env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: SUSHY_EMULATOR_TFTP_SERVER_IP
+          value: 192.168.99.20
+        - name: SUSHY_EMULATOR_PROVISION_NETWORK
+          value: provision
+        volumeMounts:
+        - name: cloud
+          mountPath: "/etc/openstack"
+          readOnly: false
+      volumes:
+      - name: cloud
+        secret:
+          secretName: management-cluster-cloud-config
+          optional: false # default setting; "mysecret" must exist
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: sushy
+  name: sushy
+  namespace: default
+spec:
+  ports:
+  - port: 8000
+    targetPort: 8000
+  selector:
+    app: sushy

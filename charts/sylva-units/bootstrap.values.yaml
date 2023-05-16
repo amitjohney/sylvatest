@@ -17,22 +17,33 @@ units:
       values:
         # ironicIPADownloaderBaseURI:
         services:
-          # Address of the host, that will be reachable from the outside
-          ironicIP: '{{ dig "capm3" "external_bootstrap_ip" (dig "capm3" "bootstrap_ip" "127.0.0.1" .Values.cluster) .Values.cluster }}'
-          # Address of kind container/node, that will be used to bind ironic service
-          externalIPs:
-            - |
-              {{- $result := "not found" -}}
-              {{- range $address := lookup "v1" "Node" "" "" | dig "items" list | first | default dict |  dig "status" "addresses" list -}}
-                {{- if and (eq $address.type "InternalIP") (eq $result "not found") -}}
-                  {{- $result = $address.address -}}
+          ironic:
+            # Address of the host, that will be reachable from the outside
+            ironicIP: '{{ dig "capm3" "external_bootstrap_ip" (dig "capm3" "bootstrap_ip" "127.0.0.1" .Values.cluster) .Values.cluster }}'
+            # Address of kind container/node, that will be used to bind ironic service
+            externalIPs:
+              - |
+                {{- $result := "not found" -}}
+                {{- range $address := lookup "v1" "Node" "" "" | dig "items" list | first | default dict |  dig "status" "addresses" list -}}
+                  {{- if and (eq $address.type "InternalIP") (eq $result "not found") -}}
+                    {{- $result = $address.address -}}
+                  {{- end -}}
                 {{- end -}}
-              {{- end -}}
-              {{- $result -}}
+                {{- $result -}}
 
   cluster:
     depends_on:
       reconcile-sylva-units: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+
+  bootstrap-local-path:
+    depends_on:
+      cluster: true
+    enabled_conditions:
+    - '{{ tuple . "metal3" | include "unit-enabled" }}'
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/bootstrap-local-path
+      wait: true
 
   calico-crd:
     # overload calico-crd definition in bootstrap context to deploy in the management cluster
@@ -288,8 +299,10 @@ units_override_enabled:
   - capi
   - '{{ .Values.cluster.capi_providers.infra_provider }}'
   - '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
-  - '{{ tuple "metal3" (.Values.cluster.capi_providers.infra_provider | eq "capm3") | include "set-only-if" }}'
+  - '{{ tuple "local-path-provisioner" (or (.Values.cluster.capi_providers.infra_provider | eq "capm3") (.Values.cluster.capi_providers.infra_provider | eq "m3capo" ))| include "set-only-if" }}'
+  - '{{ tuple "metal3" (or (.Values.cluster.capi_providers.infra_provider | eq "capm3") (.Values.cluster.capi_providers.infra_provider | eq "m3capo" ))| include "set-only-if" }}'
   - cluster
+  - bootstrap-local-path
   - calico-crd
   - calico
   - management-cluster-flux
@@ -297,5 +310,7 @@ units_override_enabled:
   - management-sylva-units
   - pivot
   - heat-operator
+  - m3capo-cluster-resources
+  - m3capo-sushy
   - capo-cluster-resources
   - reconcile-sylva-units

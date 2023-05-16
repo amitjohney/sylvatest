@@ -62,7 +62,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3.git
       ref:
-        tag: 0.1.0
+        branch: manage_pxe
 
   local-path-provisioner:
     kind: GitRepository
@@ -636,6 +636,20 @@ units:
           force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
       wait: true
 
+  m3capo:
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.infra_provider | eq "m3capo" }}'
+    repo: sylva-core
+    depends_on:
+      m3capo-cluster-resources: true
+      cert-manager: true
+    kustomization_spec:
+      path: ./kustomize-units/m3capo
+      postBuild:
+        substitute:
+          force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
+      wait: true
+
   capv:
     repo: sylva-core
     depends_on:
@@ -664,7 +678,6 @@ units:
       wait: true
 
   metal3:
-    enabled: no
     depends_on:
       cert-manager: true
     repo: metal3
@@ -687,6 +700,9 @@ units:
             accessMode: "ReadWriteOnce"
         services:
           ironic:
+            pxeEnabled: true
+            dhcpRange: '192.168.99.100,192.168.99.150'
+            provisioningInterface: 'eth0'
             # Specify the IP address used by Ironic service
             ironicIP: '{{ .Values.cluster.cluster_external_ip }}'
             # We allow shared IPs because we are exposing (by design) a single cluster external IP
@@ -696,6 +712,12 @@ units:
           persistence:
             storageClass: '{{ .Values._internal.default_storage_class }}'
     helm_secret_values:
+      services:
+        ironic:
+          neutron_auth_url: '{{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.auth_url }}'
+          neutron_tenant_name: '{{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.project_name }}'
+          neutron_username: '{{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.username }}'
+          neutron_user_password: '{{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.password }}'
       mariadb:
         auth:
           # if rootPassword or replicationPassword are left empty, we use a randomly generated password
@@ -743,6 +765,7 @@ units:
       '{{ .Values.cluster.capi_providers.infra_provider }}': true
       '{{ .Values.cluster.capi_providers.bootstrap_provider }}': true
       capo-cluster-resources: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+      m3capo-cluster-resources: '{{ .Values.cluster.capi_providers.infra_provider | eq "m3capo" }}'
     labels:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
     kustomization_spec:
@@ -786,15 +809,41 @@ units:
         - '{{ tuple (.Files.Get "elements/controlplane-ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
         - '{{ tuple (.Files.Get "elements/configtemplate-ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
 
+  m3capo-sushy:
+   enabled_conditions:
+   - '{{ .Values.cluster.capi_providers.infra_provider | eq "m3capo" }}'
+   repo: sylva-core
+   depends_on:
+     cert-manager: true
+   kustomization_spec:
+     path: ./kustomize-units/m3capo-sushy
+     wait: true
+
   heat-operator:
     enabled_conditions:
-    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+    - '{{ (or (.Values.cluster.capi_providers.infra_provider | eq "capo") (.Values.cluster.capi_providers.infra_provider | eq "m3capo")) }}'
     repo: sylva-core
     depends_on:
       cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/heat-operator
       wait: true
+
+  m3capo-cluster-resources:
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.infra_provider | eq "m3capo" }}'
+    repo: sylva-core
+    depends_on:
+      heat-operator: true
+    kustomization_spec:
+      path: ./kustomize-units/m3capo-cluster-resources
+      wait: true
+      postBuild:
+        substitute:
+          M3CAPO_NETWORK_ID: '{{ .Values.cluster.m3capo.network_id }}'
+          M3CAPO_FLAVOR_NAME: '{{ .Values.cluster.m3capo.flavor_name }}'
+          M3CAPO_IMAGE_NAME: '{{ .Values.cluster.m3capo.image_name }}'
+          M3CAPO_TAG: '{{ .Values.cluster.m3capo.resources_tag }}'
 
   capo-cluster-resources:
     enabled_conditions:
@@ -1670,6 +1719,13 @@ cluster:
   # Nodes number for controlplane and workers
   control_plane_replicas: 3
   worker_replicas: 0
+
+  m3capo:
+    flavor_name: ""
+    resources_tag: ""
+    network_id: ""
+    image_name: ""
+    bootstrap_id: ""
 
   capo:
     flavor_name: m1.large # Openstack flavor name
