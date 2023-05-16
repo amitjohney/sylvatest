@@ -328,6 +328,22 @@ units:
           name: vault-configurer
           namespace: vault
 
+
+  vault-config-operator:
+    enabled: yes
+    depends_on:
+      namespace-defs: true
+      cert-manager: true
+    helm_repo_url: https://redhat-cop.github.io/vault-config-operator
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: vault-config-operator
+          version: v0.8.13
+      targetNamespace: vault
+      values:
+        enableCertManager: true
+
   cis-operator-crd:
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
     helm_repo_url: https://charts.rancher.io

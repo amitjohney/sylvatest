@@ -155,19 +155,60 @@ spec:
   # The repository also contains a lot examples in the deploy/ and operator/deploy directories.
   externalConfig:
     policies:
-      - name: allow_secrets
+      - name: secret-reader
         rules: path "secret/*" {
-          capabilities = ["create", "read", "update", "delete", "list"]
+          capabilities = [ "read" ]
           }
+      - name: secret-writer
+        rules: |
+         # create secrets
+         path "secret/data/*" {
+            capabilities = [ "create", "update", "delete" ]
+         }
+
+         path "/sys/policies/password/+/generate" {
+           capabilities = [ "read" ]
+         }
+
+      - name: policy-admin
+        rules: |
+         path "sys/health" {
+          capabilities = ["read", "sudo"]
+         }
+
+         # Create and manage ACL policies broadly across vault
+         path "sys/policies/*" {
+          capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+         }
+
+         # Create and manage policy
+         path "sys/policy*" {
+          capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+         }
+
+         # Manage secrets engines
+         path "sys/mounts*" {
+          capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+         }
 
     auth:
       - type: kubernetes
         roles:
-          # Allow every pod in the vault namespace to use the secret kv store
+          # default role allows every pod in the vault namespace to read the secret kv store
           - name: default
             bound_service_account_names: ["default", "vault-secrets-webhook", "vault"]
             bound_service_account_namespaces: ["vault"]
-            policies: ["allow_secrets"]
+            policies: [ "secret-reader"]
+            ttl: 1h
+          - name: policy-admin
+            bound_service_account_names: [ "vault"]
+            bound_service_account_namespaces: ["vault"]
+            policies: [ "policy-admin" ]
+            ttl: 1h
+          - name: secret-writer
+            bound_service_account_names: [ "vault"]
+            bound_service_account_namespaces: ["vault"]
+            policies: [ "secret-writer" ]
             ttl: 1h
 
     secrets:
