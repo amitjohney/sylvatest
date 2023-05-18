@@ -15,6 +15,8 @@ resources:
 - external-keycloak.yaml
 
 images:
+# Renovate Bot needs additional information to detect the keycloak-realm-operator version:
+# renovate: registryUrl=https://quay.io image=keycloak/keycloak-realm-operator
 - name: quay.io/keycloak/keycloak-realm-operator
   newName: quay.io/keycloak/keycloak-realm-operator
   newTag: 1.0.0
