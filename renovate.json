@@ -76,6 +76,13 @@
     },
     {
       "datasourceTemplate": "docker",
+      "fileMatch": ["kustomize-units/keycloak-legacy-operator/kustomization.yaml"],
+      "matchStrings": [
+        "#\\s?renovate: registryUrl=(?<registryUrl>.*?) image=(?<depName>.*?)\\n[\\w\\W]*?newTag: (?<currentValue>[\\w+.-]*)"
+      ]
+    },
+    {
+      "datasourceTemplate": "docker",
       "fileMatch": ["vault.yaml"],
       "matchStrings": [
         "spec:\\n[\\w\\W]*?.*image: (?<depName>.*)\\:(?<currentValue>.*)"
