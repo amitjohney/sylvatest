@@ -456,7 +456,6 @@ properties:
 
       cluster_external_ip:  # -------------------------------
         type: string
-        format: ipv4
 
       cluster_external_domain:  # -------------------------------
         type: string

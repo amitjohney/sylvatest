@@ -580,8 +580,7 @@
           }
         },
         "cluster_external_ip": {
-          "type": "string",
-          "format": "ipv4"
+          "type": "string"
         },
         "cluster_external_domain": {
           "type": "string",
