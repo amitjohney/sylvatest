@@ -1470,7 +1470,7 @@ cluster:
       type: xxx  # this is a cinder volume type e.g. 'ceph_sas' (must exist in OpenStack)
     resources_tag: '{{ eq .Values.cluster.capi_providers.infra_provider "capo" | ternary (printf "sylva-%s" .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.username) "" }}' # tag set for OpenStack resources in management and test workload cluster
 
-  cluster_external_ip: 55.55.55.55
+  cluster_external_ip: 172.20.129.152
   cluster_external_domain: sylva
 
   capd:
