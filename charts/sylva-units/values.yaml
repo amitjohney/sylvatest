@@ -232,6 +232,16 @@ units:
             runAsUser: 10000
 
 
+  prometheus:
+    enabled: yes
+    depends_on:
+      cert-manager: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/prometheus
+      targetNamespace: default
+      wait: true
+
 # sylva-ca provides a Certificate Authority for Components of the management cluster
   sylva-ca:
     enabled: yes
