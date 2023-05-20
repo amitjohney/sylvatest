@@ -929,7 +929,7 @@ units:
       chart:
         spec:
           chart: k8s-gateway
-          version: 2.0.3
+          version: 2.0.4
       interval: 1m0s
       values:
         domain: '{{ .Values.cluster.cluster_external_domain }}'
