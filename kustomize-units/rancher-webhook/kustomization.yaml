@@ -1,7 +1,0 @@
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-resources:
-- webhook-service.yaml
-# we force the definition of webhook-service, because disabling embedded-cluster-api
-# results in not instantiating the rancher-webhook chart which is where Rancher would
-# define this services (https://github.com/rancher/webhook/blob/e107ab3ed6474f0520946237be50a011f0cf5256/charts/rancher-webhook/charts/capi/templates/service.yaml)
