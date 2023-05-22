@@ -96,6 +96,7 @@ required:
   - unit_kustomization_spec_default
   - unit_helmrelease_spec_default
   - unit_helmrelease_kustomization_spec_default
+  - units_enabled_default
   - units
   - cluster
   - proxies
@@ -265,6 +266,11 @@ properties:
           enabled:  # -------------------------------
             $ref: "#/$defs/enabled"
 
+          enabled_conditions:
+            type: array
+            items:
+              $ref: "#/$defs/enabled"
+
           repo:  # -------------------------------
             anyOf:
               - type: string
@@ -376,8 +382,6 @@ properties:
               "^.*$":
                 type: string
 
-        required:
-          - enabled
 
         dependentRequired:
           kustomization_substitute_secrets:
@@ -851,6 +855,9 @@ properties:
                   type: string
                   format: uri
                   pattern: "^(https?://.*|)$"
+
+  units_enabled_default:
+    type: boolean
 
   units_override_enabled:  # -------------------------------
     type: array

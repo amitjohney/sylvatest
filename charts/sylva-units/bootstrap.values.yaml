@@ -13,7 +13,6 @@ unit_helmrelease_spec_default:
 units:
 
   cluster:
-    enabled: yes
     depends_on:
       reconcile-sylva-units: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
 
@@ -40,7 +39,6 @@ units:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
 
   management-cluster-flux:
-    enabled: yes
     depends_on:
       cluster: true
       # FIXME; Flux wait/healthcheck on management cluster does not work as expected, it becomes ready as soon as manifests are applied
@@ -63,7 +61,6 @@ units:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
 
   management-cluster-configs:
-    enabled: yes
     depends_on:
       management-cluster-flux: true
     repo: sylva-core
@@ -104,7 +101,6 @@ units:
 
   # instantiate 'sylva-units' chart again in the management cluster
   sylva-units:
-    enabled: yes
     depends_on:
       management-cluster-configs: true
     repo: sylva-core
@@ -142,7 +138,8 @@ units:
       valuesFrom: '{{ lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units" | dig "spec" "valuesFrom" list | include "preserve-type" }}'
 
   reconcile-sylva-units:
-    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     depends_on:
       capo-cluster-resources: true
     repo: sylva-core
@@ -268,12 +265,12 @@ units_override_enabled:
   - '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
   - '{{ tuple "metal3" (.Values.cluster.capi_providers.infra_provider | eq "capm3") | include "set-only-if" }}'
   - cluster
-  - '{{ tuple "calico-crd" (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | include "set-only-if" }}'
-  - '{{ tuple "calico" (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | include "set-only-if" }}'
+  - calico-crd
+  - calico
   - management-cluster-flux
   - management-cluster-configs
   - sylva-units
   - pivot
-  - '{{ tuple "heat-operator" (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
-  - '{{ tuple "capo-cluster-resources" (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
-  - '{{ tuple "reconcile-sylva-units" (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
+  - heat-operator
+  - capo-cluster-resources
+  - reconcile-sylva-units

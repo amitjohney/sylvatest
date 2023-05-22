@@ -1,0 +1,25 @@
+# the management cluster has all units defined in values.yaml
+# (except the ones explicitly set 'enabled: false' in values.yaml
+#  and not explicitely set 'enabled: false' here)
+units_enabled_default: true
+
+
+units:
+
+  capd:
+    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" }}'
+
+  capo:
+    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+
+  capm3:
+    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+
+  capv:
+    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capv" }}'
+
+  cabpk:  # kubeadm
+    enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
+
+  cabpr:  # RKE2
+    enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
