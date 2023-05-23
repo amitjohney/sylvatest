@@ -1147,6 +1147,7 @@ units:
                   - name: CLUSTER_NAME
                     value: '{{ .Values.cluster.test_workload_cluster_name }}'
 
+
   workload-capo-cluster-resources:
     enabled: '{{ and (.Values.cluster.capi_providers.infra_provider | eq "capo") (tuple . (index .Values.units "workload-cluster" "enabled") | include "interpret-for-test") }}'
     repo: sylva-core
