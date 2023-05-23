@@ -170,24 +170,14 @@ spec:
            capabilities = [ "read" ]
          }
 
-      - name: policy-admin
+      - name: admin
         rules: |
          path "sys/health" {
           capabilities = ["read", "sudo"]
          }
 
-         # Create and manage ACL policies broadly across vault
+         # Create and manage system policies broadly across vault
          path "sys/policies/*" {
-          capabilities = ["create", "read", "update", "delete", "list", "sudo"]
-         }
-
-         # Create and manage policy
-         path "sys/policy*" {
-          capabilities = ["create", "read", "update", "delete", "list", "sudo"]
-         }
-
-         # Manage secrets engines
-         path "sys/mounts*" {
           capabilities = ["create", "read", "update", "delete", "list", "sudo"]
          }
 
@@ -195,15 +185,15 @@ spec:
       - type: kubernetes
         roles:
           # default role allows every pod in the vault namespace to read the secret kv store
-          - name: default
+          - name: secret-reader
             bound_service_account_names: ["default", "vault-secrets-webhook", "vault"]
             bound_service_account_namespaces: ["vault"]
             policies: [ "secret-reader"]
             ttl: 1h
-          - name: policy-admin
+          - name: admin
             bound_service_account_names: [ "vault"]
             bound_service_account_namespaces: ["vault"]
-            policies: [ "policy-admin" ]
+            policies: [ "admin" ]
             ttl: 1h
           - name: secret-writer
             bound_service_account_names: [ "vault"]

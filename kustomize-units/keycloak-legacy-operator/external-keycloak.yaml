@@ -10,11 +10,24 @@ spec:
   contextRoot: /
 ---
 #The Admin Credentials need to match those used/created by the new Keycloak Operator
-apiVersion: v1
-kind: Secret
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
 metadata:
   name: credential-external-keycloak
-type: Opaque
-stringData:
-  ADMIN_USERNAME: admin
-  ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+spec:
+  secretStoreRef:
+    name: vault
+    kind: ClusterSecretStore
+  target:
+    creationPolicy: Orphan
+    name: credential-external-keycloak
+    template:
+      type: Opaque
+      data:
+        ADMIN_USERNAME: admin
+        ADMIN_PASSWORD: "{{ .password | toString }}"
+  data:
+  - secretKey: password
+    remoteRef:
+      key: secret/data/keycloak
+      property: password
