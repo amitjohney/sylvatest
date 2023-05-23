@@ -21,12 +21,3 @@ spec:
   ingress:
     enabled: false
   instances: 1
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: keycloak-initial-admin
-stringData:
-  username: admin
-  password: ${KEYCLOAK_ADMIN_PASSWORD}
-type: kubernetes.io/basic-auth

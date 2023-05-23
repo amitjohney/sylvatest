@@ -344,6 +344,40 @@ units:
       values:
         enableCertManager: true
 
+  vault-secrets: # generate random secrets in vault, configure password policy, authentication backends, etc...
+    enabled: yes
+    repo: sylva-core
+    depends_on:
+      vault: true
+      vault-config-operator: true
+    kustomization_spec:
+      path: ./kustomize-units/vault-secrets
+      wait: true
+
+  external-secrets-operator:
+    enabled: true
+    helm_repo_url: https://charts.external-secrets.io
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: external-secrets
+          version: v0.8.1
+      targetNamespace: external-secrets
+      install:
+        createNamespace: true
+      values:
+        installCRDs: true
+
+  eso-secret-stores:
+    enabled: yes
+    depends_on:
+      vault-secrets: true
+      external-secrets-operator: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/eso-secret-stores
+      wait: true
+
   cis-operator-crd:
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
     helm_repo_url: https://charts.rancher.io
@@ -394,6 +428,7 @@ units:
       sylva-ca-certs: true
       ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
       postgres: true
+      eso-secret-stores: true
     annotations:
       sylvactl/readyMessage: "Keycloak UI can be reached at https://{{ .Values.cluster.keycloak.external_hostname }} ({{ .Values.cluster.keycloak.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
     repo: sylva-core
@@ -402,7 +437,6 @@ units:
       targetNamespace: keycloak
       postBuild:
         substitute:
-          KEYCLOAK_ADMIN_PASSWORD: '{{ .Values.cluster.admin_password }}'
           KEYCLOAK_DNS: '{{ .Values.cluster.keycloak.external_hostname }}'
       healthChecks:  # cannot use __wait: true__ here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/144
         # the Keycloak StatefulSet set is produced, by the combination of Keycloak operator
@@ -421,9 +455,6 @@ units:
     kustomization_spec:
       path: ./kustomize-units/keycloak-legacy-operator
       targetNamespace: keycloak
-      postBuild:
-        substitute:
-          KEYCLOAK_ADMIN_PASSWORD: '{{ .Values.cluster.admin_password }}'
       wait: true
       _patches:
         - patch: |

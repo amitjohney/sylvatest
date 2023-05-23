@@ -1,0 +1,22 @@
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+   name: keycloak-initial-admin
+spec:
+   secretStoreRef:
+      name: vault
+      kind: ClusterSecretStore
+   target:
+      creationPolicy: Orphan
+      name: keycloak-initial-admin
+      template:
+         type: kubernetes.io/basic-auth
+         data:
+            username: admin
+            password: "{{ .password | toString }}"
+   data:
+   - secretKey: password
+     remoteRef:
+        key: secret/data/keycloak
+        property: password
