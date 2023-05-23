@@ -1470,17 +1470,6 @@ units:
                   - name: CLUSTER_NAME
                     value: '{{ .Values.cluster.test_workload_cluster_name }}'
 
-  workload-cluster-cloud-config:
-    enabled_conditions:
-      - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
-      - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
-    repo: sylva-core
-    depends_on:
-      namespace-defs: true
-      external-secrets-operator: true
-    kustomization_spec:
-      path: ./kustomize-units/workload-cluster-cloud-config
-      wait: true
 
   workload-capo-cluster-resources:
     enabled_conditions:
