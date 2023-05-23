@@ -625,7 +625,7 @@ units:
           defaultClass: '{{ not (tuple . (index .Values.units "cinder-csi" "enabled") | include "interpret-for-test") | include "as-bool" }}'
         helperImage:
           repository: docker.io/library/busybox
-          tag: 1.36.0
+          tag: 1.36.1
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:
