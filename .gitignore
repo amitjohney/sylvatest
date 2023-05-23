@@ -2,3 +2,4 @@
 *secrets.*
 bin/*
 tools/kind/registry.d/
+test/test.test

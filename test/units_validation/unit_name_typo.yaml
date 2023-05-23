@@ -1,0 +1,4 @@
+# This is a values file with a typo, so it is not valid
+units:
+  ingress-ngnx:
+    enabled: false
