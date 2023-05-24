@@ -1044,37 +1044,6 @@ units:
           CURRENT_TIME: '{{ now | date "2006-01-02T15:04:05.999Z" }}'
       wait: true
 
-  update-rancher-admin:
-    enabled: '{{ .Values._internal.rancher_and_keycloak }}'
-    repo: sylva-core
-    depends_on:
-      rancher: true
-      rancher-add-keycloak-provider: true
-      keycloak-resources: true
-    kustomization_spec:
-      path: ./kustomize-units/kube-job
-      wait: true
-      force: true
-      _patches:
-      - target:
-          kind: Job
-          name: kube-job
-        patch: |
-          - op: replace
-            path: /metadata/name
-            value: update-rancher-admin-job
-          - op: replace
-            path: /spec/backoffLimit
-            value: 10
-      - target:
-          kind: ConfigMap
-          name: job-scripts
-        patch: |
-          - op: replace
-            path: /data/kube-job.sh
-            value: |
-          {{ .Files.Get "scripts/update-rancher-user.sh" | indent 4 }}
-
   flux-webui:
     enabled: yes
     depends_on:
