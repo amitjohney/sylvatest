@@ -186,8 +186,8 @@ spec:
         roles:
           # default role allows every pod in the vault namespace to read the secret kv store
           - name: secret-reader
-            bound_service_account_names: ["default", "vault-secrets-webhook", "vault"]
-            bound_service_account_namespaces: ["vault"]
+            bound_service_account_names: ["default", "vault-secrets-webhook", "vault", "rancher"]
+            bound_service_account_namespaces: ["vault", "cattle-system", "keycloak"]
             policies: [ "secret-reader"]
             ttl: 1h
           - name: admin

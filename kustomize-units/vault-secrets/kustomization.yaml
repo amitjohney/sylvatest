@@ -6,3 +6,4 @@ namespace: vault
 resources:
 - password-policy.yaml
 - random-keycloak-secret.yaml
+- random-rancher-secret.yaml

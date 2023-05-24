@@ -327,7 +327,18 @@ units:
           kind: Deployment
           name: vault-configurer
           namespace: vault
-
+ 
+  vault-secrets-webhook: #https://github.com/banzaicloud/bank-vaults/tree/main/charts/vault-secrets-webhook
+    enabled: yes
+    depends_on:
+      vault: true
+    helm_repo_url: https://kubernetes-charts.banzaicloud.com
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: vault-secrets-webhook
+          version: v1.15.3
+      targetNamespace: vault
 
   vault-config-operator:
     enabled: yes
@@ -845,6 +856,7 @@ units:
       cert-manager: true
       k8s-gateway: true
       sylva-ca-certs: true
+      vault-secrets: true
       ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
     annotations:
       sylvactl/readyMessage: "Rancher UI can be reached at https://{{ .Values.cluster.rancher.external_hostname }} ({{ .Values.cluster.rancher.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
@@ -880,6 +892,9 @@ units:
           namespaceList:
             - cattle-fleet-system
             - rancher-operator-system
+        extraEnv:
+          - name: CATTLE_BOOTSTRAP_PASSWORD
+            value: vault:secret/data/rancher#ADMIN_PASSWORD
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:
@@ -889,6 +904,13 @@ units:
                   name: rancher
                 spec:
                   template:
+                    metadata:
+                      annotations:
+                        vault.security.banzaicloud.io/vault-addr: "https://vault.vault.svc.cluster.local:8200" 
+                        vault.security.banzaicloud.io/vault-role: "secret-reader" 
+                        vault.security.banzaicloud.io/vault-skip-verify: "false" 
+                        vault.security.banzaicloud.io/vault-tls-secret: "vault-tls" 
+                        vault.security.banzaicloud.io/vault-path: "kubernetes" 
                     spec:
                       volumes:
                         - name: tls-ca-volume
@@ -906,8 +928,9 @@ units:
                             initialDelaySeconds: 120
                             periodSeconds: 30
                             failureThreshold: 20
-    helm_secret_values:
-      bootstrapPassword: '{{ .Values.cluster.admin_password }}'
+    #helm_secret_values:
+      #bootstrapPassword: '{{ .Values.cluster.admin_password }}'
+      #bootstrapPassword: ""
 
     kustomization_spec:
       # these healthchecks are added so that this unit does not become ready before
