@@ -70,7 +70,7 @@ function process_chart_in_git {
       error $chart_name "The $tgz_file is not present after the 'helm package' operation, check that the chart version is correct"
     fi
   else
-    error $chart_name "The git repository $git_repo revision $git_revision cant be cloned"
+    error $chart_name "The git repository $git_repo revision $revision cant be cloned"
   fi
   rm -rf $TMPD
 }
@@ -95,13 +95,13 @@ fi
 readarray source_templates < <(yq -o=j -I=0 '.source_templates' $VALUES_FILE)
 readarray units < <(yq -o=j -I=0 '.units[]' $VALUES_FILE)
 for unit in "${units[@]}"; do
-  helmrelease_spec=$(echo "$unit" | yq '.helmrelease_spec.chart.spec' -)
-  if [[ -n "$helmrelease_spec" &&  $helmrelease_spec != "null" ]]; then
-    chart=$(echo "$helmrelease_spec" | yq '.chart' -)
+  helmchart_spec=$(echo "$unit" | yq '.helmrelease_spec.chart.spec' -)
+  if [[ -n "$helmchart_spec" &&  $helmchart_spec != "null" ]]; then
+    chart=$(echo "$helmchart_spec" | yq '.chart' -)
     helm_repo_url=$(echo "$unit" | yq '.helm_repo_url' -)
     if [[ -n "$helm_repo_url" && $helm_repo_url != "null" ]]; then
       ## Helm charts in helm repository ##
-      version=$(echo "$helmrelease_spec" | yq '.version' -)
+      version=$(echo "$helmchart_spec" | yq '.version' -)
       process_chart_in_helm_repo $helm_repo_url $chart $version
     else
       ## Helm charts in git repository ##
