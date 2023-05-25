@@ -15,8 +15,12 @@ if openstack ${OS_ARGS} endpoint list &> /dev/null; then
     exit 1
 fi
 
-for SERVER in $(openstack ${OS_ARGS} server list --tags ${CAPO_TAG} -f value -c Name); do
+echo -e "\U0001F5D1 Start cleanup for tag: ${CAPO_TAG} at $(date)"
+
+for SERVER in $(openstack ${OS_ARGS} server list --tags ${CAPO_TAG} -f value -c Name | grep management-cluster) $(openstack ${OS_ARGS} server list --tags ${CAPO_TAG} -f value -c Name | grep -v management-cluster); do
+  echo -e "\U0001F5D1 Deleting server: ${SERVER}"
   openstack ${OS_ARGS} server delete --wait ${SERVER}
+  echo -e "\U0001F5D1 Deleting volume: ${SERVER}-root"
   openstack ${OS_ARGS} volume delete ${SERVER}-root --purge || true
 done
 
