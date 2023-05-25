@@ -108,6 +108,35 @@ yq eval-all -i '
     | select(fileIndex==0)' \
     use-oci-artifacts.values.yaml values.yaml
 
+# Implement a workaround for issue: https://gitlab.com/sylva-projects/sylva-core/-/issues/253 
+# If we find a version with a 0 prefix
+# rewrite the version by (a) prepeding a number before the z in x.y.z (for instance 9) 
+# and (b) keeping the original version in the free-form + field
+# 3.25.001 would become 3.25.9001+v3.25.001
+
+yq eval-all -i '
+    select(fileIndex==1).units as $reference_units |
+    select(fileIndex==0).units as $units |
+    ( select(fileIndex==0).units =
+        (([ $reference_units | ... comments="" | to_entries | .[] | select(.value | has("helm_repo_url") and
+                                                                          .value.helmrelease_spec.chart.spec.version | test("\.0[0-9]"))]
+          | map({
+              "key": .key,
+              "value": {
+                "helm_repo_url": "{{ .Values.sylva_core_oci_registry }}",
+                "helmrelease_spec": {
+                  "chart": {
+                    "spec": {
+                      "version": $reference_units[.key].helmrelease_spec.chart.spec.version | sub("(.?[0-9]+)\.([0-9]+)\.([0-9]+)([\+\-].*)?", "${1}.${2}.9${3}${4}+${1}.${2}.${3}${4}")
+                    }
+                  }
+                }
+              }
+            })
+        ) | from_entries) * $units
+    )
+    | select(fileIndex==0)' \
+    use-oci-artifacts.values.yaml values.yaml
 # ********* Helm-based units relying on 'repo' *********
 
 # For such units, we:

@@ -241,12 +241,11 @@ deploy-kubeadm-capd:
   variables:
     ENV_NAME: kubeadm-capd
 
-# Require: https://gitlab.com/sylva-projects/sylva-core/-/issues/253 to be solved before enabling it
-#deploy-kubeadm-capd-oci:
-#  extends: deploy-kubeadm-capd
-#  variables:
-#    ENV_NAME: kubeadm-capd
-#    OCI_TAG: $OCI_TAG_FORMAT
+deploy-kubeadm-capd-oci:
+  extends: deploy-kubeadm-capd
+  variables:
+    ENV_NAME: kubeadm-capd
+    OCI_TAG: $OCI_TAG_FORMAT
 
 .deploy-capo:
   extends: .deploy-base
@@ -301,13 +300,12 @@ deploy-kubeadm-capo:
     ENV_NAME: "kubeadm-capo"
     CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}"
 
-# Require: https://gitlab.com/sylva-projects/sylva-core/-/issues/253 to be solved before enabling it
-#deploy-kubeadm-capo-oci:
-#  extends: deploy-kubeadm-capo
-#  variables:
-#    ENV_NAME: "kubeadm-capo"
-#    CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-OCI"
-#    OCI_TAG: $OCI_TAG_FORMAT
+deploy-kubeadm-capo-oci:
+  extends: deploy-kubeadm-capo
+  variables:
+    ENV_NAME: "kubeadm-capo"
+    CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-OCI"
+    OCI_TAG: $OCI_TAG_FORMAT
 
 .cleanup-capo:
   stage: delete
@@ -350,15 +348,14 @@ cleanup-rke2-capo-oci:
   needs:
     - deploy-rke2-capo-oci
 
-# Require: https://gitlab.com/sylva-projects/sylva-core/-/issues/253 to be solved before enabling it
-#cleanup-kubeadm-capo-oci:
-#  extends: .cleanup-capo
-#  variables:
-#    ENV_NAME: "kubeadm-capo"
-#    CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-OCI"
-#    OCI_TAG: $OCI_TAG_FORMAT # required to match the same rules as OCI based deployments
-#  needs:
-#    - deploy-kubeadm-capo-oci
+cleanup-kubeadm-capo-oci:
+  extends: .cleanup-capo
+  variables:
+    ENV_NAME: "kubeadm-capo"
+    CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-OCI"
+    OCI_TAG: $OCI_TAG_FORMAT # required to match the same rules as OCI based deployments
+  needs:
+    - deploy-kubeadm-capo-oci
 
 scheduled-cleanup-capo:
   stage: delete
