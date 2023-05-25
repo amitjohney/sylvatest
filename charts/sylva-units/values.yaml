@@ -1081,7 +1081,7 @@ units:
       flux-system: true
       ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
     annotations:
-      sylvactl/readyMessage: "Fluw Webui can be reached at https://{{ .Values.cluster.flux.external_hostname }} ({{ .Values.cluster.flux.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
+      sylvactl/readyMessage: "Flux Webui can be reached at https://{{ .Values.cluster.flux.external_hostname }} ({{ .Values.cluster.flux.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
     repo: weave-gitops
     helmrelease_spec:
       chart:
