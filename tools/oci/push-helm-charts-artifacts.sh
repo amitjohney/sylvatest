@@ -39,6 +39,27 @@ function process_chart_in_helm_repo {
   # Pull Helm chart locally
   if (helm pull --repo $helm_repo --version $chart_version $chart_name); then
     if [[ -e $tgz_file ]]; then
+      if [[ "$version" =~ \.0[0-9] ]]; then
+        # Implement a workaround for issue: https://gitlab.com/sylva-projects/sylva-core/-/issues/253 
+        # If we find a version with a 0 prefix
+        # rewrite the version by (a) prepeding a number before the z in x.y.z (for instance 9) 
+        # and (b) keeping the original version in the free-form + field
+        # 3.25.001 would become 3.25.9001+v3.25.001
+        echo "Chart version contain a 0 prefix which is not allowed in semver"
+        if [[ $version =~ (.?[0-9]+)\.([0-9]+)\.([0-9]+)([\+\-].*)? ]]; then
+          major=${BASH_REMATCH[1]}
+          medium=${BASH_REMATCH[2]}
+          minor=${BASH_REMATCH[3]}
+          others=${BASH_REMATCH[4]}
+        export new_version=$major.$medium.9$minor$others+$version
+        echo "New version: $new_version"
+        tar -xzvf $tgz_file
+        yq -i '.version = strenv(new_version)' $chart_name/Chart.yaml
+        tar -czvf $chart_name-$new_version.tgz $chart_name/
+        rm -rf $chart_name $tgz_file
+        tgz_file="$chart_name-$new_version.tgz"
+        fi
+      fi
       # Push Helm chart to OCI
       helm push $tgz_file $OCI_REGISTRY
       rm -f $tgz_file
