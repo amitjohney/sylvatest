@@ -5,4 +5,4 @@ resources:
   - rancher-tls.yaml
   - keycloak-tls.yaml
   - vault-tls.yaml
-  - weave-tls.yaml
+  - flux-webui-tls.yaml

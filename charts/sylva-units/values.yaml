@@ -478,6 +478,7 @@ units:
       keycloak-legacy-operator: true
     repo: sylva-core
     kustomization_substitute_secrets:
+      SSO_PASSWORD: '{{ .Values.cluster.admin_password }}'
       RANCHER_CLIENT_SECRET: '{{ .Values.cluster.admin_password }}'
     kustomization_spec:
       path: ./kustomize-units/keycloak-resources
@@ -485,6 +486,7 @@ units:
       postBuild:
         substitute:
           RANCHER_DNS: '{{ .Values.cluster.rancher.external_hostname }}'
+          FLUX_WEBUI_DNS: '{{ .Values.cluster.flux.external_hostname }}'
       healthChecks:  #  cannot use __wait: true__ here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/144
         - apiVersion: legacy.k8s.keycloak.org/v1alpha1
           kind: KeycloakRealm
@@ -494,6 +496,65 @@ units:
           kind: KeycloakClient
           name: rancher-client
           namespace: keycloak
+        - apiVersion: v1
+          kind: Secret
+          name: keycloak-client-secret-flux-webui-client
+          namespace: keycloak
+
+  # this is a Job to manually add a custom client-scope to sylva realm (on top of default ones)
+  # while CRD option does not yet provide good results (overrides defaults)
+  keycloak-add-client-scope:
+    enabled: '{{ index .Values.units "flux-webui" "enabled" }}'
+    repo: sylva-core
+    depends_on:
+      keycloak-resources: true
+    kustomization_spec:
+      path: ./kustomize-units/kube-job
+      wait: true
+      force: true
+      _patches:
+      - target:
+          kind: Job
+          name: kube-job
+        patch: |
+          - op: replace
+            path: /metadata/name
+            value: keycloak-add-client-scope
+          - op: replace
+            path: /spec/backoffLimit
+            value: 10
+      - target:
+          kind: ConfigMap
+          name: job-scripts
+        patch: |
+          - op: replace
+            path: /data/kube-job.sh
+            value: |
+          {{ .Files.Get "scripts/keycloak-add-client-scope.sh" | indent 4 }}
+
+  keycloak-oidc-external-secrets:
+    enabled: '{{ .Values.units.keycloak.enabled }}'
+    depends_on:
+      keycloak: true
+      keycloak-legacy-operator: true
+      keycloak-resources: true
+      eso-secret-stores: true
+      keycloak-add-client-scope: true
+    repo: sylva-core
+    kustomization_substitute_secrets:
+      RANCHER_CLIENT_SECRET: '{{ .Values.cluster.admin_password }}'
+    kustomization_spec:
+      path: ./kustomize-units/keycloak-oidc-external-secrets
+      postBuild:
+        substitute:
+          KEYCLOAK_DNS: '{{ .Values.cluster.keycloak.external_hostname }}'
+          FLUX_WEBUI_DNS: '{{ .Values.cluster.flux.external_hostname }}'
+      wait: false
+      healthChecks:
+        - apiVersion: v1
+          kind: Secret
+          name: oidc-auth
+          namespace: flux-system
 
   capi:
     enabled: yes
@@ -836,7 +897,7 @@ units:
           RANCHER_DNS: '{{ .Values.cluster.rancher.external_hostname }}'
           VAULT_DNS: '{{ .Values.cluster.vault.external_hostname }}'
           KEYCLOAK_DNS: '{{ .Values.cluster.keycloak.external_hostname }}'
-          FLUX_DNS: '{{ .Values.cluster.flux.external_hostname }}'
+          FLUX_WEBUI_DNS: '{{ .Values.cluster.flux.external_hostname }}'
       wait: true
 
   rancher:
@@ -1080,8 +1141,9 @@ units:
     depends_on:
       flux-system: true
       ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
+      keycloak-oidc-external-secrets: true
     annotations:
-      sylvactl/readyMessage: "Flux Webui can be reached at https://{{ .Values.cluster.flux.external_hostname }} ({{ .Values.cluster.flux.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
+      sylvactl/readyMessage: "Flux Web UI can be reached at https://{{ .Values.cluster.flux.external_hostname }} ({{ .Values.cluster.flux.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
     repo: weave-gitops
     helmrelease_spec:
       chart:
@@ -1099,6 +1161,8 @@ units:
           value: "true"
         - name: WEAVE_GITOPS_FEATURE_CLUSTER
           value: "false"
+        - name: WEAVE_GITOPS_FEATURE_OIDC_BUTTON_LABEL
+          value: "Log in with Keycloak"
         installCRDs: true
         rbac:
           additionalRules:
@@ -1111,12 +1175,25 @@ units:
           hosts:
             - host: '{{ .Values.cluster.flux.external_hostname }}'
               paths:
-                - path: /   # setting this to another value like '/flux' does not work (URLs coming back from flux webui aren't rewritten by nginx)
+                - path: /   # setting this to another value like '/flux-webui' does not work (URLs coming back from flux webui aren't rewritten by nginx)
                   pathType: Prefix
           tls:
-            - secretName: weave-tls
+            - secretName: flux-webui-tls
               hosts:
                 - '{{ .Values.cluster.flux.external_hostname }}'
+        extraVolumes:
+          - name: custom-ca-cert
+            secret:
+              secretName: flux-webui-tls
+              items:
+                - key: ca.crt
+                  path: ca.crt
+        extraVolumeMounts:
+          - name: custom-ca-cert
+            mountPath: /etc/ssl/certs
+            readOnly: true
+        oidcSecret:
+          create: false
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:

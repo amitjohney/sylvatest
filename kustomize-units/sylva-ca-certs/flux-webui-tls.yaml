@@ -2,17 +2,17 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: weave-tls
+  name: flux-webui-tls
   namespace: flux-system
 spec:
-  secretName: weave-tls
+  secretName: flux-webui-tls
   # Currently the certificate is trusted by the Sylva CA by referring to the ca-issuer.
   # It is possible to leverage an external authority by referring a vault-issuer or an acme-issuer.
   # In this case, configure the issuer according to the spec of the external authority and update issuerRef below
   issuerRef:
     name: ca-issuer
     kind: ClusterIssuer
-  commonName: ${FLUX_DNS}
+  commonName: ${FLUX_WEBUI_DNS}
   duration: 2160h # 90d
   renewBefore: 360h # 15d
   emailAddresses:
@@ -25,7 +25,7 @@ spec:
     organizationalUnits:
     - DEV
   dnsNames:
-  - ${FLUX_DNS}
+  - ${FLUX_WEBUI_DNS}
   - localhost
   ipAddresses:
   - 127.0.0.1
