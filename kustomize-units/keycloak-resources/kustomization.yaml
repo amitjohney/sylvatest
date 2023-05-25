@@ -6,4 +6,4 @@ namespace: keycloak
 resources:
 - keycloak-realm.yaml
 - rancher-client.yaml
-
+- flux-webui-client.yaml

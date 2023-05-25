@@ -12,7 +12,7 @@ spec:
     realm: sylva
     enabled: true
     displayName: Sylva
-    loginTheme: base
+    loginTheme: keycloak
     accountTheme: keycloak
     adminTheme: keycloak
     groups:
@@ -26,7 +26,7 @@ spec:
       - infra-admins
       credentials:
       - type: password
-        value: "${RANCHER_CLIENT_SECRET}"
+        value: "${SSO_PASSWORD}"
         temporary: false
       enabled: true
 ---
