@@ -814,6 +814,8 @@ units:
 
   cinder-csi-psp:
     enabled: '{{ and (.Values.cluster.cis_profile | eq "cis-1.6") (tuple . (index .Values.units "cinder-csi" "enabled") | include "interpret-for-test") }}'
+    depends_on:
+      namespace-defs: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/cinder-csi-psp
@@ -822,6 +824,7 @@ units:
   cinder-csi:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     depends_on:
+      namespace-defs: true
       cinder-csi-psp: '{{ .Values.cluster.cis_profile | eq "cis-1.6" }}'
     helm_repo_url: https://kubernetes.github.io/cloud-provider-openstack
     helmrelease_spec:
