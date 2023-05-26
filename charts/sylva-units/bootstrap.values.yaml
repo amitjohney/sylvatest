@@ -68,7 +68,7 @@ units:
       management-cluster-flux: true
     repo: sylva-core
     kustomization_spec:
-      # FIXME: This is very hacky, we should use an ad-hoc kustomisation instead of this job to re-create configmap and secrets on maangement cluster
+      # FIXME: This is very hacky, we should use an ad-hoc kustomization instead of this job to re-create configmap and secrets on maangement cluster
       path: ./kustomize-units/kube-job
       wait: true
       force: true
@@ -245,9 +245,9 @@ units:
 
               # NOTE: here we could add a reference to another valueFile that would deploy units specific to the management cluster
               # '[{"op":"add","path":"/spec/chart/spec/valuesFiles/-","value":"charts/sylva-units/management.values.yaml"}]'
-              # and/or create a kustomisation on management-cluster to manage sylva-units helmRelease from git
+              # and/or create a kustomization on management-cluster to manage sylva-units helmRelease from git
 
-              echo "-- Freeze reconciliation of current job Kustomisation in source cluster as we're done"
+              echo "-- Freeze reconciliation of current job Kustomization in source cluster as we're done"
               kubectl annotate kustomizations pivot kustomize.toolkit.fluxcd.io/reconcile=disabled --overwrite
 
               echo "-- Accelerate reconciliation of the sylva-units HelmRelease"
