@@ -20,5 +20,5 @@ spec:
   data:
     - secretKey: clientSecret
       remoteRef:
-        key: keycloak-client-secret-flux-webui-client
+        key: keycloak-client-secret-flux-webui-client  # this secret is a byproduct of the flux-webui-client KeycloakClient resource
         property: CLIENT_SECRET

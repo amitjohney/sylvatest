@@ -498,7 +498,7 @@ units:
           namespace: keycloak
         - apiVersion: v1
           kind: Secret
-          name: keycloak-client-secret-flux-webui-client
+          name: keycloak-client-secret-flux-webui-client  # this secret is a byproduct of the flux-webui-client KeycloakClient resource
           namespace: keycloak
 
   # this is a Job to manually add a custom client-scope to sylva realm (on top of default ones)
