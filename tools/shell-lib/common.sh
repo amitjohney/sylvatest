@@ -78,7 +78,7 @@ function ensure_sylvactl {
     if [[ ! -f ${BASE_DIR}/bin/sylvactl || $(sylvactl version) != $SYLVACTL_VERSION ]]; then
         echo_b "\U0001F4E5 Downloading sylvactl"
         mkdir -p ${BASE_DIR}/bin
-        curl -q --progress-bar https://gitlab.com/api/v4/projects/43501695/packages/generic/releases/$SYLVACTL_VERSION/sylvactl -o ${BASE_DIR}/bin/sylvactl
+        curl -q --progress-bar -f https://gitlab.com/api/v4/projects/43501695/packages/generic/releases/$SYLVACTL_VERSION/sylvactl -o ${BASE_DIR}/bin/sylvactl
         chmod +x ${BASE_DIR}/bin/sylvactl
     fi
     # Remove sylvactl that was previously installed in root directory
