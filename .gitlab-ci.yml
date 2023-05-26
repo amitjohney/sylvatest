@@ -366,14 +366,21 @@ scheduled-cleanup-capo:
     - touch tags.txt exclude-tags.txt
     - |
       for STACK in $(openstack stack list -f value -c "Stack Name" | grep '^capo-cluster\|^workload-cluster' ); do
-        STACK_TIME=$(date -d "$(openstack stack show ${STACK} -c creation_time -f value | tr T ' ' | tr -d Z )" +%s)
+        echo -e "Checking stack: ${STACK}"
+        CREATION_TIME=$(openstack stack show ${STACK} -c creation_time -f value | tr T ' ' | tr -d Z ) || true
+        echo -e "CREATION_TIME=${CREATION_TIME}"
+        STACK_TIME=$(date -d "${CREATION_TIME}" +%s)
         THIS_TIME=$(date +%s)
+        echo -e "STACK_TIME=${STACK_TIME}"
+        echo -e "THIS_TIME=${THIS_TIME}"
         # we'll only consider for cleanup tags applied to resources created more than 2 hours ago
         if [ $((THIS_TIME-STACK_TIME)) -gt 7200 ]; then
             openstack stack show ${STACK} -c tags -f json | jq .tags[] -r >> tags.txt
         else
             openstack stack show ${STACK} -c tags -f json | jq .tags[] -r >> exclude-tags.txt
         fi
+        echo -e "Waiting..."
+        sleep 10
       done
     - |
       # skip the cleanup for resources with tags present in exclude-tags.txt
