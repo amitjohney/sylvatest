@@ -22,7 +22,8 @@ set -eu
 set -o pipefail
 
 BASE_DIR="$(realpath $(dirname $0)/../..)"
-OCI_REGISTRY_ARTIFACT=oci://registry.gitlab.com/sylva-projects/sylva-core/kustomize-units
+
+OCI_REGISTRY_ARTIFACT="${OCI_REGISTRY:-oci://registry.gitlab.com/sylva-projects/sylva-core}/kustomize-units"
 
 function process_kustomization {
     # processes a kustomization.yaml (given as $1):
