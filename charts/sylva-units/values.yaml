@@ -361,12 +361,20 @@ units:
       chart:
         spec:
           chart: external-secrets
-          version: 0.8.1
+          version: 0.8.3
       targetNamespace: external-secrets
       install:
         createNamespace: true
       values:
         installCRDs: true
+        securityContext:
+          seccompProfile: null
+        webhook:
+          securityContext:
+            seccompProfile: null
+        certController:
+          securityContext:
+            seccompProfile: null
 
   eso-secret-stores:
     enabled: yes
