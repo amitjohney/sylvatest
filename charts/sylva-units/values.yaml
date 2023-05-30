@@ -437,6 +437,7 @@ units:
       ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
       postgres: true
       eso-secret-stores: true
+      vault-secrets: true  # vault-secrets defines the Vault secret from which the keycloak-initial-admin Secret is generated
     annotations:
       sylvactl/readyMessage: "Keycloak UI can be reached at https://{{ .Values.cluster.keycloak.external_hostname }} ({{ .Values.cluster.keycloak.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
     repo: sylva-core
@@ -517,6 +518,7 @@ units:
     repo: sylva-core
     depends_on:
       keycloak-resources: true
+      keycloak: true  # this unit defines the keycloak-initial-admin Secret used by the script
     kustomization_spec:
       path: ./kustomize-units/kube-job
       wait: true
