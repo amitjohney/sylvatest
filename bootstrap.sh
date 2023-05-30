@@ -37,7 +37,7 @@ retrieve_kubeconfig &
 KUBECONFIG_PID=$!
 
 echo_b "\U000023F3 Wait for bootstrap units and management cluster to be ready"
-sylvactl watch --reconcile --timeout 30m Kustomization/default/sylva-units
+sylvactl watch --reconcile --timeout 30m Kustomization/default/management-sylva-units
 
 if kill $KUBECONFIG_PID &>/dev/null; then
     echo_b "\U00002717 Failed to retrieve management-cluster kubeconfig"
