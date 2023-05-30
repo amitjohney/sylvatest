@@ -19,3 +19,11 @@ cluster:
             project_domain_name: foo
     storageClass:
       type: my-cinder-volume-type
+
+units:
+  cluster:
+    kustomization_spec:
+      path: ./kustomize-units/cluster-manifests/kubeadm-capo/base
+  workload-cluster:
+    kustomization_spec:
+      path: ./kustomize-units/cluster-manifests/kubeadm-capo/base
