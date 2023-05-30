@@ -458,6 +458,7 @@ units:
   keycloak-legacy-operator:
     enabled: '{{ .Values.units.keycloak.enabled }}'
     depends_on:
+      vault-secrets: true  # the credential-external-keycloak Secret use by the legacy operator is generated from ES/Vault secret/data/keycloak
       keycloak: true
     repo: sylva-core
     kustomization_spec:
