@@ -1365,8 +1365,6 @@ units:
           WORKER_SECURITY_GROUP_NAME: 'workload-cluster-security-group-worker-{{ .Values.cluster.capo.resources_tag }}'
 
   workload-cluster:
-    enabled_conditions:
-    - '{{ .Values.env_type_ci }}'
     repo: sylva-core
     depends_on:
       capi: true
