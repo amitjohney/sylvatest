@@ -58,6 +58,7 @@
     "unit_kustomization_spec_default",
     "unit_helmrelease_spec_default",
     "unit_helmrelease_kustomization_spec_default",
+    "units_enabled_default",
     "units",
     "cluster",
     "proxies",
@@ -294,6 +295,12 @@
             "enabled": {
               "$ref": "#/$defs/enabled"
             },
+            "enabled_conditions": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/enabled"
+              }
+            },
             "repo": {
               "anyOf": [
                 {
@@ -463,9 +470,6 @@
               }
             }
           },
-          "required": [
-            "enabled"
-          ],
           "dependentRequired": {
             "kustomization_substitute_secrets": [
               "kustomization_spec"
@@ -1128,6 +1132,9 @@
           }
         }
       }
+    },
+    "units_enabled_default": {
+      "type": "boolean"
     },
     "units_override_enabled": {
       "type": "array",

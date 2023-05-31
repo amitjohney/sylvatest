@@ -27,6 +27,7 @@ spec:
       reconcileStrategy: Revision
       valuesFiles:
         - charts/sylva-units/values.yaml
+        - charts/sylva-units/management.values.yaml
   interval: 10m0s
   valuesFrom:
   - kind: Secret

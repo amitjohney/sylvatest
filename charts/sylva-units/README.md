@@ -121,6 +121,60 @@ Using `env_type_ci: true` will trigger the enablement of a `workload-cluster` (a
 You can find examples of how the values of this chart are typically overriden for a given deployment
 in the `values.yaml` files in sub-directories of [`environment-values`](../../environment-values).
 
+## Controlling which _units_ are enabled on a given run
+
+A few settings are taken into account to determine which _units_ are
+enabled for a given release of `sylva-units` Helm chart. They allow to have
+flexibility in how the unit definitions can be shared (e.g. between bootstrap cluster
+and management cluster) and how the enabled units can be overriden at runtime.
+
+The following criteria determine if a unit _foo_ is enabled :
+
+* all conditions in `units.foo.enabled_conditions` must be verified
+* `units.foo.enabled` is true (or `units_enabled_default` if `units.foo.enabled` isn't set)
+* _if_ `units_override_enabled` is defined, then:
+
+  * unit `foo` is enabled only if it appears in `units_override_enabled`
+  * (`units.foo.enabled` and `units_enabled_default` are ignored)
+  * **this is used only to control what units are enabled during bootstrap**
+
+All these are used in the different values files provided by the chart:
+
+* `values.yaml`:
+
+  This file sets `units_enabled_default: false`, and `units.*.enabled` is never set to true.
+
+  As a result, no unit is defined by default.
+
+  Some units have `.enabled` set to false, this is for units which we don't want to enable
+  by default, including in the management cluster (see below).
+
+* `management.values.yaml`: uses all units from `values.yaml`
+
+  The management cluster Helm release will layer `values.yaml` plus `management.values.yaml`.
+
+  `management.values.yaml` set `units_enabled_default: true`, so every unit defined in `values.yaml`
+  and not explicitly set `enabled: false` gets enabled by default in the management cluster (as long as `enabled_conditions` are met).
+
+* `bootstrap.values.yaml`:
+
+  The management cluster Helm release will layer `values.yaml` plus `bootstrap.values.yaml`.
+
+  `units_override_enabled` is used, so the only units enabled are the ones listed in `units_override_enabled`
+  and for which all `enabled_conditions` are met.
+
+* `workload-cluster.yaml`, for workload clusters
+
+  For releases of sylva-units used in workload clusters, the values will layer `values.yaml` plus `workload-cluster.values.yaml`.
+
+  Only the units having `units.xxx.enabled: true` defined in `workload-cluster.yaml` will be enabled
+  (those units will be enabled only if enabled_conditions are met).
+
+* values overloaded for a given deployment management cluster:
+
+  Enabling or disabling a unit for the management cluster is doable by defining `units.foo.enabled`
+  in the environment values used for the deployment.
+
 ## Developing in this chart
 
 As a developer in Sylva, or as a developer in a team using Sylva and wanting to add new "units"

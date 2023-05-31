@@ -106,6 +106,9 @@ unit_helmrelease_kustomization_spec_default:
     {{- end -}}
   wait: true
 
+# default value used if units.xxx.enabled is not specified
+units_enabled_default: false
+
 # this defines Flux HelmRelease objects, and for each  # FIXME
 # a corresponding GitRepository or OCIRepository (and Secret, TODO: the Secret don't need to be generated for each unit)
 units:
@@ -136,7 +139,6 @@ units:
   flux-system:
     # note that Flux is always installed on the current cluster as a pre-requisite to installing the chart
     # this units contains Flux definitions *to manage the Flux system itself via gitops*
-    enabled: yes
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/flux-system/base
@@ -168,7 +170,6 @@ units:
         installCRDs: true
 
   cert-manager:
-    enabled: yes
     helm_repo_url: https://charts.jetstack.io
     helmrelease_spec:
       chart:
@@ -230,7 +231,6 @@ units:
 
 # sylva-ca provides a Certificate Authority for Components of the management cluster
   sylva-ca:
-    enabled: yes
     depends_on:
       cert-manager: true
     repo: sylva-core
@@ -241,7 +241,6 @@ units:
 
 # namespace-defs creates the namespaces to be used by various units
   namespace-defs:
-    enabled: yes
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/namespace-defs
@@ -250,7 +249,8 @@ units:
 
 # Postgresql deployment for keycloak
   postgres:
-    enabled: '{{ .Values.units.keycloak.enabled }}'
+    enabled_conditions:
+    - '{{ tuple . "keycloak" | include "unit-enabled" }}'
     depends_on:
       namespace-defs: true
       '{{ .Values._internal.default_storage_class_unit }}': true
@@ -271,7 +271,6 @@ units:
         nameOverride: postgres
 
   vault-operator:
-    enabled: true
     helm_repo_url: https://kubernetes-charts.banzaicloud.com
     helmrelease_spec:
       chart:
@@ -287,7 +286,6 @@ units:
 
 # Vault assumes that the certificates vault-tls have been issued
   vault:
-    enabled: yes
     depends_on:
       sylva-ca-certs: true
       ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
@@ -330,7 +328,6 @@ units:
 
 
   vault-config-operator:
-    enabled: yes
     depends_on:
       namespace-defs: true
       cert-manager: true
@@ -347,7 +344,6 @@ units:
         enableMonitoring: false
 
   vault-secrets: # generate random secrets in vault, configure password policy, authentication backends, etc...
-    enabled: yes
     repo: sylva-core
     depends_on:
       vault: true
@@ -357,7 +353,6 @@ units:
       wait: true
 
   external-secrets-operator:
-    enabled: true
     helm_repo_url: https://charts.external-secrets.io
     helmrelease_spec:
       chart:
@@ -379,7 +374,6 @@ units:
             seccompProfile: null
 
   eso-secret-stores:
-    enabled: yes
     depends_on:
       vault-secrets: true
       external-secrets-operator: true
@@ -389,7 +383,8 @@ units:
       wait: true
 
   cis-operator-crd:
-    enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
+    enabled_conditions:
+    - '{{ tuple . "cis-operator" | include "unit-enabled" }}'
     helm_repo_url: https://charts.rancher.io
     helmrelease_spec:
       chart:
@@ -401,7 +396,8 @@ units:
         createNamespace: true
 
   cis-operator:
-    enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
     depends_on:
       cis-operator-crd: true
     helm_repo_url: https://charts.rancher.io
@@ -420,7 +416,8 @@ units:
   # this allows for running a CIS scan for management cluster
   # generates a report which can be viewed and downloaded in CSV from the Rancher UI, at https://rancher.sylva/dashboard/c/local/cis/cis.cattle.io.clusterscan
   cis-operator-scan:
-    enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
+    enabled_conditions:
+    - '{{ tuple . "cis-operator" | include "unit-enabled" }}'
     depends_on:
       cis-operator: true
     repo: sylva-core
@@ -432,7 +429,6 @@ units:
           SCAN_PROFILE: '{{ .Values.cluster.cis_benchmark_scan_profile }}'
 
   keycloak:
-    enabled: yes
     depends_on:
       sylva-ca: true
       sylva-ca-certs: true
@@ -458,7 +454,8 @@ units:
           namespace: keycloak
 
   keycloak-legacy-operator:
-    enabled: '{{ .Values.units.keycloak.enabled }}'
+    enabled_conditions:
+    - '{{ tuple . "keycloak" | include "unit-enabled" }}'
     depends_on:
       keycloak: true
     repo: sylva-core
@@ -482,7 +479,8 @@ units:
             name: keycloak-realm-operator
 
   keycloak-resources:
-    enabled: '{{ .Values.units.keycloak.enabled }}'
+    enabled_conditions:
+    - '{{ tuple . "keycloak" | include "unit-enabled" }}'
     depends_on:
       keycloak: true
       keycloak-legacy-operator: true
@@ -514,7 +512,9 @@ units:
   # this is a Job to manually add a custom client-scope to sylva realm (on top of default ones)
   # while CRD option does not yet provide good results (overrides defaults)
   keycloak-add-client-scope:
-    enabled: '{{ index .Values.units "flux-webui" "enabled" }}'
+    enabled_conditions:
+    - '{{ tuple . "flux-webui" | include "unit-enabled" }}'
+    - '{{ tuple . "keycloak" | include "unit-enabled" }}'
     repo: sylva-core
     depends_on:
       keycloak-resources: true
@@ -543,7 +543,8 @@ units:
           {{ .Files.Get "scripts/keycloak-add-client-scope.sh" | indent 4 }}
 
   keycloak-oidc-external-secrets:
-    enabled: '{{ .Values.units.keycloak.enabled }}'
+    enabled_conditions:
+    - '{{ tuple . "keycloak" | include "unit-enabled" }}'
     depends_on:
       keycloak: true
       keycloak-legacy-operator: true
@@ -567,7 +568,6 @@ units:
           namespace: flux-system
 
   capi:
-    enabled: yes
     repo: sylva-core
     depends_on:
       cert-manager: true
@@ -576,7 +576,6 @@ units:
       wait: true
 
   capd:
-    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" }}'
     repo: sylva-core
     depends_on:
       cert-manager: true
@@ -588,7 +587,6 @@ units:
       wait: true
 
   capo:
-    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     repo: sylva-core
     depends_on:
       cert-manager: true
@@ -597,7 +595,6 @@ units:
       wait: true
 
   capm3:
-    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
     repo: sylva-core
     depends_on:
       cert-manager: true
@@ -609,7 +606,6 @@ units:
       wait: true
 
   capv:
-    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capv" }}'
     repo: sylva-core
     depends_on:
       cert-manager: true
@@ -621,7 +617,6 @@ units:
       wait: true
 
   cabpk:  # kubeadm
-    enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
     repo: sylva-core
     depends_on:
       cert-manager: true
@@ -630,7 +625,6 @@ units:
       wait: true
 
   cabpr:  # RKE2
-    enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
     repo: sylva-core
     depends_on:
       cert-manager: true
@@ -682,7 +676,6 @@ units:
         ironicInspectorPassword: '{{ .Values._internal.default_password }}'
 
   local-path-provisioner:
-    enabled: yes
     repo: local-path-provisioner
     helmrelease_spec:
       chart:
@@ -693,7 +686,7 @@ units:
         createNamespace: true
       values:
         storageClass:
-          defaultClass: '{{ not (tuple . (index .Values.units "cinder-csi" "enabled") | include "interpret-for-test") | include "as-bool" }}'
+          defaultClass: '{{ .Values._internal.default_storage_class | eq "local-path" | include "as-bool" }}'
         helperImage:
           repository: docker.io/library/busybox
           tag: 1.36.1
@@ -713,7 +706,6 @@ units:
                           runAsUser: 1000
 
   cluster:
-    enabled: yes
     repo: sylva-core
     depends_on:
       capi: true
@@ -762,7 +754,8 @@ units:
         - '{{ tuple (.Files.Get "elements/configtemplate-ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
 
   heat-operator:
-    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     repo: sylva-core
     depends_on:
       cert-manager: true
@@ -771,7 +764,8 @@ units:
       wait: true
 
   capo-cluster-resources:
-    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     repo: sylva-core
     depends_on:
       heat-operator: true
@@ -799,7 +793,8 @@ units:
             (and .Values.cluster.capo.external_network_id (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
 
   calico-crd:
-    enabled: '{{ index .Values.units "calico" "enabled" }}'
+    enabled_conditions:
+    - '{{ tuple . "calico" | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io
     helmrelease_spec:
       chart:
@@ -808,7 +803,8 @@ units:
           version: v3.25.001
 
   calico:
-    enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
     depends_on:
       calico-crd: true
     helm_repo_url: https://rke2-charts.rancher.io
@@ -823,7 +819,9 @@ units:
             bgp: Enabled
 
   cinder-csi-psp:
-    enabled: '{{ and (.Values.cluster.cis_profile | eq "cis-1.6") (tuple . (index .Values.units "cinder-csi" "enabled") | include "interpret-for-test") }}'
+    enabled_conditions:
+    - '{{ .Values.cluster.cis_profile | eq "cis-1.6" }}'
+    - '{{ tuple . "cinder-csi" | include "unit-enabled" }}'
     depends_on:
       namespace-defs: true
     repo: sylva-core
@@ -832,7 +830,8 @@ units:
       wait: true
 
   cinder-csi:
-    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     depends_on:
       namespace-defs: true
       cinder-csi-psp: '{{ .Values.cluster.cis_profile | eq "cis-1.6" }}'
@@ -897,7 +896,6 @@ units:
       wait: true
 
   sylva-ca-certs:
-    enabled: yes
     depends_on:
       namespace-defs: true
       cert-manager: true
@@ -914,7 +912,6 @@ units:
       wait: true
 
   rancher:
-    enabled: yes
     depends_on:
       cert-manager: true
       k8s-gateway: true
@@ -1000,7 +997,9 @@ units:
           namespace: cattle-system
 
   rancher-add-keycloak-provider:
-    enabled: '{{ .Values._internal.rancher_and_keycloak }}'
+    enabled_conditions:
+    - '{{ tuple . "rancher" | include "unit-enabled" }}'
+    - '{{ tuple . "keycloak" | include "unit-enabled" }}'
     repo: sylva-core
     depends_on:
       rancher: true
@@ -1017,9 +1016,8 @@ units:
       wait: true
 
   k8s-gateway:
-    enabled: yes
     depends_on:
-      metallb-config: '{{ .Values.units.metallb.enabled }}'
+      metallb-config: '{{ tuple . "metallb" | include "unit-enabled" }}'
     helm_repo_url: https://ori-edge.github.io/k8s_gateway/
     helmrelease_spec:
       chart:
@@ -1036,7 +1034,8 @@ units:
             metallb.universe.tf/allow-shared-ip: '{{ tuple (.Values.cluster.cluster_external_ip) (or (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.capi_providers.infra_provider | eq "capd")) | include "set-only-if" }}'
 
   metallb:
-    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" }}'
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" }}'
     repo: sylva-core
     depends_on:
       cert-manager: true
@@ -1045,7 +1044,8 @@ units:
       wait: true
 
   metallb-config:
-    enabled: '{{ .Values.units.metallb.enabled }}'
+    enabled_conditions:
+    - '{{ tuple . "metallb" | include "unit-enabled" }}'
     repo: sylva-core
     depends_on:
       metallb: true
@@ -1057,7 +1057,8 @@ units:
           CLUSTER_EXTERNAL_IP: '{{ .Values.cluster.cluster_external_ip }}'
 
   capi-rancher-import:
-    enabled: '{{ .Values.units.rancher.enabled }}'
+    enabled_conditions:
+    - '{{ tuple . "rancher" | include "unit-enabled" }}'
     repo: capi-rancher-import
     depends_on:
       rancher: true
@@ -1083,9 +1084,10 @@ units:
           cattle_agent_kustomize_path: ./cattle-kustomize
 
   ingress-nginx:
-    enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
     depends_on:
-      metallb-config: '{{ .Values.units.metallb.enabled }}'
+      metallb-config: '{{ tuple . "metallb" | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io
     helmrelease_spec:
       targetNamespace: kube-system
@@ -1106,7 +1108,8 @@ units:
               metallb.universe.tf/allow-shared-ip: '{{ tuple (.Values.cluster.cluster_external_ip) (eq .Values.cluster.capi_providers.infra_provider "capd") | include "set-only-if" }}'
 
   first-login-rancher:
-    enabled: '{{ .Values.units.rancher.enabled }}'
+    enabled_conditions:
+    - '{{ tuple . "rancher" | include "unit-enabled" }}'
     repo: sylva-core
     depends_on:
       rancher: true
@@ -1119,7 +1122,6 @@ units:
       wait: true
 
   flux-webui:
-    enabled: yes
     depends_on:
       flux-system: true
       ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
@@ -1199,7 +1201,8 @@ units:
         passwordHash: '{{ htpasswd "" (tuple . .Values.cluster.flux_webui.admin_password | include "interpret-as-string") | trimPrefix ":" }}' # we don't want the "<user>:" part generated by htpasswd
 
   monitoring-crd:
-    enabled: '{{ .Values.units.monitoring.enabled }}'
+    enabled_conditions:
+    - '{{ tuple . "monitoring" | include "unit-enabled" }}'
     helm_repo_url: https://charts.rancher.io/
     helmrelease_spec:
       releaseName: rancher-monitoring-crd
@@ -1210,7 +1213,6 @@ units:
           version: 101.0.0+up19.0.3
 
   monitoring:
-    enabled: yes
     depends_on:
       monitoring-crd: true
     helm_repo_url: https://charts.rancher.io/
@@ -1226,7 +1228,8 @@ units:
   # it would be used along with a definition of a 'workload-cluster' unit
   # and is conditioned by a boolean flag .Values.env_type_ci
   check-rancher-clusters:
-    enabled: '{{ index .Values.units "workload-cluster" "enabled" }}'
+    enabled_conditions:
+    - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
     repo: sylva-core
     depends_on:
       workload-cluster-import: true
@@ -1271,7 +1274,9 @@ units:
                     value: '{{ .Values.cluster.test_workload_cluster_name }}'
 
   workload-capo-cluster-resources:
-    enabled: '{{ and (.Values.cluster.capi_providers.infra_provider | eq "capo") (tuple . (index .Values.units "workload-cluster" "enabled") | include "interpret-for-test") }}'
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+    - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
     repo: sylva-core
     depends_on:
       heat-operator: true
@@ -1343,13 +1348,14 @@ units:
           WORKER_SECURITY_GROUP_NAME: 'workload-cluster-security-group-worker-{{ .Values.cluster.capo.resources_tag }}'
 
   workload-cluster:
-    enabled: '{{ .Values.env_type_ci }}'
+    enabled_conditions:
+    - '{{ .Values.env_type_ci }}'
     repo: sylva-core
     depends_on:
       capi: true
       '{{ .Values.cluster.capi_providers.infra_provider }}': true
       '{{ .Values.cluster.capi_providers.bootstrap_provider }}': true
-      workload-capo-cluster-resources: '{{ index .Values.units "workload-capo-cluster-resources" "enabled" }}'
+      workload-capo-cluster-resources: '{{ tuple . "workload-capo-cluster-resources" | include "unit-enabled" }}'
     kustomization_spec:
       path: ./kustomize-units/cluster-manifests/kubeadm-capd/base
       postBuild:
@@ -1427,7 +1433,8 @@ units:
         - '{{ tuple (.Files.Get "elements/configtemplate-ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
 
   workload-cluster-calico-crd:
-    enabled: '{{ index .Values.units "workload-cluster-calico" "enabled" }}'
+    enabled_conditions:
+    - '{{ tuple . "workload-cluster-calico" | include "unit-enabled" }}'
     depends_on:
       workload-cluster: true
     helm_repo_url: https://rke2-charts.rancher.io
@@ -1441,7 +1448,9 @@ units:
           name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
 
   workload-cluster-calico:
-    enabled: '{{ and (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") (tuple . (index .Values.units "workload-cluster" "enabled") | include "interpret-for-test") }}'
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
+    - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
     depends_on:
       workload-cluster: true
       workload-cluster-calico-crd: true
@@ -1461,9 +1470,11 @@ units:
 
   workload-cluster-multus:
     enabled: false
+    enabled_conditions:
+    - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
     depends_on:
       workload-cluster: true
-      workload-cluster-calico: '{{ index .Values.units "workload-cluster-calico" "enabled" }}'
+      workload-cluster-calico: '{{ tuple . "workload-cluster-calico" | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io/
     helmrelease_spec:
       chart:
@@ -1500,12 +1511,14 @@ units:
                     app: whereabouts
 
   workload-cluster-import:
-    enabled: '{{ and (tuple . (index .Values.units "workload-cluster" "enabled") | include "interpret-for-test") (tuple . .Values.units.rancher.enabled | include "interpret-for-test") }}'
+    enabled_conditions:
+    - '{{ tuple . "rancher" | include "unit-enabled" }}'
+    - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
     repo: sylva-core
     depends_on:
       rancher: true
       workload-cluster: true
-      workload-cluster-calico: '{{ index .Values.units "workload-cluster-calico" "enabled" }}'
+      workload-cluster-calico: '{{ tuple . "workload-cluster-calico" | include "unit-enabled" }}'
     kustomization_spec:
       path: ./kustomize-units/cluster-import
       postBuild:
@@ -1516,7 +1529,8 @@ units:
       wait: true
 
   workload-cluster-monitoring-crd:
-    enabled: '{{ index .Values.units "workload-cluster-monitoring" "enabled" }}'
+    enabled_conditions:
+    - '{{ tuple . "workload-cluster-monitoring" | include "unit-enabled" }}'
     depends_on:
       workload-cluster: true
     helm_repo_url: https://charts.rancher.io/
@@ -1534,7 +1548,8 @@ units:
           name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
 
   workload-cluster-monitoring:
-    enabled: '{{ index .Values.units "workload-cluster" "enabled" }}'
+    enabled_conditions:
+    - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
     depends_on:
       workload-cluster-monitoring-crd: true
     helm_repo_url: https://charts.rancher.io/
@@ -1550,7 +1565,6 @@ units:
           name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
 
   coredns:
-    enabled: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/coredns
@@ -1710,9 +1724,8 @@ ntp:
 _internal:
   # unless the default password has already been generated by a previous run, we generate a new one randomly
   default_password: '{{ lookup "v1" "Secret" "default" "sylva-units-values-debug" | dig "data" "values" "" | b64dec | fromYaml | dig "cluster" "admin_password" (randAlphaNum 64) }}'
-  rancher_and_keycloak: '{{ and (tuple . .Values.units.rancher.enabled | include "interpret-for-test") (tuple . .Values.units.keycloak.enabled | include "interpret-for-test") }}'
 
   default_storage_class_unit: >-
-    {{- tuple . (index .Values.units "cinder-csi" "enabled") "cinder-csi" "local-path-provisioner" | include "interpret-ternary" -}}
+    {{- tuple . (tuple . "cinder-csi" | include "unit-enabled") "cinder-csi" "local-path-provisioner" | include "interpret-ternary" -}}
   default_storage_class: >-
-    {{- tuple . (index .Values.units "cinder-csi" "enabled") .Values.cluster.capo.storageClass.name "local-path"             | include "interpret-ternary" -}}
+    {{- tuple . (tuple . "cinder-csi" | include "unit-enabled") .Values.cluster.capo.storageClass.name "local-path" | include "interpret-ternary" -}}

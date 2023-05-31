@@ -93,15 +93,22 @@ Usage:
   {{- $envAll := index . 0 -}}
   {{- $unit_name := index . 1 -}}
 
-  {{- $unit_enabled := false -}}
+  {{- $unit_enabled := $envAll.Values.units_enabled_default -}}
 
-  {{- if hasKey $envAll.Values "units_override_enabled" -}}
+  {{- $unit_def := index $envAll.Values.units $unit_name -}}
+  {{- if $unit_def -}}
+    {{- if hasKey $envAll.Values "units_override_enabled" -}}
       {{- $unit_enabled = has $unit_name $envAll.Values.units_override_enabled -}}
-  {{- else -}}
-      {{- $unit_def := index $envAll.Values.units $unit_name -}}
-      {{- if $unit_def -}}
-          {{- $unit_enabled = index (tuple $envAll $unit_def.enabled (printf "unit:%s" $unit_name) | include "interpret-as-bool" | fromJson) "encapsulated-result" -}}
+    {{- else if hasKey $unit_def "enabled" -}}
+      {{- $unit_enabled = index (tuple $envAll $unit_def.enabled (printf "unit:%s" $unit_name) | include "interpret-as-bool" | fromJson) "encapsulated-result" -}}
+    {{- end -}}
+
+    {{- range $condition := $unit_def.enabled_conditions | default list -}}
+      {{- $unit_enabled = and $unit_enabled (index (tuple $envAll $condition (printf "unit:%s" $unit_name) | include "interpret-as-bool" | fromJson) "encapsulated-result") -}}
+      {{- if not $unit_enabled -}}
+        {{- break -}}
       {{- end -}}
+    {{- end -}}
   {{- end -}}
 
   {{- if $unit_enabled -}}

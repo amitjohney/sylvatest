@@ -152,6 +152,7 @@ function inject_bootstrap_values() {
     (select(.kind == "HelmRepository" and .spec.type == "oci") | length > 0 | to_yaml | trim) as $oci
     | select(.kind == "HelmRelease").spec.chart.spec.valuesFiles = ([
       {"true":"","false":"charts/sylva-units/"}[$oci] + "values.yaml",
+      {"true":"","false":"charts/sylva-units/"}[$oci] + "management.values.yaml",
       {"true":"","false":"charts/sylva-units/"}[$oci] + "bootstrap.values.yaml"
     ] + {"true":["use-oci-artifacts.values.yaml"],"false":[]}[$oci])
     | select(.kind == "HelmRelease").spec.chart.spec.valuesFiles = (select(.kind == "HelmRelease").spec.chart.spec.valuesFiles | unique)

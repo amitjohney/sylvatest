@@ -25,6 +25,22 @@ export BASE_DIR=$( cd "$(dirname "${BASH_SOURCE[0]}")/../../.." ; pwd -P )
 
 chart_dir=${BASE_DIR}/charts/${HELM_NAME}
 
+
+# for sylva-units, specifically we want to ensure that
+# 'values.yaml' should not have any units.x.enabled fields, unless set to false
+if [[ $HELM_NAME == "sylva-units" ]]; then
+  units_default_enabled=$(yq '[.units | ... comments="" | to_entries | .[] | select((.value.enabled != null) and (.value.enabled != false) and (.value.enabled != "no"))] | map(.key)' $chart_dir/values.yaml)
+  if [[ $units_default_enabled != '[]' ]]; then
+    echo -e "The following units have .enabled defined in 'values.yaml' with a value which isn't 'no' or 'false':\n$units_default_enabled\n".
+    echo "This is not allowed in sylva-units:"
+    echo "  - in 'values.yaml' all units are disabled by default, and we don't set 'enabled' unless when we want the unit to be disabled by default in mgmt cluster."
+    echo "  - conditions necessary for enabling a unit are expressed in 'enabled_conditions'"
+    echo "  - in 'management.values.yaml' we can define 'enabled' - this is typically only done to have units be enabled by default *for some Sylva flavors*"
+    echo "  - 'workload-cluster.values.yaml' is the place where to set 'enabled' for units that we want to enabled in workload clusters"
+    exit -1
+  fi
+fi
+
 echo -e "\e[0Ksection_start:`date +%s`:helm_dependency_build\r\e[0K--------------- helm dependency build"
 
 helm dependency build $chart_dir
