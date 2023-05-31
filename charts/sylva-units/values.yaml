@@ -911,12 +911,22 @@ units:
           FLUX_WEBUI_DNS: '{{ .Values.cluster.flux.external_hostname }}'
       wait: true
 
+  synchronize-secrets:
+    depends_on:
+      eso-secret-stores: true
+      vault-secrets: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/synchronize-secrets
+      wait: true
+
   rancher:
     depends_on:
       cert-manager: true
       k8s-gateway: true
       sylva-ca-certs: true
       ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
+      synchronize-secrets: true
     annotations:
       sylvactl/readyMessage: "Rancher UI can be reached at https://{{ .Values.cluster.rancher.external_hostname }} ({{ .Values.cluster.rancher.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
     helm_repo_url: https://releases.rancher.com/server-charts/latest
@@ -951,6 +961,12 @@ units:
           namespaceList:
             - cattle-fleet-system
             - rancher-operator-system
+        extraEnv:
+          - name: CATTLE_BOOTSTRAP_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: bootstrap-secret
+                key: bootstrapPassword
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:
@@ -977,8 +993,6 @@ units:
                             initialDelaySeconds: 120
                             periodSeconds: 30
                             failureThreshold: 20
-    helm_secret_values:
-      bootstrapPassword: '{{ .Values.cluster.admin_password }}'
 
     kustomization_spec:
       # these healthchecks are added so that this unit does not become ready before
