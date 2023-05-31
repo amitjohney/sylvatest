@@ -334,6 +334,7 @@ units:
     depends_on:
       namespace-defs: true
       cert-manager: true
+      monitoring: '{{ .Values.units | dig "vault-config-operator" "helmrelease_spec" "values" "enableMonitoring" true }}'
     helm_repo_url: https://redhat-cop.github.io/vault-config-operator
     helmrelease_spec:
       chart:
@@ -343,6 +344,7 @@ units:
       targetNamespace: vault
       values:
         enableCertManager: true
+        enableMonitoring: false
 
   vault-secrets: # generate random secrets in vault, configure password policy, authentication backends, etc...
     enabled: yes
