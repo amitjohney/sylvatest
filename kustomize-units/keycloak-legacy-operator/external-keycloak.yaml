@@ -20,6 +20,8 @@ spec:
     kind: ClusterSecretStore
   target:
     creationPolicy: Orphan
+    # this Secret is read by the legacy keycloak-realm-operator
+    # deployed by this kustomization (name is 'credential-<ExternalKeycloak resource name>')
     name: credential-external-keycloak
     template:
       type: Opaque
