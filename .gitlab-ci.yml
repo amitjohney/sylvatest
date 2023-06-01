@@ -16,6 +16,10 @@ variables:
   DOCKER_HOST: tcp://docker:2375/
   CAPO_PLATFORM_TAG: capo-ci
   OCI_TAG_FORMAT: "0.0.0-git-$CI_COMMIT_SHORT_SHA"
+  DISABLE_ARTIFACTS_BUILD: ""  # Allow to disable the build stage
+  DISABLED_DEPLOYMENTS_JOBS: ""
+  # Regex to match deployments/cleanup to disable. /regex/ format
+  # Eg: "/.*rke2-capo-oci/" to disable rke2-capo-oci deployment and it's related cleanup job
 
 include:
   - project: "to-be-continuous/gitleaks"
@@ -188,6 +192,8 @@ check-docs-markdown:
           verify: false
       EOF
   rules:
+    - if: $CI_JOB_NAME =~ $DISABLED_DEPLOYMENTS_JOBS
+      when: never
     - if: '$CI_COMMIT_TAG && $OCI_TAG'
       variables:
         OCI_TAG: $CI_COMMIT_TAG
@@ -315,6 +321,8 @@ deploy-kubeadm-capo-oci:
     - !reference [.common-deployment, os_cloud]
     - ./tools/openstack-cleanup.sh capo_cloud "${CAPO_TAG}"
   rules:
+    - if: $CI_JOB_NAME =~ $DISABLED_DEPLOYMENTS_JOBS
+      when: never
     - if: '$CI_COMMIT_TAG && $OCI_TAG'
     - if: $CI_PIPELINE_SOURCE == 'web'
     - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_DEPLOYMENTS'
@@ -396,6 +404,8 @@ scheduled-cleanup-capo:
     OCI_REGISTRY: oci://${CI_REGISTRY_IMAGE}
     OCI_TAG: $OCI_TAG_FORMAT
   rules:
+    - if: $DISABLE_ARTIFACTS_BUILD
+      when: never
     - if: $CI_COMMIT_TAG
       variables:
         OCI_TAG: $CI_COMMIT_TAG
