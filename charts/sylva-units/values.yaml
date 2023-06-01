@@ -342,6 +342,9 @@ units:
       values:
         enableCertManager: true
         enableMonitoring: false
+        image:
+          repository: tmorinorange/vault-config-operator
+          tag: v0.8.15-issue-102
 
   vault-secrets: # generate random secrets in vault, configure password policy, authentication backends, etc...
     repo: sylva-core
