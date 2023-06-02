@@ -20,6 +20,8 @@ units:
     enabled: false
   capi-rancher-import:
     enabled: false
+  kyverno:
+    enabled: false
 
 cluster:
   capi_providers:

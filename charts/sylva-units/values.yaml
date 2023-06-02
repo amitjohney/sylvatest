@@ -570,6 +570,35 @@ units:
           name: oidc-auth
           namespace: flux-system
 
+  kyverno:
+    helm_repo_url: https://kyverno.github.io/kyverno
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: kyverno
+          version: 2.7.3
+      targetNamespace: kyverno
+      install:
+        createNamespace: true
+      values:
+        securityContext:
+          seccompProfile: null
+        testSecurityContext:
+          seccompProfile: null
+        cleanupController:
+          securityContext:
+            seccompProfile: null
+
+  kyverno-policies:
+    enabled_conditions:
+    - '{{ tuple . "kyverno" | include "unit-enabled" }}'
+    depends_on:
+      kyverno: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/kyverno-policies
+      wait: true
+
   capi:
     repo: sylva-core
     depends_on:
