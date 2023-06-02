@@ -32,4 +32,4 @@ spec:
   - secretKey: password
     remoteRef:
       key: secret/data/keycloak
-      property: password
+      property: password.hcl
