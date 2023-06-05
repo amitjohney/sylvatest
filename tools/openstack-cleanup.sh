@@ -17,18 +17,20 @@ fi
 
 echo -e "\U0001F5D1 Start cleanup for tag: ${CAPO_TAG} at $(date)"
 
-for SERVER in $(openstack ${OS_ARGS} server list --tags ${CAPO_TAG} -f value -c Name | grep management-cluster) $(openstack ${OS_ARGS} server list --tags ${CAPO_TAG} -f value -c Name | grep -v management-cluster); do
-  echo -e "\U0001F5D1 Deleting server: ${SERVER}"
-  openstack ${OS_ARGS} server delete --wait ${SERVER}
-  echo -e "\U0001F5D1 Deleting volume: ${SERVER}-root"
-  openstack ${OS_ARGS} volume delete ${SERVER}-root --purge || true
-done
+SERVERS="$(openstack ${OS_ARGS} server list --tags ${CAPO_TAG} -f value -c Name)"
+
+echo "The following servers match the ${CAPO_TAG}:\n${SERVERS}"
+
+echo -e "\U0001F5D1 Pausing servers: ${SERVERS//$'\n'/ }"
+openstack ${OS_ARGS} server pause ${SERVERS//$'\n'/ }
+echo -e "\U0001F5D1 Deleting servers: ${SERVERS//$'\n'/ }"
+openstack ${OS_ARGS} server delete --wait ${SERVERS//$'\n'/ }
+echo -e "\U0001F5D1 Deleting volumes: ${SERVERS//$'\n'/-root }"
+openstack ${OS_ARGS} volume delete ${SERVERS//$'\n'/-root } --purge || true
 
 openstack ${OS_ARGS} port list --tags ${CAPO_TAG} -f value -c name -c status -c device_owner -c id | awk '$2=="DOWN" {print $4}' | xargs -tr openstack ${OS_ARGS} port delete || true
 
 openstack ${OS_ARGS} security group list --tags ${CAPO_TAG} -f value -c ID | xargs -tr openstack ${OS_ARGS} security group delete || true
-
-openstack ${OS_ARGS} stack list --tags ${CAPO_TAG} -f value -c ID | xargs -tr openstack ${OS_ARGS} stack delete || true
 
 for vol in $(openstack ${OS_ARGS} volume list --status available -f value -c Name | grep '^pvc'); do
     vol_property=$(openstack ${OS_ARGS} volume show $vol -c properties -f json | jq '.properties."cinder.csi.openstack.org/cluster"' -r)
@@ -39,7 +41,9 @@ for vol in $(openstack ${OS_ARGS} volume list --status available -f value -c Nam
 done
 
 if [ -n "$(openstack ${OS_ARGS} server list -f value --tags ${CAPO_TAG})" ]; then
-    echo "The following CAPO machines tagged ${CAPO_TAG} were not removed, please try again."
+    echo "The following CAPO machines tagged ${CAPO_TAG} were not removed, please try again, and delete the corresponding stacks"
     openstack ${OS_ARGS} server list --tags ${CAPO_TAG} -f value -c Name
     exit 1
+else
+    openstack ${OS_ARGS} stack list --tags ${CAPO_TAG} -f value -c ID | xargs -tr openstack ${OS_ARGS} stack delete || true
 fi
