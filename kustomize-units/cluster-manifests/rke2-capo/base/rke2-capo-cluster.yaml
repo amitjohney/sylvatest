@@ -75,6 +75,8 @@ spec:
         spec:
           chart: ${METALLB_HELM_CHART}
           repo: ${METALLB_HELM_REPO:-""}
+          # Renovate Bot needs additional information to detect the metallb version:
+          # renovate: registryUrl=https://metallb.github.io/metallb/ chart=metallb
           version: 0.13.9
           targetNamespace: metallb-system
           valuesContent: |-
