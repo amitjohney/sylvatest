@@ -26,6 +26,13 @@
         "rancher-monitoring-crd"
       ],
       "groupName": "rancher-monitoring"
+    },
+    {
+      "matchPackageNames": [
+        "metallb",
+        "metallb/metallb"
+      ],
+      "groupName": "metallb"
     }
   ],
   "regexManagers": [
@@ -98,6 +105,20 @@
       ],
       "registryUrlTemplate": "https://{{{ registryUrl }}}",
       "datasourceTemplate": "docker"
+    },
+    {
+      "datasourceTemplate": "helm",
+      "fileMatch": ["tools/oci/push-helm-charts-artifacts.sh"],
+      "matchStrings": [
+        "process_chart_in_helm_repo \"(?<registryUrl>.*?)\"\\s[\\w\\W]*?(?<depName>.*?)\\s(?<currentValue>.*)"
+      ]
+    },
+    {
+      "datasourceTemplate": "helm",
+      "fileMatch": ["kustomize-units/cluster-manifests/rke2-capo/base/rke2-capo-cluster.yaml"],
+      "matchStrings": [
+        "#\\s?renovate: registryUrl=(?<registryUrl>.*?) chart=(?<depName>.*?)\\n.*?version: (?<currentValue>.*)"
+      ]
     }
   ]
 }
