@@ -1,0 +1,57 @@
+apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+kind: KubeadmConfigTemplate
+metadata:
+  name: ${CLUSTER_NAME}-worker
+  namespace: default
+spec:
+  template:
+    spec:
+      files: []
+      joinConfiguration:
+        nodeRegistration:
+          kubeletExtraArgs:
+            provider-id: metal3://{{ ds.meta_data.uuid }}
+          name: '{{ ds.meta_data.local_hostname }}'
+      preKubeadmCommands:
+        - echo "fs.inotify.max_user_watches = 524288" >> /etc/sysctl.conf
+        - echo "fs.inotify.max_user_instances = 512" >> /etc/sysctl.conf
+        - echo 1 > /proc/sys/net/ipv4/ip_forward
+        - modprobe br_netfilter
+        - echo '1' > /proc/sys/net/bridge/bridge-nf-call-iptables 
+        - sysctl --system
+        # Remove default mirroring configuration for k8s.gcr.io as it can't coexist with registry config dir
+        - sed -i '/k8s.gcr.io/d' /etc/containerd/config.toml
+        - grep -q config_path /etc/containerd/config.toml || echo "[plugins.\"io.containerd.grpc.v1.cri\".registry]\n  config_path = \"/etc/containerd/registry.d\"" >>  /etc/containerd/config.toml
+        - systemctl restart containerd.service
+      users:
+        - name: ubuntu
+          groups: users
+          sudo: ALL=(ALL) NOPASSWD:ALL
+          shell: /bin/bash
+          sshAuthorizedKeys:
+            - ${SSH_PUBLIC_KEY} 
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  name: ${CLUSTER_NAME}-worker
+  namespace: default
+spec:
+  clusterName: ${CLUSTER_NAME}
+  replicas: ${WORKER_REPLICAS:=0}
+  selector:
+    matchLabels: null
+  template:
+    spec:
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+          kind: KubeadmConfigTemplate
+          name: ${CLUSTER_NAME}-worker
+      clusterName: ${CLUSTER_NAME}
+      failureDomain: ${WORKER_AZ}
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+        kind: Metal3MachineTemplate
+        name: ${CLUSTER_NAME}-worker
+      version: ${K8S_VERSION}

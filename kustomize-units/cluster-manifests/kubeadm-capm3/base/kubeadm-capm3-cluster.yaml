@@ -1,0 +1,244 @@
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: ${CLUSTER_NAME}
+  namespace: default
+spec:
+  clusterNetwork:
+    services:
+      cidrBlocks: ["10.43.0.0/16"]
+    pods:
+      cidrBlocks: ["10.42.0.0/16"]
+    serviceDomain: cluster.local
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+    kind: KubeadmControlPlane
+    name: ${CLUSTER_NAME}-control-plane
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+    kind: Metal3Cluster
+    name: ${CLUSTER_NAME}
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+kind: KubeadmControlPlane
+metadata:
+  name: ${CLUSTER_NAME}-control-plane
+  namespace: default
+spec:
+  kubeadmConfigSpec:
+    preKubeadmCommands:
+      - cat /etc/netplan/50-cloud-init.yaml
+      - netplan apply
+      - sleep 60
+      - ip a
+      - ip r
+      - export HTTP_PROXY=${HTTP_PROXY} HTTPS_PROXY=${HTTP_PROXY} NO_PROXY=${NO_PROXY}
+      - export http_proxy=${HTTP_PROXY} https_proxy=${HTTP_PROXY} no_proxy=${NO_PROXY}
+      - apt update
+      - apt install -y apt-transport-https ca-certificates curl gnupg lsb-release gpg-agent
+      - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+      - echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+      - apt  update
+      - apt install -y containerd.io
+      - mkdir -p /etc/containerd
+      - containerd config default | sudo tee /etc/containerd/config.toml
+      - cat /etc/systemd/system/containerd.service.d/proxy.conf
+      - systemctl daemon-reload && systemctl restart containerd.service
+      - echo "fs.inotify.max_user_watches = 524288" >> /etc/sysctl.conf
+      - echo "fs.inotify.max_user_instances = 512" >> /etc/sysctl.conf
+      - echo 1 > /proc/sys/net/ipv4/ip_forward
+      - modprobe br_netfilter
+      - echo '1' > /proc/sys/net/bridge/bridge-nf-call-iptables 
+      - sysctl --system
+      # Remove default mirroring configuration for k8s.gcr.io as it can't coexist with registry config dir
+      - sed -i '/k8s.gcr.io/d' /etc/containerd/config.toml
+      - grep -q config_path /etc/containerd/config.toml || echo "[plugins.\"io.containerd.grpc.v1.cri\".registry]\n  config_path = \"/etc/containerd/registry.d\"" >>  /etc/containerd/config.toml
+      - systemctl restart containerd.service
+      - curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo -E apt-key add -
+      - |
+        cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
+        deb https://apt.kubernetes.io/ kubernetes-xenial main
+        EOF
+      - apt update
+      - apt install -qy kubelet=${KUBEADM_VERSION} kubeadm=${KUBEADM_VERSION} kubectl=${KUBEADM_VERSION}
+      - apt-mark hold kubelet kubeadm kubectl
+    users:
+      - name: ubuntu
+        groups: users
+        sudo: ALL=(ALL) NOPASSWD:ALL
+        shell: /bin/bash
+        sshAuthorizedKeys:
+          - ${SSH_PUBLIC_KEY} 
+    files:
+    - path: /etc/kubernetes/manifests/kube-vip.yaml
+      owner: root:root
+      permissions: "0644"
+      content: |
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          creationTimestamp: null
+          name: kube-vip
+          namespace: kube-system
+        spec:
+          containers:
+          - args:
+            - manager
+            env:
+            - name: svc_enable
+              value: "true"
+            - name: vip_arp
+              value: "true"
+            - name: port
+              value: "6443"
+            - name: vip_cidr
+              value: "32"
+            - name: cp_enable
+              value: "true"
+            - name: cp_namespace
+              value: kube-system
+            - name: vip_ddns
+              value: "false"
+            - name: vip_leaderelection
+              value: "true"
+            - name: vip_leaseduration
+              value: "5"
+            - name: vip_renewdeadline
+              value: "3"
+            - name: vip_retryperiod
+              value: "1"
+            - name: address
+              value: ${CLUSTER_EXTERNAL_IP}
+            - name: prometheus_server
+              value: :2112
+            # Renovate Bot needs additional information to detect the kube-vip version:
+            # renovate: registryUrl=https://ghcr.io image=kube-vip/kube-vip
+            image: ghcr.io/kube-vip/kube-vip:v0.5.12
+            imagePullPolicy: Always
+            name: kube-vip
+            resources: {}
+            securityContext:
+              capabilities:
+                add:
+                - NET_ADMIN
+                - NET_RAW
+            volumeMounts:
+            - mountPath: /etc/kubernetes/admin.conf
+              name: kubeconfig
+          hostAliases:
+          - hostnames:
+            - kubernetes
+            ip: 127.0.0.1
+          hostNetwork: true
+          volumes:
+          - hostPath:
+              path: /etc/kubernetes/admin.conf
+            name: kubeconfig
+    postKubeadmCommands:
+    - export KUBECONFIG=/etc/kubernetes/admin.conf
+    - kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+    initConfiguration:
+      nodeRegistration:
+        kubeletExtraArgs:
+            provider-id: metal3://{{ ds.meta_data.uuid }}
+        name: '{{ ds.meta_data.local_hostname }}'
+    joinConfiguration:        
+      controlPlane: {}
+      nodeRegistration:
+        kubeletExtraArgs:
+            provider-id: metal3://{{ ds.meta_data.uuid }}
+        name: '{{ ds.meta_data.local_hostname }}'
+  machineTemplate:
+    metadata:
+      labels:
+        health-check: control-plane
+    infrastructureRef:
+      apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+      kind: Metal3MachineTemplate
+      name: ${CLUSTER_NAME}-control-plane
+  replicas: ${CONTROL_PLANE_REPLICAS:=3}
+  version: ${K8S_VERSION}
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+kind: KubeadmConfigTemplate
+metadata:
+  name: ${CLUSTER_NAME}-worker
+  namespace: default
+spec:
+  template:
+    spec:
+      files: []
+      joinConfiguration:
+        nodeRegistration:
+          kubeletExtraArgs:
+            provider-id: metal3://{{ ds.meta_data.uuid }}
+          name: '{{ ds.meta_data.local_hostname }}'
+      preKubeadmCommands:
+        - netplan apply
+        - sleep 60
+        - ip a
+        - ip r
+        - echo ${SSH_PUBLIC_KEY}> /home/ubuntu/.ssh/authorized_keys
+        - chown ubuntu:ubuntu /home/ubuntu/.ssh/authorized_keys
+        - chmod 600 /home/ubuntu/.ssh/authorized_keys
+        - export HTTP_PROXY=${HTTP_PROXY} HTTPS_PROXY=${HTTP_PROXY} NO_PROXY=${NO_PROXY}
+        - export http_proxy=${HTTP_PROXY} https_proxy=${HTTP_PROXY} no_proxy=${NO_PROXY}
+        - apt update
+        - apt install -y apt-transport-https ca-certificates curl gnupg lsb-release gpg-agent
+        - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+        - echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+        - apt  update
+        - apt install -y containerd.io
+        - mkdir -p /etc/containerd
+        - containerd config default | sudo tee /etc/containerd/config.toml
+        - systemctl daemon-reload && systemctl restart containerd.service
+        - echo "fs.inotify.max_user_watches = 524288" >> /etc/sysctl.conf
+        - echo "fs.inotify.max_user_instances = 512" >> /etc/sysctl.conf
+        - echo 1 > /proc/sys/net/ipv4/ip_forward
+        - modprobe br_netfilter
+        - echo '1' > /proc/sys/net/bridge/bridge-nf-call-iptables 
+        - sysctl --system
+        # Remove default mirroring configuration for k8s.gcr.io as it can't coexist with registry config dir
+        - sed -i '/k8s.gcr.io/d' /etc/containerd/config.toml
+        - grep -q config_path /etc/containerd/config.toml || echo "[plugins.\"io.containerd.grpc.v1.cri\".registry]\n  config_path = \"/etc/containerd/registry.d\"" >>  /etc/containerd/config.toml
+        - systemctl restart containerd.service
+        - curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo -E apt-key add -
+        - |
+          cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
+          deb https://apt.kubernetes.io/ kubernetes-xenial main
+          EOF
+        - apt update
+        - apt install -qy kubelet=${KUBEADM_VERSION} kubeadm=${KUBEADM_VERSION} kubectl=${KUBEADM_VERSION}
+        - apt-mark hold kubelet kubeadm kubectl
+      users:
+        - name: ubuntu
+          groups: users
+          sudo: ALL=(ALL) NOPASSWD:ALL
+          shell: /bin/bash
+          sshAuthorizedKeys:
+            - ${SSH_PUBLIC_KEY} 
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  name: ${CLUSTER_NAME}-worker
+  namespace: default
+spec:
+  clusterName: ${CLUSTER_NAME}
+  replicas: ${WORKER_REPLICAS:=0}
+  selector:
+    matchLabels: null
+  template:
+    spec:
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+          kind: KubeadmConfigTemplate
+          name: ${CLUSTER_NAME}-worker
+      clusterName: ${CLUSTER_NAME}
+      failureDomain: ${WORKER_AZ}
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+        kind: Metal3MachineTemplate
+        name: ${CLUSTER_NAME}-worker
+      version: ${K8S_VERSION}
