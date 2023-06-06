@@ -28,9 +28,31 @@ openstack ${OS_ARGS} server delete --wait ${SERVERS//$'\n'/ }
 echo -e "\U0001F5D1 Deleting volumes: ${SERVERS//$'\n'/-root }"
 openstack ${OS_ARGS} volume delete ${SERVERS//$'\n'/-root } --purge || true
 
-openstack ${OS_ARGS} port list --tags ${CAPO_TAG} -f value -c name -c status -c device_owner -c id | awk '$2=="DOWN" {print $4}' | xargs -tr openstack ${OS_ARGS} port delete || true
+for i in $(seq 1 10)
+do
+  if (openstack ${OS_ARGS} port list --tags ${CAPO_TAG} -f value -c name -c status -c device_owner -c id | grep -v "DOWN" >& /dev/null)
+  then
+    echo "Waiting for all ports to be DOWN"
+    sleep 3
+  else
+    echo "All ports are DOWN"
+    openstack ${OS_ARGS} port list --tags ${CAPO_TAG} -f value -c name -c status -c device_owner -c id | awk '$2=="DOWN" {print $4}' | xargs -tr openstack ${OS_ARGS} port delete || true
+    break
+  fi
+done
 
-openstack ${OS_ARGS} security group list --tags ${CAPO_TAG} -f value -c ID | xargs -tr openstack ${OS_ARGS} security group delete || true
+for i in $(seq 1 10)
+do
+  if [ $(openstack ${OS_ARGS} port list --tags ${CAPO_TAG} -f value -c name -c status -c device_owner -c id | wc -l) -gt 0 ]
+  then
+    echo "Waiting for all ports to be deleted"
+    sleep 3
+  else
+    echo "All ports are deleted"
+    openstack ${OS_ARGS} security group list --tags ${CAPO_TAG} -f value -c ID | xargs -tr openstack ${OS_ARGS} security group delete || true
+    break
+  fi
+done
 
 for vol in $(openstack ${OS_ARGS} volume list --status available -f value -c Name | grep '^pvc'); do
     vol_property=$(openstack ${OS_ARGS} volume show $vol -c properties -f json | jq '.properties."cinder.csi.openstack.org/cluster"' -r)
