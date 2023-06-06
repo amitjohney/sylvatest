@@ -1148,6 +1148,10 @@ units:
             use-forwarded-headers: true
           kind: DaemonSet
           service:
+            ############## required until we upgrade to RKE2 >= 1.24.14 - see https://gitlab.com/sylva-projects/sylva-core/-/issues/324 #########
+            type: LoadBalancer
+            enabled: true
+            #####################################################################################################################################
             externalIPs:
             - '{{ .Values.cluster.cluster_external_ip }}'
             annotations:
