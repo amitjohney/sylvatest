@@ -263,6 +263,7 @@ units:
 # only those components will be enabled on bootstrap cluster (this overrides 'units.<component>.enabled')
 units_override_enabled:
   - cert-manager
+  - local-path-storage
   - capi
   - '{{ .Values.cluster.capi_providers.infra_provider }}'
   - '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
