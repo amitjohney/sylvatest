@@ -190,8 +190,7 @@ EOF
 
   echo "Wait for Helm release to be ready"
   if ! sylvactl watch --timeout 120s --ignore-suspended -n sylva-units-preview HelmRelease/sylva-units-preview/sylva-units; then
-    echo "Resource helmrelease/sylva-units did not become ready in time"
-    kubectl get -n sylva-units-preview helmrelease/sylva-units -o yaml 2>/dev/null
+    echo "Helm release sylva-units did not become ready in time"
     exit 1
   fi
 }
