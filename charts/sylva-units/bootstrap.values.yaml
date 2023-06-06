@@ -100,7 +100,7 @@ units:
               echo "-- All done"
 
   # instantiate 'sylva-units' chart again in the management cluster
-  sylva-units:
+  management-sylva-units:
     depends_on:
       management-cluster-configs: true
     repo: sylva-core
@@ -112,6 +112,13 @@ units:
       kubeConfig:
         secretRef:
           name: '{{ .Values.cluster.name }}-kubeconfig'
+      _patches:  # we need to force the name of the HelmRelease object to `sylva-units`
+        - patch: |
+            - op: replace
+              path: /metadata
+              value:
+                namespace: default
+                name: sylva-units
     helmrelease_spec:
       releaseName: sylva-units
       chart:
@@ -180,7 +187,7 @@ units:
   pivot:
     enabled: yes
     depends_on:
-      sylva-units: true
+      management-sylva-units: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kube-job
@@ -236,7 +243,7 @@ units:
               echo "-- Move cluster definitions from source to target cluster"
               clusterctl move --kubeconfig $KUBECONFIG --to-kubeconfig management-cluster-kubeconfig -v 3
 
-              echo "-- Patch the sylva-units HelmRelease to allow the Flux cluster redefinition to happen in the management cluster"
+              echo "-- Patch the mgmt cluster sylva-units HelmRelease to enable 'cluster' unit in the management cluster"
               kubectl --kubeconfig management-cluster-kubeconfig \
                   patch helmrelease sylva-units --type=json --patch='[{"op":"remove","path":"/spec/values/units/cluster/enabled"}]'
 
@@ -269,7 +276,7 @@ units_override_enabled:
   - calico
   - management-cluster-flux
   - management-cluster-configs
-  - sylva-units
+  - management-sylva-units
   - pivot
   - heat-operator
   - capo-cluster-resources
