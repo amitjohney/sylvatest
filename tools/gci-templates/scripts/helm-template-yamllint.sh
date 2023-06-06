@@ -31,12 +31,15 @@ chart_dir=${BASE_DIR}/charts/${HELM_NAME}
 if [[ $HELM_NAME == "sylva-units" ]]; then
   units_default_enabled=$(yq '[.units | ... comments="" | to_entries | .[] | select((.value.enabled != null) and (.value.enabled != false) and (.value.enabled != "no"))] | map(.key)' $chart_dir/values.yaml)
   if [[ $units_default_enabled != '[]' ]]; then
-    echo -e "The following units have .enabled defined in 'values.yaml' with a value which isn't 'no' or 'false':\n$units_default_enabled\n".
-    echo "This is not allowed in sylva-units:"
-    echo "  - in 'values.yaml' all units are disabled by default, and we don't set 'enabled' unless when we want the unit to be disabled by default in mgmt cluster."
-    echo "  - conditions necessary for enabling a unit are expressed in 'enabled_conditions'"
-    echo "  - in 'management.values.yaml' we can define 'enabled' - this is typically only done to have units be enabled by default *for some Sylva flavors*"
-    echo "  - 'workload-cluster.values.yaml' is the place where to set 'enabled' for units that we want to enabled in workload clusters"
+    echo -e "The following units have .enabled defined in 'values.yaml' with a value which isn't 'no' or 'false':\n$units_default_enabled\n\n"
+    echo "This is not allowed in sylva-units 'values.yaml':"
+    echo "  - in 'values.yaml' all units are disabled by default, and we don't set 'units.xxx.enabled: true' there anymore"
+    echo "  - when there is some conditionality to decide to enable a unit or not:"
+    echo "    * either this is about necessary conditions, in that case units.xxx.enabled_conditions needs to be used"
+    echo "    * or this is about wanting to have a unit be enabled _by default_ conditionally in the mgmt cluster:"
+    echo "      in this case the condition will be put in 'units.xxx.enabled', but in 'management.values.yaml'"
+    echo "  - 'workload-cluster.values.yaml' is the place where to set 'units.xxx.enabled' for units that we want to enable in workload clusters"
+    echo
     exit -1
   fi
 fi
