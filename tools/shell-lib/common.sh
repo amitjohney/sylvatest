@@ -4,10 +4,12 @@ set -o pipefail
 export BASE_DIR="$(realpath $(dirname $0))"
 export PATH=${BASE_DIR}/bin:${PATH}
 
-SYLVACTL_VERSION="v0.1.5"
+SYLVACTL_VERSION="v0.1.7"
 SYLVA_TOOLBOX_VERSION="v0.1.5"
 SYLVA_TOOLBOX_IMAGE=${SYLVA_TOOLBOX_IMAGE:-container-images/sylva-toolbox}
 SYLVA_TOOLBOX_REGISTRY=${SYLVA_TOOLBOX_REGISTRY:-registry.gitlab.com/sylva-projects/sylva-elements}
+
+UNIT_TIMEOUT=${UNIT_TIMEOUT:-5m}
 
 if [[ -n "${CI_JOB_NAME:-}" ]]; then
   export IN_CI=1
@@ -189,7 +191,7 @@ EOF
   force_reconcile helmrelease sylva-units sylva-units-preview
 
   echo "Wait for Helm release to be ready"
-  if ! sylvactl watch --timeout 120s --ignore-suspended -n sylva-units-preview HelmRelease/sylva-units-preview/sylva-units; then
+  if ! sylvactl watch --unit-timeout 30s --timeout 90s --ignore-suspended -n sylva-units-preview HelmRelease/sylva-units-preview/sylva-units; then
     echo "Helm release sylva-units did not become ready in time"
     exit 1
   fi

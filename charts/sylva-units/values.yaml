@@ -746,6 +746,8 @@ units:
       capo-cluster-resources: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     labels:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
+    annotations:
+      sylvactl/unitTimeout: '{{ tuple "30m" (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr") | include "set-only-if" }}'
     kustomization_spec:
       # see note below under .cluster
       # the choice made here, for now, requires setting other values consistently under .cluster.xxx
@@ -961,6 +963,7 @@ units:
       synchronize-secrets: true
     annotations:
       sylvactl/readyMessage: "Rancher UI can be reached at https://{{ .Values.cluster.rancher.external_hostname }} ({{ .Values.cluster.rancher.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
+      sylvactl/unitTimeout: 10m
     helm_repo_url: https://releases.rancher.com/server-charts/latest
     helmrelease_spec:
       chart:
