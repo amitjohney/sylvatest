@@ -1,0 +1,201 @@
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: ${CLUSTER_NAME}
+  namespace: default
+spec:
+  clusterNetwork:
+    services:
+      cidrBlocks: ["10.43.0.0/16"]
+    pods:
+      cidrBlocks: ["10.42.0.0/16"]
+    serviceDomain: cluster.local
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
+    kind: RKE2ControlPlane
+    name: ${CLUSTER_NAME}-control-plane
+    namespace: default
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: VSphereCluster
+    name: ${CLUSTER_NAME}
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
+kind: RKE2ControlPlane
+metadata:
+  name: ${CLUSTER_NAME}-control-plane
+  namespace: default
+spec:
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: VSphereMachineTemplate
+    name: ${CLUSTER_NAME}-control-plane
+    namespace: default
+  files:
+  - path: /var/lib/rancher/rke2/server/manifests/ingress.yaml
+    owner: "root:root"
+    permissions: "0644"
+    content: |
+        ---
+        apiVersion: helm.cattle.io/v1
+        kind: HelmChartConfig
+        metadata:
+          name: rke2-ingress-nginx
+          namespace: kube-system
+        spec:
+          valuesContent: |-
+            controller:
+              publishService:
+                enabled: true
+              hostNetwork: false
+              service:
+                enabled: true
+                loadBalancerIP: "${CLUSTER_EXTERNAL_IP}"
+                annotations:
+                  metallb.universe.tf/allow-shared-ip: "${CLUSTER_EXTERNAL_IP}"
+  - path: /var/lib/rancher/rke2/server/manifests/metallb.yaml
+    owner: "root:root"
+    permissions: "0644"
+    content: |
+        ---
+        apiVersion: v1
+        kind: Namespace
+        metadata:
+          name: metallb-system
+        ---
+        apiVersion: helm.cattle.io/v1
+        kind: HelmChart
+        metadata:
+          name: metallb
+          namespace: metallb-system
+        spec:
+          chart: ${METALLB_HELM_CHART}
+          repo: ${METALLB_HELM_REPO:-""}
+          # Renovate Bot needs additional information to detect the metallb version:
+          # renovate: registryUrl=https://metallb.github.io/metallb/ chart=metallb
+          version: 0.13.9
+          targetNamespace: metallb-system
+          valuesContent: |-
+            controller:
+              nodeSelector:
+                node-role.kubernetes.io/control-plane: "true"
+              tolerations:
+              - key: node.cloudprovider.kubernetes.io/uninitialized
+                value: "true"
+                effect: NoSchedule
+              - effect: NoExecute
+                key: node-role.kubernetes.io/etcd
+              - effect: NoSchedule
+                key: node-role.kubernetes.io/master
+              - effect: NoSchedule
+                key: node-role.kubernetes.io/control-plane
+            speaker:
+              nodeSelector:
+                node-role.kubernetes.io/control-plane: "true"
+              tolerations:
+              - key: node.cloudprovider.kubernetes.io/uninitialized
+                value: "true"
+                effect: NoSchedule
+              - effect: NoExecute
+                key: node-role.kubernetes.io/etcd
+              - effect: NoSchedule
+                key: node-role.kubernetes.io/master
+              - effect: NoSchedule
+                key: node-role.kubernetes.io/control-plane
+        ---
+        apiVersion: metallb.io/v1beta1
+        kind: IPAddressPool
+        metadata:
+          name: lbpool
+          namespace: metallb-system
+        spec:
+          addresses:
+            - ${CLUSTER_EXTERNAL_IP}/32
+        ---
+        apiVersion: metallb.io/v1beta1
+        kind: L2Advertisement
+        metadata:
+          name: l2advertisement
+          namespace: metallb-system
+        spec:
+          ipAddressPools:
+          - lbpool
+  - path: /var/lib/rancher/rke2/server/manifests/kubernetes-vip.yaml
+    owner: "root:root"
+    permissions: "0644"
+    content: |
+        ---
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: kubernetes-vip
+          namespace: kube-system
+          annotations:
+            metallb.universe.tf/allow-shared-ip: "${CLUSTER_EXTERNAL_IP}"
+        spec:
+          type: LoadBalancer
+          loadBalancerIP: ${CLUSTER_EXTERNAL_IP}
+          ports:
+          - name: https
+            port: 6443
+            protocol: TCP
+            targetPort: 6443
+          - name: rancher
+            port: 9345
+            protocol: TCP
+            targetPort: 9345
+          selector:
+            component: kube-apiserver
+  agentConfig:
+    version: ${K8S_VERSION}
+    cisProfile: ${CIS_PROFILE}
+    airGapped: ${AIR_GAPPED:-false}
+  serverConfig:
+    cni: calico
+  replicas: ${CONTROL_PLANE_REPLICAS:=3}
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
+kind: RKE2ConfigTemplate
+metadata:
+  name: ${CLUSTER_NAME}-worker
+  namespace: default
+spec:
+  template:
+    spec:
+      files: []
+      preRKE2Commands:
+        - sleep 30 # fix to give OS time to become ready, https://github.com/rancher-sandbox/cluster-api-provider-rke2/blob/main/samples/vmware/rke2configtemplate.yaml
+        - systemctl daemon-reload
+        - systemctl enable rke2-agent.service
+        - systemctl start rke2-agent.service
+      agentConfig:
+        version: ${K8S_VERSION}
+        cisProfile: ${CIS_PROFILE}
+        airGapped: ${AIR_GAPPED:-false}
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  labels:
+    cluster.x-k8s.io/cluster-name: ${CLUSTER_NAME}
+  name: ${CLUSTER_NAME}-worker
+  namespace: default
+spec:
+  clusterName: ${CLUSTER_NAME}
+  replicas: ${WORKER_REPLICAS:=0}
+  selector:
+    matchLabels: {}
+  template:
+    spec:
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
+          kind: RKE2ConfigTemplate
+          name: ${CLUSTER_NAME}-worker
+      clusterName: ${CLUSTER_NAME}
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: VSphereMachineTemplate
+        name: ${CLUSTER_NAME}-worker
+      version: ${K8S_VERSION}

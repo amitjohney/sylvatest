@@ -1,0 +1,51 @@
+---
+
+units:
+  cluster:
+    kustomization_spec:
+      path: ./kustomize-units/cluster-manifests/rke2-capv/base
+      postBuild:
+        substitute:
+          SSH_KEY: '{{ .Values.cluster.capv.ssh_key }}'
+          VS_USERNAME: '{{ .Values.cluster.capv.username }}'
+    kustomization_substitute_secrets:
+      VS_PASSWORD: '{{ .Values.cluster.capv.password }}'
+
+cluster:
+  control_plane_replicas: 1
+  worker_replicas: 3
+
+  # image reference depends provider
+  image: "tpl-ubuntu-2204-rke2-v1.24.12+rke2r1"
+
+  capi_providers:
+    infra_provider: capv
+    bootstrap_provider: cabpr
+
+  capv:
+    # -- Datacenter to use
+    dataCenter: # replace me
+    # -- VSphere network for VMs and CSI
+    network: # replace me
+    # -- VSphere server dns name
+    server: # replace me
+    # -- VSphere datastore name
+    dataStore: # replace me
+    # -- VSphere https TLS thumbprint
+    tlsThumbprint: # replace me
+    # -- SSH public key for VM access
+    ssh_key: # replace me
+    # -- VSphere folder
+    folder: # replace me
+    # -- VSphere resoucepool
+    resourcePool: # replace me
+    # -- VSphere storage policy name
+    storagePolicyName: # replace me
+
+
+  cluster_external_ip: # replace me
+
+proxies:
+  http_proxy: # replace me
+  https_proxy: # replace me
+  no_proxy: # replace me
