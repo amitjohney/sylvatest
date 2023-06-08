@@ -319,6 +319,18 @@ units:
       wait: true
       targetNamespace: kubevirt-tests
 
+  harbor:
+    enabled: yes
+    helm_repo_url: https://helm.goharbor.io
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: harbor
+          version: v1.11.1
+      targetNamespace: harbor
+      install:
+        createNamespace: true
+
   vault-operator:
     helm_repo_url: https://kubernetes-charts.banzaicloud.com
     helmrelease_spec:
