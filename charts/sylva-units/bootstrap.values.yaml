@@ -286,5 +286,5 @@ units_override_enabled:
   - management-sylva-units
   - pivot
   - heat-operator
-  - capo-cluster-resources
+    #- capo-cluster-resources
   - reconcile-sylva-units
