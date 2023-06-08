@@ -38,6 +38,17 @@ units:
     labels:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
 
+  metal3:
+    helmrelease_spec:
+      values:
+        # ironicIPADownloaderBaseURI:
+        services:
+          ironic:
+            # Specify the IP address used by ironic service
+            # FIXME: we should make the whole 'values' block optionnal otherwise we'll delete ironic block...
+            ironicIP: '{{ .Values.cluster.capm3.bootstrap_ip }}'
+
+
   bootstrap-local-path:
     enabled: yes
     repo: sylva-core
