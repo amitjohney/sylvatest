@@ -16,7 +16,6 @@ spec:
     protocol: openid-connect
     publicClient: false
     clientAuthenticatorType: client-secret
-    secret: ${RANCHER_CLIENT_SECRET}
     redirectUris:
       - "https://${RANCHER_DNS}/verify-auth"
     webOrigins:

@@ -5,4 +5,5 @@ resources:
   - keycloak-namespace.yaml
   - vault-namespace.yaml
   - rancher-namespace.yaml
+  - rancher-global-data-namespace.yaml
   - cinder-csi.yaml
