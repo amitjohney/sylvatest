@@ -658,9 +658,6 @@
           "properties": {
             "admin_user": {
               "type": "string"
-            },
-            "admin_password": {
-              "type": "string"
             }
           }
         },
