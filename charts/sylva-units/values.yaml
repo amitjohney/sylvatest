@@ -835,8 +835,7 @@ units:
           version: v3.25.001
 
   calico:
-    enabled_conditions:
-    - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
+    enabled: false
     depends_on:
       calico-crd: true
     helm_repo_url: https://rke2-charts.rancher.io

@@ -16,28 +16,6 @@ units:
     depends_on:
       reconcile-sylva-units: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
 
-  calico-crd:
-    # overload calico-crd definition in bootstrap context to deploy in the management cluster
-    depends_on:
-      cluster: true
-    helmrelease_spec:
-      kubeConfig:
-        secretRef:
-          name: '{{ .Values.cluster.name }}-kubeconfig'
-    labels:
-      suspend-on-pivot: "yes"  # this unit must be suspended before pivot
-
-  calico:
-    # overload calico definition in bootstrap context to deploy in the management cluster
-    depends_on:
-      cluster: true
-    helmrelease_spec:
-      kubeConfig:
-        secretRef:
-          name: '{{ .Values.cluster.name }}-kubeconfig'
-    labels:
-      suspend-on-pivot: "yes"  # this unit must be suspended before pivot
-
   management-cluster-flux:
     depends_on:
       cluster: true
