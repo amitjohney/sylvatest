@@ -12,16 +12,6 @@ unit_helmrelease_spec_default:
 
 units:
 
-  metal3:
-    helmrelease_spec:
-      values:
-        # ironicIPADownloaderBaseURI:
-        services:
-          ironic:
-            # Specify the IP address used by ironic service
-            # FIXME: we should make the whole 'values' block optionnal otherwise we'll delete ironic block...
-            ironicIP: '{{ .Values.cluster.capm3.bootstrap_ip }}'
-
   cluster:
     depends_on:
       reconcile-sylva-units: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
@@ -51,7 +41,8 @@ units:
   bootstrap-local_path:
     enabled: yes
     repo: sylva-core
-    path: ./kustomize-units/bootstrap-local-path       
+    kustomization_spec:
+      path: ./kustomize-units/bootstrap-local-path       
 
   management-cluster-flux:
     depends_on:
@@ -99,6 +90,16 @@ units:
           - op: replace
             path: /data/kube-job.sh
             value: |
+              #!/bin/bash
+              set -e
+
+              echo "-- Retrieve target cluster kubeconfig"
+              kubectl get secret {{ .Values.cluster.name }}-kubeconfig -o jsonpath='{.data.value}' | base64 -d > management-cluster-kubeconfig
+
+              echo "-- Copy secrets and configmaps from bootstrap to management cluster"
+              kubectl get configmaps,secrets,gitrepository,helmrepository \
+                -l copy-from-bootstrap-to-management= \
+                -o json \
               #!/bin/bash
               set -e
 
@@ -250,16 +251,6 @@ units:
 
               echo "-- Suspend Kustomizations and HelmReleases in bootstrap cluster that relate to the management cluster"
               kubectl patch $(kubectl get helmreleases.helm.toolkit.fluxcd.io,kustomizations.kustomize.toolkit.fluxcd.io \
-                -l suspend-on-pivot=yes -o name) --type=json --patch '[{"op": "replace", "path": "/spec/suspend", "value": true}]'
-
-              kubectl patch helmreleases.helm.toolkit.fluxcd.io sylva-units --type=json \
-                --patch '[{"op": "replace", "path": "/spec/suspend", "value": true}]'
-
-              echo "-- Move cluster definitions from source to target cluster"
-              clusterctl move --kubeconfig $KUBECONFIG --to-kubeconfig management-cluster-kubeconfig -v 3
-
-              echo "-- Patch the mgmt cluster sylva-units HelmRelease to enable 'cluster' unit in the management cluster"
-              kubectl --kubeconfig management-cluster-kubeconfig \
                   patch helmrelease sylva-units --type=json --patch='[{"op":"remove","path":"/spec/values/units/cluster/enabled"}]'
 
               # NOTE: here we could add a reference to another valueFile that would deploy units specific to the management cluster
