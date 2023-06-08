@@ -43,6 +43,7 @@ units:
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/bootstrap-local-path       
+      wait: true
 
   management-cluster-flux:
     depends_on:
