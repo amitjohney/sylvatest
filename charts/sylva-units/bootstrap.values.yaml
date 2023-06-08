@@ -38,7 +38,7 @@ units:
     labels:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
 
-  bootstrap-local_path:
+  bootstrap-local-path:
     enabled: yes
     repo: sylva-core
     kustomization_spec:
