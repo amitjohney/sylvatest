@@ -489,7 +489,6 @@ units:
     repo: sylva-core
     kustomization_substitute_secrets:
       SSO_PASSWORD: '{{ .Values.cluster.admin_password }}'
-      RANCHER_CLIENT_SECRET: '{{ .Values.cluster.admin_password }}'
     kustomization_spec:
       path: ./kustomize-units/keycloak-resources
       targetNamespace: keycloak
@@ -502,9 +501,9 @@ units:
           kind: KeycloakRealm
           name: sylva
           namespace: keycloak
-        - apiVersion: legacy.k8s.keycloak.org/v1alpha1
-          kind: KeycloakClient
-          name: rancher-client
+        - apiVersion: v1
+          kind: Secret
+          name: keycloak-client-secret-rancher-client  # this secret is a byproduct of the rancher-client KeycloakClient resource
           namespace: keycloak
         - apiVersion: v1
           kind: Secret
@@ -1042,7 +1041,7 @@ units:
           name: rancher-webhook
           namespace: cattle-system
 
-  rancher-add-keycloak-provider:
+  rancher-keycloak-oidc-provider:
     enabled_conditions:
     - '{{ tuple . "rancher" | include "unit-enabled" }}'
     - '{{ tuple . "keycloak" | include "unit-enabled" }}'
@@ -1051,10 +1050,9 @@ units:
       rancher: true
       keycloak: true
       keycloak-resources: true
-    kustomization_substitute_secrets:
-      RANCHER_CLIENT_SECRET: '{{ .Values.cluster.admin_password }}'
+      keycloak-oidc-external-secrets: true
     kustomization_spec:
-      path: ./kustomize-units/keycloak-auth-provider
+      path: ./kustomize-units/rancher-keycloak-oidc-provider
       postBuild:
         substitute:
           KEYCLOAK_EXTERNAL_URL: '{{ .Values.cluster.keycloak.external_hostname }}'

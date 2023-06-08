@@ -8,7 +8,7 @@ metadata:
 accessMode: unrestricted
 authEndpoint: "https://${KEYCLOAK_EXTERNAL_URL}/realms/sylva/protocol/openid-connect/auth"
 clientId: rancher
-clientSecret: "${RANCHER_CLIENT_SECRET}"
+clientSecret: cattle-global-data:keycloakoidcconfig-clientsecret
 creatorId: admin
 enabled: true
 issuer: "https://${KEYCLOAK_EXTERNAL_URL}/realms/sylva"
