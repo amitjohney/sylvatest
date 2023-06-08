@@ -126,7 +126,6 @@ check-docs-markdown:
 
 .common-deployment:
   script_common:
-  script_common:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_common[collapsed=true]\r\e[0KRunning common deployment steps\e[0m"
     - export DOCKER_IP=$(getent hosts docker | awk '{print $1}')
     - export ENV_PATH=environment-values/${ENV_NAME}
@@ -172,7 +171,7 @@ check-docs-markdown:
       EOF
       cat $ENV_PATH/kustomization.yaml
       export METALLB_HELM_OCI_URL='{{ lookup "source.toolkit.fluxcd.io/v1beta2" "HelmRepository" "default" "sylva-core" | dig "spec" "url" "oci://registry.gitlab.com/sylva-projects/sylva-core" | dir | replace "oci:/" "oci://" }}/sylva-core/metallb'
-      yq -i '.metallb_helm_oci_url = strenv(METALLB_HELM_OCI_URL) | . style="double"' $values_file
+      yq -i '.metallb_helm_oci_url = strenv(METALLB_HELM_OCI_URL)' $values_file
       echo -e "\e[0Ksection_end:`date +%s`:oci_configuration\r\e[0K"
       fi
   post_deployment_common:
