@@ -137,6 +137,7 @@ spec:
     postKubeadmCommands:
     - export KUBECONFIG=/etc/kubernetes/admin.conf
     - kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+    - kubectl taint nodes --all node-role.kubernetes.io/master-
     initConfiguration:
       nodeRegistration:
         kubeletExtraArgs:
