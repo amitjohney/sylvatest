@@ -241,5 +241,7 @@ spec:
 
   existingTlsSecretName: vault-tls
 
-  caNamespaces:
-  - "*"
+# Distribute the CA in namespaces - This directive shall copy the CA in a secret named vault-tls, which is confusing.
+# Sylva relies on external secret operator to distribute a secret named sylva-ca.crt
+#  caNamespaces:
+#  - "*"
