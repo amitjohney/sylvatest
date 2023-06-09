@@ -1099,6 +1099,60 @@ units:
           chart: rancher-monitoring
           version: 101.0.0+up19.0.3
 
+  workload-cluster-sriov-crd:
+    enabled: '{{ .Values.units | dig "workload-cluster-sriov" "enabled" false | include "preserve-type" }}'
+    depends_on:
+      - name: workload-cluster-multus
+    helm_repo_url: https://charts.rancher.io/
+    helmrelease_spec:
+      releaseName: sriov-crd
+      targetNamespace: cattle-sriov-system
+      install:
+        createNamespace: true
+      chart:
+        spec:
+          chart: sriov-crd
+          version: 102.0.0+up0.1.0
+      kubeConfig:
+        secretRef:
+          name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
+
+  workload-cluster-sriov:
+    enabled: false
+    depends_on:
+      - name: workload-cluster-sriov-crd
+    helm_repo_url: https://charts.rancher.io/
+    helmrelease_spec:
+      releaseName: sriov
+      targetNamespace: cattle-sriov-system
+      chart:
+        spec:
+          chart: sriov
+          version: 102.0.0+up0.1.0
+      kubeConfig:
+        secretRef:
+          name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
+      values:
+        cert_manager: true
+        rancher-nfd:
+          image:
+            tag: v0.13.2-build20230605
+      _postRenderers:
+        - kustomize:
+            patchesStrategicMerge:
+              - kind: Deployment
+                apiVersion: apps/v1
+                metadata:
+                  name: sriov
+                  namespace: cattle-sriov-system
+                spec:
+                  template:
+                    spec:
+                      securityContext:
+                        runAsGroup: 3000
+                        runAsUser: 2000
+
+
   # this is a Job attempt to check successful import of a CAPI workload clusters in Rancher, still incomplete
   # it would be used along with a definition of a 'workload-cluster' unit
   # and is conditioned by a boolean flag .Values.env_type_ci
