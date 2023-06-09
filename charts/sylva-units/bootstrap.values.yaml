@@ -44,16 +44,24 @@ units:
         # ironicIPADownloaderBaseURI:
         services:
           ironic:
-            # Specify the IP address used by ironic service
-            # FIXME: we should make the whole 'values' block optionnal otherwise we'll delete ironic block...
+            # Address of the host, that will be reachable from the outside
             ironicIP: '{{ .Values.cluster.capm3.bootstrap_ip }}'
-
+            # Address of kind container/node, that will be used to bind ironic service
+            externalIPs:
+              - |
+                {{- $result := "not found" -}}
+                {{- range $address := lookup "v1" "Node" "" "" | dig "items" list | first | dig "status" "addresses" list -}}
+                  {{- if and (eq $address.type "InternalIP") (eq $result "not found") -}}
+                    {{- $result = $address.address -}}
+                  {{- end -}}
+                {{- end -}}
+                {{- $result -}}
 
   bootstrap-local-path:
     enabled: yes
     repo: sylva-core
     kustomization_spec:
-      path: ./kustomize-units/bootstrap-local-path       
+      path: ./kustomize-units/bootstrap-local-path
       wait: true
 
   management-cluster-flux:
