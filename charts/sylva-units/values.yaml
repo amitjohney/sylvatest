@@ -233,6 +233,7 @@ units:
   sylva-ca:
     depends_on:
       cert-manager: true
+      external-secrets-operator: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/sylva-ca
@@ -375,8 +376,8 @@ units:
 
   eso-secret-stores:
     depends_on:
-      vault-secrets: true
       external-secrets-operator: true
+      vault: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/eso-secret-stores
@@ -434,7 +435,6 @@ units:
       sylva-ca-certs: true
       ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
       postgres: true
-      eso-secret-stores: true
       synchronize-secrets: true # make sure that the secret keycloak-initial-admin is ready to be consummed
     annotations:
       sylvactl/readyMessage: "Keycloak UI can be reached at https://{{ .Values.cluster.keycloak.external_hostname }} ({{ .Values.cluster.keycloak.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
