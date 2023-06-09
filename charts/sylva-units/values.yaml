@@ -1102,7 +1102,7 @@ units:
   workload-cluster-sriov-crd:
     enabled: '{{ .Values.units | dig "workload-cluster-sriov" "enabled" false | include "preserve-type" }}'
     depends_on:
-      - name: workload-cluster-multus
+      workload-cluster-multus: true
     helm_repo_url: https://charts.rancher.io/
     helmrelease_spec:
       releaseName: sriov-crd
@@ -1120,7 +1120,7 @@ units:
   workload-cluster-sriov:
     enabled: false
     depends_on:
-      - name: workload-cluster-sriov-crd
+      workload-cluster-sriov-crd: true
     helm_repo_url: https://charts.rancher.io/
     helmrelease_spec:
       releaseName: sriov
