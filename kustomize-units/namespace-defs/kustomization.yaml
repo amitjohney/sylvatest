@@ -6,3 +6,4 @@ resources:
   - vault-namespace.yaml
   - rancher-namespace.yaml
   - cinder-csi.yaml
+  - victoria-namespace.yaml
