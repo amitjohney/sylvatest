@@ -699,8 +699,8 @@ units:
       mariadb:
         auth:
           # if rootPassword or replicationPassword are left empty, we use a randomly generated password
-          rootPassword: '{{ .Values._internal.default_password }}'
-          replicationPassword: '{{ .Values._internal.default_password }}'
+          rootPassword: '{{ .Values._internal.default_password | trunc 32 }}'
+          replicationPassword: '{{ .Values._internal.default_password | trunc -32 }}'
           ironicPassword: '{{ .Values._internal.default_password }}'
       auth:
         ironicPassword: '{{ .Values._internal.default_password }}'
