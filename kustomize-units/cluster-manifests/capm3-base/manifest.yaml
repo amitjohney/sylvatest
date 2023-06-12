@@ -13,7 +13,7 @@ spec:
         name: ${CLUSTER_NAME}-control-plane-template
       hostSelector:
         matchLabels:
-          cluster-role: control-plane
+          nodepool: control
       image:
         checksum: ${MACHINE_IMAGE_CHECKSUM}
         checksumType: md5
@@ -100,18 +100,18 @@ spec:
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: Metal3MachineTemplate
 metadata:
-  name: ${CLUSTER_NAME}-worker
+  name: ${CLUSTER_NAME}-worker-basic
   namespace: default
   labels:
-    role: worker
+    role: worker-basic
 spec:
   template:
     spec:
       dataTemplate:
-        name: ${CLUSTER_NAME}-worker-template
+        name: ${CLUSTER_NAME}-worker-basic-template
       hostSelector:
         matchLabels:
-          cluster-role: worker
+          nodepool: worker-basic
       image:
         checksum: ${MACHINE_IMAGE_CHECKSUM}
         checksumType: md5
@@ -121,7 +121,7 @@ spec:
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: Metal3DataTemplate
 metadata:
-  name: ${CLUSTER_NAME}-worker-template
+  name: ${CLUSTER_NAME}-worker-basic-template
   namespace: default
 spec:
   clusterName: ${CLUSTER_NAME}
