@@ -162,7 +162,7 @@ spec:
 apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
 kind: KubeadmConfigTemplate
 metadata:
-  name: ${CLUSTER_NAME}-worker
+  name: ${CLUSTER_NAME}-worker-basic
   namespace: default
 spec:
   template:
@@ -178,9 +178,6 @@ spec:
         - sleep 60
         - ip a
         - ip r
-        - echo ${SSH_PUBLIC_KEY}> /home/ubuntu/.ssh/authorized_keys
-        - chown ubuntu:ubuntu /home/ubuntu/.ssh/authorized_keys
-        - chmod 600 /home/ubuntu/.ssh/authorized_keys
         - export HTTP_PROXY=${HTTP_PROXY} HTTPS_PROXY=${HTTP_PROXY} NO_PROXY=${NO_PROXY}
         - export http_proxy=${HTTP_PROXY} https_proxy=${HTTP_PROXY} no_proxy=${NO_PROXY}
         - apt update
@@ -221,24 +218,33 @@ spec:
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: MachineDeployment
 metadata:
-  name: ${CLUSTER_NAME}-worker
+  labels:
+    cluster.x-k8s.io/cluster-name: ${CLUSTER_NAME}
+    nodepool: worker-basic
+  name: ${CLUSTER_NAME}-md-basic
   namespace: default
 spec:
   clusterName: ${CLUSTER_NAME}
-  replicas: ${WORKER_REPLICAS:=0}
+  replicas: ${WORKER_BASIC_REPLICAS:=0}
   selector:
-    matchLabels: null
+    matchLabels:
+      cluster.x-k8s.io/cluster-name: cluster2
+      nodepool: worker-basic
   template:
+    metadata:
+      labels: 
+        cluster.x-k8s.io/cluster-name: cluster2
+        nodepool: worker-basic
     spec:
       bootstrap:
         configRef:
           apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
           kind: KubeadmConfigTemplate
-          name: ${CLUSTER_NAME}-worker
+          name: ${CLUSTER_NAME}-worker-basic
       clusterName: ${CLUSTER_NAME}
-      failureDomain: ${WORKER_AZ}
       infrastructureRef:
         apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
         kind: Metal3MachineTemplate
-        name: ${CLUSTER_NAME}-worker
+        name: ${CLUSTER_NAME}-worker-basic
+      nodeDrainTimeout: 0s
       version: ${K8S_VERSION}
