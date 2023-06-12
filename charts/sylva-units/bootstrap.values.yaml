@@ -45,7 +45,7 @@ units:
         services:
           ironic:
             # Address of the host, that will be reachable from the outside
-            ironicIP: '{{ .Values.cluster.capm3.bootstrap_ip }}'
+            ironicIP: '{{ dig "capm3" "external_bootstrap_ip" (dig "capm3" "bootstrap_ip" "127.0.0.1" .Values.cluster) .Values.cluster }}'
             # Address of kind container/node, that will be used to bind ironic service
             externalIPs:
               - |
