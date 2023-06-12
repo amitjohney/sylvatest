@@ -271,6 +271,16 @@ units:
 
               echo "-- Suspend Kustomizations and HelmReleases in bootstrap cluster that relate to the management cluster"
               kubectl patch $(kubectl get helmreleases.helm.toolkit.fluxcd.io,kustomizations.kustomize.toolkit.fluxcd.io \
+                -l suspend-on-pivot=yes -o name) --type=json --patch '[{"op": "replace", "path": "/spec/suspend", "value": true}]'
+
+              kubectl patch helmreleases.helm.toolkit.fluxcd.io sylva-units --type=json \
+                --patch '[{"op": "replace", "path": "/spec/suspend", "value": true}]'
+
+              echo "-- Move cluster definitions from source to target cluster"
+              clusterctl move --kubeconfig $KUBECONFIG --to-kubeconfig management-cluster-kubeconfig -v 3
+
+              echo "-- Patch the mgmt cluster sylva-units HelmRelease to enable 'cluster' unit in the management cluster"
+              kubectl --kubeconfig management-cluster-kubeconfig \
                   patch helmrelease sylva-units --type=json --patch='[{"op":"remove","path":"/spec/values/units/cluster/enabled"}]'
 
               # NOTE: here we could add a reference to another valueFile that would deploy units specific to the management cluster
@@ -288,7 +298,6 @@ units:
               kubectl annotate --overwrite kustomizations.kustomize.toolkit.fluxcd.io cluster pivot/started-
 
               echo "-- All done"
-
 
 # only those components will be enabled on bootstrap cluster (this overrides 'units.<component>.enabled')
 units_override_enabled:
