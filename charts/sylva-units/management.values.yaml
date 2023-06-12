@@ -29,7 +29,7 @@ units:
 
   cabpr:  # RKE2
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
-  
+
   harbor:
     enabled: true
 
