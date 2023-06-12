@@ -1,5 +1,4 @@
 stages:
-  - generate
   - test
   - build
   - deploy
@@ -23,7 +22,7 @@ include:
     file: "templates/gitlab-ci-gitleaks.yml"
 
 .generator-base:
-  stage: generate
+  stage: test
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       changes:
@@ -138,9 +137,25 @@ check-docs-markdown:
     - export TEST_WORKLOAD_CLUSTER_NAME="first-workload-cluster-${CI_PIPELINE_ID}-${ENV_NAME}"
     - |
       if [ ${OCI_TAG} ]; then
-      export KIND_CLUSTER_NAME="bootstrap-${CI_PIPELINE_ID}-${ENV_NAME}-oci"
-      export MANAGEMENT_CLUSTER_NAME="management-cluster-${CI_PIPELINE_ID}-${ENV_NAME}-oci"
-      export TEST_WORKLOAD_CLUSTER_NAME="first-workload-cluster-${CI_PIPELINE_ID}-${ENV_NAME}-oci"
+        echo -e "Applying OCI configuration for tag: ${OCI_TAG}"
+        export KIND_CLUSTER_NAME="bootstrap-${CI_PIPELINE_ID}-${ENV_NAME}-oci"
+        export MANAGEMENT_CLUSTER_NAME="management-cluster-${CI_PIPELINE_ID}-${ENV_NAME}-oci"
+        export TEST_WORKLOAD_CLUSTER_NAME="first-workload-cluster-${CI_PIPELINE_ID}-${ENV_NAME}-oci"
+        if [ $(yq '.components | length' environment-values/$ENV_NAME/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' environment-values/$ENV_NAME/kustomization.yaml; fi
+        yq -i '.components += "../components/oci-artifacts"' $ENV_PATH/kustomization.yaml
+      cat <<EOF>> $ENV_PATH/kustomization.yaml
+      patches:
+      - target:
+          kind: HelmRelease
+          name: sylva-units
+        patch: |
+          - op: replace
+            path: /spec/chart/spec/version
+            value: ${OCI_TAG}
+      EOF
+        cat $ENV_PATH/kustomization.yaml
+        export METALLB_HELM_OCI_URL='{{ lookup "source.toolkit.fluxcd.io/v1beta2" "HelmRepository" "default" "sylva-core" | dig "spec" "url" "oci://registry.gitlab.com/sylva-projects/sylva-core" | dir | replace "oci:/" "oci://" }}/sylva-core/metallb'
+        yq -i '.metallb_helm_oci_url = strenv(METALLB_HELM_OCI_URL)' $values_file
       fi
     - yq -i '.cluster.name = strenv(MANAGEMENT_CLUSTER_NAME)' $values_file
     - yq -i '.cluster.test_workload_cluster_name = strenv(TEST_WORKLOAD_CLUSTER_NAME)' $values_file
@@ -153,27 +168,23 @@ check-docs-markdown:
     - export CLUSTER_EXTERNAL_IP=$(echo $KIND_PREFIX | awk -F"." '{print $1"."$2"."$3".100"}')
     - yq -i '.cluster.cluster_external_ip = strenv(CLUSTER_EXTERNAL_IP)' $values_file
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capd\r\e[0K"
-  oci_configuration:
-    - |
-      if [ ${OCI_TAG} ]; then
-      echo -e "\e[1m\e[0Ksection_start:`date +%s`:oci_configuration[collapsed=true]\r\e[0KApplying OCI configuration for tag: ${OCI_TAG}\e[0m"
-      if [ $(yq '.components | length' environment-values/$ENV_NAME/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' environment-values/$ENV_NAME/kustomization.yaml; fi
-      yq -i '.components += "../components/oci-artifacts"' $ENV_PATH/kustomization.yaml
-      cat <<EOF>> $ENV_PATH/kustomization.yaml
-      patches:
-      - target:
-          kind: HelmRelease
-          name: sylva-units
-        patch: |
-          - op: replace
-            path: /spec/chart/spec/version
-            value: ${OCI_TAG}
-      EOF
-      cat $ENV_PATH/kustomization.yaml
-      export METALLB_HELM_OCI_URL='{{ lookup "source.toolkit.fluxcd.io/v1beta2" "HelmRepository" "default" "sylva-core" | dig "spec" "url" "oci://registry.gitlab.com/sylva-projects/sylva-core" | dir | replace "oci:/" "oci://" }}/sylva-core/metallb'
-      yq -i '.metallb_helm_oci_url = strenv(METALLB_HELM_OCI_URL)' $values_file
-      echo -e "\e[0Ksection_end:`date +%s`:oci_configuration\r\e[0K"
-      fi
+  script_capo:
+    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capo[collapsed=true]\r\e[0KApplying specific capo configuration\e[0m"
+    - yq -i eval-all 'select(fileIndex==0).cluster.capo.clouds_yaml = select(fileIndex==1) | select(fileIndex==0)' environment-values/${ENV_NAME}/secrets.yaml ~/.config/openstack/clouds.yml
+    - echo "CAPO_TAG=${CAPO_TAG}"
+    - export CAPO_TAG="${CAPO_TAG}"
+    - yq -i '.cluster.capo.resources_tag = strenv(CAPO_TAG)' $values_file
+    - git config --global credential.helper cache
+    # the CI_COMPONENT_* variables below are set in the gitlab runner configuration
+    # and allow to enable extra kustomize components needed in the context of the platform
+    # on which this test actually runs
+    - git clone --depth=1 https://foo:${CI_COMPONENT_REPO_PAT}@${CI_COMPONENT_REPO}
+    - export CI_COMPONENT="https://${CI_COMPONENT_REPO}//${CI_COMPONENT_REPO_PATH}-${ENV_NAME}?ref=main"
+    - if [ $(yq '.components | length' environment-values/$ENV_NAME/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' environment-values/$ENV_NAME/kustomization.yaml; fi
+    - yq -i '.components += strenv(CI_COMPONENT)' environment-values/$ENV_NAME/kustomization.yaml
+    - yq -e '.registry_mirrors' $(basename ${CI_COMPONENT_REPO} .git)/${CI_COMPONENT_REPO_PATH}-base/values.yaml > registry_mirrors.yml
+    - yq -i eval-all 'select(fileIndex==0).registry_mirrors = select(fileIndex==1) | select(fileIndex==0)' $values_file registry_mirrors.yml
+    - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capo\r\e[0K"
   post_deployment_common:
     - kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}' | xargs --no-run-if-empty -n1 kubectl --kubeconfig management-cluster-kubeconfig logs || true
   os_cloud:
@@ -213,7 +224,6 @@ deploy-preview-capd:
   script:
     - !reference [.common-deployment, script_common]
     - !reference [.common-deployment, script_capd]
-    - !reference [.common-deployment, oci_configuration]
     - ./preview.sh environment-values/${ENV_NAME}
   artifacts:
     when: on_failure
@@ -241,7 +251,6 @@ deploy-kubeadm-capd:
   script:
     - !reference [.common-deployment, script_common]
     - !reference [.common-deployment, script_capd]
-    - !reference [.common-deployment, oci_configuration]
     - ./bootstrap.sh environment-values/${ENV_NAME}
     - !reference [.common-deployment, post_deployment_common]
   rules:
@@ -259,24 +268,8 @@ deploy-kubeadm-capd-oci:
   extends: .deploy-base
   script:
     - !reference [.common-deployment, script_common]
-    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capo[collapsed=true]\r\e[0KApplying specific capo configuration\e[0m"
     - !reference [.common-deployment, os_cloud]
-    - yq -i eval-all 'select(fileIndex==0).cluster.capo.clouds_yaml = select(fileIndex==1) | select(fileIndex==0)' environment-values/${ENV_NAME}/secrets.yaml ~/.config/openstack/clouds.yml
-    - echo "CAPO_TAG=${CAPO_TAG}"
-    - export CAPO_TAG="${CAPO_TAG}"
-    - yq -i '.cluster.capo.resources_tag = strenv(CAPO_TAG)' $values_file
-    - git config --global credential.helper cache
-    # the CI_COMPONENT_* variables below are set in the gitlab runner configuration
-    # and allow to enable extra kustomize components needed in the context of the platform
-    # on which this test actually runs
-    - git clone --depth=1 https://foo:${CI_COMPONENT_REPO_PAT}@${CI_COMPONENT_REPO}
-    - export CI_COMPONENT="https://${CI_COMPONENT_REPO}//${CI_COMPONENT_REPO_PATH}-${ENV_NAME}?ref=main"
-    - if [ $(yq '.components | length' environment-values/$ENV_NAME/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' environment-values/$ENV_NAME/kustomization.yaml; fi
-    - yq -i '.components += strenv(CI_COMPONENT)' environment-values/$ENV_NAME/kustomization.yaml
-    - yq -e '.registry_mirrors' $(basename ${CI_COMPONENT_REPO} .git)/${CI_COMPONENT_REPO_PATH}-base/values.yaml > registry_mirrors.yml
-    - yq -i eval-all 'select(fileIndex==0).registry_mirrors = select(fileIndex==1) | select(fileIndex==0)' $values_file registry_mirrors.yml
-    - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capo\r\e[0K"
-    - !reference [.common-deployment, oci_configuration]
+    - !reference [.common-deployment, script_capo]
     - ./bootstrap.sh environment-values/${ENV_NAME}
     - !reference [.common-deployment, post_deployment_common]
   rules:
