@@ -320,7 +320,6 @@ units:
       targetNamespace: kubevirt-tests
 
   harbor:
-    enabled: yes
     helm_repo_url: https://helm.goharbor.io
     helmrelease_spec:
       chart:
