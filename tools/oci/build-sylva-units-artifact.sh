@@ -171,7 +171,11 @@ yq eval-all -i '
 #     helmrelease_spec:
 #       chart:
 #         spec:
-#           chart: local-path-provisioner
+#           # chart is substituted at runtime by helm_chart_artifact_name
+#           # or, if it is not defined, the last item of helmrelease_spec.chart.spec.chart
+#           # in this example: "local-path-provisioner"
+#           #chart: deploy/chart/local-path-provisioner
+#
 #           version: v0.0.23
 
 # shellcheck disable=SC2016
@@ -191,7 +195,6 @@ yq eval-all -i '
                      "helmrelease_spec": {
                        "chart": {
                          "spec": {
-                           "chart": .value.repo,
                            "version": $source_templates[.value.repo].spec.ref.tag
                          }
                        }
@@ -219,7 +222,6 @@ yq eval -i '
           "helmrelease_spec": {
             "chart": {
               "spec": {
-                "chart": "sylva-units",
                 "version": strenv(helm_chart_version)
               }
             }

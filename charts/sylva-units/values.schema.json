@@ -465,6 +465,9 @@
                 }
               ]
             },
+            "helm_chart_artifact_name": {
+              "type": "string"
+            },
             "helm_secret_values": {
               "type": "object"
             },
@@ -486,6 +489,9 @@
               "helmrelease_spec"
             ],
             "helm_repo_url": [
+              "helmrelease_spec"
+            ],
+            "helm_chart_artifact_name": [
               "helmrelease_spec"
             ]
           },

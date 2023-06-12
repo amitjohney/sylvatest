@@ -236,6 +236,25 @@ units:
 With this type of unit definition, Flux will reconciliate the HelmRelease based
 on the Git revision (ignoring version field in the Helm chart `Chart.yaml` file).
 
+If the chart is at the root of the Git repository (e.g. `chart: .`), then `helm_chart_artifact_name` has
+to be specified:
+
+```yaml
+source_templates:
+  acme-project-foo:
+    ...
+
+units:
+
+  my-unit:
+    repo: acme-project-foo
+    helm_chart_artifact_name: foo  # this specifies the Helm chart name used for Helm OCI artifacts
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: .   # this will point to https://gitlab.com/sylva-projects/sylva-elements/helm-charts/foo.git / .
+```
+
 ### Component using a Helm chart defined in a Helm repository
 
 ```yaml

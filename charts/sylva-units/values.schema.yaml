@@ -380,6 +380,9 @@ properties:
                 pattern: (https?|oci)://.*
               - $ref: "#/$defs/gotpl"
 
+          helm_chart_artifact_name:
+            type: string
+
           helm_secret_values:  # -------------------------------
             type: object
 
@@ -390,13 +393,14 @@ properties:
               "^.*$":
                 type: string
 
-
         dependentRequired:
           kustomization_substitute_secrets:
             - kustomization_spec
           helm_secret_values:
             - helmrelease_spec
           helm_repo_url:
+            - helmrelease_spec
+          helm_chart_artifact_name:
             - helmrelease_spec
 
         allOf:

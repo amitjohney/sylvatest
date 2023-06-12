@@ -124,6 +124,10 @@ units:
   #                      # key things are generated from unit_helmrelease_spec_default
   #                      # and from other fields in the unit definition
   #     _postRenderers: # this field can be used in this file, it will be merged into user-provided 'postRenderers'
+  #   helm_chart_artifact_name: optional, if specified, when deploying the Helm chart from an OCI artifact,
+  #                             helm_chart_artifact_name will be used as chart name instead of helmrelease_spec.chart.spec.chart last path item
+  #                             this is required if helmrelease_spec.chart.spec.chart is empty, '.' or '/'
+  #                             (also used by tools/oci/push-helm-chart to generate the artifact)
   #   kustomization_spec:  # contains a partial spec for a FluxCD Kustomization, most of the
   #                        # things are generated from unit_kustomization_spec_default
   #     # sourceRef is generated from .git_repo field
@@ -686,6 +690,7 @@ units:
     depends_on:
       cert-manager: true
     repo: metal3
+    helm_chart_artifact_name: metal3
     helmrelease_spec:
       chart:
         spec:
@@ -1204,6 +1209,7 @@ units:
     annotations:
       sylvactl/readyMessage: "Flux Web UI can be reached at https://{{ .Values.cluster.flux.external_hostname }} ({{ .Values.cluster.flux.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
     repo: weave-gitops
+    helm_chart_artifact_name: weave-gitops
     helmrelease_spec:
       chart:
         spec:
