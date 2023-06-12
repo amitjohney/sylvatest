@@ -778,6 +778,8 @@ units:
                     (and .Values.cluster.capo.control_plane_az (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
         - '{{ tuple "../../components/rke2-cis-profile"
                     (and .Values.cluster.cis_profile (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
+        - '{{ tuple "../cluster-manifests/components/capo-ironic-sec-group"
+                    (and (tuple . "capm3" | include "unit-enabled") (.Values.cluster.capi_providers.infra_provider | eq "capo")) | include "set-only-if" }}'
       _patches:
         - '{{ tuple (.Files.Get "elements/controlplane-registry-mirrors.tpl" | fromYaml) (.Values.registry_mirrors | dig "hosts_config" "") | include "set-only-if" }}'
         - '{{ tuple (.Files.Get "elements/configtemplate-registry-mirrors.tpl" | fromYaml) (.Values.registry_mirrors | dig "hosts_config" "") | include "set-only-if" }}'
@@ -819,6 +821,7 @@ units:
           WORKER_SECURITY_GROUP_NAME: 'capo-cluster-security-group-worker-{{ .Values.cluster.capo.resources_tag }}'
           CAPO_EXTERNAL_NETWORK_ID: '{{ tuple .Values.cluster.capo.external_network_id
             (and .Values.cluster.capo.external_network_id (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
+          CAPO_CREATE_IRONIC_SECURITY_GROUP: '{{ (and (tuple . "capm3" | include "unit-enabled") (.Values.cluster.capi_providers.infra_provider | eq "capo")) | include "preserve-type" }}'
       _components:
         - '{{ tuple "../cluster-manifests/components/capo-vip-floating-ip"
             (and .Values.cluster.capo.external_network_id (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
@@ -1387,7 +1390,6 @@ units:
                   port: ['80', '443', '22', '53']
                   protocol: [tcp, tcp, tcp, udp]
                   remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
-
       postBuild:
         substitute:
           CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
