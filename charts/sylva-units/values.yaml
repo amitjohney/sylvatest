@@ -811,6 +811,7 @@ units:
           name: capo-cluster-resources
       postBuild:
         substitute:
+          STACK_NAME_PREFIX: 'capo-cluster-{{ .Values.cluster.capo.resources_tag }}'
           CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
           CAPO_TAG: '{{ .Values.cluster.capo.resources_tag }}'
           CONTROL_PLANE_AFFINITY_POLICY: '{{ .Values.cluster.capo.control_plane_affinity_policy }}'
@@ -1347,7 +1348,6 @@ units:
             metadata:
               name: _unused_
             spec:
-              namePrefix: workload-cluster
               configmapName: workload-capo-cluster-resources
         - target:
             kind: HeatStack
@@ -1390,6 +1390,7 @@ units:
 
       postBuild:
         substitute:
+          STACK_NAME_PREFIX: 'workload-cluster-{{ .Values.cluster.capo.resources_tag }}'
           CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
           CAPO_TAG: '{{ .Values.cluster.capo.resources_tag }}'
           CONTROL_PLANE_AFFINITY_POLICY: '{{ .Values.cluster.capo.control_plane_affinity_policy }}'
