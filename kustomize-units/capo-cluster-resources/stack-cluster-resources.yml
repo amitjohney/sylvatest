@@ -146,7 +146,7 @@ spec:
       worker_servergroup_id:
         value: { get_resource: srvgroup-worker }
         description: Control plane server group ID
-  namePrefix: capo-cluster
+  namePrefix: "${STACK_NAME_PREFIX}"
   configmapName: capo-cluster-resources
   configmapLabels:
     copy-from-bootstrap-to-management: ""

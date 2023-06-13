@@ -366,7 +366,7 @@ scheduled-cleanup-capo:
     - !reference [.common-deployment, os_cloud]
     - touch tags.txt exclude-tags.txt
     - |
-      for STACK in $(openstack stack list -f value -c "Stack Name" | grep '^capo-cluster\|^workload-cluster' ); do
+      for STACK in $(openstack stack list -f value -c "Stack Name" | grep -E '^(management|workload|capo)-cluster' ); do
         STACK_TIME=$(date -d "$(openstack stack show ${STACK} -c creation_time -f value | tr T ' ' | tr -d Z )" +%s)
         THIS_TIME=$(date +%s)
         # we'll only consider for cleanup tags applied to resources created more than 2 hours ago
