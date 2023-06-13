@@ -109,6 +109,8 @@ This mechanism is quite powerful, as it enables to adapt values to various conte
 Deploying clusters in Docker using CAPD (click to expand)
 </summary>
 
+> **_NOTE:_** Deploying clustrers using this method will not work for the `btrfs` Docker storage driver until the [#8317](https://github.com/kubernetes-sigs/cluster-api/issues/8317) CAPD issue is fixed.
+
 Even if it is not representative of any real-life deployment use-case, running clusters in Docker is useful to enable the testing of lifecycle management of clusters without any infrastructure requirement.
 
 It can be used to test that stack on a laptop or in [GitLab-ci](.gitlab-ci.yml). You just have to [install Docker](https://docs.docker.com/engine/install/) as a prerequisite, and then clone this [project](https://gitlab.com/sylva-projects/sylva-core).
