@@ -126,7 +126,7 @@ check-docs-markdown:
 .common-deployment:
   script_common:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_common[collapsed=true]\r\e[0KRunning common deployment steps\e[0m"
-    - export DOCKER_IP=$(getent hosts docker | awk '{print $1}')
+    - export DOCKER_IP=$(getent ahostsv4 docker | awk '{print $1}' | sort -u)
     - export ENV_PATH=environment-values/${ENV_NAME}
     - values_file=environment-values/${ENV_NAME}/values.yaml
     - docker network create --attachable kind
