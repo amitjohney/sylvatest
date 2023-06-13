@@ -572,6 +572,9 @@ properties:
       capv: # -------------------------------
         type: object
 
+      capm3: # -------------------------------
+        type: object
+
       test_workload_cluster_name:
         type: string
         pattern: "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
@@ -788,6 +791,27 @@ properties:
 
                 storagePolicyName:  # -------------------------------
                   type: string
+      - if:
+          properties:
+            capi_providers:
+              properties:
+                infra_provider:
+                  const: capm3
+        then:
+          properties:
+            capm3:  # -------------------------------
+              type: object
+              additionalProperties: false
+              properties:
+
+                bootstrap_ip:  # -------------------------------
+                  type: string
+                  format: ipv4
+
+                external_bootstrap_ip:  # -------------------------------
+                  type: string
+                  format: ipv4
+
 
   proxies:  # -------------------------------
     type: object
