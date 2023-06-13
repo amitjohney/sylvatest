@@ -2,6 +2,9 @@
 {{ range $unit_name, $unit_def := .Values.units }}
 
   {{- if include "unit-enabled" (tuple $envAll $unit_name) -}}
+    {{/* inherit settings from any specified unit_template */}}
+    {{- $unit_def := mergeOverwrite (deepCopy ($envAll.Values.unit_templates | dig ($unit_def.unit_template | default "") dict)) $unit_def -}}
+
     {{/*********** Prepare labels used in all generated objects */}}
 
     {{- $labels := deepCopy ($unit_def.labels | default dict) -}}

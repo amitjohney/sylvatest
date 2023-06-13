@@ -109,6 +109,12 @@ unit_helmrelease_kustomization_spec_default:
 # default value used if units.xxx.enabled is not specified
 units_enabled_default: false
 
+# unit_template define unit settings
+#   a unit can inherit from one of those
+unit_templates:
+  sylva-units:
+    repo: sylva-core
+
 # this defines Flux HelmRelease objects, and for each  # FIXME
 # a corresponding GitRepository or OCIRepository (and Secret, TODO: the Secret don't need to be generated for each unit)
 units:
@@ -139,6 +145,8 @@ units:
   #
   #   helm_secret_values: # (dict), if set what is put here is injected in HelmRelease.valuesFrom as a Secret
   #   kustomization_substitute_secrets: # (dict), if set what is put here is injected in Kustomization.postBuild.substituteFrom as a Secret
+  #   unit_template: optional, today used only for units that use sylva-units itself
+  #                  the settings for the unit are inherited from the corresponding entry under unit_templates
 
   flux-system:
     # note that Flux is always installed on the current cluster as a pre-requisite to installing the chart
@@ -1819,3 +1827,7 @@ _internal:
     {{- tuple . (tuple . "cinder-csi" | include "unit-enabled") "cinder-csi" "local-path-provisioner" | include "interpret-ternary" -}}
   default_storage_class: >-
     {{- tuple . (tuple . "cinder-csi" | include "unit-enabled") .Values.cluster.capo.storageClass.name "local-path" | include "interpret-ternary" -}}
+
+  # this is used in source_templates.sylva-core below
+  # and in any unit using sylva-units Helm chart
+  sylva_core_version: ''

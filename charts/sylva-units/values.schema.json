@@ -293,6 +293,12 @@
     "unit_helmrelease_kustomization_spec_default": {
       "type": "object"
     },
+    "unit_templates": {
+      "type": "object",
+      "^[a-z0-9][a-z0-9-]*[a-z0-9]$": {
+        "type": "object"
+      }
+    },
     "units": {
       "type": "object",
       "patternProperties": {
@@ -308,6 +314,10 @@
               "items": {
                 "$ref": "#/$defs/enabled"
               }
+            },
+            "unit_template": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
             },
             "repo": {
               "anyOf": [

@@ -207,29 +207,6 @@ yq eval-all -i '
     | select(fileIndex==0)' \
     use-oci-artifacts.values.yaml values.yaml
 
-# For 'management-sylva-units' unit in bootstrap.values.yaml we need specific processing
-# because the chart name is 'sylva-units' (not equal to 'repo' which is 'sylva-core')
-# and because the tag to use is $artifact_tag (not derived from source_template."sylva-core".spec.ref.tag)
-
-export helm_chart_version
-
-yq eval -i '
-    .units."management-sylva-units" =
-        {
-          "enabled": false,
-          "repo": null,
-          "helm_repo_url": "{{ .Values.sylva_core_oci_registry }}",
-          "helmrelease_spec": {
-            "chart": {
-              "spec": {
-                "version": strenv(helm_chart_version)
-              }
-            }
-          }
-        }
-    ' \
-    use-oci-artifacts.values.yaml
-
 ############################### wrap up Helm packaging
 
 echo "Wrap up Helm chart package..."
