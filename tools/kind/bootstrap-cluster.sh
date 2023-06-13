@@ -77,6 +77,14 @@ if yq -e '.registry_mirrors.hosts_config | length > 0' ${VALUES_FILE} &>/dev/nul
         helm template kind-registry-config ${BASE_DIR}/charts/sylva-units --show-only templates/extras/kind.yaml --values - | yq .script | bash
 fi
 
+# Try to retrieve ironic bootstrap_ip config in values.yaml and expose port if defined
+if yq -e '.cluster.capm3.bootstrap_ip' ${VALUES_FILE} &>/dev/null; then
+    BOOTSTRAP_IP=$(yq -e '.cluster.capm3.bootstrap_ip' ${VALUES_FILE})
+    for port in "5050/TCP" "6180/TCP" "6385/TCP"; do
+        KIND_CONFIG=$(echo "$KIND_CONFIG" | yq '.nodes[0].extraPortMappings += [{"containerPort": '${port%/*}', "hostPort": '${port%/*}', "listenAddress": "'$BOOTSTRAP_IP'", "protocol": "'${port#*/}'"}]')
+    done
+fi
+
 # Use docker-in-docker address as api endpoint when running in docker-in-docker
 if [[ -n "$DOCKER_IP" ]]; then
     KIND_CONFIG=$(echo "$KIND_CONFIG" | yq '.networking.apiServerPort = 6443 | .networking.apiServerAddress = env(DOCKER_IP)')
