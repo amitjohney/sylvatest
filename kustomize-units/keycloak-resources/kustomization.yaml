@@ -7,3 +7,4 @@ resources:
 - keycloak-realm.yaml
 - rancher-client.yaml
 - flux-webui-client.yaml
+- vault-client.yaml
