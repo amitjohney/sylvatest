@@ -833,7 +833,7 @@ units:
           name: capo-cluster-resources
       postBuild:
         substitute:
-          STACK_NAME_PREFIX: 'management-cluster-{{ .Values.cluster.capo.resources_tag }}'
+          STACK_NAME_PREFIX: 'management-cluster-{{ tuple . .Values.cluster.capo.resources_tag | include "interpret-as-string" | replace "." "-" }}'
           CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
           CAPO_TAG: '{{ .Values.cluster.capo.resources_tag }}'
           CONTROL_PLANE_AFFINITY_POLICY: '{{ .Values.cluster.capo.control_plane_affinity_policy }}'
@@ -1412,7 +1412,7 @@ units:
                   remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
       postBuild:
         substitute:
-          STACK_NAME_PREFIX: 'workload-cluster-{{ .Values.cluster.capo.resources_tag }}'
+          STACK_NAME_PREFIX: 'workload-cluster-{{ tuple . .Values.cluster.capo.resources_tag | include "interpret-as-string" | replace "." "-" }}'
           CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
           CAPO_TAG: '{{ .Values.cluster.capo.resources_tag }}'
           CONTROL_PLANE_AFFINITY_POLICY: '{{ .Values.cluster.capo.control_plane_affinity_policy }}'
