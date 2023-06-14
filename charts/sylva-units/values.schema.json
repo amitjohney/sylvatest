@@ -134,6 +134,7 @@
                     "name",
                     "kind"
                   ],
+                  "additionalProperties": false,
                   "properties": {
                     "name": {
                       "type": "string"
@@ -144,6 +145,9 @@
                         "GitRepository",
                         "OCIRepository"
                       ]
+                    },
+                    "namespace": {
+                      "type": "string"
                     }
                   }
                 }

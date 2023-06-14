@@ -159,6 +159,7 @@ properties:
               required:
                 - name
                 - kind
+              additionalProperties: false
               properties:
 
                 name:  # -------------------------------
@@ -167,6 +168,9 @@ properties:
                 kind: # -------------------------------
                   type: string
                   enum: ["GitRepository", "OCIRepository"]
+
+                namespace:  # -------------------------------
+                  type: string
 
           auth:  # -------------------------------
             $ref: "#/$defs/username-password"
