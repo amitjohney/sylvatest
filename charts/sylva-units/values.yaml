@@ -1194,6 +1194,8 @@ units:
             - '{{ .Values.cluster.cluster_external_ip }}'
             annotations:
               metallb.universe.tf/allow-shared-ip: '{{ tuple (.Values.cluster.cluster_external_ip) (eq .Values.cluster.capi_providers.infra_provider "capd") | include "set-only-if" }}'
+          publishService:
+            enabled: true
 
   first-login-rancher:
     enabled_conditions:
