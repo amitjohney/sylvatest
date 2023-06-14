@@ -15,7 +15,7 @@ stages:
 default:
   tags:
     - gitlab-org-docker
-  image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image:v1-0-5
+  image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image:v1.0.6
 
 variables:
   DOCKER_TLS_CERTDIR: ""
