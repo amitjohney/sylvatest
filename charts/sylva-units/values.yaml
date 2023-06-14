@@ -159,7 +159,7 @@ units:
       postBuild:
         substitute:
           var_substitution_enabled: "true" # To force substitution when configmap does not exist
-        substituteFrom:
+        _substituteFrom:
         - kind: ConfigMap
           name: proxy-env-vars
           optional: true
@@ -788,7 +788,7 @@ units:
           METALLB_HELM_CHART: '{{ .Values.metallb_helm_oci_url | default "metallb" }}'
           # if metallb_helm_oci_url is unset/empty, then set METALLB_HELM_REPO, but if it's set then leave METALLB_HELM_REPO empty
           METALLB_HELM_REPO: '{{ empty .Values.metallb_helm_oci_url | ternary "https://metallb.github.io/metallb" "" }}'
-        substituteFrom:
+        _substituteFrom:
         - kind: ConfigMap
           name: cluster-vars
         - kind: ConfigMap

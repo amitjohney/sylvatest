@@ -391,6 +391,24 @@
                   "items": {
                     "type": "string"
                   }
+                },
+                "postBuild": {
+                  "type": "object",
+                  "properties": {
+                    "_substituteFrom": {
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "object"
+                          },
+                          {
+                            "$ref": "#/$defs/gotpl"
+                          }
+                        ]
+                      }
+                    }
+                  }
                 }
               },
               "allOf": [

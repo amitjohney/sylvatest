@@ -196,6 +196,14 @@ stringData:
     {{/* combine '_patches' with 'patches' and the $patches computed earlier in this template */}}
     {{- $patches := concat $patches ($unit_def | dig "kustomization_spec" "_patches" list)
                                     ($unit_def | dig "kustomization_spec" "patches" list) -}}
+    {{/* combine '_substituteFrom' with 'substituteFrom' */}}
+    {{- $substituteFrom := concat ($unit_def | dig "kustomization_spec" "postBuild" "_substituteFrom" list)
+                                  ($unit_def | dig "kustomization_spec" "postBuild" "substituteFrom" list) -}}
+    {{- $postBuild := dict -}}
+    {{- if $substituteFrom -}}
+      {{- $postBuild = dict "postBuild" (dict "substituteFrom" $substituteFrom) -}}
+    {{- end -}}
+
     {{/* combine '_components' with 'components' */}}
     {{- $components := concat ($unit_def | dig "kustomization_spec" "_components" list)
                               ($unit_def | dig "kustomization_spec" "components" list) -}}
@@ -204,6 +212,9 @@ stringData:
     {{- if hasKey $unit_def "kustomization_spec" -}}
       {{- $_ := unset $unit_def.kustomization_spec "_patches" -}}
       {{- $_ := unset $unit_def.kustomization_spec "_components" -}}
+      {{- if hasKey $unit_def.kustomization_spec "postBuild" -}}
+        {{- $_ := unset $unit_def.kustomization_spec.postBuild "_substituteFrom" -}}
+      {{- end -}}
     {{- end -}}
 
     {{/* here we workaround the fact that 'concat', when only given empty lists,
@@ -217,7 +228,7 @@ stringData:
     {{- end -}}
 
     {{/* finalize the definition of the Kustomization spec by merging everything we have */}}
-    {{- $kustomization_spec = mergeOverwrite $kustomization_spec $envAll.Values.unit_kustomization_spec_default ($unit_def.kustomization_spec | default dict) $dependsOn $kustomization_spec_overrides (dict "patches" $patches) (dict "components" $components) -}}
+    {{- $kustomization_spec = mergeOverwrite $kustomization_spec $envAll.Values.unit_kustomization_spec_default ($unit_def.kustomization_spec | default dict) $dependsOn $kustomization_spec_overrides (dict "patches" $patches) (dict "components" $components) $postBuild -}}
 
     {{/* 
     if healthChecks is specified on kustomization_spec while helmrelease_spec is defined,
