@@ -47,6 +47,14 @@
     "string-with-gotpl": {
       "type": "string",
       "pattern": ".*{{ .* }}.*"
+    },
+    "ipv4-cidr": {
+      "type": "string",
+      "pattern": "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?:\\/([1-9]|[12]\\d|3[012]))$"
+    },
+    "ipv4-range": {
+      "type": "string",
+      "pattern": "^(?:(?:[01]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[01]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])-(?:(?:[01]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[01]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])$"
     }
   },
   "additionalProperties": false,
@@ -748,6 +756,83 @@
         },
         "capm3": {
           "type": "object"
+        },
+        "metallb_additional_options": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "address_pools": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "addresses"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "addresses": {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/ipv4-cidr"
+                        },
+                        {
+                          "$ref": "#/$defs/ipv4-range"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "l3_options": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "bgp_peers": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "name",
+                      "local_asn",
+                      "peer_asn",
+                      "peer_address"
+                    ],
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "local_asn": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 4294967295
+                      },
+                      "peer_asn": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 4294967295
+                      },
+                      "peer_address": {
+                        "type": "string",
+                        "format": "ipv4"
+                      },
+                      "advertised_pools": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         },
         "test_workload_cluster_name": {
           "type": "string",
