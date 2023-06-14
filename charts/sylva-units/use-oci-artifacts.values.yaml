@@ -68,6 +68,9 @@
 #           chart: local-path-provisioner
 #           version: v0.0.23
 
+_internal:
+  sylva_core_version: '{{ regexReplaceAll "[+][0-9]+$" .Chart.Version "" }}'
+
 # this value can be overriden to use an alternate OCI registry, by default we'll reuse the same registry as HelmRepository of sylva-core
 sylva_base_oci_registry: '{{ lookup "source.toolkit.fluxcd.io/v1beta2" "HelmRepository" "default" "sylva-core" | dig "spec" "url" "oci://registry.gitlab.com/sylva-projects/sylva-core" | dir | replace "oci:/" "oci://" }}'
 sylva_core_oci_registry: '{{ .Values.sylva_base_oci_registry }}/sylva-core'
@@ -86,7 +89,7 @@ source_templates:
         # (.Chart.Version is the chart version followed by "+<n>" with <n> being
         # the Helm release iteration, so we need to remove it)
         branch: null
-        tag: '{{ regexReplaceAll "[+][0-9]+$" .Chart.Version "" }}'
+        tag: '{{ .Values._internal.sylva_core_version }}'
 
   capi-rancher-import:
     kind: OCIRepository
@@ -97,6 +100,15 @@ source_templates:
       # this URL can be overridden for a deployment to point to an OCI registry
       # other than the one derived from sylva_base_oci_registry
       url: '{{ .Values.sylva_base_oci_registry }}/sylva-elements/helm-charts/capi-rancher-import/cattle-kustomize'
+
+unit_templates:
+  sylva-units:  # this applies to any unit having "unit_template: sylva-units"
+    repo: null
+    helm_repo_url: '{{ .Values.sylva_core_oci_registry }}'
+    helmrelease_spec:
+      chart:
+        spec:
+          version: '{{ .Values._internal.sylva_core_version }}'
 
 units:
 

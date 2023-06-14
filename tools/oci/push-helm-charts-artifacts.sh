@@ -126,10 +126,14 @@ for unit in "${units[@]}"; do
       process_chart_in_helm_repo $helm_repo_url $chart $version
     else
       ## Helm charts in git repository ##
+      chart_name=$(echo "$unit" | yq '.helm_chart_artifact_name // ""')
+      if [[ -z $chart_name ]]; then
+        chart_name=$(echo "$helmchart_spec" | yq '.chart | sub(".*?([^/]+)$","${1}")')
+      fi
       repo=$(echo "$unit" | yq '.repo')
       git_repo_url=$(echo "${source_templates[@]}" | yq ".$repo.spec.url" )
       git_revision=$(echo "${source_templates[@]}" | yq ".$repo.spec.ref.tag" )
-      process_chart_in_git $git_repo_url $chart $git_revision $repo
+      process_chart_in_git $git_repo_url $chart $git_revision $chart_name
     fi
   fi
 done

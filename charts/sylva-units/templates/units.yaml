@@ -2,6 +2,9 @@
 {{ range $unit_name, $unit_def := .Values.units }}
 
   {{- if include "unit-enabled" (tuple $envAll $unit_name) -}}
+    {{/* inherit settings from any specified unit_template */}}
+    {{- $unit_def := mergeOverwrite (deepCopy ($envAll.Values.unit_templates | dig ($unit_def.unit_template | default "") dict)) $unit_def -}}
+
     {{/*********** Prepare labels used in all generated objects */}}
 
     {{- $labels := deepCopy ($unit_def.labels | default dict) -}}
@@ -91,6 +94,44 @@ spec: {{ $helm_repo_spec | toYaml | nindent 2 }}
 
       {{/* ensure that we clean _postRenderers from the rendered resources */}}
       {{- $_ := unset $unit_def.helmrelease_spec "_postRenderers" -}}
+
+      {{/*
+      If we deploy the Helm release from an OCI artifact (using a HelmRepository of type oci) a
+      unit which is initially defined as deployed from a GitRepository we need to adapt
+      some attributes to compensate for small variations.
+
+      .---------------------------------------------------------------------------------.
+      | HelmRelease           source: | GitRepo and chart values    | HelmRepo type OCI |
+      |---------------------------------------------------------------------------------|
+      | spec.chart.spec.chart         | charts/foo                  | bar (1)           |
+      | spec.chart.spec.valuesFiles[] | charts/foo/more-values.yaml | more-values.yaml  |
+      '---------------------------------------------------------------------------------'
+      (Where 'bar' is the helm chart name used for artifact building)
+
+      The adaptation is done as follows:
+      - 'chart' is rewritten to use 'helm_chart_artifact_name' if defined
+        or the last item in the chart path (charts/foo -> foo) ; helm_chart_artifact_name
+        is used for units for which 'chart' is empty or '.' (e.g. sylva-capi-cluster chart)
+      - the same convention is used to produce OCI artifact for Helm charts
+        in tools/oci/push-helm-charts-artifacts.sh
+      - items in 'valuesFiles' are rewritten to remove the chart path
+        ('charts/foo/more-values.yaml' -> 'more-values.yaml')
+      */}}
+      {{- if get (urlParse ($unit_def | dig "helm_repo_url" "none://")) "scheme" | eq "oci" -}}
+        {{- $chart_spec := $unit_def.helmrelease_spec.chart.spec -}}
+
+        {{/* for each item of 'valuesFiles', change "<spec.chart.spec.chart>/more-values.yaml" into "more-values.yaml" */}}
+        {{- $values_files := list }}
+        {{- range $value_file := $chart_spec.valuesFiles -}}
+          {{- $values_files = append $values_files (regexReplaceAll (printf "^%s/" $chart_spec.chart) $value_file "") -}}
+        {{- end -}}
+        {{- $_ := set $chart_spec "valuesFiles" $values_files -}}
+
+        {{/* for 'chart' attribute, change "charts/foo" into helm_chart_artifact_name or last item of .chart */}}
+        {{- $_ := set $chart_spec "chart" (or (get $unit_def "helm_chart_artifact_name")
+                                              (regexReplaceAll ".*?([^/]+)$" $chart_spec.chart "${1}")
+                                          ) -}}
+      {{- end -}}
 
       {{/* produce the HelmRelease specification, merging the different sources we have */}}
       {{- $helmrelease_spec := dict "releaseName" $unit_name -}}

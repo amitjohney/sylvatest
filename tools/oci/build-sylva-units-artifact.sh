@@ -171,7 +171,11 @@ yq eval-all -i '
 #     helmrelease_spec:
 #       chart:
 #         spec:
-#           chart: local-path-provisioner
+#           # chart is substituted at runtime by helm_chart_artifact_name
+#           # or, if it is not defined, the last item of helmrelease_spec.chart.spec.chart
+#           # in this example: "local-path-provisioner"
+#           #chart: deploy/chart/local-path-provisioner
+#
 #           version: v0.0.23
 
 # shellcheck disable=SC2016
@@ -191,7 +195,6 @@ yq eval-all -i '
                      "helmrelease_spec": {
                        "chart": {
                          "spec": {
-                           "chart": .value.repo,
                            "version": $source_templates[.value.repo].spec.ref.tag
                          }
                        }
@@ -203,30 +206,6 @@ yq eval-all -i '
     )
     | select(fileIndex==0)' \
     use-oci-artifacts.values.yaml values.yaml
-
-# For 'management-sylva-units' unit in bootstrap.values.yaml we need specific processing
-# because the chart name is 'sylva-units' (not equal to 'repo' which is 'sylva-core')
-# and because the tag to use is $artifact_tag (not derived from source_template."sylva-core".spec.ref.tag)
-
-export helm_chart_version
-
-yq eval -i '
-    .units."management-sylva-units" =
-        {
-          "enabled": false,
-          "repo": null,
-          "helm_repo_url": "{{ .Values.sylva_core_oci_registry }}",
-          "helmrelease_spec": {
-            "chart": {
-              "spec": {
-                "chart": "sylva-units",
-                "version": strenv(helm_chart_version)
-              }
-            }
-          }
-        }
-    ' \
-    use-oci-artifacts.values.yaml
 
 ############################### wrap up Helm packaging
 

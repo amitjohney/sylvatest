@@ -109,6 +109,12 @@ unit_helmrelease_kustomization_spec_default:
 # default value used if units.xxx.enabled is not specified
 units_enabled_default: false
 
+# unit_template define unit settings
+#   a unit can inherit from one of those
+unit_templates:
+  sylva-units:
+    repo: sylva-core
+
 # this defines Flux HelmRelease objects, and for each  # FIXME
 # a corresponding GitRepository or OCIRepository (and Secret, TODO: the Secret don't need to be generated for each unit)
 units:
@@ -124,6 +130,10 @@ units:
   #                      # key things are generated from unit_helmrelease_spec_default
   #                      # and from other fields in the unit definition
   #     _postRenderers: # this field can be used in this file, it will be merged into user-provided 'postRenderers'
+  #   helm_chart_artifact_name: optional, if specified, when deploying the Helm chart from an OCI artifact,
+  #                             helm_chart_artifact_name will be used as chart name instead of helmrelease_spec.chart.spec.chart last path item
+  #                             this is required if helmrelease_spec.chart.spec.chart is empty, '.' or '/'
+  #                             (also used by tools/oci/push-helm-chart to generate the artifact)
   #   kustomization_spec:  # contains a partial spec for a FluxCD Kustomization, most of the
   #                        # things are generated from unit_kustomization_spec_default
   #     # sourceRef is generated from .git_repo field
@@ -135,6 +145,8 @@ units:
   #
   #   helm_secret_values: # (dict), if set what is put here is injected in HelmRelease.valuesFrom as a Secret
   #   kustomization_substitute_secrets: # (dict), if set what is put here is injected in Kustomization.postBuild.substituteFrom as a Secret
+  #   unit_template: optional, today used only for units that use sylva-units itself
+  #                  the settings for the unit are inherited from the corresponding entry under unit_templates
 
   flux-system:
     # note that Flux is always installed on the current cluster as a pre-requisite to installing the chart
@@ -686,6 +698,7 @@ units:
     depends_on:
       cert-manager: true
     repo: metal3
+    helm_chart_artifact_name: metal3
     helmrelease_spec:
       chart:
         spec:
@@ -1204,6 +1217,7 @@ units:
     annotations:
       sylvactl/readyMessage: "Flux Web UI can be reached at https://{{ .Values.cluster.flux.external_hostname }} ({{ .Values.cluster.flux.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
     repo: weave-gitops
+    helm_chart_artifact_name: weave-gitops
     helmrelease_spec:
       chart:
         spec:
@@ -1813,3 +1827,7 @@ _internal:
     {{- tuple . (tuple . "cinder-csi" | include "unit-enabled") "cinder-csi" "local-path-provisioner" | include "interpret-ternary" -}}
   default_storage_class: >-
     {{- tuple . (tuple . "cinder-csi" | include "unit-enabled") .Values.cluster.capo.storageClass.name "local-path" | include "interpret-ternary" -}}
+
+  # this is used in source_templates.sylva-core below
+  # and in any unit using sylva-units Helm chart
+  sylva_core_version: ''

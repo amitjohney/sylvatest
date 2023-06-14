@@ -262,6 +262,11 @@ properties:
     type: object
     # TODO: detail more
 
+  unit_templates:  # -------------------------------
+    type: object
+    "^[a-z0-9][a-z0-9-]*[a-z0-9]$":  # -------------------------------
+      type: object
+
   units:  # -------------------------------
     type: object
     patternProperties:
@@ -278,6 +283,10 @@ properties:
             type: array
             items:
               $ref: "#/$defs/enabled"
+
+          unit_template:
+            type: string
+            pattern: "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
 
           repo:  # -------------------------------
             anyOf:
@@ -380,6 +389,9 @@ properties:
                 pattern: (https?|oci)://.*
               - $ref: "#/$defs/gotpl"
 
+          helm_chart_artifact_name:
+            type: string
+
           helm_secret_values:  # -------------------------------
             type: object
 
@@ -390,13 +402,14 @@ properties:
               "^.*$":
                 type: string
 
-
         dependentRequired:
           kustomization_substitute_secrets:
             - kustomization_spec
           helm_secret_values:
             - helmrelease_spec
           helm_repo_url:
+            - helmrelease_spec
+          helm_chart_artifact_name:
             - helmrelease_spec
 
         allOf:
