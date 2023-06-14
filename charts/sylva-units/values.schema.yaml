@@ -815,6 +815,10 @@ properties:
                   format: ipv4
 
 
+                provisioning_ip:  # -------------------------------
+                  type: string
+                  format: ipv4
+
   proxies:  # -------------------------------
     type: object
     additionalProperties: false
