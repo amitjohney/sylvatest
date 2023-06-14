@@ -60,23 +60,51 @@ which is used to create a Flux Kustomization that generates a HelmRelease.
 
 */}}
 {{ define "helmrelease-kustomization-patch-template" }}
-{{- $unit_name := index . 0 -}}
-{{- $helmrelease_spec := index . 1 -}}
-{{- $labels := index . 2 -}}
-target:
-  kind: HelmRelease
-patch: |
-  - op: replace
-    path: /metadata
-    value:
-      namespace: default
-      name: {{ $unit_name }}
-      labels:
-{{ $labels | toYaml | indent 8 }}
-  - op: replace
-    path: /spec
-    value:
-{{ $helmrelease_spec | toYaml | indent 6 }}
+  {{- $unit_name := index . 0 -}}
+  {{- $helmrelease_spec := index . 1 -}}
+  {{- $labels := index . 2 -}}
+  {{- $has_secret := index . 3 -}}
+patches:
+  - target:
+      kind: HelmRelease
+    patch: |
+      - op: replace
+        path: /metadata
+        value:
+          namespace: default
+          name: {{ $unit_name }}
+          labels: {{ $labels | toYaml | nindent 12 }}
+      - op: replace
+        path: /spec
+        value: {{ $helmrelease_spec | toYaml | nindent 10 }}
+  {{ if $has_secret }}
+  - target:
+      kind: Secret
+    patch: |
+      - op: replace
+        path: /metadata
+        value:
+          namespace: default
+          name: helm-unit-values-{{ $unit_name }}
+          labels: {{ $labels | toYaml | nindent 12 }}
+  - target:
+      kind: HelmRelease
+    patch: |
+      - op: add
+        path: /spec/valuesFrom
+        value:
+          - kind: Secret
+            name: helm-unit-values-{{ $unit_name }}
+            valuesKey: values
+  {{ else }}
+  - target:
+      kind: Secret
+    patch: |
+      kind: Secret
+      metadata:
+        name: _unused_
+      $patch: delete
+  {{ end }}
 {{ end }}
 
 

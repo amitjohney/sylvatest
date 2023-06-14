@@ -4,3 +4,10 @@ kind: HelmRelease
 metadata:
   name: placeholder
 spec: {}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: helm-unit-values-placeholder
+data:
+  values: ${VALUES_B64}
