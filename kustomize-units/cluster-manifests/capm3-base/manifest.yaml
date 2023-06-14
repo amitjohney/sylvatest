@@ -75,6 +75,10 @@ spec:
             fromIPPool: provisioning-pool
           network: ${PROVISIONING_POOL}
           prefix: ${PROVISIONING_POOL_PREFIX}
+        - gateway:
+            fromIPPool: provisioning-pool
+          network: ${BMC_POOL}
+          prefix: ${BMC_POOL_PREFIX}        
       - id: bond0.13
         ipAddressFromIPPool: public-pool
         link: bond0.13
@@ -193,7 +197,7 @@ metadata:
 spec:
   clusterName: ${CLUSTER_NAME}
   gateway: ${PROVISIONING_POOL_GATEWAY}
-  namePrefix: ${CLUSTER_NAME}-prov
+  namePrefix: provisioning
   pools:
   - end: ${PROVISIONING_POOL_END}
     start: ${PROVISIONING_POOL_START}
@@ -207,7 +211,7 @@ metadata:
 spec:
   clusterName: ${CLUSTER_NAME}
   gateway: ${PUBLIC_POOL_GATEWAY}
-  namePrefix: ${CLUSTER_NAME}-bmv4
+  namePrefix: public
   pools:
   - end: ${PUBLIC_POOL_END}
     start: ${PUBLIC_POOL_START}
