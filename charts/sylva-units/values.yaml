@@ -689,7 +689,7 @@ units:
         services:
           ironic:
             # Specify the IP address used by Ironic service
-            ironicIP: '{{ .Values.cluster.capm3.provisioning_ip | default .Values.cluster.cluster_external_ip }}'
+            ironicIP: '{{ dig "capm3" "provisioning_ip" .Values.cluster.cluster_external_ip  .Values.cluster }}'
             # We allow shared IPs because we are exposing (by design) a single cluster external IP
             annotations:
               metallb.universe.tf/allow-shared-ip: '{{ .Values.cluster.cluster_external_ip }}'
