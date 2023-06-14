@@ -1065,7 +1065,8 @@
                   "external_bootstrap_ip": {
                     "type": "string",
                     "format": "ipv4"
-                  },provisioning_ip": {
+                  },
+		  "provisioning_ip": {
                     "type": "string",
                     "format": "ipv4"
                   }
