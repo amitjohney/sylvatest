@@ -140,28 +140,13 @@ spec: {{ $helm_repo_spec | toYaml | nindent 2 }}
 
       {{- if hasKey $unit_def "helm_secret_values" -}}
         {{/* if the unit has "helm_secret_values" defined, then
-             we add to valuesFrom a Secret with "helm_secret_values"
+             we push a secret in the HelmRelease via kustomization_substitute_secrets"
         */}}
-        {{- $secretName := printf "helm-unit-values-%s" $unit_name }}
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: {{ $secretName }}
-  labels: {{ $labels | toYaml | nindent 4 }}
-stringData:
-  values: |{{ $unit_def.helm_secret_values | toYaml | nindent 4 }}
-
-        {{ $valuesFrom := $helmrelease_spec.valuesFrom | default list -}}
-        {{- $secretsValues := dict "kind" "Secret" "name" $secretName "valuesKey" "values" -}}
-
-        {{- $_ := set $helmrelease_spec "valuesFrom" (append $valuesFrom $secretsValues) -}}
-
+        {{- $_ := set $unit_def "kustomization_substitute_secrets" (dict "VALUES_B64" ($unit_def.helm_secret_values | toYaml | b64enc)) -}}
       {{- end -}}
 
-      {{/* inject the HelmRelease spec via a patch in the Kustomization: */}}
-      {{- $patch := include "helmrelease-kustomization-patch-template" (tuple $unit_name $helmrelease_spec $labels) | fromYaml -}}
-      {{- $patches = list $patch -}}
+      {{/* inject the HelmRelease spec via patches in the Kustomization: */}}
+      {{- $patches = index (include "helmrelease-kustomization-patch-template" (tuple $unit_name $helmrelease_spec $labels (hasKey $unit_def "helm_secret_values")) | fromYaml) "patches" -}}
     {{- end -}}
 
     {{- $kustomization_spec := dict -}}
@@ -180,7 +165,7 @@ metadata:
 stringData:
 {{- $unit_def.kustomization_substitute_secrets | toYaml | nindent 2 }}
 
-      {{- $substituteFrom := ($unit_def.kustomization_spec.postBuild | default dict).substituteFrom | default list -}}
+      {{- $substituteFrom := (($unit_def.kustomization_spec | default dict).postBuild | default dict).substituteFrom | default list -}}
       {{- $secretsValues := dict "kind" "Secret" "name" $secretName -}}
 
       {{- $_ := mergeOverwrite $kustomization_spec_overrides (dict "postBuild" (dict "substituteFrom" (append $substituteFrom $secretsValues))) -}}
