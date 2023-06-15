@@ -8,3 +8,4 @@ resources:
 - rancher-client.yaml
 - flux-webui-client.yaml
 - vault-client.yaml
+- keycloak-user.yaml
