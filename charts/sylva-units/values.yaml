@@ -837,13 +837,7 @@ units:
       heat-operator: true
     kustomization_spec:
       path: ./kustomize-units/capo-cluster-resources
-      healthChecks:
-        # until the heat operator is improved to conform to kstatus specs
-        # see https://gitlab.com/sylva-projects/sylva-core/-/issues/104
-        - apiVersion: v1
-          kind: ConfigMap
-          namespace: default
-          name: capo-cluster-resources
+      wait: true
       postBuild:
         substitute:
           STACK_NAME_PREFIX: 'management-cluster-{{ tuple . .Values.cluster.capo.resources_tag | include "interpret-as-string" | replace "." "-" }}'
@@ -1372,13 +1366,7 @@ units:
       heat-operator: true
     kustomization_spec:
       path: ./kustomize-units/capo-cluster-resources
-      healthChecks:
-        # until the heat operator is improved to conform to kstatus specs
-        # see https://gitlab.com/sylva-projects/sylva-core/-/issues/104
-        - apiVersion: v1
-          kind: ConfigMap
-          namespace: default
-          name: workload-capo-cluster-resources
+      wait: true
       _patches:
         - target:
             kind: HeatStack
@@ -1387,7 +1375,8 @@ units:
             metadata:
               name: _unused_
             spec:
-              configmapName: workload-capo-cluster-resources
+              outputConfigMap:
+                name: workload-capo-cluster-resources
         - target:
             kind: HeatStack
           patch: |
@@ -1398,7 +1387,7 @@ units:
             kind: HeatStack
           patch: |
             - op: add
-              path: /spec/template/outputs
+              path: /spec/heatStack/template/outputs
               value:
                 CLUSTER_EXTERNAL_IP:
                   value: { get_attr: [port, fixed_ips, 0, ip_address] }
@@ -1407,7 +1396,7 @@ units:
                 WORKER_SERVERGROUP_ID:
                   value: { get_resource: srvgroup-worker }
             - op: replace
-              path: /spec/template/parameters/control_plane_rules
+              path: /spec/heatStack/template/parameters/control_plane_rules
               value:
                 type: json
                 description: "Security group rules associated with the control plane VMs"
@@ -1417,7 +1406,7 @@ units:
                   protocol: [tcp, tcp, tcp, udp]
                   remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
             - op: replace
-              path: /spec/template/parameters/worker_rules
+              path: /spec/heatStack/template/parameters/worker_rules
               value:
                 type: json
                 description: "Security group rules associated with the worker VMs"
