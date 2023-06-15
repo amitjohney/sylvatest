@@ -308,7 +308,7 @@ properties:
           depends_on:  # -------------------------------
             type: object
             patternProperties:
-              "^([a-z0-9][a-z0-9-]*[a-z0-9]|{{ .* }})$":  # a unit name (can be templated)
+              "^([a-z0-9][a-z0-9-]*[a-z0-9](/[a-z0-9][a-z0-9-]*[a-z0-9])?|{{ .* }})$":  # a unit name, optionally prefixed by a namespace name (can be templated)
                 anyOf:
                   - type: boolean
                   - $ref: "#/$defs/gotpl"

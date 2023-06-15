@@ -192,14 +192,16 @@ stringData:
       {{- range $dep_unit_name, $is_depend_on := $unit_def.depends_on -}}
         {{- if tuple $envAll $is_depend_on (printf "%s, depends on %s" $unit_name $dep_unit_name) | include "interpret-for-test" -}}
 
-          {{- if not (hasKey $envAll.Values.units $dep_unit_name) -}}
-            {{- fail (printf "unit '%s' is declared with a dependency on non-existing unit '%s'" $unit_name $dep_unit_name) -}}
-          {{- else if not (include "unit-enabled" (tuple $envAll $dep_unit_name)) -}}
-            {{- fail (printf "unit '%s' is declared with a dependency on disabled unit '%s'" $unit_name $dep_unit_name) -}}
+          {{- if $dep_unit_name | contains "/" -}}
+            {{- $dependsOnList = append $dependsOnList (dict "namespace" (regexReplaceAll "/.*" $dep_unit_name "") "name" (regexReplaceAll ".*/" $dep_unit_name "")) -}}  
+          {{- else -}}
+            {{- if not (hasKey $envAll.Values.units $dep_unit_name) -}}
+              {{- fail (printf "unit '%s' is declared with a dependency on non-existing unit '%s'" $unit_name $dep_unit_name) -}}
+            {{- else if not (include "unit-enabled" (tuple $envAll $dep_unit_name)) -}}
+              {{- fail (printf "unit '%s' is declared with a dependency on disabled unit '%s'" $unit_name $dep_unit_name) -}}
+            {{- end -}}
+            {{- $dependsOnList = append $dependsOnList (dict "name" $dep_unit_name) -}}  
           {{- end -}}
-
-          {{- $dependsOnList = append $dependsOnList (dict "name" $dep_unit_name) -}}  
-
         {{- end -}}
       {{ end }}
       {{- $_ := set $dependsOn "dependsOn" $dependsOnList -}}
