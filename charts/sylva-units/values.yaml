@@ -327,6 +327,29 @@ units:
           chart: harbor
           version: v1.11.1
       targetNamespace: harbor
+      values:
+        persistence:
+          enabled: true
+          resourcePolicy: "keep"
+          persistentVolumeClaim:
+            registry:
+              storageClass: default
+              size: 100Gi
+            chartmuseum:
+              storageClass: default
+              size: 10Gi
+            jobservice:
+              storageClass: default
+              size: 1Gi
+            database:
+              storageClass: default
+              size: 1Gi
+            redis:
+              storageClass: default
+              size: 1Gi
+            trivy:
+              storageClass: default
+              size: 5Gi
       install:
         createNamespace: true
 
