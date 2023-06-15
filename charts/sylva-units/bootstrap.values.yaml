@@ -17,18 +17,19 @@ units:
       values:
         # ironicIPADownloaderBaseURI:
         services:
-          # Address of the host, that will be reachable from the outside
-          ironicIP: '{{ dig "capm3" "external_bootstrap_ip" (dig "capm3" "bootstrap_ip" "127.0.0.1" .Values.cluster) .Values.cluster }}'
-          # Address of kind container/node, that will be used to bind ironic service
-          externalIPs:
-            - |
-              {{- $result := "not found" -}}
-              {{- range $address := lookup "v1" "Node" "" "" | dig "items" list | first | default dict |  dig "status" "addresses" list -}}
-                {{- if and (eq $address.type "InternalIP") (eq $result "not found") -}}
-                  {{- $result = $address.address -}}
+          ironic:
+            # Address of the host, that will be reachable from the outside
+            ironicIP: '{{ dig "capm3" "external_bootstrap_ip" (dig "capm3" "bootstrap_ip" "127.0.0.1" .Values.cluster) .Values.cluster }}'
+            # Address of kind container/node, that will be used to bind ironic service
+            externalIPs:
+              - |
+                {{- $result := "not found" -}}
+                {{- range $address := lookup "v1" "Node" "" "" | dig "items" list | first | default dict |  dig "status" "addresses" list -}}
+                  {{- if and (eq $address.type "InternalIP") (eq $result "not found") -}}
+                    {{- $result = $address.address -}}
+                  {{- end -}}
                 {{- end -}}
-              {{- end -}}
-              {{- $result -}}
+                {{- $result -}}
 
   cluster:
     depends_on:
