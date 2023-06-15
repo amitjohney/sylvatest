@@ -17,18 +17,6 @@ spec:
     adminTheme: keycloak
     groups:
     - name: infra-admins
-    users:
-    - username: sylva-admin
-      email: sylva-admin@example.com
-      firstName: sylva
-      lastName: sylva
-      groups:
-      - infra-admins
-      credentials:
-      - type: password
-        value: "${SSO_PASSWORD}"
-        temporary: false
-      enabled: true
 ---
 apiVersion: legacy.k8s.keycloak.org/v1alpha1
 kind: KeycloakRealm
