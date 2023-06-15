@@ -33,9 +33,11 @@ spec:
   - kind: Secret
     name: management-cluster-secrets
     valuesKey: secrets
+    optional: true
   - kind: ConfigMap
     name: management-cluster-values
     valuesKey: values
+    optional: true
   - kind: ConfigMap
     name: capo-cluster-resources
     valuesKey: allocated_ip
