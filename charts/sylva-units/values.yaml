@@ -333,22 +333,22 @@ units:
           resourcePolicy: "keep"
           persistentVolumeClaim:
             registry:
-              storageClass: default
+              storageClass: cinder-ceph-ssd
               size: 100Gi
             chartmuseum:
-              storageClass: default
+              storageClass: cinder-ceph-ssd
               size: 10Gi
             jobservice:
-              storageClass: default
+              storageClass: cinder-ceph-ssd
               size: 1Gi
             database:
-              storageClass: default
+              storageClass: cinder-ceph-ssd
               size: 1Gi
             redis:
-              storageClass: default
+              storageClass: cinder-ceph-ssd
               size: 1Gi
             trivy:
-              storageClass: default
+              storageClass: cinder-ceph-ssd
               size: 5Gi
       install:
         createNamespace: true
