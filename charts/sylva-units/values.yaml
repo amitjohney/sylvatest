@@ -334,10 +334,10 @@ units:
           persistentVolumeClaim:
             registry:
               storageClass: cinder-ceph-ssd
-              size: 100Gi
+              size: 1Gi
             chartmuseum:
               storageClass: cinder-ceph-ssd
-              size: 10Gi
+              size: 1Gi
             jobservice:
               storageClass: cinder-ceph-ssd
               size: 1Gi
@@ -349,7 +349,7 @@ units:
               size: 1Gi
             trivy:
               storageClass: cinder-ceph-ssd
-              size: 5Gi
+              size: 1Gi
       install:
         createNamespace: true
 
