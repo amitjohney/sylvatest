@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vmalert-config
+  namespace: victoria-cluster
+data:
+  alert-rules.yaml: |
+    groups:
+    - name: record
+      rules:
+      - record: job:node_memory_MemFree_bytes:percent
+        expr: 100 - (100 * node_memory_MemFree_bytes / node_memory_MemTotal_bytes)
+    - name: pod
+      rules:
+      - alert: PodMemoryUsage
+        expr: sum(container_memory_working_set_bytes{pod!=""}) BY (instance, pod, cluster)  / sum(container_spec_memory_limit_bytes{pod!=""} > 0) BY (instance, pod, cluster) * 100 > 60
+        for: 2m
+        labels:
+          severity: warning
+          source: pod
+        annotations:
+          summary: "Pod {{ $labels.pod }} High Memory usage detected in {{ $labels.cluster }}"
+          description: "{{$labels.instance}} from {{$labels.cluster}} : Pod {{ $labels.pod }} Memory usage is above 60% (current value is: {{ $value }})"
+    - name: test-node
+      rules:
+      - alert: NodeMemoryUsage
+        expr: (node_memory_MemTotal_bytes - (node_memory_MemFree_bytes + node_memory_Buffers_bytes + node_memory_Cached_bytes)) / node_memory_MemTotal_bytes * 100 > 30
+        for: 1m
+        labels:
+          source: node
+          severity: critical
+          cluster: "{{$labels.cluster}}"
+        annotations:
+          summary: "Node {{$labels.instance}} High Memory usage detected"
+          description: "{{$labels.instance}} from {{$labels.cluster}}: Memory usage is above 30% (current value is: {{ $value }})"

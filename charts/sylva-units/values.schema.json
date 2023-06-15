@@ -757,6 +757,23 @@
             }
           }
         },
+        "victoria_metrics_cluster": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "external_hostname": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "hostname"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                }
+              ]
+            }
+          }
+        },
         "capd": {
           "type": "object",
           "additionalProperties": false,

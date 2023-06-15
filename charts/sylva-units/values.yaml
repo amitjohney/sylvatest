@@ -971,6 +971,7 @@ units:
           VAULT_DNS: '{{ .Values.cluster.vault.external_hostname }}'
           KEYCLOAK_DNS: '{{ .Values.cluster.keycloak.external_hostname }}'
           FLUX_WEBUI_DNS: '{{ .Values.cluster.flux.external_hostname }}'
+          VICTORIA_DNS: '{{ .Values.cluster.victoria_metrics_cluster.external_hostname }}'
       wait: true
 
   synchronize-secrets:
@@ -1284,6 +1285,88 @@ units:
                             $patch: delete
                             type: RuntimeDefault
 
+  victoria-metrics-cluster:
+    enabled: false
+    depends_on:
+      namespace-defs: true
+      '{{ .Values._internal.default_storage_class_unit }}': true
+      sylva-ca-certs: true
+    helm_repo_url: https://victoriametrics.github.io/helm-charts/
+    helmrelease_spec:
+      releaseName: victoria-metrics-cluster
+      targetNamespace: victoria-cluster
+      install:
+        createNamespace: false
+      chart:
+        spec:
+          chart: victoria-metrics-cluster
+          version: 0.9.61
+      values:
+        vmselect:
+          podSecurityContext:
+            runAsGroup: 10000
+            runAsUser: 10000
+        vmstorage:
+          podSecurityContext:
+            runAsGroup: 10000
+            runAsUser: 10000
+          securityContext:
+            runAsGroup: 10000
+            runAsUser: 10000
+        vminsert:
+          podSecurityContext:
+            runAsGroup: 10000
+            runAsUser: 10000
+          ingress:
+            enabled: true
+            hosts:
+              - name: '{{ .Values.cluster.victoria_metrics_cluster.external_hostname }}'
+                path: /insert
+            tls:
+              - secretName: vminsert-ingress-tls
+                hosts:
+                  - '{{ .Values.cluster.victoria_metrics_cluster.external_hostname }}'
+            ingressClassName: nginx
+
+  victoria-alert-cm:
+    enabled: '{{ index .Values.units "victoria-metrics-cluster" "enabled" | include "preserve-type" }}'
+    repo: sylva-core
+    depends_on:
+      victoria-metrics-cluster: true
+    kustomization_spec:
+      path: ./kustomize-units/vmalert
+      wait: true
+
+
+  victoria-alert:
+    enabled: '{{ index .Values.units "victoria-metrics-cluster" "enabled" | include "preserve-type" }}'
+    depends_on:
+      victoria-alert-cm: true
+    helm_repo_url: https://victoriametrics.github.io/helm-charts/
+    helmrelease_spec:
+      releaseName: victoria-metrics-alert
+      targetNamespace: victoria-cluster
+      install:
+        createNamespace: false
+      chart:
+        spec:
+          chart: victoria-metrics-alert
+          version: 0.6.3
+      values:
+        server:
+          datasource:
+            url: "http://victoria-metrics-cluster-vmselect.victoria-cluster:8481/select/0/prometheus/"
+          remote:
+            write:
+              url: "http://victoria-metrics-cluster-vminsert.victoria-cluster:8480/insert/0/prometheus/"
+          notifier:
+            alertmanager:
+              url: "http://rancher-monitoring-alertmanager.cattle-monitoring-system:9093"
+          podSecurityContext:
+            runAsGroup: 10000
+            runAsUser: 10000
+          configMap: "vmalert-config"
+
   monitoring-crd:
     enabled_conditions:
     - '{{ tuple . "monitoring" | include "unit-enabled" }}'
@@ -1299,6 +1382,7 @@ units:
   monitoring:
     depends_on:
       monitoring-crd: true
+      victoria-metrics-cluster: '{{ index .Values.units "victoria-metrics-cluster" "enabled" | include "preserve-type" }}'
     helm_repo_url: https://charts.rancher.io/
     helmrelease_spec:
       releaseName: rancher-monitoring
@@ -1307,6 +1391,16 @@ units:
         spec:
           chart: rancher-monitoring
           version: 101.0.0+up19.0.3
+      values:
+        prometheus:
+          prometheusSpec:
+            externalLabels:
+              cluster: '{{ .Values.cluster.name }}'
+            remoteWrite:
+              - '{{- tuple (dict  "url" (printf "http://%s/insert/0/prometheus/" .Values.cluster.victoria_metrics_cluster.external_hostname)  "tlsConfig" ( dict "ca" (dict "secret" (dict "key" "ca.crt" "name" "vault-tls")))) ( index .Values.units "victoria-metrics-cluster" "enabled" ) | include "set-only-if"}}'
+        grafana:
+          additionalDataSources:
+            - '{{- tuple (dict "name" "VictoriaMetrics"  "type" "prometheus"  "isDefault" "false"  "access" "proxy"  "url" "http://victoria-metrics-cluster-vmselect.victoria-cluster:8481/select/0/prometheus/") ( index .Values.units "victoria-metrics-cluster" "enabled" ) | include "set-only-if" -}}'
 
   # this is a Job attempt to check successful import of a CAPI workload clusters in Rancher, still incomplete
   # it would be used along with a definition of a 'workload-cluster' unit
@@ -1636,6 +1730,14 @@ units:
         spec:
           chart: rancher-monitoring
           version: 101.0.0+up19.0.3
+      values:
+        prometheus:
+          prometheusSpec:
+            externalLabels:
+              cluster: '{{ .Values.cluster.test_workload_cluster_name }}'
+            remoteWrite:
+              - '{{ tuple ( dict "url" (printf "http://%s/insert/0/prometheus/" .Values.cluster.victoria_metrics_cluster.external_hostname) "tlsConfig" ( dict "ca" (dict "secret" (dict "key" "ca.crt" "name" "vault-tls")))) ( index .Values.units "victoria-metrics-cluster" "enabled" ) | include "set-only-if"}}'
+          extraSecret: '{{ tuple ( dict "name" "vault-tls" "data" (dict "ca.crt" ((printf "%s" (get (get (lookup "v1" "Secret" "default" "vault-tls") "data" | default dict ) "ca.crt")) | b64dec))) ( index .Values.units "victoria-metrics-cluster" "enabled" ) | include "set-only-if" }}'
       kubeConfig:
         secretRef:
           name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
@@ -1771,6 +1873,9 @@ cluster:
 
   flux:
     external_hostname: 'flux.{{ .Values.cluster.cluster_external_domain }}'
+
+  victoria_metrics_cluster:
+    external_hostname: 'vminsert.{{ .Values.cluster.cluster_external_domain }}'
 
   test_workload_cluster_name: first-workload-cluster
 

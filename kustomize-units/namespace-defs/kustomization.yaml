@@ -7,3 +7,4 @@ resources:
   - rancher-namespace.yaml
   - rancher-global-data-namespace.yaml
   - cinder-csi.yaml
+  - victoria-namespace.yaml
