@@ -121,18 +121,18 @@ spec:
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: Metal3MachineTemplate
 metadata:
-  name: ${CLUSTER_NAME}-worker-network
+  name: ${CLUSTER_NAME}-worker-sriov
   namespace: default
   labels:
-    role: worker-network
+    role: worker-sriov
 spec:
   template:
     spec:
       dataTemplate:
-        name: ${CLUSTER_NAME}-worker-network-template
+        name: ${CLUSTER_NAME}-worker-sriov-template
       hostSelector:
         matchLabels:
-          nodepool: worker-network
+          nodepool: worker-sriov
       image:
         checksum: ${MACHINE_IMAGE_CHECKSUM}
         checksumType: md5
@@ -208,7 +208,7 @@ spec:
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: Metal3DataTemplate
 metadata:
-  name: ${CLUSTER_NAME}-worker-network-template
+  name: ${CLUSTER_NAME}-worker-sriov-template
   namespace: default
 spec:
   clusterName: ${CLUSTER_NAME}
