@@ -1717,6 +1717,8 @@ units:
           cluster_external_domain: 'first-workload-cluster.{{ .Values.cluster.cluster_external_domain }}'
           air_gapped: '{{ .Values.cluster.air_gapped | include "preserve-type" }}'
 
+        metallb_helm_oci_url: '{{ .Values.metallb_helm_oci_url | include "preserve-type" }}'
+
         units:
 
           cluster:
