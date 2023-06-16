@@ -896,7 +896,7 @@ units:
     - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     depends_on:
       namespace-defs: true
-      cinder-csi-psp: '{{ .Values.cluster.cis_profile | eq "cis-1.6" }}'
+      cinder-csi-psp: '{{ tuple . "cinder-csi-psp" | include "unit-enabled" }}'
     helm_repo_url: https://kubernetes.github.io/cloud-provider-openstack
     helmrelease_spec:
       chart:
