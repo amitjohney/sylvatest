@@ -1307,6 +1307,8 @@ units:
         spec:
           chart: rancher-monitoring-crd
           version: 101.0.0+up19.0.3
+      install:
+        createNamespace: true
 
   monitoring:
     depends_on:
@@ -1319,6 +1321,8 @@ units:
         spec:
           chart: rancher-monitoring
           version: 101.0.0+up19.0.3
+      install:
+        createNamespace: true
 
   # this is a Job attempt to check successful import of a CAPI workload clusters in Rancher, still incomplete
   # it would be used along with a definition of a 'workload-cluster' unit
