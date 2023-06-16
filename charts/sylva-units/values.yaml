@@ -1480,90 +1480,6 @@ units:
           CONTROL_PLANE_SECURITY_GROUP_NAME: 'workload-cluster-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}'
           WORKER_SECURITY_GROUP_NAME: 'workload-cluster-security-group-worker-{{ .Values.cluster.capo.resources_tag }}'
 
-  workload-cluster:
-    repo: sylva-core
-    depends_on:
-      capi: true
-      '{{ .Values.cluster.capi_providers.infra_provider }}': true
-      '{{ .Values.cluster.capi_providers.bootstrap_provider }}': true
-      workload-capo-cluster-resources: '{{ tuple . "workload-capo-cluster-resources" | include "unit-enabled" }}'
-    kustomization_spec:
-      path: ./kustomize-units/cluster-manifests/kubeadm-capd/base
-      targetNamespace: default
-      postBuild:
-        substitute:
-          CLUSTER_NAME: '{{ .Values.cluster.test_workload_cluster_name }}'
-          FLAVOR_NAME: '{{ .Values.cluster.capo.flavor_name }}'
-          K8S_VERSION: '{{ .Values.cluster.k8s_version }}'
-          CIS_PROFILE: '{{ tuple .Values.cluster.cis_profile
-                    (and .Values.cluster.cis_profile (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr")) | include "set-only-if" }}'
-          MACHINE_IMAGE: '{{ .Values.cluster.image }}'
-          WORKER_MACHINE_IMAGE: '{{ .Values.cluster.worker_machine_image | default .Values.cluster.image }}'
-          K8SGATEWAY_LB_IP: '{{ .Values.cluster.cluster_external_ip }}'   # NOTE: same is used for k8s-gateway DNS svc in management cluster
-          CLUSTER_EXTERNAL_DOMAIN: '{{ .Values.cluster.cluster_external_domain }}'
-          CAPO_NETWORK_ID: '{{ tuple .Values.cluster.capo.network_id (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
-          VIRTIO_VNIC_NETWORK_ID: '{{ tuple .Values.cluster.capo.additional_networks.virtio_network_id (and (.Values.cluster.capi_providers.infra_provider | eq "capo") (gt (len .Values.cluster.capo.additional_networks.virtio_network_id) 0 )) | include "set-only-if" }}'
-          DIRECT_VNIC_NETWORK_ID: '{{ tuple .Values.cluster.capo.additional_networks.direct_network_id (and (.Values.cluster.capi_providers.infra_provider | eq "capo") (gt (len .Values.cluster.capo.additional_networks.direct_network_id) 0 )) | include "set-only-if" }}'
-          SSH_KEY_NAME: '{{ tuple .Values.cluster.capo.ssh_key_name (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
-          CAPO_TAG: '{{ tuple .Values.cluster.capo.resources_tag (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
-          WORKER_FLAVOR_NAME: '{{ tuple (.Values.cluster.capo.worker_flavor_name | default .Values.cluster.capo.flavor_name) (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
-          CONTROL_PLANE_REPLICAS: '{{ tuple "1" (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
-          WORKER_REPLICAS: '{{ tuple "0" (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
-          WORKER_AZ: '{{ tuple "nova" (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "set-only-if" }}'
-          CONTROL_PLANE_AZ_LIST: '{{ tuple (.Values.cluster.capo.control_plane_az | toJson)
-                    (and .Values.cluster.capo.control_plane_az (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
-          DISK_SIZE: '{{ tuple (.Values.cluster.capo.rootVolume.diskSize | toString)
-                    (and .Values.cluster.capo.rootVolume (eq .Values.cluster.capi_providers.infra_provider "capo"))  | include "set-only-if" }}'
-          VOLUME_TYPE: '{{ tuple .Values.cluster.capo.rootVolume.volumeType
-                    (and .Values.cluster.capo.rootVolume (eq .Values.cluster.capi_providers.infra_provider "capo"))  | include "set-only-if" }}'
-          CONTROL_PLANE_SECURITY_GROUP_NAME: 'workload-cluster-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}'
-          WORKER_SECURITY_GROUP_NAME: 'workload-cluster-security-group-worker-{{ .Values.cluster.capo.resources_tag }}'
-          METALLB_HELM_CHART: '{{ .Values.metallb_helm_oci_url | default "metallb" }}'
-          # if metallb_helm_oci_url is unset/empty, then set METALLB_HELM_REPO, but if it's set then leave METALLB_HELM_REPO empty
-          METALLB_HELM_REPO: '{{ empty .Values.metallb_helm_oci_url | ternary "https://metallb.github.io/metallb" "" }}'
-          AIR_GAPPED: '{{ .Values.cluster.air_gapped }}'
-        substituteFrom:
-          - kind: ConfigMap
-            name: proxy-env-vars
-            optional: true
-          - kind: ConfigMap
-            name: workload-capo-cluster-resources
-            optional: true
-      wait: false
-      healthChecks:
-        - apiVersion: cluster.x-k8s.io/v1beta1
-          kind: Cluster
-          name: '{{ .Values.cluster.test_workload_cluster_name }}'
-          namespace: default
-      _components:
-        - '{{ tuple "../../components/dns-client/kind/KubeadmControlPlane"
-                    (and (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/dns-client/kind/RKE2ControlPlane"
-                    (and (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/proxies/kubeadm"
-                    (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/proxies/rke2"
-                    (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/dns-client/ubuntu/kubeadm"
-                    (and (ne .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/dns-client/ubuntu/rke2"
-                    (and (ne .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/capo-root-volume"
-                    (and .Values.cluster.capo.rootVolume (eq .Values.cluster.capi_providers.infra_provider "capo"))  | include "set-only-if" }}'
-        - '{{ tuple "../../components/capo-additional-networks/virtio"
-                    (get .Values.cluster.capo.additional_networks "virtio_network_id") | include "set-only-if" }}'
-        - '{{ tuple "../../components/capo-additional-networks/direct"
-                    (get .Values.cluster.capo.additional_networks "direct_network_id") | include "set-only-if" }}'
-        - '{{ tuple "../../components/capo-control-plane-az"
-                    (and .Values.cluster.capo.control_plane_az (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
-        - '{{ tuple "../../components/rke2-cis-profile"
-                    (and .Values.cluster.cis_profile (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
-      _patches:
-        - '{{ tuple (.Files.Get "elements/controlplane-registry-mirrors.tpl" | fromYaml) (.Values.registry_mirrors | dig "hosts_config" "") | include "set-only-if" }}'
-        - '{{ tuple (.Files.Get "elements/configtemplate-registry-mirrors.tpl" | fromYaml) (.Values.registry_mirrors | dig "hosts_config" "") | include "set-only-if" }}'
-        - '{{ tuple (.Files.Get "elements/controlplane-ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
-        - '{{ tuple (.Files.Get "elements/configtemplate-ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
-
   workload-cluster-calico-crd:
     enabled_conditions:
     - '{{ tuple . "workload-cluster-calico" | include "unit-enabled" }}'
@@ -1815,6 +1731,85 @@ units:
           chart: longhorn
           version: 102.2.0+up1.4.1
 
+  # this unit is an example of how to use sylva-units to deploy a workload-cluster
+  workload-cluster:
+    depends_on:
+      namespace-defs: true
+      #for capo:
+      workload-capo-cluster-resources: '{{ tuple . "workload-capo-cluster-resources" | include "unit-enabled" }}'   # produces the capo-cluster-resources used below
+    unit_template: sylva-units
+    kustomization_spec:
+      targetNamespace: workload-cluster  # this ensures that the HelmRelease below is created in 'workload-cluster' ns
+      healthChecks:
+        - apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+          kind: Kustomization
+          name: sylva-units-status
+          namespace: workload-cluster
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: charts/sylva-units
+          reconcileStrategy: Revision
+          # copy sourceRef from sylva-units HelmRelease in default ns
+          # with an override of namespace field to point to the source livig in the default ns
+          sourceRef: '{{ lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units" | dig "spec" "chart" "spec" "sourceRef" dict | mergeOverwrite (dict "namespace" "default") | include "preserve-type" }}'
+          valuesFiles:
+            - charts/sylva-units/values.yaml
+            - charts/sylva-units/workload-cluster.values.yaml
+            # if main sylva-units release uses OCI artifacts, do the same for this release
+            - '{{ tuple "use-oci-artifacts.values.yaml" (lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units" | dig "spec" "chart" "spec" "valuesFiles" list | has "use-oci-artifacts.values.yaml") | include "set-only-if" }}'
+
+      values:
+
+        source_templates:
+          sylva-core:
+            existing_source: '{{ deepCopy .Values._internal.sylva_core_existing_source | merge (dict "namespace" .Release.Namespace) | include "preserve-type" }}'
+
+        cluster:
+          name: '{{ .Values.cluster.test_workload_cluster_name }}'
+          image: '{{ .Values.cluster.image }}'
+          worker_machine_image: '{{ .Values.cluster.worker_machine_image }}'
+          capi_providers:
+            infra_provider: '{{ .Values.cluster.capi_providers.infra_provider }}'
+            bootstrap_provider: '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
+          k8s_version: '{{ .Values.cluster.k8s_version }}'
+          cis_profile: '{{ .Values.cluster.cis_profile }}'
+          capo:
+            ssh_key_name: '{{ .Values.cluster.capo.ssh_key_name }}'
+            resources_tag: '{{ tuple . (.Values.cluster | dig "capo" "resources_tag" "") | include "interpret-as-string" }}'
+            storageClass: '{{ .Values.cluster | dig "capo" "storageClass" dict | include "preserve-type" }}'
+            network_id: '{{ .Values.cluster.capo.network_id | default "" }}'
+            flavor_name: '{{ .Values.cluster.capo.flavor_name | default "" }}'
+            worker_flavor_name: '{{ .Values.cluster.capo.worker_flavor_name | default "" }}'
+            control_plane_az: '{{ tuple (.Values.cluster | dig "capo" "control_plane_az" list | include "preserve-type") (.Values.cluster | dig "capo" "control_plane_az" nil) | include "set-only-if" }}'
+            worker_az: '{{ .Values.cluster.capo.worker_az }}'
+            rootVolume:
+              diskSize: '{{ .Values.cluster.capo.rootVolume.diskSize | include "preserve-type" }}'
+              volumeType: '{{ .Values.cluster.capo.rootVolume.volumeType | include "preserve-type" }}'
+          cluster_external_domain: 'first-workload-cluster.{{ .Values.cluster.cluster_external_domain }}'
+          air_gapped: '{{ .Values.cluster.air_gapped | include "preserve-type" }}'
+
+        units:
+
+          cluster:
+            kustomization_spec:
+              path: '{{ .Values.units.cluster.kustomization_spec.path }}'
+              postBuild:
+                substitute:
+                  K8SGATEWAY_LB_IP: '{{ .Values.cluster.cluster_external_ip }}'  # (this is the external IP of the mgmt cluster)
+
+        proxies: '{{ .Values.proxies | include "preserve-type" }}'
+
+        ntp: '{{ .Values.ntp | include "preserve-type" }}'
+
+        registry_mirrors: '{{ .Values.registry_mirrors | include "preserve-type" }}'
+
+    helm_secret_values:
+      cluster:
+        capo:
+          clouds_yaml: '{{ .Values.cluster | dig "capo" "clouds_yaml" dict | include "preserve-type" }}'  # for CAPO and cinder-csi
+
+
 ## stuff related to the 'cluster' unit
 
 cluster:
@@ -1991,3 +1986,5 @@ _internal:
   # this is used in source_templates.sylva-core below
   # and in any unit using sylva-units Helm chart
   sylva_core_version: ''
+
+  sylva_core_existing_source: '{{ .Values.unit_helmrelease_kustomization_spec_default.sourceRef }}'
