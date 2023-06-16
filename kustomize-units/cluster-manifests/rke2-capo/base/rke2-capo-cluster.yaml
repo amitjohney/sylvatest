@@ -2,7 +2,6 @@ apiVersion: cluster.x-k8s.io/v1beta1
 kind: Cluster
 metadata:
   name: ${CLUSTER_NAME}
-  namespace: default
 spec:
   clusterNetwork:
     services:
@@ -14,7 +13,6 @@ spec:
     apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
     kind: RKE2ControlPlane
     name: ${CLUSTER_NAME}-control-plane
-    namespace: default
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
     kind: OpenStackCluster
@@ -24,13 +22,11 @@ apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
 kind: RKE2ControlPlane
 metadata:
   name: ${CLUSTER_NAME}-control-plane
-  namespace: default
 spec:
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
     kind: OpenStackMachineTemplate
     name: ${CLUSTER_NAME}-control-plane
-    namespace: default
   files:
   - path: /var/lib/rancher/rke2/server/manifests/ingress.yaml
     owner: "root:root"
@@ -242,7 +238,6 @@ apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
 kind: RKE2ConfigTemplate
 metadata:
   name: ${CLUSTER_NAME}-worker
-  namespace: default
 spec:
   template:
     spec:
@@ -332,7 +327,6 @@ metadata:
   labels:
     cluster.x-k8s.io/cluster-name: ${CLUSTER_NAME}
   name: ${CLUSTER_NAME}-worker
-  namespace: default
 spec:
   clusterName: ${CLUSTER_NAME}
   replicas: ${WORKER_REPLICAS:=0}

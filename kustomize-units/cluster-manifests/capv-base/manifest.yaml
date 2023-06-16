@@ -3,7 +3,6 @@ apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: VSphereCluster
 metadata:
   name: ${CLUSTER_NAME}
-  namespace: default
 spec:
   controlPlaneEndpoint:
     host: ${CLUSTER_EXTERNAL_IP}
@@ -18,7 +17,6 @@ apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: VSphereMachineTemplate
 metadata:
   name: ${CLUSTER_NAME}-control-plane
-  namespace: default
 spec:
   template:
     spec:
@@ -43,7 +41,6 @@ apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: VSphereMachineTemplate
 metadata:
   name: ${CLUSTER_NAME}-worker
-  namespace: default
 spec:
   template:
     spec:
@@ -70,7 +67,6 @@ metadata:
   labels:
     cluster.x-k8s.io/cluster-name: ${CLUSTER_NAME}
   name: ${CLUSTER_NAME}-crs-0
-  namespace: default
 spec:
   clusterSelector:
     matchLabels:
