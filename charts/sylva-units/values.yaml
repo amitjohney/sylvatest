@@ -797,14 +797,26 @@ units:
         - apiVersion: cluster.x-k8s.io/v1beta1
           kind: Cluster
           name: '{{ .Values.cluster.name }}'
-          namespace: default
+          namespace: '{{ .Release.Namespace }}'
       _components:
+        - '{{ tuple "../../components/dns-client/kind/KubeadmControlPlane"
+                    (and (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
+        - '{{ tuple "../../components/dns-client/kind/RKE2ControlPlane"
+                    (and (eq .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
         - '{{ tuple "../../components/proxies/kubeadm"
                     (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
         - '{{ tuple "../../components/proxies/rke2"
                     (and .Values.proxies.http_proxy (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
+        - '{{ tuple "../../components/dns-client/ubuntu/kubeadm"
+                    (and (ne .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk")) | include "set-only-if" }}'
+        - '{{ tuple "../../components/dns-client/ubuntu/rke2"
+                    (and (ne .Values.cluster.capi_providers.infra_provider "capd") (eq .Values.cluster.capi_providers.bootstrap_provider "cabpr")) | include "set-only-if" }}'
         - '{{ tuple "../../components/capo-root-volume"
                     (and .Values.cluster.capo.rootVolume (eq .Values.cluster.capi_providers.infra_provider "capo"))  | include "set-only-if" }}'
+        - '{{ tuple "../../components/capo-additional-networks/virtio"
+                    (get .Values.cluster.capo.additional_networks "virtio_network_id") | include "set-only-if" }}'
+        - '{{ tuple "../../components/capo-additional-networks/direct"
+                    (get .Values.cluster.capo.additional_networks "direct_network_id") | include "set-only-if" }}'
         - '{{ tuple "../../components/capo-control-plane-az"
                     (and .Values.cluster.capo.control_plane_az (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
         - '{{ tuple "../../components/rke2-cis-profile"

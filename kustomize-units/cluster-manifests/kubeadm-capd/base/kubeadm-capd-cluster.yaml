@@ -15,12 +15,10 @@ spec:
     apiVersion: controlplane.cluster.x-k8s.io/v1beta1
     kind: KubeadmControlPlane
     name: ${CLUSTER_NAME}-control-plane
-    namespace: default
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
     kind: DockerCluster
     name: ${CLUSTER_NAME}
-    namespace: default
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: DockerCluster
@@ -41,7 +39,6 @@ spec:
       apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
       kind: DockerMachineTemplate
       name: ${CLUSTER_NAME}-cp-template
-      namespace: default
   kubeadmConfigSpec:
     preKubeadmCommands:
       - echo "fs.inotify.max_user_watches = 524288" >> /etc/sysctl.conf
