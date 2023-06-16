@@ -76,7 +76,7 @@ patches:
           labels: {{ $labels | toYaml | nindent 12 }}
       - op: replace
         path: /spec
-        value: {{ $helmrelease_spec | toYaml | nindent 10 }}
+        value: {{ mergeOverwrite (dict "valuesFrom" list) $helmrelease_spec | toYaml | nindent 10 }}
   {{ if $has_secret }}
   - target:
       kind: Secret
@@ -91,11 +91,11 @@ patches:
       kind: HelmRelease
     patch: |
       - op: add
-        path: /spec/valuesFrom
+        path: /spec/valuesFrom/0
         value:
-          - kind: Secret
-            name: helm-unit-values-{{ $unit_name }}
-            valuesKey: values
+          kind: Secret
+          name: helm-unit-values-{{ $unit_name }}
+          valuesKey: values
   {{ else }}
   - target:
       kind: Secret
