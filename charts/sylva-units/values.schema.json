@@ -1234,6 +1234,9 @@
         },
         {
           "$ref": "#/$defs/string-with-gotpl"
+        },
+        {
+          "const": null
         }
       ]
     },
