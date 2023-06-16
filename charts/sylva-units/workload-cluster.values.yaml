@@ -95,3 +95,10 @@ units:
     depends_on:
       cluster: true
       calico: '{{ tuple . "calico" | include "unit-enabled" }}'
+
+  multus:
+    # can be enabled at runtime if desired:
+    #enabled: true
+    depends_on:
+      cluster: true
+      calico: '{{ tuple . "calico" | include "unit-enabled" }}'

@@ -1475,22 +1475,16 @@ units:
           CONTROL_PLANE_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}'
           WORKER_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}'
 
-  workload-cluster-multus:
+  multus:
     enabled: false
-    enabled_conditions:
-    - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
     depends_on:
-      workload-cluster: true
-      workload-cluster-calico: '{{ tuple . "workload-cluster-calico" | include "unit-enabled" }}'
+      calico: '{{ tuple . "calico" | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io/
     helmrelease_spec:
       chart:
         spec:
           chart: "rke2-multus"
           version: "v3.9.3-build2023010901"
-      kubeConfig:
-        secretRef:
-          name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
       targetNamespace: kube-system
       install:
         createNamespace: false
@@ -1503,7 +1497,7 @@ units:
               - kind: DaemonSet
                 apiVersion: apps/v1
                 metadata:
-                  name: workload-cluster-multus-rke2-whereabouts
+                  name: multus-rke2-whereabouts
                   namespace: kube-system
                   labels:
                     $patch: delete
@@ -1511,7 +1505,7 @@ units:
               - kind: ServiceAccount
                 apiVersion: v1
                 metadata:
-                  name: workload-cluster-multus-rke2-whereabouts
+                  name: multus-rke2-whereabouts
                   namespace: kube-system
                   labels:
                     $patch: delete
@@ -1539,7 +1533,7 @@ units:
     enabled_conditions:
     - '{{ tuple . "sriov" | include "unit-enabled" }}'
     depends_on:
-      workload-cluster-multus: true
+      multus: true
     helm_repo_url: https://charts.rancher.io/
     helmrelease_spec:
       releaseName: sriov-crd
@@ -1742,6 +1736,9 @@ units:
               postBuild:
                 substitute:
                   K8SGATEWAY_LB_IP: '{{ .Values.cluster.cluster_external_ip }}'  # (this is the external IP of the mgmt cluster)
+
+          #multus:   ## can be overriden via environment values
+          #  enabled: true
 
         proxies: '{{ .Values.proxies | include "preserve-type" }}'
 
