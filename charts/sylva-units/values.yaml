@@ -1332,7 +1332,7 @@ units:
     - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
     repo: sylva-core
     depends_on:
-      workload-cluster-import: true
+      workload-cluster/cluster-import: true
     kustomization_spec:
       path: ./kustomize-units/kube-job
       wait: true

@@ -7,11 +7,11 @@ set -o pipefail
 echo "-- Wait for Rancher cluster resources to be ready and picked up by capi-rancher-import operator"
 attempts=0
 max_attempts=5
-until kubectl wait --for condition=Ready --timeout 120s kustomizations.kustomize.toolkit.fluxcd.io cattle-agent-${CLUSTER_NAME}; do
+until kubectl wait --for condition=Ready --timeout 120s kustomizations.kustomize.toolkit.fluxcd.io -n workload-cluster cattle-agent-${CLUSTER_NAME}; do
 sleep 3
 ((attempts++)) && ((attempts==max_attempts)) && exit -1
 done
-until kubectl wait --for=jsonpath='{.status.ready}'=true clusters.provisioning.cattle.io --all; do
+until kubectl wait --for=jsonpath='{.status.ready}'=true clusters.provisioning.cattle.io --all -n workload-cluster ; do
 sleep 3
 ((attempts++)) && ((attempts==max_attempts)) && exit -1
 done
