@@ -883,6 +883,7 @@ units:
     kustomization_spec:
       path: ./kustomize-units/capo-cluster-resources
       wait: true
+      targetNamespace: default
       postBuild:
         substitute:
           STACK_NAME_PREFIX: 'management-cluster-{{ tuple . .Values.cluster.capo.resources_tag | include "interpret-as-string" | replace "." "-" }}'
@@ -1412,44 +1413,38 @@ units:
                   - name: CLUSTER_NAME
                     value: '{{ .Values.cluster.test_workload_cluster_name }}'
 
+  workload-cluster-cloud-config:
+    enabled_conditions:
+      - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+      - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
+    repo: sylva-core
+    depends_on:
+      namespace-defs: true
+      external-secrets-operator: true
+    kustomization_spec:
+      path: ./kustomize-units/workload-cluster-cloud-config
+      wait: true
+
   workload-capo-cluster-resources:
     enabled_conditions:
     - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
     repo: sylva-core
     depends_on:
+      namespace-defs: true
       heat-operator: true
+      workload-cluster-cloud-config: true
     kustomization_spec:
+      targetNamespace: workload-cluster
       path: ./kustomize-units/capo-cluster-resources
       wait: true
       _patches:
         - target:
             kind: HeatStack
           patch: |
-            kind: HeatStack
-            metadata:
-              name: _unused_
-            spec:
-              outputConfigMap:
-                name: workload-capo-cluster-resources
-        - target:
-            kind: HeatStack
-          patch: |
             - op: replace
-              path: /metadata/name
-              value: heatstack-workload-capo-cluster-resources
-        - target:
-            kind: HeatStack
-          patch: |
-            - op: add
-              path: /spec/heatStack/template/outputs
-              value:
-                CLUSTER_EXTERNAL_IP:
-                  value: { get_attr: [port, fixed_ips, 0, ip_address] }
-                CONTROL_PLANE_SERVERGROUP_ID:
-                  value: { get_resource: srvgroup-ctrl-plane }
-                WORKER_SERVERGROUP_ID:
-                  value: { get_resource: srvgroup-worker }
+              path: /spec/identityRef
+              value: cloud-config  #  cloud-config Secret is produced by workload-cluster-cloud-config unit (ExternalSecret to copy cloud config from default ns to workload-cluster ns)
             - op: replace
               path: /spec/heatStack/template/parameters/control_plane_rules
               value:
@@ -1477,8 +1472,8 @@ units:
           CAPO_TAG: '{{ .Values.cluster.capo.resources_tag }}'
           CONTROL_PLANE_AFFINITY_POLICY: '{{ .Values.cluster.capo.control_plane_affinity_policy }}'
           WORKER_AFFINITY_POLICY: '{{ .Values.cluster.capo.worker_affinity_policy }}'
-          CONTROL_PLANE_SECURITY_GROUP_NAME: 'workload-cluster-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}'
-          WORKER_SECURITY_GROUP_NAME: 'workload-cluster-security-group-worker-{{ .Values.cluster.capo.resources_tag }}'
+          CONTROL_PLANE_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}'
+          WORKER_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}'
 
   workload-cluster-multus:
     enabled: false
@@ -1665,6 +1660,7 @@ units:
       namespace-defs: true
       #for capo:
       workload-capo-cluster-resources: '{{ tuple . "workload-capo-cluster-resources" | include "unit-enabled" }}'   # produces the capo-cluster-resources used below
+      workload-cluster-cloud-config: '{{ tuple . "workload-cluster-cloud-config" | include "unit-enabled" }}'
     unit_template: sylva-units
     kustomization_spec:
       targetNamespace: workload-cluster  # this ensures that the HelmRelease below is created in 'workload-cluster' ns
@@ -1686,6 +1682,25 @@ units:
             - charts/sylva-units/workload-cluster.values.yaml
             # if main sylva-units release uses OCI artifacts, do the same for this release
             - '{{ tuple "use-oci-artifacts.values.yaml" (lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units" | dig "spec" "chart" "spec" "valuesFiles" list | has "use-oci-artifacts.values.yaml") | include "set-only-if" }}'
+
+      valuesFrom:  # this Helm release receives some parameters from the capo-cluster-resources ConfigMap
+                   # which is produced by the workload-capo-cluster-resources unit
+        - kind: ConfigMap
+          name: capo-cluster-resources
+          valuesKey: allocated_ip
+          targetPath: cluster.cluster_external_ip
+        - kind: ConfigMap
+          name: capo-cluster-resources
+          valuesKey: allocated_fip
+          targetPath: cluster.capo.floating_ip
+        - kind: ConfigMap
+          name: capo-cluster-resources
+          valuesKey: control_plane_servergroup_id
+          targetPath: cluster.capo.control_plane_servergroup_id
+        - kind: ConfigMap
+          name: capo-cluster-resources
+          valuesKey: worker_servergroup_id
+          targetPath: cluster.capo.worker_servergroup_id
 
       values:
 
