@@ -100,3 +100,19 @@ units:
     depends_on:
       cluster: true
       calico: '{{ tuple . "calico" | include "unit-enabled" }}'
+
+  cluster-import:
+    enabled: false  # overriden depending on whether Rancher is enabled or not
+    depends_on:
+      cluster: true
+      calico: '{{ tuple . "calico" | include "unit-enabled" }}'
+      default/rancher: true  # depends on rancher unit in default ns
+    repo: sylva-core
+    kustomization_spec:
+      kubeConfig: ~  # because this resource lives in the mgmt cluster
+      wait: true
+      path: ./kustomize-units/cluster-import
+      postBuild:
+        substitute:
+          CLUSTER_FLAVOR: '{{ upper .Values.cluster.capi_providers.bootstrap_provider }} {{ upper .Values.cluster.capi_providers.infra_provider }}'
+          CLUSTER_NAME: '{{ .Values.cluster.name }}'
