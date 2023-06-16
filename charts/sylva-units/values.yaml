@@ -850,6 +850,7 @@ units:
     kustomization_spec:
       path: ./kustomize-units/capo-cluster-resources
       wait: true
+      targetNamespace: default
       postBuild:
         substitute:
           STACK_NAME_PREFIX: 'management-cluster-{{ tuple . .Values.cluster.capo.resources_tag | include "interpret-as-string" | replace "." "-" }}'
@@ -1379,38 +1380,20 @@ units:
     - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
     repo: sylva-core
     depends_on:
+      namespace-defs: true
       heat-operator: true
+      synchronize-secrets: true
     kustomization_spec:
+      targetNamespace: workload-cluster
       path: ./kustomize-units/capo-cluster-resources
       wait: true
       _patches:
         - target:
             kind: HeatStack
           patch: |
-            kind: HeatStack
-            metadata:
-              name: _unused_
-            spec:
-              outputConfigMap:
-                name: workload-capo-cluster-resources
-        - target:
-            kind: HeatStack
-          patch: |
             - op: replace
-              path: /metadata/name
-              value: heatstack-workload-capo-cluster-resources
-        - target:
-            kind: HeatStack
-          patch: |
-            - op: add
-              path: /spec/heatStack/template/outputs
-              value:
-                CLUSTER_EXTERNAL_IP:
-                  value: { get_attr: [port, fixed_ips, 0, ip_address] }
-                CONTROL_PLANE_SERVERGROUP_ID:
-                  value: { get_resource: srvgroup-ctrl-plane }
-                WORKER_SERVERGROUP_ID:
-                  value: { get_resource: srvgroup-worker }
+              path: /spec/identityRef
+              value: cloud-config  #  cloud-config Secret is produced by synchronize-secrets units (ExternalSecret to copy cloud config from default ns)
             - op: replace
               path: /spec/heatStack/template/parameters/control_plane_rules
               value:
@@ -1438,8 +1421,8 @@ units:
           CAPO_TAG: '{{ .Values.cluster.capo.resources_tag }}'
           CONTROL_PLANE_AFFINITY_POLICY: '{{ .Values.cluster.capo.control_plane_affinity_policy }}'
           WORKER_AFFINITY_POLICY: '{{ .Values.cluster.capo.worker_affinity_policy }}'
-          CONTROL_PLANE_SECURITY_GROUP_NAME: 'workload-cluster-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}'
-          WORKER_SECURITY_GROUP_NAME: 'workload-cluster-security-group-worker-{{ .Values.cluster.capo.resources_tag }}'
+          CONTROL_PLANE_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}'
+          WORKER_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-worker-{{ .Values.cluster.capo.resources_tag }}'
 
   workload-cluster-multus:
     enabled: false
@@ -1543,6 +1526,25 @@ units:
           valuesFiles:
             - charts/sylva-units/values.yaml
             - charts/sylva-units/workload-cluster.values.yaml
+
+      valuesFrom:  # this Helm release receives some parameters from the capo-cluster-resources ConfigMap
+                   # which is produced by the workload-capo-cluster-resources unit
+        - kind: ConfigMap
+          name: capo-cluster-resources
+          valuesKey: allocated_ip
+          targetPath: cluster.cluster_external_ip
+        - kind: ConfigMap
+          name: capo-cluster-resources
+          valuesKey: allocated_fip
+          targetPath: cluster.capo.floating_ip
+        - kind: ConfigMap
+          name: capo-cluster-resources
+          valuesKey: control_plane_servergroup_id
+          targetPath: cluster.capo.control_plane_servergroup_id
+        - kind: ConfigMap
+          name: capo-cluster-resources
+          valuesKey: worker_servergroup_id
+          targetPath: cluster.capo.worker_servergroup_id
 
       values:
 
