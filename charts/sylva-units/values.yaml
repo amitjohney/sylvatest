@@ -1511,24 +1511,6 @@ units:
                     $patch: delete
                     app: whereabouts
 
-  workload-cluster-import:
-    enabled_conditions:
-    - '{{ tuple . "rancher" | include "unit-enabled" }}'
-    - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
-    repo: sylva-core
-    depends_on:
-      rancher: true
-      workload-cluster: true
-      workload-cluster-calico: '{{ tuple . "workload-cluster-calico" | include "unit-enabled" }}'
-    kustomization_spec:
-      path: ./kustomize-units/cluster-import
-      postBuild:
-        substitute:
-          CLUSTER_FLAVOR: '{{ upper .Values.cluster.capi_providers.bootstrap_provider }} {{ upper .Values.cluster.capi_providers.infra_provider }}'
-          CLUSTER_MONITORING: "enabled"
-          CLUSTER_NAME: '{{ .Values.cluster.test_workload_cluster_name }}'
-      wait: true
-
   sriov-crd:
     enabled_conditions:
     - '{{ tuple . "sriov" | include "unit-enabled" }}'
@@ -1729,6 +1711,9 @@ units:
         metallb_helm_oci_url: '{{ .Values.metallb_helm_oci_url | include "preserve-type" }}'
 
         units:
+
+          cluster-import:
+            enabled: '{{ tuple . "rancher" | include "unit-enabled" }}'
 
           cluster:
             kustomization_spec:
