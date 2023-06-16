@@ -4,8 +4,8 @@ function dump_flux_resources() {
     cluster_dir=$1
     echo "Dumping Flux resources to $cluster_dir"
     for kind in gitrepositories helmcharts helmrepositories helmreleases kustomizations ; do
-        kubectl get $kind -o wide > $cluster_dir/flux-$kind.summary.txt
-        kubectl get $kind -o yaml > $cluster_dir/flux-$kind.yaml
+        kubectl get $kind -o wide -A > $cluster_dir/flux-$kind.summary.txt
+        kubectl get $kind -o yaml -A > $cluster_dir/flux-$kind.yaml
     done
 }
 
