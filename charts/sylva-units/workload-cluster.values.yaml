@@ -101,6 +101,15 @@ units:
       cluster: true
       calico: '{{ tuple . "calico" | include "unit-enabled" }}'
 
+  cinder-csi-psp:
+    enabled: true
+
+  cinder-csi:
+    enabled: true
+    depends_on:
+      cluster: true
+      calico: '{{ tuple . "calico" | include "unit-enabled" }}'
+
   cluster-import:
     enabled: false  # overriden depending on whether Rancher is enabled or not
     depends_on:
