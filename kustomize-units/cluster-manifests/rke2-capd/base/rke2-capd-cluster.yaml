@@ -2,7 +2,6 @@ apiVersion: cluster.x-k8s.io/v1beta1
 kind: Cluster
 metadata:
   name: ${CLUSTER_NAME}
-  namespace: default
 spec:
   clusterNetwork:
     services:
@@ -14,24 +13,20 @@ spec:
     apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
     kind: RKE2ControlPlane
     name: ${CLUSTER_NAME}-control-plane
-    namespace: default
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
     kind: DockerCluster
     name: ${CLUSTER_NAME}
-    namespace: default
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: DockerCluster
 metadata:
   name: ${CLUSTER_NAME}
-  namespace: default
 ---
 apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
 kind: RKE2ControlPlane
 metadata:
   name: ${CLUSTER_NAME}-control-plane
-  namespace: default
 spec:
   replicas: 1
   files: []
@@ -59,7 +54,6 @@ apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: DockerMachineTemplate
 metadata:
   name: ${CLUSTER_NAME}-cp-template
-  namespace: default
 spec:
   template:
     spec:
