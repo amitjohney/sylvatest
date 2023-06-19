@@ -859,6 +859,10 @@ units:
         - '{{ tuple (.Files.Get "elements/configtemplate-ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
         - '{{ tuple (.Files.Get "elements/controlplane-metallb-l3.tpl" | fromYaml ) (.Values.cluster | dig "metallb_additional_options" "") | include "set-only-if" }}'
         - '{{ tuple (.Files.Get "elements/controlplane-capo-aap.tpl" | fromYaml ) ( and (eq .Values.cluster.capi_providers.infra_provider "capo") (.Values.cluster | dig "metallb_additional_options" "")) | include "set-only-if" }}'
+        - '{{ tuple (.Files.Get "elements/configtemplate-apt-proxy.tpl" | fromYaml) (.Values.proxies.http_proxy) | include "set-only-if" }}'
+        - '{{ tuple (.Files.Get "elements/controlplane-apt-proxy.tpl" | fromYaml) (.Values.proxies.http_proxy) | include "set-only-if" }}'
+        - '{{ tuple (.Files.Get "elements/configtemplate-longhorn-prereq.tpl" | fromYaml) (and (not .Values.cluster.air_gapped) (tuple . "longhorn" | include "unit-enabled")) | include "set-only-if" }}'
+        - '{{ tuple (.Files.Get "elements/controlplane-longhorn-prereq.tpl" | fromYaml) (and (not .Values.cluster.air_gapped ) (tuple . "longhorn" | include "unit-enabled")) | include "set-only-if" }}'
 
   heat-operator:
     enabled_conditions:
@@ -1559,10 +1563,6 @@ units:
         - '{{ tuple (.Files.Get "elements/configtemplate-registry-mirrors.tpl" | fromYaml) (.Values.registry_mirrors | dig "hosts_config" "") | include "set-only-if" }}'
         - '{{ tuple (.Files.Get "elements/controlplane-ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
         - '{{ tuple (.Files.Get "elements/configtemplate-ntp-servers.tpl" | fromYaml) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
-        - '{{ tuple (.Files.Get "elements/configtemplate-apt-proxy.tpl" | fromYaml) (.Values.proxies.http_proxy) | include "set-only-if" }}'
-        - '{{ tuple (.Files.Get "elements/controlplane-apt-proxy.tpl" | fromYaml) (.Values.proxies.http_proxy) | include "set-only-if" }}'
-        - '{{ tuple (.Files.Get "elements/configtemplate-longhorn-prereq.tpl" | fromYaml) (and (not .Values.cluster.air_gapped) (tuple . "workload-cluster-longhorn" | include "unit-enabled")) | include "set-only-if" }}'
-        - '{{ tuple (.Files.Get "elements/controlplane-longhorn-prereq.tpl" | fromYaml) (and (not .Values.cluster.air_gapped ) (tuple . "workload-cluster-longhorn" | include "unit-enabled")) | include "set-only-if" }}'
 
   workload-cluster-calico-crd:
     enabled_conditions:
@@ -1800,11 +1800,9 @@ units:
           CLUSTER_EXTERNAL_IP: '{{ .Values.cluster.cluster_external_ip }}'
           CLUSTER_EXTERNAL_DOMAIN: '{{ .Values.cluster.cluster_external_domain }}'
 
-  workload-cluster-longhorn-crd:
+  longhorn-crd:
     enabled_conditions:
-    - '{{ tuple . "workload-cluster-longhorn" | include "unit-enabled" }}'
-    depends_on:
-      workload-cluster: true
+    - '{{ tuple . "longhorn" | include "unit-enabled" }}'
     helm_repo_url: https://charts.rancher.io/
     helmrelease_spec:
       releaseName: longhorn-crd
@@ -1815,14 +1813,11 @@ units:
         spec:
           chart: longhorn-crd
           version: 102.2.0+up1.4.1
-      kubeConfig:
-        secretRef:
-          name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
 
-  workload-cluster-longhorn:
+  longhorn:
     enabled: false
     depends_on:
-      workload-cluster-longhorn-crd: true
+      longhorn-crd: true
     helm_repo_url: https://charts.rancher.io/
     helmrelease_spec:
       releaseName: longhorn
@@ -1831,9 +1826,6 @@ units:
         spec:
           chart: longhorn
           version: 102.2.0+up1.4.1
-      kubeConfig:
-        secretRef:
-          name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
 
 ## stuff related to the 'cluster' unit
 
