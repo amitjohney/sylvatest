@@ -44,6 +44,15 @@ unit_helmrelease_spec_default:
       name: '{{ .Values.cluster.name }}-kubeconfig'
   targetNamespace: default  # so that units not having a targetNamespace are deployed in remote ns 'default' and not 'workload-cluster'
 
+unit_templates:
+
+  base-deps:
+    # we put here the list of base units that most units will need to depend on
+    # they correspond to "the workload cluster is ready for stuff to be deployed on it"
+    depends_on:
+      cluster: true
+      namespace-defs: true
+      calico: '{{ tuple . "calico" | include "unit-enabled" }}'
 
 # here we select which units we want to enable for a workload cluster
 units:
@@ -86,39 +95,28 @@ units:
 
   monitoring-crd:
     enabled: true
-    depends_on:
-      cluster: true
-      calico: '{{ tuple . "calico" | include "unit-enabled" }}'
+    unit_template: base-deps
 
   monitoring:
     enabled: true
-    depends_on:
-      cluster: true
-      calico: '{{ tuple . "calico" | include "unit-enabled" }}'
+    unit_template: base-deps
 
   longhorn-crd:
     enabled: true
-    depends_on:
-      cluster: true
-      calico: '{{ tuple . "calico" | include "unit-enabled" }}'
+    unit_template: base-deps
 
   longhorn:
-    depends_on:
-      cluster: true
-      calico: '{{ tuple . "calico" | include "unit-enabled" }}'
+    unit_template: base-deps
 
   multus:
     # can be enabled at runtime if desired:
     #enabled: true
-    depends_on:
-      cluster: true
-      calico: '{{ tuple . "calico" | include "unit-enabled" }}'
+    unit_template: base-deps
 
   cluster-import:
     enabled: false  # overriden depending on whether Rancher is enabled or not
+    unit_template: base-deps
     depends_on:
-      cluster: true
-      calico: '{{ tuple . "calico" | include "unit-enabled" }}'
       default/rancher: true  # depends on rancher unit in default ns
     repo: sylva-core
     kustomization_spec:
