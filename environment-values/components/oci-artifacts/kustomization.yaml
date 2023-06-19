@@ -31,6 +31,9 @@ patches:
     - op: replace
       path: /spec/chart/spec/valuesFiles/0
       value: values.yaml
+    - op: replace
+      path: /spec/chart/spec/valuesFiles/1
+      value: management.values.yaml
     - op: add
       path: /spec/chart/spec/valuesFiles/-
       value: use-oci-artifacts.values.yaml
