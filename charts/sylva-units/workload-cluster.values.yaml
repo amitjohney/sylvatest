@@ -96,6 +96,17 @@ units:
       cluster: true
       calico: '{{ tuple . "calico" | include "unit-enabled" }}'
 
+  longhorn-crd:
+    enabled: true
+    depends_on:
+      cluster: true
+      calico: '{{ tuple . "calico" | include "unit-enabled" }}'
+
+  longhorn:
+    depends_on:
+      cluster: true
+      calico: '{{ tuple . "calico" | include "unit-enabled" }}'
+
   multus:
     # can be enabled at runtime if desired:
     #enabled: true

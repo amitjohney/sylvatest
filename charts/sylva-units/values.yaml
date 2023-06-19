@@ -1725,6 +1725,9 @@ units:
           #multus:   ## can be overriden via environment values
           #  enabled: true
 
+          #longhorn:   ## can be overriden via environment values
+          #  enabled: true
+
         proxies: '{{ .Values.proxies | include "preserve-type" }}'
 
         ntp: '{{ .Values.ntp | include "preserve-type" }}'
