@@ -1,0 +1,53 @@
+apiVersion: apm.neuvector.com/v1alpha1
+kind: Neuvector
+metadata:
+  name: neuvector
+  namespace: neuvector
+spec:
+  openshift: false
+  tag: 4.3.0
+  registry: registry.neuvector.com
+  imagePullSecrets: regsecret-gcp
+  exporter:
+    image:
+      repository: prometheus-exporter
+      tag: 0.9.0
+  manager:
+    enabled: true
+    env:
+      ssl: true
+    image:
+      repository: manager
+    svc:
+      type: NodePort
+      route:
+        enabled: true
+        termination: passthrough
+  enforcer:
+    enabled: true
+    image:
+      repository: enforcer
+  cve:
+    updater:
+      enabled: true
+      image:
+        repository: updater
+        tag: latest
+      schedule: 0 0 * * *
+    scanner:
+      enabled: true
+      replicas: 3
+      image:
+        repository: scanner
+        tag: latest
+  controller:
+    enabled: true
+    image:
+      repository: controller
+    replicas: 3
+  crio:
+    enabled: false
+    path: /var/run/crio/crio.sock
+  docker:
+    enabled: true
+    path: /var/run/docker.sock
