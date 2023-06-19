@@ -15,6 +15,7 @@ spec:
     loginTheme: keycloak
     accountTheme: keycloak
     adminTheme: keycloak
+    passwordPolicy: length(12) and upperCase(1) and lowerCase(1) and digits(1)
     groups:
     - name: infra-admins
 ---
