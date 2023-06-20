@@ -13,6 +13,8 @@ data:
 {{ if eq .Values.cluster.capi_providers.infra_provider "capo" }}
   FLAVOR_NAME: {{ .Values.cluster.capo.flavor_name }}
   WORKER_FLAVOR_NAME: {{ .Values.cluster.capo.worker_flavor_name | default .Values.cluster.capo.flavor_name }}
+  CONTROL_PLANE_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}'
+  WORKER_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}'
 {{ if hasKey .Values.cluster.capo "worker_az" }}
   WORKER_AZ: {{ .Values.cluster.capo.worker_az }}
 {{ end }}
@@ -54,5 +56,3 @@ data:
   CONTROL_PLANE_REPLICAS: {{ .Values.cluster.control_plane_replicas | quote }}
   WORKER_REPLICAS: {{ .Values.cluster.worker_replicas | quote }}
   CLUSTER_EXTERNAL_DOMAIN: {{ .Values.cluster.cluster_external_domain }}
-  CONTROL_PLANE_SECURITY_GROUP_NAME: 'capo-cluster-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}'
-  WORKER_SECURITY_GROUP_NAME: 'capo-cluster-security-group-worker-{{ .Values.cluster.capo.resources_tag }}'
