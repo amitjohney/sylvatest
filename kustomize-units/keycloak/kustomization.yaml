@@ -10,3 +10,23 @@ resources:
 - keycloak-postgresql-secret.yaml
 - keycloak-server.yaml
 - keycloak-ingress.yaml
+
+patches:
+  - patch: |-
+      - op: add
+        path: /spec/unsupported
+        value:
+          podTemplate:
+            spec:
+              containers:
+                - name: keycloak
+                  env:
+                    - name: https_proxy
+                      value: ${https_proxy}
+                    - name: no_proxy
+                      value: ${no_proxy}
+    target:
+      group: k8s.keycloak.org
+      version: v2alpha1
+      kind: Keycloak
+      name: keycloak

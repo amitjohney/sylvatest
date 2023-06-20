@@ -474,6 +474,9 @@ units:
       postBuild:
         substitute:
           KEYCLOAK_DNS: '{{ .Values.cluster.keycloak.external_hostname }}'
+        substituteFrom:
+        - kind: ConfigMap
+          name: proxy-env-vars
       healthChecks:  # cannot use __wait: true__ here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/144
         # the Keycloak StatefulSet set is produced, by the combination of Keycloak operator
         # and a Keycloak custom resource, it relies on the postgres DB also deployed by this unit
