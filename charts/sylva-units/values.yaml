@@ -1728,6 +1728,12 @@ units:
           #longhorn:   ## can be overriden via environment values
           #  enabled: true
 
+          #sriov:   ## can be overriden via environment values
+          #  enabled: true
+
+          #sriov-resources:  ## can be overriden via environment values
+          #  enabled: true
+
         proxies: '{{ .Values.proxies | include "preserve-type" }}'
 
         ntp: '{{ .Values.ntp | include "preserve-type" }}'

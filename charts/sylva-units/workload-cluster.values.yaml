@@ -113,6 +113,24 @@ units:
     #enabled: true
     unit_template: base-deps
 
+  sriov:
+    # can be enabled at runtime if desired:
+    #enabled: true
+    unit_template: base-deps
+
+  sriov-crd:
+    enabled: yes
+    unit_template: base-deps
+
+  sriov-psp:
+    enabled: yes
+    unit_template: base-deps
+
+  sriov-resources:
+    # can be enabled at runtime if desired:
+    #enabled: true
+    unit_template: base-deps
+
   cluster-import:
     enabled: false  # overriden depending on whether Rancher is enabled or not
     unit_template: base-deps
