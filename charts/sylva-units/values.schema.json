@@ -857,6 +857,62 @@
         "test_workload_cluster_name": {
           "type": "string",
           "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+        },
+        "sriov": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "node_policies": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "resourceName",
+                  "numVfs",
+                  "nicSelector"
+                ],
+                "properties": {
+                  "nodeSelector": {
+                    "type": "object"
+                  },
+                  "resourceName": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9][a-z0-9_.]*[a-z0-9]$"
+                  },
+                  "numVfs": {
+                    "type": "integer"
+                  },
+                  "nicSelector": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "minProperties": 1,
+                    "properties": {
+                      "deviceID": {
+                        "type": "string"
+                      },
+                      "vendor": {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{4}$"
+                      },
+                      "pfNames": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "rootDevices": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       },
       "allOf": [
