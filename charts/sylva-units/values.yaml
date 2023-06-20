@@ -675,6 +675,15 @@ units:
       path: ./kustomize-units/kyverno-policies
       wait: true
 
+  cluster-autoscaler:
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/cluster-autoscaler
+      postBuild:
+        substitute:
+          AUTOSCALER_NS: 'kube-system'
+          AUTOSCALER_IMAGE: 'us.gcr.io/k8s-artifacts-prod/autoscaling/cluster-autoscaler:v1.20.0'
+
   capi:
     repo: sylva-core
     depends_on:
