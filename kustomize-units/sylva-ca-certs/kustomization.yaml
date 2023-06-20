@@ -6,3 +6,4 @@ resources:
   - keycloak-tls.yaml
   - vault-tls.yaml
   - flux-webui-tls.yaml
+  - neuvector-tls.yaml

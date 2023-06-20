@@ -5,3 +5,5 @@ resources:
 - keycloak-initial-admin.yaml
 - rancher-bootstrap-secret.yaml
 - flux-webui-cluster-user-auth.yaml
+- neuvector-init.yaml
+

@@ -8,4 +8,6 @@ resources:
 - random-keycloak-secret.yaml
 - random-rancher-secret.yaml
 - random-flux-webui-secret.yaml
+- random-neuvector-secret.yaml
+
 
