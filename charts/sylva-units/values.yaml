@@ -1696,9 +1696,9 @@ units:
         secretRef:
           name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
 
-  workload-cluster-sriov-crd:
+  sriov-crd:
     enabled_conditions:
-    - '{{ tuple . "workload-cluster-sriov" | include "unit-enabled" }}'
+    - '{{ tuple . "sriov" | include "unit-enabled" }}'
     depends_on:
       workload-cluster-multus: true
     helm_repo_url: https://charts.rancher.io/
@@ -1711,15 +1711,12 @@ units:
         spec:
           chart: sriov-crd
           version: 102.0.0+up0.1.0
-      kubeConfig:
-        secretRef:
-          name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
 
-  workload-cluster-sriov:
+  sriov:
     enabled: false
     depends_on:
-      workload-cluster-sriov-crd: true
-      workload-cluster-sriov-psp: '{{ tuple . "workload-cluster-sriov-psp" | include "unit-enabled" }}'
+      sriov-crd: true
+      sriov-psp: '{{ tuple . "sriov-psp" | include "unit-enabled" }}'
     helm_repo_url: https://charts.rancher.io/
     helmrelease_spec:
       releaseName: sriov
@@ -1728,9 +1725,6 @@ units:
         spec:
           chart: sriov
           version: 102.0.0+up0.1.0
-      kubeConfig:
-        secretRef:
-          name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
       values:
         cert_manager: true
         rancher-nfd:
@@ -1751,24 +1745,21 @@ units:
                         runAsGroup: 3000
                         runAsUser: 2000
 
-  workload-cluster-sriov-psp:
+  sriov-psp:
     enabled_conditions:
     - '{{ .Values.cluster.cis_profile | eq "cis-1.6" }}'
-    - '{{ (tuple . "workload-cluster-sriov" | include "unit-enabled") }}'
+    - '{{ (tuple . "sriov" | include "unit-enabled") }}'
     depends_on:
-      workload-cluster-sriov-crd: true
+      sriov-crd: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/workload-cluster-sriov-psp
       wait: true
-      kubeConfig:
-        secretRef:
-          name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
 
-  workload-cluster-sriov-resources:
+  sriov-resources:
     enabled: false
     depends_on:
-      workload-cluster-sriov: true
+      sriov: true
     repo: sriov-resources
     helm_chart_artifact_name: sriov-resources
     helmrelease_spec:
@@ -1778,9 +1769,6 @@ units:
       targetNamespace: cattle-sriov-system
       values:
         node_policies: '{{ .Values.cluster.sriov.node_policies | include "preserve-type" }}'
-      kubeConfig:
-        secretRef:
-          name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
 
   coredns:
     repo: sylva-core
