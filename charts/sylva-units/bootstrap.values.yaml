@@ -117,6 +117,9 @@ units:
                   | kubectl --kubeconfig management-cluster-kubeconfig apply -f -
 
               echo "-- All done"
+      postBuild:
+        substitute:
+          SHA256SUM: '{{ .Values.sha256sum }}'  
 
   # instantiate 'sylva-units' chart again in the management cluster
   management-sylva-units:
