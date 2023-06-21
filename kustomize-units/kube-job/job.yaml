@@ -7,6 +7,9 @@ spec:
   backoffLimit: 5
   activeDeadlineSeconds: 1800
   template:
+    metadata:
+      annotations:
+        checksum/config: ${SHA256SUM}
     spec:
       containers:
       - name: run-script
