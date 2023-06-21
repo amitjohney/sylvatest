@@ -5,7 +5,6 @@ metadata:
   labels:
     cluster.x-k8s.io/cluster-name: ${CLUSTER_NAME}
   name: ${CLUSTER_NAME}
-  namespace: default
 spec:
   clusterNetwork:
     pods:
@@ -30,7 +29,6 @@ apiVersion: controlplane.cluster.x-k8s.io/v1beta1
 kind: KubeadmControlPlane
 metadata:
   name: ${CLUSTER_NAME}-control-plane
-  namespace: default
 spec:
   kubeadmConfigSpec:
     clusterConfiguration:
@@ -142,7 +140,6 @@ apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
 kind: KubeadmConfigTemplate
 metadata:
   name: ${CLUSTER_NAME}-worker
-  namespace: default
 spec:
   template:
     spec:
@@ -172,7 +169,6 @@ metadata:
   labels:
     cluster.x-k8s.io/cluster-name: ${CLUSTER_NAME}
   name: ${CLUSTER_NAME}-worker
-  namespace: default
 spec:
   clusterName: ${CLUSTER_NAME}
   replicas: ${WORKER_REPLICAS:=0}
