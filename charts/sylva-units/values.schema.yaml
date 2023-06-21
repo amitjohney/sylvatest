@@ -254,6 +254,9 @@ properties:
     type: object
     # this is a spec of a GitRepository Flux resource
 
+  sha256sum:
+    type: string
+
   unit_kustomization_spec_default:  # -------------------------------
     type: object
     # TODO: detail more
