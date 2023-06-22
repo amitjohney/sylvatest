@@ -4,15 +4,12 @@ units:
   cluster:
     kustomization_spec:
       path: ./kustomize-units/cluster-manifests/kubeadm-capo/base
+
   workload-cluster:
-    kustomization_spec:
-      path: ./kustomize-units/cluster-manifests/kubeadm-capo/base
-      postBuild:
-        substitute:
-          CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
-          FLAVOR_NAME: '{{ .Values.cluster.capo.flavor_name }}'
-          SSH_KEY_NAME: '{{ .Values.cluster.capo.ssh_key_name }}'
-          WORKER_REPLICAS: '1'
+    helmrelease_spec:
+      values:
+        cluster:
+          worker_replicas: 1
 
 cluster:
   image: capo-ubuntu-2004-kube-v1.23.6-calico-3.23.1

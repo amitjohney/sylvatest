@@ -5,14 +5,10 @@ units:
     kustomization_spec:
       path: ./kustomize-units/cluster-manifests/rke2-capo/base
   workload-cluster:
-    kustomization_spec:
-      path: ./kustomize-units/cluster-manifests/rke2-capo/base
-      postBuild:
-        substitute:
-          CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
-          FLAVOR_NAME: '{{ .Values.cluster.capo.flavor_name }}'
-          SSH_KEY_NAME: '{{ .Values.cluster.capo.ssh_key_name }}'
-          WORKER_REPLICAS: '1'
+    helmrelease_spec:
+      values:
+        cluster:
+          worker_replicas: 1
 
 cluster:
   image: "Ubuntu 20.04 Pack" # image name provided by falcon-rke2 remote target unit, but can be overwritten

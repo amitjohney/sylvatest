@@ -1,0 +1,147 @@
+# ############################################################################
+#
+# This Helm values files contains override used to create a workload cluster
+# with sylva-units chart and deploy a selected subset of units into it.
+#
+# ############################################################################
+
+# This value override file is meant to deploy sylva-units _in the mgmt cluster_
+# _in a dedicated namespace_, it will produce Flux Kustomization and HelmReleases
+# _in the mgmt cluster_ and those will ultimately deploy Kubernetes resources
+# in the workload cluster itself.
+#
+# There are a few exceptions:
+# - the 'cluster' unit produces CAPI resource for the cluster _in the mgmt cluster_
+
+# when this values override file is used, it is assumed that
+# - `cluster.name` contains the name of the workload cluster to work on
+# - `cluster.capi_providers.(infra|bootstrap)_provider` are set to relevant values
+# - `cluster.capo` for Openstack settings needed by cinder-csi
+# - etc.
+# any settings at the root of values, or under 'cluster', which is
+# needed for any unit listed below, will have to be specified
+
+unit_kustomization_spec_default:
+  targetNamespace: '{{ .Release.Namespace }}'
+  # ensure that our unit Kustomizations are deployed
+  # in the workload cluster
+  kubeConfig:
+    secretRef:
+      name: '{{ .Values.cluster.name }}-kubeconfig'
+
+# for units that rely on Helm, the Kustomization will
+# produce a HelmRelease which needs to be in the mgmt cluster
+# so we "reset" the kubeconfig set right above
+# (more below ...)
+unit_helmrelease_kustomization_spec_default:
+  kubeConfig: ~
+
+# ... and its at the level of the HelmRelease that we ensure
+# that the Helm release is deployed in the workload cluster
+unit_helmrelease_spec_default:
+  kubeConfig:
+    secretRef:
+      name: '{{ .Values.cluster.name }}-kubeconfig'
+  targetNamespace: default  # so that units not having a targetNamespace are deployed in remote ns 'default' and not 'workload-cluster'
+
+unit_templates:
+
+  base-deps:
+    # we put here the list of base units that most units will need to depend on
+    # they correspond to "the workload cluster is ready for stuff to be deployed on it"
+    depends_on:
+      cluster: true
+      namespace-defs: true
+      calico: '{{ tuple . "calico" | include "unit-enabled" }}'
+
+# here we select which units we want to enable for a workload cluster
+units:
+
+  cluster:
+    enabled: true
+    depends_on:
+      # contrarily to what we have in default values, we don't
+      # depend on capi-related units (CAPI is not deployed in the workload cluster)
+      capi: false
+      '{{ .Values.cluster.capi_providers.infra_provider }}': false
+      '{{ .Values.cluster.capi_providers.bootstrap_provider }}': false
+      # we don't depend on capo-cluster-resources, because
+      # we define those resources outside of the workload-cluster sylva-units
+      # Helm release
+      capo-cluster-resources: false
+    kustomization_spec:
+      kubeConfig: ~  # because this resource lives in the mgmt cluster
+    # helmrelease_spec:  ## to use when we'll switch to sylva-capi-cluster
+    #   kubeConfig: ~  # because this resource lives in the mgmt cluster
+
+  namespace-defs:
+    enabled: true
+    depends_on:
+      cluster: true
+    kustomization_spec:
+      targetNamespace: ~  # if we don't do this, there are errors, presumably because namespaces are a non-namespaced resource
+
+  calico-crd:
+    enabled: true
+    depends_on:
+      namespace-defs: true
+      cluster: true
+
+  calico:
+    enabled: true
+    depends_on:
+      namespace-defs: true
+      cluster: true
+
+  monitoring-crd:
+    enabled: true
+    unit_template: base-deps
+
+  monitoring:
+    enabled: true
+    unit_template: base-deps
+
+  longhorn-crd:
+    enabled: true
+    unit_template: base-deps
+
+  longhorn:
+    unit_template: base-deps
+
+  multus:
+    # can be enabled at runtime if desired:
+    #enabled: true
+    unit_template: base-deps
+
+  sriov:
+    # can be enabled at runtime if desired:
+    #enabled: true
+    unit_template: base-deps
+
+  sriov-crd:
+    enabled: yes
+    unit_template: base-deps
+
+  sriov-psp:
+    enabled: yes
+    unit_template: base-deps
+
+  sriov-resources:
+    # can be enabled at runtime if desired:
+    #enabled: true
+    unit_template: base-deps
+
+  cluster-import:
+    enabled: false  # overriden depending on whether Rancher is enabled or not
+    unit_template: base-deps
+    depends_on:
+      default/rancher: true  # depends on rancher unit in default ns
+    repo: sylva-core
+    kustomization_spec:
+      kubeConfig: ~  # because this resource lives in the mgmt cluster
+      wait: true
+      path: ./kustomize-units/cluster-import
+      postBuild:
+        substitute:
+          CLUSTER_FLAVOR: '{{ upper .Values.cluster.capi_providers.bootstrap_provider }} {{ upper .Values.cluster.capi_providers.infra_provider }}'
+          CLUSTER_NAME: '{{ .Values.cluster.name }}'

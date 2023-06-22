@@ -119,6 +119,14 @@ for unit in "${units[@]}"; do
   helmchart_spec=$(echo "$unit" | yq '.helmrelease_spec.chart.spec' -)
   if [[ -n "$helmchart_spec" &&  $helmchart_spec != "null" ]]; then
     chart=$(echo "$helmchart_spec" | yq '.chart' -)
+
+    # no processing is needed if the chart is sylva-units
+    # (sylva-units packaging is handled separately by build-sylva-units-artifact.sh)
+    if [[ $chart =~ (^|/)sylva-units$ ]]; then
+      echo "skipping sylva-units chart"
+      continue
+    fi
+
     helm_repo_url=$(echo "$unit" | yq '.helm_repo_url' -)
     if [[ -n "$helm_repo_url" && $helm_repo_url != "null" ]]; then
       ## Helm charts in helm repository ##

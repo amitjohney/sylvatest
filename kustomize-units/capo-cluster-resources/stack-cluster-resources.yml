@@ -9,7 +9,6 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/created-by: heat-operator
   name: heatstack-capo-cluster-resources
-  namespace: default
 spec:
   heatStack:
     namePrefix: "${STACK_NAME_PREFIX}"

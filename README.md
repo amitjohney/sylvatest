@@ -352,9 +352,20 @@ In previous deployment examples we use an intermediate temporary/disposable boot
 - Once the management cluster is deployed, you can connect to it with the kubeconfig file created, named `management-cluster-kubeconfig` (using `kubectl --kubeconfig management-cluster-kubeconfig ...` or `export KUBECONFIG=management-cluster-kubeconfig`).
 - At this stage, bootstrap cluster can be deleted
 
-### Deploying workload clusters
+### Deploying the sample workload cluster
 
-Deploying a workload cluster the gitops way means that some specific kustomizations defining the workload clusters have to be defined. This is done by the unit named `test-workload-cluster`. If this unit is enabled in the user values given to the `sylva-units` Helm chart, then a workload cluster will be deployed. You'll be able to see it from the Rancher Web UI.
+Deploying a workload cluster the gitops way means that some specific kustomizations defining the workload clusters have to be defined. This is done by the unit named `workload-cluster`. If this unit is enabled in the user values given to the `sylva-units` Helm chart, then a workload cluster will be deployed.
+
+You'll be able to see it and access it from the Rancher Web UI.
+
+You can also retrieve it's `kubeconfig` with:
+
+```shell
+kubectl -n workload-cluster get secret first-workload-cluster-kubeconfig -o jsonpath='{.data.value}' | base64 -d > first-workload-cluster-kubeconfig
+```
+
+**Note well** that this way of defining a workload clusters is an expedient for early versions of Sylva. The target is to have a lifecycle for multiple workload clusters, independent from the lifecycle
+of the management cluster and relying on GitOps patterns.
 
 ## Tips and Troubleshooting
 

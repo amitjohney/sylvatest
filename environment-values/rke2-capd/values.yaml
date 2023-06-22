@@ -7,10 +7,6 @@ units:
   # Disabling some units for lightweight deployment testing
   workload-cluster:
     enabled: false
-    kustomization_spec:
-      path: ./kustomize-units/cluster-manifests/rke2-capd/base
-  workload-cluster-calico:
-    enabled: false
   monitoring:
     enabled: false
   keycloak:

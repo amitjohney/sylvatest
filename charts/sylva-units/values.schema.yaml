@@ -971,6 +971,7 @@ properties:
       - type: string
         pattern: "^oci://.*"
       - $ref: "#/$defs/string-with-gotpl"
+      - const: null
 
   registry_mirrors:  # -------------------------------
     type: object
