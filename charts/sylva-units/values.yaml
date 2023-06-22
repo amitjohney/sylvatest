@@ -592,7 +592,6 @@ units:
       keycloak-legacy-operator: true
       keycloak-resources: true
       eso-secret-stores: true
-      keycloak-add-client-scope: true
     repo: sylva-core
     kustomization_substitute_secrets:
       RANCHER_CLIENT_SECRET: '{{ .Values.cluster.admin_password }}'
@@ -1275,6 +1274,7 @@ units:
     depends_on:
       flux-system: true
       ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
+      keycloak-add-client-scope: true
       keycloak-oidc-external-secrets: true
     annotations:
       sylvactl/readyMessage: "Flux Web UI can be reached at https://{{ .Values.cluster.flux.external_hostname }} ({{ .Values.cluster.flux.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
