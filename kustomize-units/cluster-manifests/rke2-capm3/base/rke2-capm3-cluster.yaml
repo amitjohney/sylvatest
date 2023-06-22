@@ -361,130 +361,128 @@ spec:
                 ssh_authorized_keys:
                   - ${SSH_PUBLIC_KEY}
 ---
-apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
-kind: RKE2ConfigTemplate
-metadata:
-  name: ${CLUSTER_NAME}-worker-sriov
-  namespace: default
-spec:
-  template:
-    spec:
-      files:
-      - path: /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
-        owner: "root:root"
-        permissions: "064O"
-        encoding: base64
+#apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
+#kind: RKE2ConfigTemplate
+#metadata:
+#  name: ${CLUSTER_NAME}-worker-sriov
+#  namespace: default
+#spec:
+#  template:
+#    spec:
+#      files:
+#      - path: /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
+#        owner: "root:root"
+#        permissions: "064O"
+#        encoding: base64
         # Template copied from https://github.com/k3s-io/k3s/blob/master/pkg/agent/templates/templates_linux.go
         # adapted to use /etc/containerd/registry.d directory for registry configuration (to be consistent with kubeadm)
         # it is base64-encoded otherwise it causes errors in flux substitution (see https://github.com/fluxcd/flux2/issues/3520)
-        content: |
-          IyBGaWxlIGdlbmVyYXRlZCBieSBya2UyIHVzaW5nIGN1c3RvbSBjb25maWcudG9tbC50bXBsIERP
-          IE5PVCBFRElULgp2ZXJzaW9uID0gMgoKW3BsdWdpbnMuImlvLmNvbnRhaW5lcmQuaW50ZXJuYWwu
-          djEub3B0Il0KICBwYXRoID0gInt7IC5Ob2RlQ29uZmlnLkNvbnRhaW5lcmQuT3B0IH19IgpbcGx1
-          Z2lucy4iaW8uY29udGFpbmVyZC5ncnBjLnYxLmNyaSJdCiAgc3RyZWFtX3NlcnZlcl9hZGRyZXNz
-          ID0gIjEyNy4wLjAuMSIKICBzdHJlYW1fc2VydmVyX3BvcnQgPSAiMTAwMTAiCiAgZW5hYmxlX3Nl
-          bGludXggPSB7eyAuTm9kZUNvbmZpZy5TRUxpbnV4IH19CiAgZW5hYmxlX3VucHJpdmlsZWdlZF9w
-          b3J0cyA9IHt7IC5FbmFibGVVbnByaXZpbGVnZWQgfX0KICBlbmFibGVfdW5wcml2aWxlZ2VkX2lj
-          bXAgPSB7eyAuRW5hYmxlVW5wcml2aWxlZ2VkIH19Cgp7ey0gaWYgLkRpc2FibGVDZ3JvdXB9fQog
-          IGRpc2FibGVfY2dyb3VwID0gdHJ1ZQp7e2VuZH19Cnt7LSBpZiAuSXNSdW5uaW5nSW5Vc2VyTlMg
-          fX0KICBkaXNhYmxlX2FwcGFybW9yID0gdHJ1ZQogIHJlc3RyaWN0X29vbV9zY29yZV9hZGogPSB0
-          cnVlCnt7ZW5kfX0KCnt7LSBpZiAuTm9kZUNvbmZpZy5BZ2VudENvbmZpZy5QYXVzZUltYWdlIH19
-          CiAgc2FuZGJveF9pbWFnZSA9ICJ7eyAuTm9kZUNvbmZpZy5BZ2VudENvbmZpZy5QYXVzZUltYWdl
-          IH19Igp7e2VuZH19Cgp7ey0gaWYgLk5vZGVDb25maWcuQWdlbnRDb25maWcuU25hcHNob3R0ZXIg
-          fX0KW3BsdWdpbnMuImlvLmNvbnRhaW5lcmQuZ3JwYy52MS5jcmkiLmNvbnRhaW5lcmRdCiAgc25h
-          cHNob3R0ZXIgPSAie3sgLk5vZGVDb25maWcuQWdlbnRDb25maWcuU25hcHNob3R0ZXIgfX0iCiAg
-          ZGlzYWJsZV9zbmFwc2hvdF9hbm5vdGF0aW9ucyA9IHt7IGlmIGVxIC5Ob2RlQ29uZmlnLkFnZW50
-          Q29uZmlnLlNuYXBzaG90dGVyICJzdGFyZ3oiIH19ZmFsc2V7e2Vsc2V9fXRydWV7e2VuZH19Cnt7
-          IGlmIGVxIC5Ob2RlQ29uZmlnLkFnZW50Q29uZmlnLlNuYXBzaG90dGVyICJzdGFyZ3oiIH19Cnt7
-          IGlmIC5Ob2RlQ29uZmlnLkFnZW50Q29uZmlnLkltYWdlU2VydmljZVNvY2tldCB9fQpbcGx1Z2lu
-          cy4iaW8uY29udGFpbmVyZC5zbmFwc2hvdHRlci52MS5zdGFyZ3oiXQpjcmlfa2V5Y2hhaW5faW1h
-          Z2Vfc2VydmljZV9wYXRoID0gInt7IC5Ob2RlQ29uZmlnLkFnZW50Q29uZmlnLkltYWdlU2Vydmlj
-          ZVNvY2tldCB9fSIKW3BsdWdpbnMuImlvLmNvbnRhaW5lcmQuc25hcHNob3R0ZXIudjEuc3Rhcmd6
-          Ii5jcmlfa2V5Y2hhaW5dCmVuYWJsZV9rZXljaGFpbiA9IHRydWUKe3tlbmR9fQp7eyBpZiAuUHJp
-          dmF0ZVJlZ2lzdHJ5Q29uZmlnIH19Cnt7IGlmIC5Qcml2YXRlUmVnaXN0cnlDb25maWcuTWlycm9y
-          cyB9fQpbcGx1Z2lucy4iaW8uY29udGFpbmVyZC5zbmFwc2hvdHRlci52MS5zdGFyZ3oiLnJlZ2lz
-          dHJ5Lm1pcnJvcnNde3tlbmR9fQp7e3JhbmdlICRrLCAkdiA6PSAuUHJpdmF0ZVJlZ2lzdHJ5Q29u
-          ZmlnLk1pcnJvcnMgfX0KW3BsdWdpbnMuImlvLmNvbnRhaW5lcmQuc25hcHNob3R0ZXIudjEuc3Rh
-          cmd6Ii5yZWdpc3RyeS5taXJyb3JzLiJ7eyRrfX0iXQogIGVuZHBvaW50ID0gW3t7cmFuZ2UgJGks
-          ICRqIDo9ICR2LkVuZHBvaW50c319e3tpZiAkaX19LCB7e2VuZH19e3twcmludGYgIiVxIiAufX17
-          e2VuZH19XQp7e2lmICR2LlJld3JpdGVzfX0KICBbcGx1Z2lucy4iaW8uY29udGFpbmVyZC5zbmFw
-          c2hvdHRlci52MS5zdGFyZ3oiLnJlZ2lzdHJ5Lm1pcnJvcnMuInt7JGt9fSIucmV3cml0ZV0Ke3ty
-          YW5nZSAkcGF0dGVybiwgJHJlcGxhY2UgOj0gJHYuUmV3cml0ZXN9fQogICAgInt7JHBhdHRlcm59
-          fSIgPSAie3skcmVwbGFjZX19Igp7e2VuZH19Cnt7ZW5kfX0Ke3tlbmR9fQp7e3JhbmdlICRrLCAk
-          diA6PSAuUHJpdmF0ZVJlZ2lzdHJ5Q29uZmlnLkNvbmZpZ3MgfX0Ke3sgaWYgJHYuQXV0aCB9fQpb
-          cGx1Z2lucy4iaW8uY29udGFpbmVyZC5zbmFwc2hvdHRlci52MS5zdGFyZ3oiLnJlZ2lzdHJ5LmNv
-          bmZpZ3MuInt7JGt9fSIuYXV0aF0KICB7eyBpZiAkdi5BdXRoLlVzZXJuYW1lIH19dXNlcm5hbWUg
-          PSB7eyBwcmludGYgIiVxIiAkdi5BdXRoLlVzZXJuYW1lIH19e3tlbmR9fQogIHt7IGlmICR2LkF1
-          dGguUGFzc3dvcmQgfX1wYXNzd29yZCA9IHt7IHByaW50ZiAiJXEiICR2LkF1dGguUGFzc3dvcmQg
-          fX17e2VuZH19CiAge3sgaWYgJHYuQXV0aC5BdXRoIH19YXV0aCA9IHt7IHByaW50ZiAiJXEiICR2
-          LkF1dGguQXV0aCB9fXt7ZW5kfX0KICB7eyBpZiAkdi5BdXRoLklkZW50aXR5VG9rZW4gfX1pZGVu
-          dGl0eXRva2VuID0ge3sgcHJpbnRmICIlcSIgJHYuQXV0aC5JZGVudGl0eVRva2VuIH19e3tlbmR9
-          fQp7e2VuZH19Cnt7IGlmICR2LlRMUyB9fQpbcGx1Z2lucy4iaW8uY29udGFpbmVyZC5zbmFwc2hv
-          dHRlci52MS5zdGFyZ3oiLnJlZ2lzdHJ5LmNvbmZpZ3MuInt7JGt9fSIudGxzXQogIHt7IGlmICR2
-          LlRMUy5DQUZpbGUgfX1jYV9maWxlID0gInt7ICR2LlRMUy5DQUZpbGUgfX0ie3tlbmR9fQogIHt7
-          IGlmICR2LlRMUy5DZXJ0RmlsZSB9fWNlcnRfZmlsZSA9ICJ7eyAkdi5UTFMuQ2VydEZpbGUgfX0i
-          e3tlbmR9fQogIHt7IGlmICR2LlRMUy5LZXlGaWxlIH19a2V5X2ZpbGUgPSAie3sgJHYuVExTLktl
-          eUZpbGUgfX0ie3tlbmR9fQogIHt7IGlmICR2LlRMUy5JbnNlY3VyZVNraXBWZXJpZnkgfX1pbnNl
-          Y3VyZV9za2lwX3ZlcmlmeSA9IHRydWV7e2VuZH19Cnt7ZW5kfX0Ke3tlbmR9fQp7e2VuZH19Cnt7
-          ZW5kfX0Ke3tlbmR9fQoKe3stIGlmIG5vdCAuTm9kZUNvbmZpZy5Ob0ZsYW5uZWwgfX0KW3BsdWdp
-          bnMuImlvLmNvbnRhaW5lcmQuZ3JwYy52MS5jcmkiLmNuaV0KICBiaW5fZGlyID0gInt7IC5Ob2Rl
-          Q29uZmlnLkFnZW50Q29uZmlnLkNOSUJpbkRpciB9fSIKICBjb25mX2RpciA9ICJ7eyAuTm9kZUNv
-          bmZpZy5BZ2VudENvbmZpZy5DTklDb25mRGlyIH19Igp7e2VuZH19CgpbcGx1Z2lucy4iaW8uY29u
-          dGFpbmVyZC5ncnBjLnYxLmNyaSIuY29udGFpbmVyZC5ydW50aW1lcy5ydW5jXQogIHJ1bnRpbWVf
-          dHlwZSA9ICJpby5jb250YWluZXJkLnJ1bmMudjIiCgpbcGx1Z2lucy4iaW8uY29udGFpbmVyZC5n
-          cnBjLnYxLmNyaSIuY29udGFpbmVyZC5ydW50aW1lcy5ydW5jLm9wdGlvbnNdCiAgU3lzdGVtZENn
-          cm91cCA9IHt7IC5TeXN0ZW1kQ2dyb3VwIH19CgpbcGx1Z2lucy4iaW8uY29udGFpbmVyZC5ncnBj
-          LnYxLmNyaSIucmVnaXN0cnldCiAgY29uZmlnX3BhdGggPSAiL2V0Yy9jb250YWluZXJkL3JlZ2lz
-          dHJ5LmQiCgp7e3JhbmdlICRrLCAkdiA6PSAuRXh0cmFSdW50aW1lc319CltwbHVnaW5zLiJpby5j
-          b250YWluZXJkLmdycGMudjEuY3JpIi5jb250YWluZXJkLnJ1bnRpbWVzLiJ7eyRrfX0iXQogIHJ1
-          bnRpbWVfdHlwZSA9ICJ7eyR2LlJ1bnRpbWVUeXBlfX0iCltwbHVnaW5zLiJpby5jb250YWluZXJk
-          LmdycGMudjEuY3JpIi5jb250YWluZXJkLnJ1bnRpbWVzLiJ7eyRrfX0iLm9wdGlvbnNdCiAgQmlu
-          YXJ5TmFtZSA9ICJ7eyR2LkJpbmFyeU5hbWV9fSIKe3tlbmR9fQo=
-      preRKE2Commands:
-        - netplan apply
-        - export HTTP_PROXY=${HTTP_PROXY} HTTPS_PROXY=${HTTP_PROXY} NO_PROXY=${NO_PROXY}
-        - sleep 30 # fix to give OS time to become ready
-        - INSTALL_RKE2_ARTIFACT_PATH=/opt/rke2 INSTALL_RKE2_VERSION=${RKE2_VERSION} INSTALL_RKE2_TYPE=agent sh /opt/rke2/install.sh
-      agentConfig:
-        cisProfile: ${CIS_PROFILE}
-        version: ${RKE2_VERSION}
-        kubelet:
-          extraArgs:
-            - provider-id=metal3://{{ ds.meta_data.uuid }}
-        nodeName: '{{ ds.meta_data.local_hostname }}'
-        additionalUserData:
-          config: |
-            bootcmd:
+#        content: |
+#          IyBGaWxlIGdlbmVyYXRlZCBieSBya2UyIHVzaW5nIGN1c3RvbSBjb25maWcudG9tbC50bXBsIERP
+#          IE5PVCBFRElULgp2ZXJzaW9uID0gMgoKW3BsdWdpbnMuImlvLmNvbnRhaW5lcmQuaW50ZXJuYWwu
+#          djEub3B0Il0KICBwYXRoID0gInt7IC5Ob2RlQ29uZmlnLkNvbnRhaW5lcmQuT3B0IH19IgpbcGx1
+#          Z2lucy4iaW8uY29udGFpbmVyZC5ncnBjLnYxLmNyaSJdCiAgc3RyZWFtX3NlcnZlcl9hZGRyZXNz
+#          ID0gIjEyNy4wLjAuMSIKICBzdHJlYW1fc2VydmVyX3BvcnQgPSAiMTAwMTAiCiAgZW5hYmxlX3Nl
+#          bGludXggPSB7eyAuTm9kZUNvbmZpZy5TRUxpbnV4IH19CiAgZW5hYmxlX3VucHJpdmlsZWdlZF9w
+#          b3J0cyA9IHt7IC5FbmFibGVVbnByaXZpbGVnZWQgfX0KICBlbmFibGVfdW5wcml2aWxlZ2VkX2lj
+#          bXAgPSB7eyAuRW5hYmxlVW5wcml2aWxlZ2VkIH19Cgp7ey0gaWYgLkRpc2FibGVDZ3JvdXB9fQog
+#          IGRpc2FibGVfY2dyb3VwID0gdHJ1ZQp7e2VuZH19Cnt7LSBpZiAuSXNSdW5uaW5nSW5Vc2VyTlMg
+#          fX0KICBkaXNhYmxlX2FwcGFybW9yID0gdHJ1ZQogIHJlc3RyaWN0X29vbV9zY29yZV9hZGogPSB0
+#          cnVlCnt7ZW5kfX0KCnt7LSBpZiAuTm9kZUNvbmZpZy5BZ2VudENvbmZpZy5QYXVzZUltYWdlIH19
+#          CiAgc2FuZGJveF9pbWFnZSA9ICJ7eyAuTm9kZUNvbmZpZy5BZ2VudENvbmZpZy5QYXVzZUltYWdl
+#          IH19Igp7e2VuZH19Cgp7ey0gaWYgLk5vZGVDb25maWcuQWdlbnRDb25maWcuU25hcHNob3R0ZXIg
+#          fX0KW3BsdWdpbnMuImlvLmNvbnRhaW5lcmQuZ3JwYy52MS5jcmkiLmNvbnRhaW5lcmRdCiAgc25h
+#          cHNob3R0ZXIgPSAie3sgLk5vZGVDb25maWcuQWdlbnRDb25maWcuU25hcHNob3R0ZXIgfX0iCiAg
+#          ZGlzYWJsZV9zbmFwc2hvdF9hbm5vdGF0aW9ucyA9IHt7IGlmIGVxIC5Ob2RlQ29uZmlnLkFnZW50
+#          Q29uZmlnLlNuYXBzaG90dGVyICJzdGFyZ3oiIH19ZmFsc2V7e2Vsc2V9fXRydWV7e2VuZH19Cnt7
+#          IGlmIGVxIC5Ob2RlQ29uZmlnLkFnZW50Q29uZmlnLlNuYXBzaG90dGVyICJzdGFyZ3oiIH19Cnt7
+#          IGlmIC5Ob2RlQ29uZmlnLkFnZW50Q29uZmlnLkltYWdlU2VydmljZVNvY2tldCB9fQpbcGx1Z2lu
+#          cy4iaW8uY29udGFpbmVyZC5zbmFwc2hvdHRlci52MS5zdGFyZ3oiXQpjcmlfa2V5Y2hhaW5faW1h
+#          Z2Vfc2VydmljZV9wYXRoID0gInt7IC5Ob2RlQ29uZmlnLkFnZW50Q29uZmlnLkltYWdlU2Vydmlj
+#          ZVNvY2tldCB9fSIKW3BsdWdpbnMuImlvLmNvbnRhaW5lcmQuc25hcHNob3R0ZXIudjEuc3Rhcmd6
+#          Ii5jcmlfa2V5Y2hhaW5dCmVuYWJsZV9rZXljaGFpbiA9IHRydWUKe3tlbmR9fQp7eyBpZiAuUHJp
+#          dmF0ZVJlZ2lzdHJ5Q29uZmlnIH19Cnt7IGlmIC5Qcml2YXRlUmVnaXN0cnlDb25maWcuTWlycm9y
+#          cyB9fQpbcGx1Z2lucy4iaW8uY29udGFpbmVyZC5zbmFwc2hvdHRlci52MS5zdGFyZ3oiLnJlZ2lz
+#          dHJ5Lm1pcnJvcnNde3tlbmR9fQp7e3JhbmdlICRrLCAkdiA6PSAuUHJpdmF0ZVJlZ2lzdHJ5Q29u
+#          ZmlnLk1pcnJvcnMgfX0KW3BsdWdpbnMuImlvLmNvbnRhaW5lcmQuc25hcHNob3R0ZXIudjEuc3Rh
+#          cmd6Ii5yZWdpc3RyeS5taXJyb3JzLiJ7eyRrfX0iXQogIGVuZHBvaW50ID0gW3t7cmFuZ2UgJGks
+#          ICRqIDo9ICR2LkVuZHBvaW50c319e3tpZiAkaX19LCB7e2VuZH19e3twcmludGYgIiVxIiAufX17
+#          e2VuZH19XQp7e2lmICR2LlJld3JpdGVzfX0KICBbcGx1Z2lucy4iaW8uY29udGFpbmVyZC5zbmFw
+#          c2hvdHRlci52MS5zdGFyZ3oiLnJlZ2lzdHJ5Lm1pcnJvcnMuInt7JGt9fSIucmV3cml0ZV0Ke3ty
+#          YW5nZSAkcGF0dGVybiwgJHJlcGxhY2UgOj0gJHYuUmV3cml0ZXN9fQogICAgInt7JHBhdHRlcm59
+#          fSIgPSAie3skcmVwbGFjZX19Igp7e2VuZH19Cnt7ZW5kfX0Ke3tlbmR9fQp7e3JhbmdlICRrLCAk
+#          diA6PSAuUHJpdmF0ZVJlZ2lzdHJ5Q29uZmlnLkNvbmZpZ3MgfX0Ke3sgaWYgJHYuQXV0aCB9fQpb
+#          cGx1Z2lucy4iaW8uY29udGFpbmVyZC5zbmFwc2hvdHRlci52MS5zdGFyZ3oiLnJlZ2lzdHJ5LmNv
+#          bmZpZ3MuInt7JGt9fSIuYXV0aF0KICB7eyBpZiAkdi5BdXRoLlVzZXJuYW1lIH19dXNlcm5hbWUg
+#          PSB7eyBwcmludGYgIiVxIiAkdi5BdXRoLlVzZXJuYW1lIH19e3tlbmR9fQogIHt7IGlmICR2LkF1
+#          dGguUGFzc3dvcmQgfX1wYXNzd29yZCA9IHt7IHByaW50ZiAiJXEiICR2LkF1dGguUGFzc3dvcmQg
+#          fX17e2VuZH19CiAge3sgaWYgJHYuQXV0aC5BdXRoIH19YXV0aCA9IHt7IHByaW50ZiAiJXEiICR2
+#          LkF1dGguQXV0aCB9fXt7ZW5kfX0KICB7eyBpZiAkdi5BdXRoLklkZW50aXR5VG9rZW4gfX1pZGVu
+#          dGl0eXRva2VuID0ge3sgcHJpbnRmICIlcSIgJHYuQXV0aC5JZGVudGl0eVRva2VuIH19e3tlbmR9
+#          fQp7e2VuZH19Cnt7IGlmICR2LlRMUyB9fQpbcGx1Z2lucy4iaW8uY29udGFpbmVyZC5zbmFwc2hv
+#          dHRlci52MS5zdGFyZ3oiLnJlZ2lzdHJ5LmNvbmZpZ3MuInt7JGt9fSIudGxzXQogIHt7IGlmICR2
+#          LlRMUy5DQUZpbGUgfX1jYV9maWxlID0gInt7ICR2LlRMUy5DQUZpbGUgfX0ie3tlbmR9fQogIHt7
+#          IGlmICR2LlRMUy5DZXJ0RmlsZSB9fWNlcnRfZmlsZSA9ICJ7eyAkdi5UTFMuQ2VydEZpbGUgfX0i
+#          e3tlbmR9fQogIHt7IGlmICR2LlRMUy5LZXlGaWxlIH19a2V5X2ZpbGUgPSAie3sgJHYuVExTLktl
+#          eUZpbGUgfX0ie3tlbmR9fQogIHt7IGlmICR2LlRMUy5JbnNlY3VyZVNraXBWZXJpZnkgfX1pbnNl
+#          Y3VyZV9za2lwX3ZlcmlmeSA9IHRydWV7e2VuZH19Cnt7ZW5kfX0Ke3tlbmR9fQp7e2VuZH19Cnt7
+#          ZW5kfX0Ke3tlbmR9fQoKe3stIGlmIG5vdCAuTm9kZUNvbmZpZy5Ob0ZsYW5uZWwgfX0KW3BsdWdp
+#          bnMuImlvLmNvbnRhaW5lcmQuZ3JwYy52MS5jcmkiLmNuaV0KICBiaW5fZGlyID0gInt7IC5Ob2Rl
+#          Q29uZmlnLkFnZW50Q29uZmlnLkNOSUJpbkRpciB9fSIKICBjb25mX2RpciA9ICJ7eyAuTm9kZUNv
+#          bmZpZy5BZ2VudENvbmZpZy5DTklDb25mRGlyIH19Igp7e2VuZH19CgpbcGx1Z2lucy4iaW8uY29u
+#          dGFpbmVyZC5ncnBjLnYxLmNyaSIuY29udGFpbmVyZC5ydW50aW1lcy5ydW5jXQogIHJ1bnRpbWVf
+#          dHlwZSA9ICJpby5jb250YWluZXJkLnJ1bmMudjIiCgpbcGx1Z2lucy4iaW8uY29udGFpbmVyZC5n
+#          cnBjLnYxLmNyaSIuY29udGFpbmVyZC5ydW50aW1lcy5ydW5jLm9wdGlvbnNdCiAgU3lzdGVtZENn
+#          cm91cCA9IHt7IC5TeXN0ZW1kQ2dyb3VwIH19CgpbcGx1Z2lucy4iaW8uY29udGFpbmVyZC5ncnBj
+#          LnYxLmNyaSIucmVnaXN0cnldCiAgY29uZmlnX3BhdGggPSAiL2V0Yy9jb250YWluZXJkL3JlZ2lz
+#          dHJ5LmQiCgp7e3JhbmdlICRrLCAkdiA6PSAuRXh0cmFSdW50aW1lc319CltwbHVnaW5zLiJpby5j
+#          b250YWluZXJkLmdycGMudjEuY3JpIi5jb250YWluZXJkLnJ1bnRpbWVzLiJ7eyRrfX0iXQogIHJ1
+#          bnRpbWVfdHlwZSA9ICJ7eyR2LlJ1bnRpbWVUeXBlfX0iCltwbHVnaW5zLiJpby5jb250YWluZXJk
+#          LmdycGMudjEuY3JpIi5jb250YWluZXJkLnJ1bnRpbWVzLiJ7eyRrfX0iLm9wdGlvbnNdCiAgQmlu
+#          YXJ5TmFtZSA9ICJ7eyR2LkJpbmFyeU5hbWV9fSIKe3tlbmR9fQo=
+#      preRKE2Commands:
+#        - netplan apply
+#        - export HTTP_PROXY=${HTTP_PROXY} HTTPS_PROXY=${HTTP_PROXY} NO_PROXY=${NO_PROXY}
+#        - sleep 30 # fix to give OS time to become ready
+#        - INSTALL_RKE2_ARTIFACT_PATH=/opt/rke2 INSTALL_RKE2_VERSION=${RKE2_VERSION} INSTALL_RKE2_TYPE=agent sh /opt/rke2/install.sh
+#      agentConfig:
+#        cisProfile: ${CIS_PROFILE}
+#        version: ${RKE2_VERSION}
+#        kubelet:
+#          extraArgs:
+#            - provider-id=metal3://{{ ds.meta_data.uuid }}
+#        nodeName: '{{ ds.meta_data.local_hostname }}'
+#        additionalUserData:
+#          config: |
+#            bootcmd:
               # From kanod_image_builder grub-init
-              - if [ ! -f "/var/lib/grub-init" ]; then
-              - touch "/var/lib/grub-init"
-              - current_grub=$(grep '^GRUB_CMDLINE_LINUX_DEFAULT=' /etc/default/grub | tail -1 | sed -e "s/^[^=]*=[\"']\\?//" -e "s/['\"]$//")
-              # - next_grub="$current_grub ${ENABLE_SRIOV} ${HUGE_PAGES}"
-              - add_grub="iommu=pt intel_iommu=on "
-              - next_grub="$current_grub $add_grub"
-              # No need for a timeout. Nobody attends
-              - sed -i -e '/GRUB_TIMEOUT=5/ d' /etc/default/grub
+#              - if [ ! -f "/var/lib/grub-init" ]; then
+#              - touch "/var/lib/grub-init"
+#              - current_grub=$(grep '^GRUB_CMDLINE_LINUX_DEFAULT=' /etc/default/grub | tail -1 | sed -e "s/^[^=]*=[\"']\\?//" -e "s/['\"]$//")
+#              - next_grub="$current_grub ${ENABLE_SRIOV} ${HUGE_PAGES}"
+#              # No need for a timeout. Nobody attends
+#              - sed -i -e '/GRUB_TIMEOUT=5/ d' /etc/default/grub
               # Delete the old command-line
-              - sed -i -e '/^GRUB_CMDLINE_LINUX_DEFAULT=/ d' /etc/default/grub
+#              - sed -i -e '/^GRUB_CMDLINE_LINUX_DEFAULT=/ d' /etc/default/grub
               # No wait on reboot (first considered as failed)
-              - echo "GRUB_RECORDFAIL_TIMEOUT=1" >> /etc/default/grub
-              - echo "GRUB_CMDLINE_LINUX_DEFAULT=\"$next_grub\"" >> /etc/default/grub
-              - update-grub
-              - cloud-init clean --reboot
-              - fi          
+#              - echo "GRUB_RECORDFAIL_TIMEOUT=1" >> /etc/default/grub
+#              - echo "GRUB_CMDLINE_LINUX_DEFAULT=\"$next_grub\"" >> /etc/default/grub
+#              - update-grub
+#              - cloud-init clean --reboot
+#              - fi          
             #cloud-config
-            ssh_pwauth: True
-            chpasswd:
-              list: |
-                ubuntu:secret
-              expire: False
-            users:
-              - name: ubuntu
-                groups: users
-                sudo: ALL=(ALL) NOPASSWD:ALL
-                shell: /bin/bash
-                ssh_authorized_keys:
-                  - ${SSH_PUBLIC_KEY}
+#            ssh_pwauth: True
+#            chpasswd:
+#              list: |
+#                ubuntu:secret
+#              expire: False
+#            users:
+#              - name: ubuntu
+#                groups: users
+#                sudo: ALL=(ALL) NOPASSWD:ALL
+#                shell: /bin/bash
+#                ssh_authorized_keys:
+#                  - ${SSH_PUBLIC_KEY}
 ---
 apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
 kind: RKE2ConfigTemplate
@@ -630,7 +628,7 @@ spec:
         cluster.x-k8s.io/cluster-name: ${CLUSTER_NAME}
         nodepool: worker-basic
     spec:
-      version: ${K8S_VERSION}
+      version: ${RKE2_VERSION}
       bootstrap:
         configRef:
           apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
@@ -643,39 +641,39 @@ spec:
         kind: Metal3MachineTemplate
         name: ${CLUSTER_NAME}-worker-basic
 ---
-apiVersion: cluster.x-k8s.io/v1beta1
-kind: MachineDeployment
-metadata:
-  labels:
-    cluster.x-k8s.io/cluster-name: ${CLUSTER_NAME}
-    nodepool: worker-sriov
-  name: ${CLUSTER_NAME}-md-sriov
-  namespace: default
-spec:
-  clusterName: ${CLUSTER_NAME}
-  replicas: ${WORKER_SRIOV_REPLICAS:=0}
-  selector:
-    matchLabels:
-      cluster.x-k8s.io/cluster-name: ${CLUSTER_NAME}
-      nodepool: worker-sriov
-  template:
-    metadata:
-      labels:
-        cluster.x-k8s.io/cluster-name: ${CLUSTER_NAME}
-        nodepool: worker-sriov
-    spec:
-      version: ${K8S_VERSION}
-      bootstrap:
-        configRef:
-          apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
-          kind: RKE2ConfigTemplate
-          name: ${CLUSTER_NAME}-worker-sriov
-      clusterName: ${CLUSTER_NAME}
-      nodeDrainTimeout: 0s
-      infrastructureRef:
-        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
-        kind: Metal3MachineTemplate
-        name: ${CLUSTER_NAME}-worker-sriov
+#apiVersion: cluster.x-k8s.io/v1beta1
+#kind: MachineDeployment
+#metadata:
+#  labels:
+#    cluster.x-k8s.io/cluster-name: ${CLUSTER_NAME}
+#    nodepool: worker-sriov
+#  name: ${CLUSTER_NAME}-md-sriov
+#  namespace: default
+#spec:
+#  clusterName: ${CLUSTER_NAME}
+#  replicas: ${WORKER_SRIOV_REPLICAS:=0}
+#  selector:
+#    matchLabels:
+#      cluster.x-k8s.io/cluster-name: ${CLUSTER_NAME}
+#      nodepool: worker-sriov
+#  template:
+#    metadata:
+#      labels:
+#        cluster.x-k8s.io/cluster-name: ${CLUSTER_NAME}
+#        nodepool: worker-sriov
+#    spec:
+#      version: ${RKE2_VERSION}
+#      bootstrap:
+#        configRef:
+#          apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
+#          kind: RKE2ConfigTemplate
+#          name: ${CLUSTER_NAME}-worker-sriov
+#      clusterName: ${CLUSTER_NAME}
+#      nodeDrainTimeout: 0s
+#      infrastructureRef:
+#        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+#        kind: Metal3MachineTemplate
+#        name: ${CLUSTER_NAME}-worker-sriov
 ---
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: MachineDeployment
@@ -698,7 +696,7 @@ spec:
         cluster.x-k8s.io/cluster-name: ${CLUSTER_NAME}
         nodepool: worker-intensive
     spec:
-      version: ${K8S_VERSION}
+      version: ${RKE2_VERSION}
       bootstrap:
         configRef:
           apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
