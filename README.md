@@ -115,7 +115,11 @@ Even if it is not representative of any real-life deployment use-case, running c
 
 It can be used to test that stack on a laptop or in [GitLab-ci](.gitlab-ci.yml). You just have to [install Docker](https://docs.docker.com/engine/install/) as a prerequisite, and then clone this [project](https://gitlab.com/sylva-projects/sylva-core).
 
-The `bootstrap.sh` script which you'll use below, will create for you a kind cluster that will be used as the bootstrap cluster.
+The `bootstrap.sh` script which you'll use below, will create for you a kind cluster that will be used as the bootstrap cluster. If available in the environment, the following vars will be used to customize this kind cluster:
+
+- [`KIND_POD_SUBNET`](https://kind.sigs.k8s.io/docs/user/configuration/#pod-subnet);
+- [`KIND_SVC_SUBNET`](https://kind.sigs.k8s.io/docs/user/configuration/#service-subnet);
+- `KIND_CLUSTER_NAME`.
 
 As we'll be creating a fair amount of containers, it is recommended to increase the filesystem watcher limit in order to avoid reaching the limit.
 

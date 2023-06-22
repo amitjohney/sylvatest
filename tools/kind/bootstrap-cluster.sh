@@ -14,6 +14,8 @@ export BASE_DIR="$(realpath $(dirname ${BASH_SOURCE[0]})/../..)"
 export PATH=${BASE_DIR}/bin:${PATH}
 
 KIND_CLUSTER_NAME=${KIND_CLUSTER_NAME:-sylva}
+KIND_POD_SUBNET=${KIND_POD_SUBNET:-10.244.0.0/16}
+KIND_SVC_SUBNET=${KIND_SVC_SUBNET:-10.96.0.0/16}
 
 for BINARY in kubectl kind helm yq; do
     if ! command -v $BINARY &>/dev/null; then
@@ -47,6 +49,9 @@ fi
 KIND_CONFIG=$(cat <<EOF
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+  podSubnet: "${KIND_POD_SUBNET}"
+  serviceSubnet: "${KIND_SVC_SUBNET}"
 nodes:
 - role: control-plane
 EOF
