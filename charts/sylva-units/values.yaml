@@ -615,16 +615,35 @@ units:
       chart:
         spec:
           chart: kyverno
-          version: 2.7.3
+          version: 3.0.1
       targetNamespace: kyverno
       install:
         createNamespace: true
       values:
-        securityContext:
-          seccompProfile: null
-        testSecurityContext:
-          seccompProfile: null
+        admissionController:
+          container:
+            securityContext:
+              seccompProfile: null
+          initContainer:
+            securityContext:
+              seccompProfile: null
+        test:
+          securityContext:
+            seccompProfile: null
         cleanupController:
+          securityContext:
+            seccompProfile: null
+        cleanupJobs:
+          admissionReports:
+            securityContext:
+              seccompProfile: null
+        clusterAdmissionReports:
+          securityContext:
+            seccompProfile: null
+        backgroundController:
+          securityContext:
+            seccompProfile: null
+        reportsController:
           securityContext:
             seccompProfile: null
 
