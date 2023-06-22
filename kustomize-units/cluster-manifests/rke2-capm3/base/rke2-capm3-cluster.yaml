@@ -459,7 +459,9 @@ spec:
               - if [ ! -f "/var/lib/grub-init" ]; then
               - touch "/var/lib/grub-init"
               - current_grub=$(grep '^GRUB_CMDLINE_LINUX_DEFAULT=' /etc/default/grub | tail -1 | sed -e "s/^[^=]*=[\"']\\?//" -e "s/['\"]$//")
-              - next_grub="$current_grub ${ENABLE_SRIOV} ${HUGE_PAGES}"
+              # - next_grub="$current_grub ${ENABLE_SRIOV} ${HUGE_PAGES}"
+              - add_grub="iommu=pt intel_iommu=on "
+              - next_grub="$current_grub $add_grub"
               # No need for a timeout. Nobody attends
               - sed -i -e '/GRUB_TIMEOUT=5/ d' /etc/default/grub
               # Delete the old command-line
