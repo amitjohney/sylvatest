@@ -13,6 +13,8 @@ unit_helmrelease_spec_default:
 units:
 
   metal3:
+    depends_on:
+      bootstrap-local-path: true
     helmrelease_spec:
       values:
         # ironicIPADownloaderBaseURI:
@@ -30,6 +32,14 @@ units:
                   {{- end -}}
                 {{- end -}}
                 {{- $result -}}
+
+  bootstrap-local-path:
+    enabled_conditions:
+      - '{{ tuple . "metal3" | include "unit-enabled" }}'
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/bootstrap-local-path
+      wait: true
 
   cluster:
     depends_on:
@@ -290,6 +300,7 @@ units_override_enabled:
   - '{{ .Values.cluster.capi_providers.infra_provider }}'
   - '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
   - '{{ tuple "metal3" (.Values.cluster.capi_providers.infra_provider | eq "capm3") | include "set-only-if" }}'
+  - bootstrap-local-path
   - cluster
   - calico-crd
   - calico
