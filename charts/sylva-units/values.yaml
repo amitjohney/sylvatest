@@ -840,6 +840,11 @@ units:
           kind: Cluster
           name: '{{ .Values.cluster.name }}'
           namespace: '{{ .Release.Namespace }}'
+        # wait for the control plane to be ready (the api/version/kind to look for depends on the bootstrap provider in use)
+        - apiVersion: '{{ (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") | ternary "controlplane.cluster.x-k8s.io/v1beta1" "controlplane.cluster.x-k8s.io/v1alpha1" }}'
+          kind: '{{       (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") | ternary "KubeadmControlPlane"                   "RKE2ControlPlane" }}'
+          name: '{{ .Values.cluster.name }}-control-plane'
+          namespace: '{{ .Release.Namespace }}'
       _components:
         - '{{ tuple "../../components/dns-client/kind/KubeadmControlPlane"
                     (and (eq .Values.cluster.capi_providers.infra_provider "capd")
