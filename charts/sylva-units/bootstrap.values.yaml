@@ -123,7 +123,14 @@ units:
               kubectl get configmaps,secrets,gitrepository,helmrepository \
                 -l copy-from-bootstrap-to-management= \
                 -o json \
-                  | jq '.items[] | del(.metadata.labels."helm.toolkit.fluxcd.io/name") | del(.metadata.labels."copy-from-bootstrap-to-management") | del(.metadata.labels."helm.toolkit.fluxcd.io/namespace") | del(.metadata.resourceVersion) | del(.metadata.uid) | del(.metadata.creationTimestamp)' \
+                  | jq '.items[] | del(.metadata.labels."helm.toolkit.fluxcd.io/name")
+                                 | del(.metadata.labels."copy-from-bootstrap-to-management")
+                                 | del(.metadata.labels."helm.toolkit.fluxcd.io/namespace")
+                                 | del(.metadata.annotations."sylvactl/reconcileStartedAt")
+                                 | del(.metadata.annotations."sylvactl/reconcileCompletedAt")
+                                 | del(.metadata.resourceVersion)
+                                 | del(.metadata.uid)
+                                 | del(.metadata.creationTimestamp)' \
                   | kubectl --kubeconfig management-cluster-kubeconfig apply -f -
 
               echo "-- All done"
