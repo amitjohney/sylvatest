@@ -131,6 +131,12 @@ check-docs-markdown:
     - job: publish-sylva-units-artifact
       optional: true
 
+.deploy-base-env:
+  extends: .deploy-base
+  environment:
+    name: review/$CI_COMMIT_REF_SLUG/$CI_JOB_NAME
+    url: "https://sylva-projects.gitlab.io/-/sylva-core/-/jobs/${CI_JOB_ID}/artifacts/management-cluster-timeline.html"
+
 .common-deployment:
   script_common:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_common[collapsed=true]\r\e[0KRunning common deployment steps\e[0m"
@@ -255,7 +261,7 @@ deploy-preview-capd-oci:
 
 deploy-kubeadm-capd:
   timeout: 60min
-  extends: .deploy-base
+  extends: .deploy-base-env
   script:
     - !reference [.common-deployment, script_common]
     - !reference [.common-deployment, script_capd]
@@ -273,7 +279,7 @@ deploy-kubeadm-capd-oci:
     OCI_TAG: $OCI_TAG_FORMAT
 
 .deploy-capo:
-  extends: .deploy-base
+  extends: .deploy-base-env
   script:
     - !reference [.common-deployment, script_common]
     - !reference [.common-deployment, os_cloud]
