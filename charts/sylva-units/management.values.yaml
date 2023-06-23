@@ -26,3 +26,6 @@ units:
 
   workload-cluster:
     enabled: '{{ .Values.env_type_ci }}'
+
+  os-image-server:
+    enabled: '{{ tuple . "metal3" | include "unit-enabled" }}'

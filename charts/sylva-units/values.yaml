@@ -78,6 +78,13 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: 0.0.2
 
+  os-image-server:
+    kind: GitRepository
+    spec:
+      url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/os-image-server.git
+      ref:
+        tag: 1.1.0
+
 helm_repo_spec_default:
   interval: 60m0s
 
@@ -1763,6 +1770,36 @@ units:
       cluster:
         capo:
           clouds_yaml: '{{ .Values.cluster | dig "capo" "clouds_yaml" dict | include "preserve-type" }}'  # for CAPO and cinder-csi
+
+
+  os-image-server:
+    # this units allows to deploy web server on management cluster
+    # which serves OS image file for baremetal workload cluster
+    enabled: no
+    repo: os-image-server
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: ./charts/os-image-server
+      targetNamespace: os-images
+      install:
+        createNamespace: true
+      values:
+        osImages: {}
+          # # osImages images that should be served and from where they should be downloaded
+          # ubuntu-k8s-1-24-14-rke2:
+          #   uri: "oci://registry.gitlab.com/sylva-projects/sylva-elements/helm-charts/os-image-server/fake_image:latest"
+          #   filename: "ubuntu-k8s-1.24.14-rke2.tar.gz"
+          #   checksum: "57a811ed37ec21235e2e82434519e9aab489cbbbee026df44edcd64e7ba08ccd"
+          #   persistence:
+          #     size: 2Gi
+          #     storageClass: standard
+          # sles-k8s-1-25-5-kubeadm:
+          #   uri: "oci://registry.gitlab.com/sylva-projects/sylva-elements/helm-charts/os-image-server/fake_image:latest"
+          #   filename: "sles-k8s-1.25.5-kubeadm.tar.gz"
+          #   persistence:
+          #     size: 3Gi
+          #     storageClass: longhorn
 
 
 ## stuff related to the 'cluster' unit
