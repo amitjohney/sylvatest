@@ -4,13 +4,14 @@ set -o pipefail
 export BASE_DIR="$(realpath $(dirname $0))"
 export PATH=${BASE_DIR}/bin:${PATH}
 
-SYLVACTL_VERSION="v0.1.7"
+SYLVACTL_VERSION="v0.1.8"
 SYLVA_TOOLBOX_VERSION="v0.1.7"
 SYLVA_TOOLBOX_IMAGE=${SYLVA_TOOLBOX_IMAGE:-container-images/sylva-toolbox}
 SYLVA_TOOLBOX_REGISTRY=${SYLVA_TOOLBOX_REGISTRY:-registry.gitlab.com/sylva-projects/sylva-elements}
 
 if [[ -n "${CI_JOB_NAME:-}" ]]; then
   export IN_CI=1
+  SYLVACTL_SAVE=1
 else
   export IN_CI=0
 fi
