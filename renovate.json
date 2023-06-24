@@ -34,14 +34,14 @@
       ],
       "groupName": "metallb"
     },
-    {,
+    {
       "matchPackageNames": [
         "longhorn",
         "longhorn-crd"
       ],
       "groupName": "longhorn"
     },
-    {,
+    {
       "matchPackageNames": [
         "sriov",
         "sriov-crd"
