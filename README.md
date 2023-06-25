@@ -30,6 +30,8 @@ In following readme, we assume that the reader is familiar with [cluster-api](ht
 ### Requirements
 
 - In order to be able to fetch Sylva and 3rd party artifacts, the Sylva clusters must have access to the internet (through an HTTP proxy if required), or to a registry that is mirroring all the required images and OCI artifacts.
+- For kubeadm-capo and rke2 capo based deployment, at least 8GB RAM and 20 GB of hard disk is required.
+- For rke2-capd deployment, at least 256GB disk is required.
 
 ### Defining your environment values
 
