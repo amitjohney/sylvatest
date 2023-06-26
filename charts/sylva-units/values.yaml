@@ -965,6 +965,7 @@ units:
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/cinder-csi-psp
+      targetNamespace: cinder-csi
       wait: true
 
   cinder-csi:

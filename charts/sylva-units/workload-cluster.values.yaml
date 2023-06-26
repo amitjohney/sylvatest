@@ -138,6 +138,14 @@ units:
     #enabled: true
     unit_template: base-deps
 
+  cinder-csi-psp:
+    enabled: true
+    unit_template: base-deps
+
+  cinder-csi:
+    enabled: true
+    unit_template: base-deps
+
   cluster-import:
     enabled: false  # overriden depending on whether Rancher is enabled or not
     unit_template: base-deps
