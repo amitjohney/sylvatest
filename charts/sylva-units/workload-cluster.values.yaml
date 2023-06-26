@@ -21,28 +21,32 @@
 # any settings at the root of values, or under 'cluster', which is
 # needed for any unit listed below, will have to be specified
 
+
+# ensure that our unit Kustomizations are deployed
+# in the workload cluster
 unit_kustomization_spec_default:
-  targetNamespace: '{{ .Release.Namespace }}'
-  # ensure that our unit Kustomizations are deployed
-  # in the workload cluster
   kubeConfig:
     secretRef:
       name: '{{ .Values.cluster.name }}-kubeconfig'
+  targetNamespace: default  # (in workload-cluster)
 
 # for units that rely on Helm, the Kustomization will
-# produce a HelmRelease which needs to be in the mgmt cluster
-# so we "reset" the kubeconfig set right above
-# (more below ...)
+# produce a HelmRelease which needs to be in the workload cluster ns
+# in the mgmt cluster, so we "reset" the targetNamespace and kubeconfig
+# set right above and .... (more below ...)
 unit_helmrelease_kustomization_spec_default:
   kubeConfig: ~
+  targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
 
 # ... and its at the level of the HelmRelease that we ensure
 # that the Helm release is deployed in the workload cluster
+# (in default ns)
 unit_helmrelease_spec_default:
   kubeConfig:
     secretRef:
       name: '{{ .Values.cluster.name }}-kubeconfig'
-  targetNamespace: default  # so that units not having a targetNamespace are deployed in remote ns 'default' and not 'workload-cluster'
+  targetNamespace: default  # (in workload-cluster)
+
 
 unit_templates:
 
@@ -70,16 +74,19 @@ units:
       # Helm release
       capo-cluster-resources: false
     kustomization_spec:
-      kubeConfig: ~  # because this resource lives in the mgmt cluster
-    # helmrelease_spec:  ## to use when we'll switch to sylva-capi-cluster
-    #   kubeConfig: ~  # because this resource lives in the mgmt cluster
+      # because this resource lives in the mgmt cluster:
+      kubeConfig: null  # cancel what is inherited from unit_kustomization_spec_default
+      targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
+    # helmrelease_spec:  ## to use instead of the above when we'll switch to sylva-capi-cluster
+    #   kubeConfig: ~
+    #   targetNamespace: '{{ .Release.Namespace }}'
 
   namespace-defs:
     enabled: true
     depends_on:
       cluster: true
     kustomization_spec:
-      targetNamespace: ~  # if we don't do this, there are errors, presumably because namespaces are a non-namespaced resource
+      targetNamespace: null  # if we don't do this, there are error because namespaces are a non-namespaced resource
 
   calico-crd:
     enabled: true
@@ -138,7 +145,9 @@ units:
       default/rancher: true  # depends on rancher unit in default ns
     repo: sylva-core
     kustomization_spec:
-      kubeConfig: ~  # because this resource lives in the mgmt cluster
+      # because this resource lives in the mgmt cluster:
+      kubeConfig: null  # cancel what is inherited from unit_kustomization_spec_default
+      targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
       wait: true
       path: ./kustomize-units/cluster-import
       postBuild:
