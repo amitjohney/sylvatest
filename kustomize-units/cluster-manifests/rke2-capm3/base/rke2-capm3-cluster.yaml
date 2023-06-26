@@ -454,6 +454,11 @@ spec:
         nodeName: '{{ ds.meta_data.local_hostname }}'
         additionalUserData:
           config: |
+            bootcmd:
+              # From kanod_image_builder grub-init
+              - if [ ! -f "/var/lib/grub-init" ]; then
+              - touch "/var/lib/grub-init"
+              - fi
             #cloud-config
             ssh_pwauth: True
             chpasswd:
