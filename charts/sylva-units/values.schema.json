@@ -288,9 +288,6 @@
     "helm_repo_spec_default": {
       "type": "object"
     },
-    "sha256sum": {
-      "type": "string"
-    },
     "unit_kustomization_spec_default": {
       "type": "object"
     },

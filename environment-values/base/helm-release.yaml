@@ -63,4 +63,3 @@ spec:
         existing_source:
           name: sylva-core
           kind: GitRepository
-    sha256sum: HASH_SUM

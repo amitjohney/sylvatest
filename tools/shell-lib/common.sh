@@ -102,8 +102,6 @@ else
     export ENV_PATH=$(readlink -f $1)
 fi
 
-export sha256sum="$(sha256sum ${ENV_PATH}/values.yaml | cut -f1 -d' ' )"
-
 export CURRENT_COMMIT=${CI_COMMIT_SHA:-$(git rev-parse HEAD)}
 export SYLVA_CORE_REPO=${SYLVA_CORE_REPO:-$(git remote get-url origin | sed 's|^git@\([^:]\+\):|https://\1/|')}
 
@@ -135,7 +133,7 @@ function force_reconcile() {
 }
 
 function define_source() {
-  sed "s/CURRENT_COMMIT/${CURRENT_COMMIT}/" "$@" | sed "s,SYLVA_CORE_REPO,${SYLVA_CORE_REPO},g" "$@"  | sed "s,HASH_SUM,${sha256sum},g" "$@"
+  sed "s/CURRENT_COMMIT/${CURRENT_COMMIT}/" "$@" | sed "s,SYLVA_CORE_REPO,${SYLVA_CORE_REPO},g" "$@"
 
 }
 

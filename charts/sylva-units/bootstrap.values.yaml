@@ -96,6 +96,9 @@ units:
           - op: replace
             path: /metadata/name
             value: copy-configs-job
+          - op: replace
+            path: /spec/template/metadata/annotations/checksum
+            value: '{{ .Values | quote | sha256sum }}'
       - target:
           kind: ConfigMap
           name: job-scripts
@@ -117,9 +120,6 @@ units:
                   | kubectl --kubeconfig management-cluster-kubeconfig apply -f -
 
               echo "-- All done"
-      postBuild:
-        substitute:
-          SHA256SUM: '{{ .Values.sha256sum }}'
 
   # instantiate 'sylva-units' chart again in the management cluster
   management-sylva-units:

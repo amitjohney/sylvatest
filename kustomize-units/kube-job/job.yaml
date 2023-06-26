@@ -9,7 +9,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: ${SHA256SUM}
+        checksum: ""
     spec:
       containers:
       - name: run-script
