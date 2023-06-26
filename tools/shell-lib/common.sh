@@ -133,8 +133,7 @@ function force_reconcile() {
 }
 
 function define_source() {
-  sed "s/CURRENT_COMMIT/${CURRENT_COMMIT}/" "$@" | sed "s,SYLVA_CORE_REPO,${SYLVA_CORE_REPO},g"
-
+  sed "s/CURRENT_COMMIT/${CURRENT_COMMIT}/" "$@" | sed "s,SYLVA_CORE_REPO,${SYLVA_CORE_REPO},g" "$@"
 }
 
 function inject_bootstrap_values() {
