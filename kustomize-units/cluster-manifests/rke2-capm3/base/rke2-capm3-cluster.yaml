@@ -458,6 +458,7 @@ spec:
               # From kanod_image_builder grub-init
               - if [ ! -f "/var/lib/grub-init" ]; then
               - touch "/var/lib/grub-init"
+              - current_grub=$(grep '^GRUB_CMDLINE_LINUX_DEFAULT=' /etc/default/grub | tail -1 | sed -e "s/^[^=]*=[\"']\\?//" -e "s/['\"]$//")
               - fi
             #cloud-config
             ssh_pwauth: True
