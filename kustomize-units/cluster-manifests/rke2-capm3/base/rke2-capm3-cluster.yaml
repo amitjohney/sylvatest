@@ -454,7 +454,6 @@ spec:
         nodeName: '{{ ds.meta_data.local_hostname }}'
         additionalUserData:
           config: |
-          config: |
             bootcmd:
               # From kanod_image_builder grub-init
               - if [ ! -f "/var/lib/grub-init" ]; then
