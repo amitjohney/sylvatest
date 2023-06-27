@@ -28,7 +28,7 @@ kind: RKE2ControlPlane
 metadata:
   name: ${CLUSTER_NAME}-control-plane
 spec:
-  replicas: 1
+  replicas: ${CONTROL_PLANE_REPLICAS:=1}
   files: []
   preRKE2Commands:
   - echo "fs.inotify.max_user_watches = 524288" >> /etc/sysctl.conf
