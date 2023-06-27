@@ -681,6 +681,8 @@ units:
         substitute:
           AUTOSCALER_NS: 'kube-system'
           AUTOSCALER_IMAGE: 'us.gcr.io/k8s-artifacts-prod/autoscaling/cluster-autoscaler:v1.20.0'
+      wait: true
+
 
   capi:
     repo: sylva-core
