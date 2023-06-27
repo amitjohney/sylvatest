@@ -938,6 +938,10 @@
           }
         }
       },
+      "cluster-autoscaler": {
+        "type": "object",
+        "additionalProperties": false,
+      },
       "allOf": [
         {
           "if": {

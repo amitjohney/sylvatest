@@ -711,6 +711,10 @@ properties:
                       items:
                         type: string
 
+      cluster-autoscaler:  # -------------------------------
+        type: object
+        additionalProperties: false
+
     allOf:
       - if:
           properties:
