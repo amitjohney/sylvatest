@@ -148,9 +148,12 @@ apiVersion: cluster.x-k8s.io/v1beta1
 kind: MachineDeployment
 metadata:
   name: ${CLUSTER_NAME}-worker
+  annotations:
+    cluster.x-k8s.io/cluster-api-autoscaler-node-group-max-size: "5"
+    cluster.x-k8s.io/cluster-api-autoscaler-node-group-min-size: "0"
 spec:
   clusterName: ${CLUSTER_NAME}
-  replicas: ${WORKER_REPLICAS:=0}
+#  replicas: ${WORKER_REPLICAS:=0}
   selector:
     matchLabels: null
   template:
