@@ -15,6 +15,7 @@ if [[ -f management-cluster-kubeconfig ]]; then
 else
     echo_b "\U0001F503 Preparing bootstrap cluster"
     tools/kind/bootstrap-cluster.sh
+    export BOOTSTRAP_INJECTION=stop
 fi
 
 ensure_flux
