@@ -29,7 +29,7 @@ kind: KubeadmControlPlane
 metadata:
   name: ${CLUSTER_NAME}-control-plane
 spec:
-  replicas: 1
+  replicas: ${CONTROL_PLANE_REPLICAS:=1}
   version: ${K8S_VERSION}
   machineTemplate:
     infrastructureRef:
