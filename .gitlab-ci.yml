@@ -118,7 +118,8 @@ check-docs-markdown:
       - management-cluster-dump/
       - bootstrap-cluster-units-report.xml
       - management-cluster-units-report.xml
-      - "*.html"
+      - bootstrap-timeline.html
+      - management-cluster-timeline.html
     reports:
       junit:
       - bootstrap-cluster-units-report.xml
@@ -265,12 +266,16 @@ deploy-kubeadm-capd:
     - !reference [.common-deployment, rules]
   variables:
     ENV_NAME: kubeadm-capd
+  artifacts:
+    expose_as: kubeadm-capd
 
 deploy-kubeadm-capd-oci:
   extends: deploy-kubeadm-capd
   variables:
     ENV_NAME: kubeadm-capd
     OCI_TAG: $OCI_TAG_FORMAT
+  artifacts:
+    expose_as: kubeadm-capd-oci
 
 .deploy-capo:
   extends: .deploy-base
@@ -294,6 +299,8 @@ deploy-rke2-capo:
   variables:
     ENV_NAME: "rke2-capo"
     CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}"
+  artifacts:
+    expose_as: rke2-capo
 
 deploy-rke2-capo-oci:
   extends: deploy-rke2-capo
@@ -301,6 +308,8 @@ deploy-rke2-capo-oci:
     ENV_NAME: "rke2-capo"
     CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-OCI"
     OCI_TAG: $OCI_TAG_FORMAT
+  artifacts:
+    expose_as: rke2-capo-oci
 
 deploy-kubeadm-capo:
   timeout: 75min
@@ -308,6 +317,8 @@ deploy-kubeadm-capo:
   variables:
     ENV_NAME: "kubeadm-capo"
     CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}"
+  artifacts:
+    expose_as: kubeadm-capo
 
 deploy-kubeadm-capo-oci:
   extends: deploy-kubeadm-capo
@@ -315,6 +326,8 @@ deploy-kubeadm-capo-oci:
     ENV_NAME: "kubeadm-capo"
     CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-OCI"
     OCI_TAG: $OCI_TAG_FORMAT
+  artifacts:
+    expose_as: kubeadm-capo-oci
 
 .cleanup-capo:
   stage: delete
