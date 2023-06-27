@@ -182,7 +182,7 @@ EOF
   # (for mgmt cluster, we do not so we "pipe through" with "cat")
   kubectl kustomize ${PREVIEW_DIR} \
     | define_source \
-    | (if [[ ${KUBECONFIG:-} =~ management-cluster-kubeconfig$ -o ${BOOTSTRAP_INJECTION:-} == stop ]]; then cat ; else inject_bootstrap_values ; fi) \
+    | (if [[ ${KUBECONFIG:-} =~ management-cluster-kubeconfig$ || ${BOOTSTRAP_INJECTION:-} == stop ]]; then cat ; else inject_bootstrap_values ; fi) \
     | kubectl apply -f -
   rm -Rf ${PREVIEW_DIR}
 
