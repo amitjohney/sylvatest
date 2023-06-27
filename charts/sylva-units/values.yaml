@@ -729,7 +729,6 @@ units:
       wait: true
 
   metal3:
-    enabled: no
     depends_on:
       cert-manager: true
     repo: metal3
