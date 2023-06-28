@@ -803,7 +803,7 @@ units:
             value: |
               #!/bin/bash
               set -e
-              cluster_name=$(kubectl get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}')
+              cluster_name=$(kubectl --kubeconfig=management-cluster-kubeconfig get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}')
               echo "Checking cluster"
               if [ ${cluster_name} ]; then
                 kubectl patch cluster ${cluster_name} --type merge -p '{"spec":{"paused": true}}'
