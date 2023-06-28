@@ -296,6 +296,7 @@ units_override_enabled:
   - cluster
   - calico-crd
   - calico
+  - pause-cluster
   - management-cluster-flux
   - management-cluster-configs
   - management-sylva-units
