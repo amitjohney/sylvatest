@@ -327,6 +327,8 @@ units:
         substitute:
           VAULT_DNS: '{{ .Values.cluster.vault.external_hostname }}'
           ADMIN_PASSWORD: '{{ .Values.cluster.admin_password }}'
+          VAULT_REPLICAS: '{{ .Values._internal.vault_replicas }}'
+          MAX_POD_UNAVAILABLE: '{{ int .Values._internal.vault_replicas | eq 1 | ternary 0 1 }}'
       healthChecks:  # sometimes this kustomization seems correctly applied while vault pod is not running, see https://gitlab.com/sylva-projects/sylva-core/-/issues/250
       # so we replace wait:true by checking for the Vault components health
         - apiVersion: apps/v1
@@ -1979,6 +1981,8 @@ _internal:
     {{- tuple . (tuple . "cinder-csi" | include "unit-enabled") "cinder-csi" "local-path-provisioner" | include "interpret-ternary" -}}
   default_storage_class: >-
     {{- tuple . (tuple . "cinder-csi" | include "unit-enabled") .Values.cluster.capo.storageClass.name "local-path" | include "interpret-ternary" -}}
+  vault_replicas: >-
+    {{ ge (int .Values.cluster.control_plane_replicas) 3 | ternary 3 1 }}
 
   # this is used in source_templates.sylva-core below
   # and in any unit using sylva-units Helm chart

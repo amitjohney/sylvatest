@@ -3,10 +3,19 @@ kind: Vault
 metadata:
   name: vault
 spec:
-  size: 1
+  size: ${VAULT_REPLICAS}
   image: vault:1.13.3
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: vault
+              vault_cr: vault
+          topologyKey: kubernetes.io/hostname
+  securityContext:
+    runAsNonRoot: false
 
-  podAntiAffinity: kubernetes.io/hostname
 
   # Common annotations for all created resources
   annotations:
@@ -140,7 +149,7 @@ spec:
         tls_cert_file: /vault/tls/server.crt
         tls_key_file: /vault/tls/server.key
     api_addr: "https://vault:8200"
-    cluster_addr: "https://vault:8201"
+    disable_mlock: true
     ui: true
 
   statsdDisabled: true
@@ -244,6 +253,12 @@ spec:
       value: debug
     - name: VAULT_CACERT
       value: /vault/tls/ca.crt
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    - name: VAULT_CLUSTER_ADDR
+      value: http://$(POD_NAME):8201
 
   # If you are using a custom certificate and are setting the hostname in a custom way
   # sidecarEnvsConfig:
