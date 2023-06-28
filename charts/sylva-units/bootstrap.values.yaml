@@ -13,6 +13,8 @@ unit_helmrelease_spec_default:
 units:
 
   metal3:
+    depends_on:
+      bootstrap-local-path: true
     helmrelease_spec:
       values:
         # ironicIPADownloaderBaseURI:
@@ -31,21 +33,29 @@ units:
                 {{- end -}}
                 {{- $result -}}
 
-  pause-cluster-reconciliation:
+  bootstrap-local-path:
+    enabled_conditions:
+      - '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/bootstrap-local-path
+      wait: true
+
+  resume-cluster-reconciliation:
     enabled_conditions:
     - '{{ tuple . "cluster" | include "unit-enabled" }}'
 
   cluster:
     depends_on:
       reconcile-sylva-units: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
-      pause-cluster-reconciliation: true
+      resume-cluster-reconciliation: true
 
-  resume-cluster-reconciliation:
+  pause-cluster-reconciliation:
     enabled_conditions:
     - '{{ tuple . "cluster" | include "unit-enabled" }}'
     depends_on:
-      cluster: true
-      pause-cluster-reconciliation: true
+      cluster: '{{ tuple . "cluster" | include "unit-enabled" }}'
+
 
   calico-crd:
     # overload calico-crd definition in bootstrap context to deploy in the management cluster
@@ -108,9 +118,6 @@ units:
           - op: replace
             path: /metadata/name
             value: copy-configs-job
-          - op: replace
-            path: /spec/template/metadata/annotations/checksum
-            value: '{{ .Values | quote | sha256sum }}'
       - target:
           kind: ConfigMap
           name: job-scripts
@@ -128,7 +135,14 @@ units:
               kubectl get configmaps,secrets,gitrepository,helmrepository \
                 -l copy-from-bootstrap-to-management= \
                 -o json \
-                  | jq '.items[] | del(.metadata.labels."helm.toolkit.fluxcd.io/name") | del(.metadata.labels."copy-from-bootstrap-to-management") | del(.metadata.labels."helm.toolkit.fluxcd.io/namespace") | del(.metadata.resourceVersion) | del(.metadata.uid) | del(.metadata.creationTimestamp)' \
+                  | jq '.items[] | del(.metadata.labels."helm.toolkit.fluxcd.io/name")
+                                 | del(.metadata.labels."copy-from-bootstrap-to-management")
+                                 | del(.metadata.labels."helm.toolkit.fluxcd.io/namespace")
+                                 | del(.metadata.annotations."sylvactl/reconcileStartedAt")
+                                 | del(.metadata.annotations."sylvactl/reconcileCompletedAt")
+                                 | del(.metadata.resourceVersion)
+                                 | del(.metadata.uid)
+                                 | del(.metadata.creationTimestamp)' \
                   | kubectl --kubeconfig management-cluster-kubeconfig apply -f -
 
               echo "-- All done"
@@ -305,7 +319,8 @@ units_override_enabled:
   - '{{ .Values.cluster.capi_providers.infra_provider }}'
   - '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
   - '{{ tuple "metal3" (.Values.cluster.capi_providers.infra_provider | eq "capm3") | include "set-only-if" }}'
-  - pause-cluster-reconciliation
+  - bootstrap-local-path
+  - resume-cluster-reconciliation
   - cluster
   - pause-cluster-reconciliation
   - calico-crd

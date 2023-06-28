@@ -1445,10 +1445,9 @@ units:
           CONTROL_PLANE_SECURITY_GROUP_NAME: 'workload-cluster-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}'
           WORKER_SECURITY_GROUP_NAME: 'workload-cluster-security-group-worker-{{ .Values.cluster.capo.resources_tag }}'
 
-  pause-cluster-reconciliation:
+  resume-cluster-reconciliation:
     enabled_conditions:
     - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
-    enabled:  '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kube-job
@@ -1461,7 +1460,7 @@ units:
         patch: |
           - op: replace
             path: /metadata/name
-            value: pause-cluster-reconciliation-job
+            value: resume-cluster-reconciliation-job
       - target:
           kind: ConfigMap
           name: job-scripts
@@ -1472,7 +1471,7 @@ units:
               #!/bin/bash
               cluster_name=$(kubectl get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}')
               if [ ${cluster_name} ]; then
-                kubectl patch cluster ${cluster_name} --type merge -p '{"spec":{"paused": true}}'
+                kubectl patch cluster ${cluster_name} --type merge -p '{"spec":{"paused": false}}'
               else
                 echo "No existing cluster present"
               fi
@@ -1483,7 +1482,7 @@ units:
       capi: true
       '{{ .Values.cluster.capi_providers.infra_provider }}': true
       '{{ .Values.cluster.capi_providers.bootstrap_provider }}': true
-      pause-cluster-reconciliation: true
+      resume-cluster-reconciliation: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
       workload-capo-cluster-resources: '{{ tuple . "workload-capo-cluster-resources" | include "unit-enabled" }}'
     kustomization_spec:
       path: ./kustomize-units/cluster-manifests/kubeadm-capd/base
@@ -1565,12 +1564,11 @@ units:
         - '{{ tuple (.Files.Get "elements/configtemplate-longhorn-prereq.tpl" | fromYaml) (and (not .Values.cluster.air_gapped) (tuple . "workload-cluster-longhorn" | include "unit-enabled")) | include "set-only-if" }}'
         - '{{ tuple (.Files.Get "elements/controlplane-longhorn-prereq.tpl" | fromYaml) (and (not .Values.cluster.air_gapped ) (tuple . "workload-cluster-longhorn" | include "unit-enabled")) | include "set-only-if" }}'
 
-  resume-cluster-reconciliation:
+  pause-cluster-reconciliation:
     enabled_conditions:
     - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
     depends_on:
-      workload-cluster: true
-      pause-cluster-reconciliation: true
+      workload-cluster: '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kube-job
@@ -1583,7 +1581,7 @@ units:
         patch: |
           - op: replace
             path: /metadata/name
-            value: resume-cluster-reconciliation-job
+            value: pause-cluster-reconciliation-job
       - target:
           kind: ConfigMap
           name: job-scripts
@@ -1595,10 +1593,9 @@ units:
               #!/bin/bash
               cluster_name=$(kubectl get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}')
               if [ ${cluster_name} ]; then
-                kubectl patch cluster ${cluster_name} --type merge -p '{"spec":{"paused": false}}'
-              else
-                echo "No existing cluster present"
+                kubectl patch cluster ${cluster_name} --type merge -p '{"spec":{"paused": true}}'
               fi
+
 
   workload-cluster-calico-crd:
     enabled_conditions:
