@@ -777,39 +777,6 @@ units:
                         securityContext:
                           runAsUser: 1000
 
-  pause-cluster:
-    enabled_conditions:
-    - '{{ tuple . "cluster" | include "unit-enabled" }}'
-    enabled:  '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
-    repo: sylva-core
-    kustomization_spec:
-      path: ./kustomize-units/kube-job
-      wait: true
-      force: true
-      _patches:
-      - target:
-          kind: Job
-          name: kube-job
-        patch: |
-          - op: replace
-            path: /metadata/name
-            value: pause-cluster-reconciliation-job
-      - target:
-          kind: ConfigMap
-          name: job-scripts
-        patch: |
-          - op: replace
-            path: /data/kube-job.sh
-            value: |
-              #!/bin/bash
-              cluster_name=$(kubectl --kubeconfig=management-cluster-kubeconfig get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}')
-              echo "Checking cluster"
-              if [ ${cluster_name} ]; then
-                kubectl patch cluster ${cluster_name} --type merge -p '{"spec":{"paused": true}}'
-              else
-                echo "No existing cluster present"
-              fi
-
   cluster:
     repo: sylva-core
     depends_on:
@@ -1502,11 +1469,12 @@ units:
           - op: replace
             path: /data/kube-job.sh
             value: |
+              #!/bin/bash
               cluster_name=$(kubectl get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}')
-              if [ -n "${cluster_name}" ]; then
-                kubectl patch cluster ${CLUSTER_NAME} --type merge -p '{"spec":{"paused": true}}'
+              if [ ${cluster_name} ]; then
+                kubectl patch cluster ${cluster_name} --type merge -p '{"spec":{"paused": true}}'
               else
-              echo "No existing cluster present"
+                echo "No existing cluster present"
               fi
 
   workload-cluster:
@@ -1620,12 +1588,16 @@ units:
           kind: ConfigMap
           name: job-scripts
         patch: |
+          patch: |
           - op: replace
             path: /data/kube-job.sh
             value: |
+              #!/bin/bash
               cluster_name=$(kubectl get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}')
-              if [ "${cluster_name}" ]; then
-                kubectl patch cluster ${CLUSTER_NAME} --type merge -p '{"spec":{"paused": false}}'
+              if [ ${cluster_name} ]; then
+                kubectl patch cluster ${cluster_name} --type merge -p '{"spec":{"paused": false}}'
+              else
+                echo "No existing cluster present"
               fi
 
   workload-cluster-calico-crd:

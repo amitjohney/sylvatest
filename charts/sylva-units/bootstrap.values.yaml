@@ -31,9 +31,21 @@ units:
                 {{- end -}}
                 {{- $result -}}
 
+  pause-cluster-reconciliation:
+    enabled_conditions:
+    - '{{ tuple . "cluster" | include "unit-enabled" }}'
+
   cluster:
     depends_on:
       reconcile-sylva-units: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+      pause-cluster-reconciliation: true
+
+  resume-cluster-reconciliation:
+    enabled_conditions:
+    - '{{ tuple . "cluster" | include "unit-enabled" }}'
+    depends_on:
+      cluster: true
+      pause-cluster-reconciliation: true
 
   calico-crd:
     # overload calico-crd definition in bootstrap context to deploy in the management cluster
@@ -293,10 +305,11 @@ units_override_enabled:
   - '{{ .Values.cluster.capi_providers.infra_provider }}'
   - '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
   - '{{ tuple "metal3" (.Values.cluster.capi_providers.infra_provider | eq "capm3") | include "set-only-if" }}'
+  - pause-cluster-reconciliation
   - cluster
+  - pause-cluster-reconciliation
   - calico-crd
   - calico
-  - pause-cluster
   - management-cluster-flux
   - management-cluster-configs
   - management-sylva-units
