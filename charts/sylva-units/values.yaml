@@ -1663,6 +1663,38 @@ units:
           chart: longhorn
           version: 102.2.0+up1.4.1
 
+  pause-cluster-reconciliation:
+    enabled_conditions:
+    - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
+    enabled:  '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/kube-job
+      wait: true
+      force: true
+      _patches:
+      - target:
+          kind: Job
+          name: kube-job
+        patch: |
+          - op: replace
+            path: /metadata/name
+            value: pause-cluster-reconciliation-job
+      - target:
+          kind: ConfigMap
+          name: job-scripts
+        patch: |
+          - op: replace
+            path: /data/kube-job.sh
+            value: |
+              #!/bin/bash
+              cluster_name=$(kubectl get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}')
+              if [ ${cluster_name} ]; then
+                kubectl patch cluster ${cluster_name} --type merge -p '{"spec":{"paused": true}}'
+              else
+                echo "No existing cluster present"
+              fi
+
   # this unit is an example of how to use sylva-units to deploy a workload-cluster
   workload-cluster:
     depends_on:
@@ -1782,6 +1814,41 @@ units:
       cluster:
         capo:
           clouds_yaml: '{{ .Values.cluster | dig "capo" "clouds_yaml" dict | include "preserve-type" }}'  # for CAPO and cinder-csi
+
+  resume-cluster-reconciliation:
+    enabled_conditions:
+    - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
+    depends_on:
+      workload-cluster: true
+      pause-cluster-reconciliation: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/kube-job
+      wait: true
+      force: true
+      _patches:
+      - target:
+          kind: Job
+          name: kube-job
+        patch: |
+          - op: replace
+            path: /metadata/name
+            value: resume-cluster-reconciliation-job
+      - target:
+          kind: ConfigMap
+          name: job-scripts
+        patch: |
+          patch: |
+          - op: replace
+            path: /data/kube-job.sh
+            value: |
+              #!/bin/bash
+              cluster_name=$(kubectl get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}')
+              if [ ${cluster_name} ]; then
+                kubectl patch cluster ${cluster_name} --type merge -p '{"spec":{"paused": false}}'
+              else
+                echo "No existing cluster present"
+              fi
 
 
   os-image-server:
