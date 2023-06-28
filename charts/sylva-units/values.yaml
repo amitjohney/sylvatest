@@ -1694,22 +1694,27 @@ units:
 
       valuesFrom:  # this Helm release receives some parameters from the capo-cluster-resources ConfigMap
                    # which is produced by the workload-capo-cluster-resources unit
+                   # ConfigMaps are mapped as optional to circumvent 'not found' errors for infra providers other than capo
         - kind: ConfigMap
           name: capo-cluster-resources
           valuesKey: allocated_ip
           targetPath: cluster.cluster_external_ip
+          optional: true
         - kind: ConfigMap
           name: capo-cluster-resources
           valuesKey: allocated_fip
           targetPath: cluster.capo.floating_ip
+          optional: true
         - kind: ConfigMap
           name: capo-cluster-resources
           valuesKey: control_plane_servergroup_id
           targetPath: cluster.capo.control_plane_servergroup_id
+          optional: true
         - kind: ConfigMap
           name: capo-cluster-resources
           valuesKey: worker_servergroup_id
           targetPath: cluster.capo.worker_servergroup_id
+          optional: true
 
       values:
 
