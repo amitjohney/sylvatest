@@ -802,7 +802,6 @@ units:
             path: /data/kube-job.sh
             value: |
               #!/bin/bash
-              set -e
               cluster_name=$(kubectl --kubeconfig=management-cluster-kubeconfig get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}')
               echo "Checking cluster"
               if [ ${cluster_name} ]; then
