@@ -1586,7 +1586,6 @@ units:
           kind: ConfigMap
           name: job-scripts
         patch: |
-          patch: |
           - op: replace
             path: /data/kube-job.sh
             value: |
@@ -1594,6 +1593,8 @@ units:
               cluster_name=$(kubectl get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}')
               if [ ${cluster_name} ]; then
                 kubectl patch cluster ${cluster_name} --type merge -p '{"spec":{"paused": true}}'
+              else
+                echo "No existing cluster present"
               fi
 
 
