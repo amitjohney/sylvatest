@@ -4,4 +4,4 @@ kind: Kustomization
 namespace: kube-system
 
 resources:
-- https://raw.githubusercontent.com/kubernetes/autoscaler/master/cluster-autoscaler/cloudprovider/clusterapi/examples/deployment.yaml
+- ca.yaml
