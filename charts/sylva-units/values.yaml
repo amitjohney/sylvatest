@@ -1666,7 +1666,6 @@ units:
   pause-cluster-reconciliation:
     enabled_conditions:
     - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
-    enabled:  '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kube-job
