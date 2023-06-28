@@ -802,6 +802,7 @@ units:
             path: /data/kube-job.sh
             value: |
               cluster_name=$(kubectl get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}')
+              echo "Checking cluster"
               if [ -n "${cluster_name}" ]; then
                 kubectl patch cluster ${CLUSTER_NAME} --type merge -p '{"spec":{"paused": true}}'
               else
