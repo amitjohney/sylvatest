@@ -683,6 +683,8 @@ units:
         substitute:
           AUTOSCALER_NS: 'kube-system'
           AUTOSCALER_IMAGE: 'us.gcr.io/k8s-artifacts-prod/autoscaling/cluster-autoscaler:v1.20.0'
+          CAPI_NS: capi-system
+          CLUSTER_NAME: '{{ .Values.cluster.test_workload_cluster_name }}'
       wait: true
 
 
