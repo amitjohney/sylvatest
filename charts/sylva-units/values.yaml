@@ -676,6 +676,8 @@ units:
       wait: true
 
   cluster-autoscaler:
+    depends_on:
+      sylva-ca-certs: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/cluster-autoscaler
