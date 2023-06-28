@@ -801,12 +801,14 @@ units:
           - op: replace
             path: /data/kube-job.sh
             value: |
+              #!/bin/bash
+              set -e
               cluster_name=$(kubectl get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}')
               echo "Checking cluster"
-              if [ "${cluster_name}" ]; then
+              if [ ${cluster_name} ]; then
                 kubectl patch cluster ${cluster_name} --type merge -p '{"spec":{"paused": true}}'
               else
-              echo "No existing cluster present"
+                echo "No existing cluster present"
               fi
 
   cluster:
