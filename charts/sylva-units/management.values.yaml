@@ -27,13 +27,13 @@ units:
   cabpr:  # RKE2
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
 
-  pause-cluster-reconciliation: #capo
+  resume-cluster-reconciliation: #capo
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
 
   workload-cluster:
     enabled: '{{ .Values.env_type_ci }}'
 
-  resume-cluster-reconciliation: #capo
+  pause-cluster-reconciliation: #capo
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
 
   os-image-server:

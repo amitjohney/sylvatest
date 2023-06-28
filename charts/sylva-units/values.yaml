@@ -1663,7 +1663,7 @@ units:
           chart: longhorn
           version: 102.2.0+up1.4.1
 
-  pause-cluster-reconciliation:
+  resume-cluster-reconciliation:
     enabled_conditions:
     - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
     repo: sylva-core
@@ -1678,7 +1678,7 @@ units:
         patch: |
           - op: replace
             path: /metadata/name
-            value: pause-cluster-reconciliation-job
+            value: resume-cluster-reconciliation-job
       - target:
           kind: ConfigMap
           name: job-scripts
@@ -1689,7 +1689,7 @@ units:
               #!/bin/bash
               cluster_name=$(kubectl get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}')
               if [ ${cluster_name} ]; then
-                kubectl patch cluster ${cluster_name} --type merge -p '{"spec":{"paused": true}}'
+                kubectl patch cluster ${cluster_name} --type merge -p '{"spec":{"paused": false}}'
               else
                 echo "No existing cluster present"
               fi
@@ -1701,6 +1701,7 @@ units:
       #for capo:
       workload-capo-cluster-resources: '{{ tuple . "workload-capo-cluster-resources" | include "unit-enabled" }}'   # produces the capo-cluster-resources used below
       workload-cluster-cloud-config: '{{ tuple . "workload-cluster-cloud-config" | include "unit-enabled" }}'
+      resume-cluster-reconciliation: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     unit_template: sylva-units
     kustomization_spec:
       targetNamespace: workload-cluster  # this ensures that the HelmRelease below is created in 'workload-cluster' ns
@@ -1814,11 +1815,11 @@ units:
         capo:
           clouds_yaml: '{{ .Values.cluster | dig "capo" "clouds_yaml" dict | include "preserve-type" }}'  # for CAPO and cinder-csi
 
-  resume-cluster-reconciliation:
+  pause-cluster-reconciliation:
     enabled_conditions:
     - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
     depends_on:
-      pause-cluster-reconciliation: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+      workload-cluster: '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kube-job
@@ -1831,23 +1832,21 @@ units:
         patch: |
           - op: replace
             path: /metadata/name
-            value: resume-cluster-reconciliation-job
+            value: pause-cluster-reconciliation-job
       - target:
           kind: ConfigMap
           name: job-scripts
         patch: |
-          patch: |
           - op: replace
             path: /data/kube-job.sh
             value: |
               #!/bin/bash
               cluster_name=$(kubectl get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}')
               if [ ${cluster_name} ]; then
-                kubectl patch cluster ${cluster_name} --type merge -p '{"spec":{"paused": false}}'
+                kubectl patch cluster ${cluster_name} --type merge -p '{"spec":{"paused": true}}'
               else
                 echo "No existing cluster present"
               fi
-
 
   os-image-server:
     # this units allows to deploy web server on management cluster
