@@ -112,6 +112,7 @@ check-docs-markdown:
       alias: docker
   artifacts:
     expire_in: 6 hour
+    when: always
     paths:
       - debug-on-exit.log
       - bootstrap-cluster-dump/
