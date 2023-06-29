@@ -138,6 +138,13 @@ spec: {{ $helm_repo_spec | toYaml | nindent 2 }}
       {{- $helmrelease_spec := dict "releaseName" $unit_name -}}
       {{- $helmrelease_spec := mergeOverwrite $helmrelease_spec $envAll.Values.unit_helmrelease_spec_default $unit_def.helmrelease_spec $helmrelease_spec_overrides (dict "postRenderers" $post_renderers) -}}
 
+      {{/* if the merge above resulted in setting kubeConfig to null, remove it from the dict */}}
+      {{- if hasKey $helmrelease_spec "kubeConfig" -}}
+        {{- if $helmrelease_spec.kubeConfig | eq nil -}}
+          {{- $_ := unset $helmrelease_spec "kubeConfig" -}}
+        {{- end -}}
+      {{- end -}}
+
       {{- if hasKey $unit_def "helm_secret_values" -}}
         {{/* if the unit has "helm_secret_values" defined, then
              we push a secret in the HelmRelease via kustomization_substitute_secrets"
@@ -218,6 +225,13 @@ stringData:
 
     {{/* finalize the definition of the Kustomization spec by merging everything we have */}}
     {{- $kustomization_spec = mergeOverwrite $kustomization_spec $envAll.Values.unit_kustomization_spec_default ($unit_def.kustomization_spec | default dict) $dependsOn $kustomization_spec_overrides (dict "patches" $patches) (dict "components" $components) -}}
+
+    {{/* if the merge above resulted in setting kubeConfig to null, remove it from the dict */}}
+    {{- if hasKey $kustomization_spec "kubeConfig" -}}
+      {{- if $kustomization_spec.kubeConfig | eq nil -}}
+        {{- $_ := unset $kustomization_spec "kubeConfig" -}}
+      {{- end -}}
+    {{- end -}}
 
     {{/* 
     if healthChecks is specified on kustomization_spec while helmrelease_spec is defined,
