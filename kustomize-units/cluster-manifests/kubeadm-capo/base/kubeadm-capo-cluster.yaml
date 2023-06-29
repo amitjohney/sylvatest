@@ -105,7 +105,7 @@ spec:
         kubeletExtraArgs:
           provider-id: openstack:///{{ ds.meta_data.uuid }}
         name: '{{ ds.meta_data.name }}'
-    joinConfiguratgion:
+    joinConfiguration:
       nodeRegistration:
         taints: []
         kubeletExtraArgs:
