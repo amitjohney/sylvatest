@@ -99,15 +99,15 @@ spec:
             name: kubeconfig
     postKubeadmCommands:
     - export KUBECONFIG=/etc/kubernetes/admin.conf
-    #- kubectl taint nodes --all node-role.kubernetes.io/master-
-    #- kubectl taint nodes --all node-role.kubernetes.io/control-plane-
     initConfiguration:
       nodeRegistration:
+        taints: []
         kubeletExtraArgs:
           provider-id: openstack:///{{ ds.meta_data.uuid }}
         name: '{{ ds.meta_data.name }}'
-    joinConfiguration:
+    joinConfiguratgion:
       nodeRegistration:
+        taints: []
         kubeletExtraArgs:
           provider-id: openstack:///{{ ds.meta_data.uuid }}
         name: '{{ ds.meta_data.name }}'

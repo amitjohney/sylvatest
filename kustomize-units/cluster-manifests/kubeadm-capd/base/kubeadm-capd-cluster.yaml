@@ -66,10 +66,7 @@ spec:
         kubeletExtraArgs:
           eviction-hard: nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%
           register-with-taints: ""
-    postKubeadmCommands:
-      # FIXME: figure out why initConfiguration.nodeRegistration.taints does not work...
-      #- kubectl --kubeconfig /etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/control-plane-
-      #- kubectl --kubeconfig /etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/master-
+    postKubeadmCommands: []
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: DockerMachineTemplate
