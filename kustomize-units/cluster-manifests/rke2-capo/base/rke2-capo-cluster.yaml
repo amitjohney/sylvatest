@@ -227,6 +227,7 @@ spec:
     version: ${K8S_VERSION}
     cisProfile: ${CIS_PROFILE}
     airGapped: ${AIR_GAPPED:-false}
+    nodeTaints: []
     kubelet:
       extraArgs:
       - "provider-id=openstack:///{{ ds.meta_data.uuid }}"
