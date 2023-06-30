@@ -328,12 +328,13 @@ units:
     annotations:
       sylvactl/readyMessage: "Vault UI can be reached at https://{{ .Values.cluster.vault.external_hostname }} ({{ .Values.cluster.vault.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
     repo: sylva-core
+    kustomization_substitute_secrets:
+      ADMIN_PASSWORD: '{{ .Values.cluster.admin_password }}'
     kustomization_spec:
       path: ./kustomize-units/vault
       postBuild:
         substitute:
           VAULT_DNS: '{{ .Values.cluster.vault.external_hostname }}'
-          ADMIN_PASSWORD: '{{ .Values.cluster.admin_password }}'
           VAULT_REPLICAS: '{{ .Values._internal.vault_replicas }}'
           MAX_POD_UNAVAILABLE: '{{ int .Values._internal.vault_replicas | eq 1 | ternary 0 1 }}'
       healthChecks:  # sometimes this kustomization seems correctly applied while vault pod is not running, see https://gitlab.com/sylva-projects/sylva-core/-/issues/250
