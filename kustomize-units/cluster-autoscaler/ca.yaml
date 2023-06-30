@@ -23,6 +23,7 @@ spec:
     spec:
       containers:
       - image: ${AUTOSCALER_IMAGE}
+        imagePullPolicy: IfNotPresent
         name: cluster-autoscaler
         command:
 #        - /cluster-autoscaler
@@ -44,11 +45,13 @@ spec:
         volumeMounts:
         - name: worker-cluster-kubeconfig
           mountPath: "/mnt/kubeconfig"
-          readOnly: true
+
+#          readOnly: true
       volumes:
       - name: worker-cluster-kubeconfig
         secret:
           secretName: ${CLUSTER_NAME}-kubeconfig
+          defaultMode: 0777
       serviceAccountName: cluster-autoscaler
       terminationGracePeriodSeconds: 10
       tolerations:
