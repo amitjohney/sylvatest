@@ -25,7 +25,7 @@ spec:
       - image: ${AUTOSCALER_IMAGE}
         imagePullPolicy: IfNotPresent
         name: cluster-autoscaler
-        command: [ "/bin/sleep", "86400" ]
+        command: [ "ls /tmp" ]
 #        - /cluster-autoscaler
 
 #        args:
