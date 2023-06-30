@@ -2,14 +2,38 @@
 
 units:
   cluster:
-    kustomization_spec:
-      path: ./kustomize-units/cluster-manifests/kubeadm-capv/base
-      postBuild:
-        substitute:
-          SSH_KEY: '{{ .Values.cluster.capv.ssh_key }}'
-          VS_USERNAME: '{{ .Values.cluster.capv.username }}'
-    kustomization_substitute_secrets:
-      VS_PASSWORD: '{{ .Values.cluster.capv.password }}'
+    helmrelease_spec:
+      values:
+        cluster_services_cidrs:
+          - 10.43.0.0/16
+        cluster_pods_cidrs:
+          - 10.42.0.0/16
+        capv:
+          ssh_key: '{{ .Values.cluster.capv.ssh_key }}'
+          username: '{{ .Values.cluster.capv.username }}'
+        machine_deployments:
+          md0:
+            infra_provider: capv
+    helm_secret_values:
+      capv: '{{ .Values.cluster.capv.password }}'
+  workload-cluster:
+    enabled: false
+    helmrelease_spec:
+      values:
+        units:
+          cluster:
+            helmrelease_spec:
+              values:
+                cluster_services_cidrs:
+                  - 10.43.0.0/16
+                cluster_pods_cidrs:
+                  - 10.42.0.0/16
+                capv:
+                  ssh_key: '{{ .Values.cluster.capv.ssh_key }}'
+                  username: '{{ .Values.cluster.capv.username }}'
+                machine_deployments: null
+                  # md0:
+                  #   infra_provider: capv
 
 cluster:
   image: "ubuntu-2004-kube-v1.24.10"

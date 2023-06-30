@@ -2,13 +2,23 @@
 
 units:
   cluster:
-    kustomization_spec:
-      path: ./kustomize-units/cluster-manifests/rke2-capo/base
+    helmrelease_spec:
+      values:
+        machine_deployments:
+          md0:
+            infra_provider: capo
+            failure_domain: '{{ .Values.cluster.capo.worker_az }}'
   workload-cluster:
     helmrelease_spec:
       values:
-        cluster:
-          worker_replicas: 1
+        units:
+          cluster:
+            helmrelease_spec:
+              values:
+                machine_deployments:
+                  md0:
+                    infra_provider: capo
+                    failure_domain: '{{ .Values.cluster.capo.worker_az }}'
 
 cluster:
   image: "Ubuntu 20.04 Pack" # image name provided by falcon-rke2 remote target unit, but can be overwritten
