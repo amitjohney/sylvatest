@@ -1,8 +1,8 @@
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: ${AUTOSCALER_NS}
+#---
+#apiVersion: v1
+#kind: Namespace
+#metadata:
+#  name: ${AUTOSCALER_NS}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -25,21 +25,22 @@ spec:
       - image: ${AUTOSCALER_IMAGE}
         name: cluster-autoscaler
         command:
-        - /cluster-autoscaler
+#        - /cluster-autoscaler
+        - /bin/sh -c 'sleep 10000000000000000000'
         args:
-        - --cloud-provider=clusterapi
-        - --kubeconfig=/mnt/kubeconfig/${CLUSTER_NAME}-kubeconfig
-        - --clusterapi-cloud-config-authoritative
-        - --node-group-auto-discovery=clusterapi:clusterName=${CLUSTER_NAME},namespace=${CAPI_NS}
-        - --scale-down-delay-after-add=1m0s
-        - --scale-down-unneeded-time=1m0s
-        - --scale-down-unready-time=1m0s
-        - --max-empty-bulk-delete=100
-        - --scale-down-non-empty-candidates-count=-1
-        - --scale-down-candidates-pool-ratio=1.0
-        - --max-total-unready-percentage=99
-        - --new-pod-scale-up-delay=30s
-        - --v=2
+#        - --cloud-provider=clusterapi
+#        - --kubeconfig=/mnt/kubeconfig/${CLUSTER_NAME}-kubeconfig
+#        - --clusterapi-cloud-config-authoritative
+#        - --node-group-auto-discovery=clusterapi:clusterName=${CLUSTER_NAME},namespace=${CAPI_NS}
+#        - --scale-down-delay-after-add=1m0s
+#        - --scale-down-unneeded-time=1m0s
+#        - --scale-down-unready-time=1m0s
+#        - --max-empty-bulk-delete=100
+#        - --scale-down-non-empty-candidates-count=-1
+#        - --scale-down-candidates-pool-ratio=1.0
+#        - --max-total-unready-percentage=99
+#        - --new-pod-scale-up-delay=30s
+#        - --v=2
         volumeMounts:
         - name: worker-cluster-kubeconfig
           mountPath: "/mnt/kubeconfig"
