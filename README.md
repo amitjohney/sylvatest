@@ -458,6 +458,109 @@ $ kubectl get kustomizations.kustomize.toolkit.fluxcd.io/sylva-units-status -o j
   }
 ```
 
+### Helm templating
+
+To preview the output of `sylva-units` chart while rendering the chart templates locally, we can take the help of `helm template` command. This command can be used here to generate Kubernetes manifest files for the `sylva-units` chart.
+
+By using this command, we can inspect the rendered Kubernetes manifests before deploying them to a cluster. This allows us to troubleshoot and validate our Helm chart's templates and configurations, ensuring they meet our expectations and requirements.
+
+```terminal
+$ helm template sylva-units charts/sylva-units
+
+Source: sylva-units/templates/registry-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  annotations:
+    kubed.appscode.com/sync: add-registry-secret=sylva
+  name: registry-secret
+  labels:
+    helm.sh/chart: sylva-units-0.0.0-git
+    app.kubernetes.io/name: sylva-units
+    app.kubernetes.io/instance: sylva-units
+    app.kubernetes.io/version: "0.0.0"
+    app.kubernetes.io/managed-by: Helm
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: |
+    eyJhdXRocyI6e319
+---
+# Source: sylva-units/templates/sylva-units-values-debug.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sylva-units-values-debug
+  labels:
+    helm.sh/chart: sylva-units-0.0.0-git
+    app.kubernetes.io/name: sylva-units
+    app.kubernetes.io/instance: sylva-units
+    app.kubernetes.io/version: "0.0.0"
+    app.kubernetes.io/managed-by: Helm
+...
+```
+
+In this helm output, the `sylva-units-values-debug` Secret contains the result of templating interpretation of the values, which can be helful in debugging the sylva-units chart.
+
+We can see the template rendered specifically to check the values for all the units in your dev environment by using:
+
+```terminal
+ helm template charts/sylva-units --values charts/sylva-units/management.values.yaml --values my-env/secrets.yaml --values my-env/values.yaml -s templates/sylva-units-values-debug.yaml | yq 'select(.kind == "Secret") | .stringData.values' | yq
+```
+
+We can see the template rendered specifically for the `bootstrap-cluster` by using:
+
+```terminal
+ helm template sylva-units charts/sylva-units --values charts/sylva-units/bootstrap.values.yaml
+```
+
+We can see the template rendered specifically for the `management-cluster` by using:
+
+```terminal
+ helm template sylva-units charts/sylva-units --values charts/sylva-units/management.values.yaml
+```
+
+We can see the template rendered specifically for the `workload-cluster` by using:
+
+```terminal
+ helm template sylva-units charts/sylva-units --values charts/sylva-units/workload-cluster.values.yaml
+```
+
+We can also use the `helm template` command with files from a dev environment to see what the target values would give (example below for management cluster):
+
+```terminal
+helm template charts/sylva-units --values charts/sylva-units/management.values.yaml --values <your-dev-environment>/secrets.yaml --values <your-dev-environment>/values.yaml
+```
+
+Also, we can use `helm-template-yamllint.sh` script to run helm template against sets of test values
+
+```terminal
+$ helm template sylva-units charts/sylva-units --values values.yaml --values secret.yaml
+
+--------------- helm dependency build
+
+--------------- Checking default values with 'helm template' and 'yamllint' (for sylva-units chart all units enabled) ...
+OK
+
+--------------- Checking values from test-values/capo-mgmt-workers with 'helm template' and 'yamllint' ...
+
+OK
+
+--------------- Checking values from test-values/capo-base with 'helm template' and 'yamllint' ...
+
+OK
+
+--------------- Checking values from test-values/capo-rootVolume with 'helm template' and 'yamllint' ...
+
+OK
+
+--------------- Checking values from test-values/workload-cluster with 'helm template' and 'yamllint' ...
+
+OK
+
+```
+
+The documentation at the top of charts/sylva-units/values.schema.yaml explains how to validate the schema itself and provides tools to understand validation errors better than with `helm template` command.
+
 ### Working directly on the management cluster
 
 Once the bootstrap phase is done, and the pivot is done, the management cluster can be updated with:
