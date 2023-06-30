@@ -26,7 +26,7 @@ spec:
         imagePullPolicy: IfNotPresent
         name: cluster-autoscaler
 #        command: [ "ls /tmp" ]
-        command: ["ls"]
+        command: ["env"]
 #        args: ["-c", "sleep 1000"]
 #        - /cluster-autoscaler
 
