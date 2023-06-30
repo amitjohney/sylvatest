@@ -29,7 +29,7 @@ spec:
 #        - /cluster-autoscaler
         - sleep
         args:
-        - 9999999
+        - '9999999'
 #        - --cloud-provider=clusterapi
 #        - --kubeconfig=/mnt/kubeconfig/${CLUSTER_NAME}-kubeconfig
 #        - --kubeconfig=/tmp/${CLUSTER_NAME}-kubeconfig
