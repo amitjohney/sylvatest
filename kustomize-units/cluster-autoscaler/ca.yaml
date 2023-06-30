@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - image: ${AUTOSCALER_IMAGE}
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Never
         name: cluster-autoscaler
         command:
         - /cluster-autoscaler
