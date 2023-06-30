@@ -70,6 +70,10 @@ if [ -n "$(openstack ${OS_ARGS} server list -f value --tags ${CAPO_TAG})" ]; the
     echo "The following CAPO machines tagged ${CAPO_TAG} were not removed, please try again, and delete the corresponding stacks"
     openstack ${OS_ARGS} server list --tags ${CAPO_TAG} -f value -c Name
     exit 1
+elif [-n "$(openstack ${OS_ARGS} security group list -f value --tags ${CAPO_TAG})"]; then
+    echo "The following CAPO security group tagged ${CAPO_TAG} were not removed, please try again, and delete the corresponding stacks"
+    openstack ${OS_ARGS} security group list --tags ${CAPO_TAG} -f value -c Name
+    exit 1
 else
     openstack ${OS_ARGS} stack list --tags ${CAPO_TAG} -f value -c ID | xargs -tr openstack ${OS_ARGS} stack delete || true
 fi
