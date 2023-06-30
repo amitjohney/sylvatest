@@ -25,7 +25,9 @@ spec:
       - image: ${AUTOSCALER_IMAGE}
         imagePullPolicy: IfNotPresent
         name: cluster-autoscaler
-        command: [ "ls /tmp" ]
+#        command: [ "ls /tmp" ]
+        command: ["ls"]
+        args: ["/tmp"]
 #        - /cluster-autoscaler
 
 #        args:
