@@ -27,8 +27,9 @@ spec:
         name: cluster-autoscaler
         command:
 #        - /cluster-autoscaler
-        - /bin/sh -c 'sleep 999999999'
+        - sleep
         args:
+        - 9999999
 #        - --cloud-provider=clusterapi
 #        - --kubeconfig=/mnt/kubeconfig/${CLUSTER_NAME}-kubeconfig
 #        - --kubeconfig=/tmp/${CLUSTER_NAME}-kubeconfig
