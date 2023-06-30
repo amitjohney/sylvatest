@@ -25,11 +25,10 @@ spec:
       - image: ${AUTOSCALER_IMAGE}
         imagePullPolicy: IfNotPresent
         name: cluster-autoscaler
-        command:
+        command: [ "/bin/sleep", "86400" ]
 #        - /cluster-autoscaler
-        - /bin/sh
-        args:
-        - 'sleep 9999999'
+
+#        args:
 #        - --cloud-provider=clusterapi
 #        - --kubeconfig=/mnt/kubeconfig/${CLUSTER_NAME}-kubeconfig
 #        - --kubeconfig=/tmp/${CLUSTER_NAME}-kubeconfig
