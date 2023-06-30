@@ -8,6 +8,7 @@ The results are summirized by the following table:
 
 | Date                      | Management Cluster CAPI Providers | Sylva-Core main commit ID        | Result                                       | Test logs (only for failed tests) |
 |---------------------------|-----------------------------------|----------------------------------|----------------------------------------------|-----------------------------------|
+|2023-06-30 02:56|kubeadm-capv|ff54b04b525e37f0073e77b390ba7ef40251ea5c|:x: failed||
 |2023-06-29 02:20|kubeadm-capv|4204550dc3cfc287a959d1ea495035ec6798fa38|:white_check_mark: success||
 |2023-06-28 02:31|kubeadm-capv|16ad0aa6cf1020f317901eb760716f0017b7febd|:x: failed||
 |2023-06-27 02:37|kubeadm-capv|1f5a5d4af74865a31c3e3c1d9212bb0c04dd6741|:white_check_mark: success||
