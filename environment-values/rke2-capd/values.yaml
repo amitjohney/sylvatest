@@ -2,11 +2,19 @@
 
 units:
   cluster:
-    kustomization_spec:
-      path: ./kustomize-units/cluster-manifests/rke2-capd/base
+    helmrelease_spec:
+      values:
+        machine_deployments: null
   # Disabling some units for lightweight deployment testing
   workload-cluster:
     enabled: false
+    helmrelease_spec:
+      values:
+        units:
+          cluster:
+            helmrelease_spec:
+              values:
+                machine_deployments: null
   monitoring:
     enabled: false
   keycloak:

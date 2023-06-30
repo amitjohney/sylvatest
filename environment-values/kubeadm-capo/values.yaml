@@ -2,14 +2,23 @@
 
 units:
   cluster:
-    kustomization_spec:
-      path: ./kustomize-units/cluster-manifests/kubeadm-capo/base
-
+    helmrelease_spec:
+      values:
+        machine_deployments:
+          md0:
+            infra_provider: capo
+            failure_domain: '{{ .Values.cluster.capo.worker_az }}'
   workload-cluster:
     helmrelease_spec:
       values:
-        cluster:
-          worker_replicas: 1
+        units:
+          cluster:
+            helmrelease_spec:
+              values:
+                machine_deployments:
+                  md0:
+                    infra_provider: capo
+                    failure_domain: '{{ .Values.cluster.capo.worker_az }}'
 
 cluster:
   image: capo-ubuntu-2004-kube-v1.23.6-calico-3.23.1

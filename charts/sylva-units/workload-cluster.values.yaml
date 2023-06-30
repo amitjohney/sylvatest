@@ -73,13 +73,10 @@ units:
       # we define those resources outside of the workload-cluster sylva-units
       # Helm release
       capo-cluster-resources: false
-    kustomization_spec:
+    helmrelease_spec:
       # because this resource lives in the mgmt cluster:
       kubeConfig: null  # cancel what is inherited from unit_kustomization_spec_default
       targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
-    # helmrelease_spec:  ## to use instead of the above when we'll switch to sylva-capi-cluster
-    #   kubeConfig: ~
-    #   targetNamespace: '{{ .Release.Namespace }}'
 
   namespace-defs:
     enabled: true
