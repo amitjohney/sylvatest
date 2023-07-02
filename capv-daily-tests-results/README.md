@@ -26,7 +26,6 @@ The results are summirized by the following table:
 |2023-06-03 02:21|kubeadm-capv|c5f3aee9cbad3047223016c83e03f9d92cc3a10a|:white_check_mark: success||
 |2023-06-03 02:21|kubeadm-capv|c5f3aee9cbad3047223016c83e03f9d92cc3a10a|:white_check_mark: success||
 |2023-06-03 02:21|kubeadm-capv|c5f3aee9cbad3047223016c83e03f9d92cc3a10a|:white_check_mark: success||
-|2023-06-02 02:24|kubeadm-capv|a2787c67b46597d703fc4a53e20dec92e62787bb|:white_check_mark: success||
 |2023-05-31 02:12|kubeadm-capv|bf88c6bd0260c7736b4e8ab43a3ed26ad76023de|:white_check_mark: success||
 |2023-05-30 02:11|kubeadm-capv|22811e85844001cdc4643c45a57a9599e74909f8|:white_check_mark: success||
 
