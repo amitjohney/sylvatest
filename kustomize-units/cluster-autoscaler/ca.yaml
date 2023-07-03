@@ -37,7 +37,7 @@ spec:
         - --v=2
         volumeMounts:
         - name: worker-cluster-kubeconfig
-          mountPath: "/mnt/"
+          mountPath: "/mnt/kubeconfig/"
           readOnly: true
       volumes:
       - name: worker-cluster-kubeconfig
