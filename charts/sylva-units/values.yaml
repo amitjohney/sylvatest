@@ -757,6 +757,10 @@ units:
         httpProxy: '{{ .Values.proxies.https_proxy }}'
         httpsProxy: '{{ .Values.proxies.https_proxy }}'
         noProxy: '{{ include "sylva-units.no_proxy" . }}'
+        images:
+          ironicIPADownloader:
+            repository: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ironic-ipa-downloader/ipa
+            tag: "0.2.0"
         persistence:
           ironic:
             accessMode: "ReadWriteOnce"
