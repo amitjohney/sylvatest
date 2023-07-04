@@ -4,18 +4,9 @@ units:
   cluster:
     helmrelease_spec:
       values:
-        cluster_services_cidrs:
-          - 10.43.0.0/16
-        cluster_pods_cidrs:
-          - 10.42.0.0/16
-        capv:
-          ssh_key: '{{ .Values.cluster.capv.ssh_key }}'
-          username: '{{ .Values.cluster.capv.username }}'
         machine_deployments:
           md0:
             infra_provider: capv
-    helm_secret_values:
-      capv: '{{ .Values.cluster.capv.password }}'
   workload-cluster:
     enabled: false
     helmrelease_spec:
@@ -24,13 +15,6 @@ units:
           cluster:
             helmrelease_spec:
               values:
-                cluster_services_cidrs:
-                  - 10.43.0.0/16
-                cluster_pods_cidrs:
-                  - 10.42.0.0/16
-                capv:
-                  ssh_key: '{{ .Values.cluster.capv.ssh_key }}'
-                  username: '{{ .Values.cluster.capv.username }}'
                 machine_deployments: null
                   # md0:
                   #   infra_provider: capv
@@ -47,29 +31,34 @@ cluster:
     bootstrap_provider: cabpr
 
   capv:
-    # -- Datacenter to use
-    dataCenter: # replace me
-    # -- VSphere network for VMs and CSI
-    network: # replace me
-    # -- VSphere server dns name
-    server: # replace me
-    # -- VSphere datastore name
-    dataStore: # replace me
-    # -- VSphere https TLS thumbprint
-    tlsThumbprint: # replace me
-    # -- SSH public key for VM access
-    ssh_key: # replace me
-    # -- VSphere folder
-    folder: # replace me
-    # -- VSphere resoucepool
-    resourcePool: # replace me
-    # -- VSphere storage policy name
-    storagePolicyName: # replace me
-
+    dataCenter: # Datacenter to use
+    network: # VSphere network for VMs and CSI
+    server: # VSphere server dns name
+    dataStore: # VSphere datastore name
+    tlsThumbprint: # VSphere https TLS thumbprint
+    ssh_key: # SSH public key for VM access
+    folder: # VSphere folder
+    resourcePool: # VSphere resoucepool
+    storagePolicyName: # VSphere storage policy name
 
   cluster_external_ip: # replace me
 
 proxies:
-  http_proxy: # replace me
-  https_proxy: # replace me
-  no_proxy: # replace me
+  # put your own proxy settings here if you need
+  http_proxy: ""
+  https_proxy: ""
+  no_proxy: ""
+
+# configure containerd registry mirrors following https://github.com/containerd/containerd/blob/main/docs/hosts.md
+# see charts/syla-units/values.yaml for a more detailled example
+# registry_mirrors:
+#   hosts_config:
+#     docker.io:
+#     - mirror_url: http://your.mirror/docker
+
+# add ntp servers if you need
+ntp:
+  enabled: false
+  servers:
+  # - 1.2.3.4
+  # - 1.2.3.5

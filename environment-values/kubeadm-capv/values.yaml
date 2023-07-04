@@ -4,18 +4,9 @@ units:
   cluster:
     helmrelease_spec:
       values:
-        cluster_services_cidrs:
-          - 10.43.0.0/16
-        cluster_pods_cidrs:
-          - 10.42.0.0/16
-        capv:
-          ssh_key: '{{ .Values.cluster.capv.ssh_key }}'
-          username: '{{ .Values.cluster.capv.username }}'
         machine_deployments:
           md0:
             infra_provider: capv
-    helm_secret_values:
-      capv: '{{ .Values.cluster.capv.password }}'
   workload-cluster:
     enabled: false
     helmrelease_spec:
@@ -24,22 +15,20 @@ units:
           cluster:
             helmrelease_spec:
               values:
-                cluster_services_cidrs:
-                  - 10.43.0.0/16
-                cluster_pods_cidrs:
-                  - 10.42.0.0/16
-                capv:
-                  ssh_key: '{{ .Values.cluster.capv.ssh_key }}'
-                  username: '{{ .Values.cluster.capv.username }}'
                 machine_deployments: null
                   # md0:
                   #   infra_provider: capv
 
 cluster:
+  control_plane_replicas: 1
+  worker_replicas: 3
+
   image: "ubuntu-2004-kube-v1.24.10"
+
   capi_providers:
     infra_provider: capv
     bootstrap_provider: cabpk
+
   capv:
     dataCenter: # Datacenter to use
     network: # VSphere network for VMs and CSI
@@ -50,7 +39,6 @@ cluster:
     folder: # VSphere folder
     resourcePool: # VSphere resoucepool
     storagePolicyName: # VSphere storage policy name
-  worker_replicas: 1
 
 proxies:
   # put your own proxy settings here if you need

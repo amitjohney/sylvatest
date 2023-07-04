@@ -846,6 +846,7 @@ units:
         worker_machine_image: '{{ .Values.cluster.worker_machine_image | default .Values.cluster.image }}'
         k8s_version: '{{ .Values.cluster.k8s_version }}'
         control_plane_replicas: '{{ .Values.cluster.control_plane_replicas | include "preserve-type" }}'
+        cluster_external_ip: '{{ tuple .Values.cluster.cluster_external_ip (not (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
         cluster_services_cidrs:
           - 10.43.0.0/16
         cluster_pods_cidrs:
@@ -861,6 +862,16 @@ units:
           control_plane_az: '{{ tuple (.Values.cluster | dig "capo" "control_plane_az" list | include "preserve-type") (.Values.cluster | dig "capo" "control_plane_az" nil) | include "set-only-if" }}'
           #cacert: # cert used to validate CA of OpenStack APIs
           resources_tag: '{{ .Values.cluster.capo.resources_tag }}'
+        capv:
+          dataCenter: '{{ .Values.cluster.capv.dataCenter }}'
+          network: '{{ .Values.cluster.capv.network }}'
+          server: '{{ .Values.cluster.capv.server }}'
+          dataStore: '{{ .Values.cluster.capv.dataStore }}'
+          tlsThumbprint: '{{ .Values.cluster.capv.tlsThumbprint }}'
+          ssh_key: '{{ .Values.cluster.capv.ssh_key }}'
+          folder: '{{ .Values.cluster.capv.folder }}'
+          resourcePool: '{{ .Values.cluster.capv.resourcePool }}'
+          storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
         machine_deployment_default:
           metadata:
             labels:
@@ -870,7 +881,7 @@ units:
           network_interfaces: {}
         machine_deployments:
           md0:
-            replicas: 1
+            replicas: '{{ .Values.cluster.worker_replicas | include "preserve-type" }}'
             failure_domain: ""
             network_interfaces: {}
         capi_rancher_import: false
@@ -898,6 +909,9 @@ units:
     helm_secret_values:
       capo:
         clouds_yaml: '{{ .Values.cluster | dig "capo" "clouds_yaml" dict | include "preserve-type" }}'  # for CAPO and cinder-csi
+      capv:
+        username: '{{ .Values.cluster.capv.username }}'
+        password: '{{ .Values.cluster.capv.password }}'
 
   heat-operator:
     enabled_conditions:
@@ -1747,6 +1761,16 @@ units:
             rootVolume:
               diskSize: '{{ .Values.cluster.capo.rootVolume.diskSize | include "preserve-type" }}'
               volumeType: '{{ .Values.cluster.capo.rootVolume.volumeType | include "preserve-type" }}'
+          capv:
+            dataCenter: '{{ .Values.cluster.capv.dataCenter }}'
+            network: '{{ .Values.cluster.capv.network }}'
+            server: '{{ .Values.cluster.capv.server }}'
+            dataStore: '{{ .Values.cluster.capv.dataStore }}'
+            tlsThumbprint: '{{ .Values.cluster.capv.tlsThumbprint }}'
+            ssh_key: '{{ .Values.cluster.capv.ssh_key }}'
+            folder: '{{ .Values.cluster.capv.folder }}'
+            resourcePool: '{{ .Values.cluster.capv.resourcePool }}'
+            storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
           cluster_external_domain: '{{ .Values.cluster.cluster_external_domain }}'
           air_gapped: '{{ .Values.cluster.air_gapped | include "preserve-type" }}'
 
@@ -1791,6 +1815,9 @@ units:
       cluster:
         capo:
           clouds_yaml: '{{ .Values.cluster | dig "capo" "clouds_yaml" dict | include "preserve-type" }}'  # for CAPO and cinder-csi
+        capv:
+        username: '{{ .Values.cluster.capv.username }}'
+        password: '{{ .Values.cluster.capv.password }}'
 
 
   os-image-server:
@@ -1920,6 +1947,18 @@ cluster:
 
   capd:
     docker_host: unix:///var/run/docker.sock
+
+  capv:
+    username: ""
+    password: ""
+    dataCenter: ""
+    network: ""
+    server: ""
+    dataStore: ""
+    tlsThumbprint: ""
+    folder: ""
+    resourcePool: ""
+    storagePolicyName: ""
 
   flux_webui:
     admin_user: admin
