@@ -1817,7 +1817,6 @@ units:
 
   pause-cluster-reconciliation:
     enabled_conditions:
-    - false
     - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
     depends_on:
       workload-cluster: '{{ tuple . "workload-cluster" | include "unit-enabled" }}'

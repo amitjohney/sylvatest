@@ -52,7 +52,7 @@ units:
 
   pause-cluster-reconciliation:
     enabled_conditions:
-    - '{{ tuple . "cluster" | include "unit-enabled" }}'
+    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" }}'
     depends_on:
       cluster: '{{ tuple . "cluster" | include "unit-enabled" }}'
 
