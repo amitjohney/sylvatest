@@ -41,20 +41,15 @@ units:
       path: ./kustomize-units/bootstrap-local-path
       wait: true
 
-  resume-cluster-reconciliation:
-    enabled_conditions:
-    - '{{ tuple . "cluster" | include "unit-enabled" }}'
-
   cluster:
     depends_on:
       reconcile-sylva-units: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
       resume-cluster-reconciliation: true
 
   pause-cluster-reconciliation:
-    enabled_conditions:
-    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     depends_on:
       cluster: '{{ tuple . "cluster" | include "unit-enabled" }}'
+      reconcile-sylva-units: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
 
   calico-crd:
     # overload calico-crd definition in bootstrap context to deploy in the management cluster

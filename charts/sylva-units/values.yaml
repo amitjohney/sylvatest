@@ -1664,8 +1664,6 @@ units:
           version: 102.2.0+up1.4.1
 
   resume-cluster-reconciliation:
-    enabled_conditions:
-    - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kube-job
@@ -1687,12 +1685,10 @@ units:
             path: /data/kube-job.sh
             value: |
               #!/bin/bash
-              cluster_name=$(kubectl get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}')
-              if [ ${cluster_name} ]; then
+              #!/bin/bash
+              for cluster_name in $(kubectl get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}'); do
                 kubectl patch cluster ${cluster_name} --type merge -p '{"spec":{"paused": false}}'
-              else
-                echo "No existing cluster present"
-              fi
+              done
 
   # this unit is an example of how to use sylva-units to deploy a workload-cluster
   workload-cluster:
@@ -1816,10 +1812,8 @@ units:
           clouds_yaml: '{{ .Values.cluster | dig "capo" "clouds_yaml" dict | include "preserve-type" }}'  # for CAPO and cinder-csi
 
   pause-cluster-reconciliation:
-    enabled_conditions:
-    - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
     depends_on:
-      workload-cluster: '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
+      capi-rancher-import: '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kube-job
@@ -1841,12 +1835,9 @@ units:
             path: /data/kube-job.sh
             value: |
               #!/bin/bash
-              cluster_name=$(kubectl get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}')
-              if [ ${cluster_name} ]; then
+              for cluster_name in $(kubectl get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}'); do
                 kubectl patch cluster ${cluster_name} --type merge -p '{"spec":{"paused": true}}'
-              else
-                echo "No existing cluster present"
-              fi
+              done
 
   os-image-server:
     # this units allows to deploy web server on management cluster
