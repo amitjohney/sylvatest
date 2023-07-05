@@ -22,6 +22,7 @@ spec:
       - "https://${RANCHER_DNS}"
     standardFlowEnabled: true
     directAccessGrantsEnabled: true
+    serviceAccountsEnabled: true
     defaultClientScopes:
       - "profile"
       - "email"

@@ -20,6 +20,6 @@ spec:
       - type: password
         value: "${SSO_PASSWORD}"
         temporary: false
-    realmRoles:
+    clientRoles:
       - query-users
       - query-groups
