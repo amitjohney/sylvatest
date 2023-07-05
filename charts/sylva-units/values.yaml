@@ -69,7 +69,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.0.5-3df06f476b
+        tag: 0.0.7
 
   local-path-provisioner:
     kind: GitRepository
@@ -1821,8 +1821,8 @@ units:
         capo:
           clouds_yaml: '{{ .Values.cluster | dig "capo" "clouds_yaml" dict | include "preserve-type" }}'  # for CAPO and cinder-csi
         capv:
-        username: '{{ .Values.cluster.capv.username }}'
-        password: '{{ .Values.cluster.capv.password }}'
+          username: '{{ .Values.cluster.capv.username }}'
+          password: '{{ .Values.cluster.capv.password }}'
 
 
   os-image-server:
