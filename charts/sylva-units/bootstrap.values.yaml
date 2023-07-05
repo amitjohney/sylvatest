@@ -105,7 +105,7 @@ units:
         patch: |
           - op: replace
             path: /metadata/name
-            value: resume-cluster-reconciliation-job
+            value: pause-cluster-reconciliation-job
       - target:
           kind: ConfigMap
           name: job-scripts
@@ -116,7 +116,7 @@ units:
               #!/bin/bash
               #!/bin/bash
               for cluster_name in $(kubectl --kubeconfig management-cluster-kubeconfig get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}'); do
-                kubectl --kubeconfig management-cluster-kubeconfig patch cluster.cluster.x-k8s.io ${cluster_name} --type merge -p '{"spec":{"paused": false}}'
+                kubectl --kubeconfig management-cluster-kubeconfig patch cluster.cluster.x-k8s.io ${cluster_name} --type merge -p '{"spec":{"paused": true}}'
               done
 
   management-cluster-configs:
