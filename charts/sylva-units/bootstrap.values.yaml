@@ -92,8 +92,12 @@ units:
 
   pause-cluster-reconciliation:
     depends_on:
-      cluster: '{{ tuple . "cluster" | include "unit-enabled" }}'
-      management-cluster-flux: true
+      cluster: true
+      pivot: true
+    kustomization_spec:
+      kubeConfig:
+        secretRef:
+          name: '{{ .Values.cluster.name }}-kubeconfig'
 
   management-cluster-configs:
     depends_on:
