@@ -114,7 +114,6 @@ units:
             path: /data/kube-job.sh
             value: |
               #!/bin/bash
-              #!/bin/bash
               for cluster_name in $(kubectl --kubeconfig management-cluster-kubeconfig get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}'); do
                 kubectl --kubeconfig management-cluster-kubeconfig patch cluster.cluster.x-k8s.io ${cluster_name} --type merge -p '{"spec":{"paused": true}}'
               done
@@ -338,15 +337,14 @@ units_override_enabled:
   - '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
   - '{{ tuple "metal3" (.Values.cluster.capi_providers.infra_provider | eq "capm3") | include "set-only-if" }}'
   - bootstrap-local-path
-  - resume-cluster-reconciliation
   - cluster
-  - pause-cluster-reconciliation
   - calico-crd
   - calico
   - management-cluster-flux
   - management-cluster-configs
   - management-sylva-units
   - pivot
+  - pause-cluster-reconciliation
   - heat-operator
   - capo-cluster-resources
   - reconcile-sylva-units
