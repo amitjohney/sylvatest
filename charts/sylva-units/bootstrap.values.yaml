@@ -116,7 +116,7 @@ units:
               #!/bin/bash
               #!/bin/bash
               for cluster_name in $(kubectl --kubeconfig management-cluster-kubeconfig get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}'); do
-                kubectl patch cluster ${cluster_name} --type merge -p '{"spec":{"paused": false}}'
+                kubectl --kubeconfig management-cluster-kubeconfig patch cluster.cluster.x-k8s.io ${cluster_name} --type merge -p '{"spec":{"paused": false}}'
               done
 
   management-cluster-configs:
