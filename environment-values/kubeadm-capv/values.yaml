@@ -40,6 +40,8 @@ cluster:
     resourcePool: # VSphere resoucepool
     storagePolicyName: # VSphere storage policy name
 
+  cluster_external_ip: # replace me
+
 proxies:
   # put your own proxy settings here if you need
   http_proxy: ""
