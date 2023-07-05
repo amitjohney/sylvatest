@@ -1,0 +1,47 @@
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: ${VCLUSTER_NAME}
+spec:
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+    kind: VCluster
+    name: ${VCLUSTER_NAME}
+  controlPlaneRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+    kind: VCluster
+    name: ${VCLUSTER_NAME}
+---
+# https://github.com/loft-sh/cluster-api-provider-vcluster/blob/main/README.md#vcluster-custom-resource-example
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+kind: VCluster
+metadata:
+  name: ${VCLUSTER_NAME}
+spec:
+  kubernetesVersion: "1.24.12"
+  helmRelease:
+    values: |-
+      ingress:
+        enabled: true
+        ingressClassName: ${INGRESS_CLASS_NAME}
+        host: ${VCLUSTER_API_EXTERNAL_URL}
+      sync:  # https://www.vcluster.com/docs/architecture/synced-resources#sync-all-secrets-and-configmaps
+        secrets:
+          all: true
+        configmaps:
+          all: true
+      fallbackHostDns: true  # https://www.vcluster.com/docs/architecture/networking#fallback-to-host-dns
+      mapServices:  # https://www.vcluster.com/docs/architecture/networking#map-host-cluster-service-to-vcluster-service
+        fromHost:
+        - from: keycloak/${KEYCLOAK_EXTERNAL_URL}
+          to: vcluster/${KEYCLOAK_EXTERNAL_URL}  # maybe not needed
+      syncer:
+        extraArgs:
+        - --tls-san=${VCLUSTER_API_EXTERNAL_URL}
+    chart:
+      name: "vcluster-k8s"
+      repo: "https://charts.loft.sh"
+      version: "v0.15.3-beta.0" # https://github.com/loft-sh/vcluster/releases; see https://github.com/loft-sh/cluster-api-provider-vcluster/blob/v0.1.3/pkg/constants/constants.go#L7
+  controlPlaneEndpoint:
+    host: "${VCLUSTER_API_EXTERNAL_URL}"
+    port: "443"

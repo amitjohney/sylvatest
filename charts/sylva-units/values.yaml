@@ -738,6 +738,14 @@ units:
       path: ./kustomize-units/cabpr
       wait: true
 
+  capvc:
+    enabled_conditions:
+    - '{{ tuple . "rancher" | include "unit-enabled" }}'
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/capvc
+      wait: true
+
   metal3:
     depends_on:
       cert-manager: true
@@ -1086,8 +1094,24 @@ units:
         substitute:
           FLUX_ADMIN_USERNAME: '{{ .Values.cluster.flux_webui.admin_user }}'
 
+  vcluster:
+    enabled_conditions:
+    - '{{ tuple . "rancher" | include "unit-enabled" }}'
+    repo: sylva-core
+    depends_on:
+      capvc: true
+    kustomization_spec:
+      path: ./kustomize-units/vcluster
+      postBuild:
+        substitute:
+          VCLUSTER_NAME: '{{ .Values.cluster.name }}-rancher-vcluster'
+          INGRESS_CLASS_NAME: "nginx"
+          KEYCLOAK_EXTERNAL_URL: '{{ .Values.cluster.keycloak.external_hostname }}'
+          VCLUSTER_API_EXTERNAL_URL: '{{ .Values.cluster.vcluster.external_hostname }}'
+
   rancher:
     depends_on:
+      vcluster: true
       cert-manager: true
       k8s-gateway: true
       sylva-ca-certs: true
@@ -1159,6 +1183,9 @@ units:
                             initialDelaySeconds: 120
                             periodSeconds: 30
                             failureThreshold: 20
+      kubeConfig:
+        secretRef:
+          name: '{{ .Values.cluster.name }}-rancher-vcluster-kubeconfig'
 
     kustomization_spec:
       # these healthchecks are added so that this unit does not become ready before
@@ -1979,6 +2006,9 @@ cluster:
 
   flux:
     external_hostname: 'flux.{{ .Values.cluster.cluster_external_domain }}'
+
+  vcluster:
+    external_hostname: 'vcluster.{{ .Values.cluster.cluster_external_domain }}'
 
   test_workload_cluster_name: first-workload-cluster
 
