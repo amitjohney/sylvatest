@@ -53,3 +53,6 @@ spec:
           access.token.claim: "false"
           userinfo.token.claim: "true"
           claim.name: full_group_path
+  serviceAccountRealmRoles:
+    - query-users
+    - query-groups
