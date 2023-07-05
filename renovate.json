@@ -82,6 +82,13 @@
       "datasourceTemplate": "git-tags"
     },
     {
+      "fileMatch": "values.yaml",
+      "matchStrings": [
+        "\\s+repository:\\s+(?<registryUrl>.*?)\/(?<depName>.*)\\n\\s+tag:\\s+\"(?<currentValue>.*)\"\\n"
+      ],
+      "datasourceTemplate": "docker"
+    },
+    {
       "datasourceTemplate": "docker",
       "fileMatch": ["management-cluster-capv-values.yaml"],
       "matchStrings": [
