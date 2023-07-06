@@ -1106,7 +1106,7 @@ units:
         substitute:
           VCLUSTER_NAME: '{{ .Values.cluster.name }}-rancher-vcluster'
           INGRESS_CLASS_NAME: "nginx"
-          KEYCLOAK_EXTERNAL_URL: '{{ .Values.cluster.keycloak.external_hostname }}'
+          # KEYCLOAK_EXTERNAL_URL: '{{ .Values.cluster.keycloak.external_hostname }}'
           VCLUSTER_API_EXTERNAL_URL: '{{ .Values.cluster.vcluster.external_hostname }}'
 
   rancher:

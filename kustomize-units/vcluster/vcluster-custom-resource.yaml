@@ -31,10 +31,10 @@ spec:
         configmaps:
           all: true
       fallbackHostDns: true  # https://www.vcluster.com/docs/architecture/networking#fallback-to-host-dns
-      mapServices:  # https://www.vcluster.com/docs/architecture/networking#map-host-cluster-service-to-vcluster-service
-        fromHost:
-        - from: keycloak/${KEYCLOAK_EXTERNAL_URL}
-          to: vcluster/${KEYCLOAK_EXTERNAL_URL}  # maybe not needed
+      # mapServices:  # https://www.vcluster.com/docs/architecture/networking#map-host-cluster-service-to-vcluster-service
+      #   fromHost:
+      #   - from: keycloak/${KEYCLOAK_EXTERNAL_URL}
+      #     to: vcluster/${KEYCLOAK_EXTERNAL_URL}  # maybe not needed
       syncer:
         extraArgs:
         - --tls-san=${VCLUSTER_API_EXTERNAL_URL}
