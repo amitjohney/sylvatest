@@ -232,6 +232,8 @@ spec:
       extraArgs:
       - provider-id=metal3://{{ ds.meta_data.uuid }}
     nodeName: '{{ ds.meta_data.local_hostname }}'
+    nodeLabels:
+      - "node.longhorn.io/create-default-disk={{ds.meta_data.longhorn}}"
     additionalUserData:
       config: |
         #cloud-config
@@ -345,6 +347,8 @@ spec:
           extraArgs:
             - provider-id=metal3://{{ ds.meta_data.uuid }}
         nodeName: '{{ ds.meta_data.local_hostname }}'
+        nodeLabels:
+          - "node.longhorn.io/create-default-disk={{ds.meta_data.longhorn}}"
         additionalUserData:
           config: |
             #cloud-config
@@ -452,6 +456,8 @@ spec:
           extraArgs:
             - provider-id=metal3://{{ ds.meta_data.uuid }}
         nodeName: '{{ ds.meta_data.local_hostname }}'
+        nodeLabels:
+          - "node.longhorn.io/create-default-disk={{ds.meta_data.longhorn}}"
         additionalUserData:
           config: |
             bootcmd:
@@ -577,6 +583,8 @@ spec:
           extraArgs:
             - provider-id=metal3://{{ ds.meta_data.uuid }}
         nodeName: '{{ ds.meta_data.local_hostname }}'
+        nodeLabels:
+          - "node.longhorn.io/create-default-disk={{ds.meta_data.longhorn}}"
         additionalUserData:
           config: |
             bootcmd:

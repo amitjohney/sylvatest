@@ -41,6 +41,10 @@ spec:
     prefixesFromIPPool:
     - key: provisioningCIDR
       name: provisioning-pool
+    fromLabels:
+    - key: longhorn
+      object: baremetalhost
+      label: longhorn
   networkData:
     links:
       ethernets:
@@ -181,6 +185,10 @@ spec:
     prefixesFromIPPool:
     - key: provisioningCIDR
       name: provisioning-pool
+    fromLabels:
+    - key: longhorn
+      object: baremetalhost
+      label: longhorn
   networkData:
     links:
       ethernets:
@@ -247,6 +255,10 @@ spec:
     prefixesFromIPPool:
     - key: provisioningCIDR
       name: provisioning-pool
+    fromLabels:
+    - key: longhorn
+      object: baremetalhost
+      label: longhorn
   networkData:
     links:
       ethernets:
@@ -313,6 +325,10 @@ spec:
     prefixesFromIPPool:
     - key: provisioningCIDR
       name: provisioning-pool
+    fromLabels:
+    - key: longhorn
+      object: baremetalhost
+      label: longhorn
   networkData:
     links:
       ethernets:
