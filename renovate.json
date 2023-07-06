@@ -86,6 +86,7 @@
       "matchStrings": [
         "\\s+repository:\\s+(?<registryUrl>.*)\/(?<depName>.*)\\n\\s+tag:\\s+\"(?<currentValue>.*)\"\\n"
       ],
+      "registryUrlTemplate": "https://{{{ registryUrl }}}",
       "datasourceTemplate": "docker"
     },
     {
