@@ -1,7 +1,7 @@
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: use-kata-containers-on-untrusted-pod
+  name: kata-containers-on-untrusted-pod
   annotations:
     policies.kyverno.io/title: add runtimeclass
     policies.kyverno.io/category: Best Practices
