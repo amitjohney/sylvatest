@@ -84,7 +84,7 @@
     {
       "fileMatch": "values.yaml",
       "matchStrings": [
-        "\\s+repository:\\s+(?<registryUrl>.*?)\/(?<depName>.*)\\n\\s+tag:\\s+\"(?<currentValue>.*)\"\\n"
+        "\\s+repository:\\s+(?<registryUrl>.*)\/(?<depName>.*)\\n\\s+tag:\\s+\"(?<currentValue>.*)\"\\n"
       ],
       "datasourceTemplate": "docker"
     },
