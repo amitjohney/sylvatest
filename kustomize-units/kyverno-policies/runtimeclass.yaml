@@ -1,0 +1,30 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: use-kata-containers-on-untrusted-pod
+  annotations:
+    policies.kyverno.io/title: add runtimeclass
+    policies.kyverno.io/category: Best Practices
+    policies.kyverno.io/minversion: 1.6.0
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      To have greater level of isolation on kernel.
+      If any pod will have annotation untrusted as 'true' then this policy will
+      add runtimeclassname in spec
+      The value of untrusted tag must be passed as string.
+spec:
+  validationFailureAction: Enforce
+  rules:
+  - name: check-for-untrusted-label
+    match:
+      resources:
+        kinds:
+        - Pod
+        selector:
+          matchLabels:
+            untrusted: "true"
+    mutate:
+      patchStrategicMerge:
+        spec:
+          +(runtimeClassName): kata-qemu
