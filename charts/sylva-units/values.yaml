@@ -744,6 +744,9 @@ units:
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/capvc
+      postBuild:
+        substitute:
+          force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
       wait: true
 
   metal3:
