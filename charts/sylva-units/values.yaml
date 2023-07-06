@@ -1159,6 +1159,19 @@ units:
                             initialDelaySeconds: 120
                             periodSeconds: 30
                             failureThreshold: 20
+            # we generate the Secret with an ExternalSecret from the synchronize-secrets unit
+            # so we don't want to have the Helm chart manage it, or else the Secret will be accidentally
+            # deleted if Rancher is uninstalled (e.g. because of a timeout when installing it)
+            # see https://gitlab.com/sylva-projects/sylva-core/-/issues/397
+            patches:
+            - target:
+                kind: Secret
+                name: bootstrap-secret
+              patch: |-
+                $patch: delete
+                kind: _unused_
+                metadata:
+                  name: _unused_
 
     kustomization_spec:
       # these healthchecks are added so that this unit does not become ready before
