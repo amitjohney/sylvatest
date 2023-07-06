@@ -89,34 +89,6 @@ units:
     labels:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
 
-  pause-cluster-reconciliation:
-    depends_on:
-      cluster: true
-      pivot: true
-    kustomization_spec:
-      path: ./kustomize-units/kube-job
-      wait: true
-      force: true
-      _patches:
-      - target:
-          kind: Job
-          name: kube-job
-        patch: |
-          - op: replace
-            path: /metadata/name
-            value: pause-cluster-reconciliation-job
-      - target:
-          kind: ConfigMap
-          name: job-scripts
-        patch: |
-          - op: replace
-            path: /data/kube-job.sh
-            value: |
-              #!/bin/bash
-              for cluster_name in $(kubectl --kubeconfig management-cluster-kubeconfig get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}'); do
-                kubectl --kubeconfig management-cluster-kubeconfig patch cluster.cluster.x-k8s.io ${cluster_name} --type merge -p '{"spec":{"paused": true}}'
-              done
-
   management-cluster-configs:
     depends_on:
       management-cluster-flux: true
@@ -343,7 +315,6 @@ units_override_enabled:
   - management-cluster-configs
   - management-sylva-units
   - pivot
-  - pause-cluster-reconciliation
   - heat-operator
   - capo-cluster-resources
   - reconcile-sylva-units
