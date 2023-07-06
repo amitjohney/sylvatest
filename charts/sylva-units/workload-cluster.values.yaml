@@ -35,7 +35,7 @@ unit_kustomization_spec_default:
 # in the mgmt cluster, so we "reset" the targetNamespace and kubeconfig
 # set right above and .... (more below ...)
 unit_helmrelease_kustomization_spec_default:
-  kubeConfig: ~
+  kubeConfig: null
   targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
 
 # ... and its at the level of the HelmRelease that we ensure
