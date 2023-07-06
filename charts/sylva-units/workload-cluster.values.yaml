@@ -73,6 +73,8 @@ units:
       # we define those resources outside of the workload-cluster sylva-units
       # Helm release
       capo-cluster-resources: false
+      # we don't depend on metal3 even if infra_provider is set to capm3
+      metal3: false
     helmrelease_spec:
       # because this resource lives in the mgmt cluster:
       kubeConfig: null  # cancel what is inherited from unit_kustomization_spec_default
