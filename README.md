@@ -30,7 +30,7 @@ In following readme, we assume that the reader is familiar with [cluster-api](ht
 ### Requirements
 
 - In order to be able to fetch Sylva and 3rd party artifacts, the Sylva clusters must have access to the internet (through an HTTP proxy if required), or to a registry that is mirroring all the required images and OCI artifacts.
-- For kubeadm-capo and rke2 capo based deployment, on management-cluster, we require atleast:
+- For kubeadm-capo and rke2 capo based deployment, on management-cluster, we require at least:
   - `RAM`: 8GB
   - `VCPU`: 4 cores
   - `Storage`: 20GB
