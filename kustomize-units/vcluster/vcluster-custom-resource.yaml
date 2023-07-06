@@ -50,9 +50,9 @@ spec:
         extraArgs:
         - --tls-san=${VCLUSTER_API_EXTERNAL_URL}
     chart:
-      name: "vcluster-k8s"
+      name: "vcluster"  # "k3s" distro of vcluster; other available options: "vcluster-k8s", "vcluster-k0s" and "vcluster-eks".
       repo: "https://charts.loft.sh"
-      version: "v0.15.3-beta.0" # https://github.com/loft-sh/vcluster/releases; see https://github.com/loft-sh/cluster-api-provider-vcluster/blob/v0.1.3/pkg/constants/constants.go#L7
+      version: "v0.15.2"  # https://github.com/loft-sh/vcluster/releases; see https://github.com/loft-sh/cluster-api-provider-vcluster/blob/v0.1.3/pkg/constants/constants.go#L7
   controlPlaneEndpoint:
     host: "${VCLUSTER_API_EXTERNAL_URL}"
     port: 443
