@@ -150,7 +150,7 @@ metadata:
   name: ${CLUSTER_NAME}-worker
   annotations:
     cluster.x-k8s.io/cluster-api-autoscaler-node-group-max-size: "5"
-    cluster.x-k8s.io/cluster-api-autoscaler-node-group-min-size: "0"
+    cluster.x-k8s.io/cluster-api-autoscaler-node-group-min-size: "1"
 spec:
   clusterName: ${CLUSTER_NAME}
 #  replicas: ${WORKER_REPLICAS:=0}
