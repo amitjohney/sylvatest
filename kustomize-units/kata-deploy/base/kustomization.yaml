@@ -5,4 +5,4 @@ resources:
 - kata-deploy.yaml
 - kata-rbac.yaml
 - runtimeclasses.yaml
-- ../../../kustomize-units/kyverno-policies/runtimeclass.yaml
+- ../kyverno-policy/runtimeclass_policy.yaml
