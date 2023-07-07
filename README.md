@@ -38,8 +38,7 @@ In following readme, we assume that the reader is familiar with [cluster-api](ht
   - `RAM`: 16GB
   - `VCPU`: 8 cores
   - `Storage`: 50GB (256 GB when workload cluster is enabled)
-
-
+  
 ### Defining your environment values
 
 Management cluster configuration is done through the `sylva-units` chart values, as overrides over the chart defaults. In order properly configure the cluster, it is important to understand how this configuration will be generated. The values are made of two sections:
