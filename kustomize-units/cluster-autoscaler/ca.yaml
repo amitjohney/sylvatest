@@ -60,7 +60,7 @@ roleRef:
   name: cluster-autoscaler-manik
 subjects:
 - kind: ServiceAccount
-  name: cluster-autoscaler-manik
+  name: cluster-autoscaler
   namespace: ${AUTOSCALER_NS}
 ---
 kind: ClusterRoleBinding
@@ -220,7 +220,8 @@ rules:
   - apiGroups:
     - infrastructure.cluster.x-k8s.io
     resources:
-    - openstackmachinetemplates
+    - openstackmachinetemplate
+    - openstackcluster
     verbs:
     - get
     - list
