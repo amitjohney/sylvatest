@@ -681,8 +681,8 @@ units:
       path: ./kustomize-units/cluster-autoscaler
       postBuild:
         substitute:
-#          AUTOSCALER_NS: 'kube-system'
-          AUTOSCALER_NS: 'workload-cluster'
+          AUTOSCALER_NS: 'kube-system'
+#          AUTOSCALER_NS: 'workload-cluster'
           AUTOSCALER_IMAGE: 'registry.k8s.io/autoscaling/cluster-autoscaler:v1.26.3'
 #          CAPI_NS: capi-system
           CAPI_NS: 'workload-cluster'
