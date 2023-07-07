@@ -90,7 +90,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/os-image-server.git
       ref:
-        tag: 1.1.0
+        tag: 1.3.0
 
 helm_repo_spec_default:
   interval: 60m0s
@@ -1829,8 +1829,19 @@ units:
   os-image-server:
     # this units allows to deploy web server on management cluster
     # which serves OS image file for baremetal workload cluster
-    enabled: no
+    enabled_conditions:
+      - '{{ tuple . "metal3" | include "unit-enabled" }}'
     repo: os-image-server
+    annotations:
+      sylvactl/readyMessage: |
+        OS images are served at:
+        {{- $osImageFqdn := (coalesce .Values.cluster.os_image_server.external_hostname .Values.cluster.display_external_ip) -}}
+        {{- range $imageName, $imageParams := (coalesce .Values.cluster.os_images .Values._internal.default_os_images) }}
+          * https://{{ $osImageFqdn }}/{{ $imageParams.filename }}(.sha256sum)
+        {{- end }}
+        {{- if not (eq $osImageFqdn .Values.cluster.display_external_ip)}}
+        ({{ .Values.cluster.os_image_server.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})
+        {{- end }}
     helmrelease_spec:
       chart:
         spec:
@@ -1839,22 +1850,18 @@ units:
       install:
         createNamespace: true
       values:
-        osImages: {}
-          # # osImages images that should be served and from where they should be downloaded
-          # ubuntu-k8s-1-24-14-rke2:
-          #   uri: "oci://registry.gitlab.com/sylva-projects/sylva-elements/helm-charts/os-image-server/fake_image:latest"
-          #   filename: "ubuntu-k8s-1.24.14-rke2.tar.gz"
-          #   checksum: "57a811ed37ec21235e2e82434519e9aab489cbbbee026df44edcd64e7ba08ccd"
-          #   persistence:
-          #     size: 2Gi
-          #     storageClass: standard
-          # sles-k8s-1-25-5-kubeadm:
-          #   uri: "oci://registry.gitlab.com/sylva-projects/sylva-elements/helm-charts/os-image-server/fake_image:latest"
-          #   filename: "sles-k8s-1.25.5-kubeadm.tar.gz"
-          #   persistence:
-          #     size: 3Gi
-          #     storageClass: longhorn
-
+        downloader:
+          proxy: '{{ get .Values.proxies "https_proxy" }}'
+          no_proxy: '{{ include "sylva-units.no_proxy" . }}'
+        ingress:
+          className: nginx
+          hosts:
+            - host: '{{ .Values.cluster.os_image_server.external_hostname }}'
+        osImages: '{{ coalesce .Values.cluster.os_images .Values._internal.default_os_images | include "preserve-type" }}'
+        osImagePersistenceDefaults:
+          enabled: true
+          size: 1Gi
+          storageClass: '{{ .Values._internal.default_storage_class }}'
 
 ## stuff related to the 'cluster' unit
 
@@ -1981,6 +1988,13 @@ cluster:
   flux:
     external_hostname: 'flux.{{ .Values.cluster.cluster_external_domain }}'
 
+  os_image_server:
+    external_hostname: ''
+
+  # osImages images that should be served and from where they should be downloaded
+  # if empty default value are used (default_os_images)
+  os_images: {}
+
   test_workload_cluster_name: first-workload-cluster
 
   # to configure the SR-IOV VFs on the supported NICs of cluster nodes
@@ -2048,3 +2062,14 @@ _internal:
   sylva_core_version: ''
 
   sylva_core_existing_source: '{{ .Values.unit_helmrelease_kustomization_spec_default.sourceRef }}'
+
+  # These values are used only if `cluster.os_images` is empty
+  default_os_images:
+    ubuntu-2004-hardened-qcow2:
+      uri: oci://registry.gitlab.com/sylva-projects/sylva-elements/diskimage-builder/diskimage-builder-hardened:0.0.1
+      filename: ubuntu-20.04-hardened.qcow2
+      checksum: 2b9544d2d3af8d693e85b5784d26569e9bccdaff83cf6db0095102a884404840
+    ubuntu-2004-plain-qcow2:
+      uri: oci://registry.gitlab.com/sylva-projects/sylva-elements/diskimage-builder/diskimage-builder-plain:0.0.1
+      filename: ubuntu-20.04-plain.qcow2
+      checksum: f5061cdf435b3ba33aeb35e4be8a2a89666fbb0ee0c45120f749518444bca8ca

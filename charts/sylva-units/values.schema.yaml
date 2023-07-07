@@ -582,6 +582,21 @@ properties:
                 format: hostname
               - $ref: "#/$defs/string-with-gotpl"
 
+      os_image_server: # -------------------------------
+        type: object
+        additionalProperties: false
+        properties:
+
+          external_hostname:  # -------------------------------
+            anyOf:
+              - type: string
+                format: hostname
+              - const: ''
+              - $ref: "#/$defs/string-with-gotpl"
+
+      os_images: # -------------------------------
+        type: object
+
       capd:  # -------------------------------
         type: object
         additionalProperties: false
