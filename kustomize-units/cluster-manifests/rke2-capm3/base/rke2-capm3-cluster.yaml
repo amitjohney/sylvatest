@@ -219,10 +219,10 @@ spec:
       YXJ5TmFtZSA9ICJ7eyR2LkJpbmFyeU5hbWV9fSIKe3tlbmR9fQo=
   preRKE2Commands:
   - if [ {{ds.meta_data.longhorn}} ]; then
-  - mkfs.ext4 /dev/sdb
+  - mkfs.ext4 {{ds.meta_data.disk}}
   - mkdir /data
   - mkdir /data/longhorn
-  - mount -t ext4 /dev/sdb /data/longhorn
+  - mount -t ext4 {{ds.meta_data.disk}} /data/longhorn
   - fi
   - netplan apply
   - export HTTP_PROXY=${HTTP_PROXY} HTTPS_PROXY=${HTTP_PROXY} NO_PROXY=${NO_PROXY}

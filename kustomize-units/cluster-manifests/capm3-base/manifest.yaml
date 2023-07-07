@@ -45,6 +45,10 @@ spec:
     - key: longhorn
       object: baremetalhost
       label: longhorn
+    fromAnnotations:
+    - key: disk
+      object: baremetalhost
+      annotation: disk
   networkData:
     links:
       ethernets:
