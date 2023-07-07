@@ -7,6 +7,9 @@ spec:
   backoffLimit: 5
   activeDeadlineSeconds: 1800
   template:
+    metadata:
+      annotations:
+        checksum: ""
     spec:
       containers:
       - name: run-script
