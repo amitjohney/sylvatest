@@ -1480,6 +1480,45 @@ units:
         secretRef:
           name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
 
+  workload-cluster-longhorn-crd:
+    enabled: false
+    depends_on:
+      workload-cluster: true
+    helm_repo_url: https://charts.rancher.io/
+    helmrelease_spec:
+      releaseName: longhorn-crd
+      targetNamespace: longhorn-system
+      install:
+        createNamespace: true
+      chart:
+        spec:
+          chart: longhorn-crd
+          version: 102.2.0+up1.4.1
+      kubeConfig:
+        secretRef:
+          name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
+
+  workload-cluster-longhorn:
+    enabled: false
+    depends_on:
+      workload-cluster-longhorn-crd: true
+    helm_repo_url: https://charts.rancher.io/
+    helmrelease_spec:
+      releaseName: longhorn
+      targetNamespace: longhorn-system
+      chart:
+        spec:
+          chart: longhorn
+          version: 102.2.0+up1.4.1
+      kubeConfig:
+        secretRef:
+          name: '{{ .Values.cluster.test_workload_cluster_name }}-kubeconfig'
+      values:
+        defaultSettings:
+          createDefaultDiskLabeledNodes: true
+          defaultDataPath: /data/longhorn
+          deletingConfirmationFlag: true
+ 
   coredns:
     enabled: true
     repo: sylva-core
