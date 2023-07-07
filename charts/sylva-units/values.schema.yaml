@@ -109,6 +109,7 @@ required:
   - cluster
   - proxies
   - env_type_ci
+  - env_type_dev
   - registry_mirrors
 
 properties:
@@ -1024,6 +1025,9 @@ properties:
       type: string
 
   env_type_ci:
+    type: boolean
+
+  env_type_dev:
     type: boolean
 
   ntp:  # -------------------------------

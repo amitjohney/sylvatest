@@ -71,6 +71,7 @@
     "cluster",
     "proxies",
     "env_type_ci",
+    "env_type_dev",
     "registry_mirrors"
   ],
   "properties": {
@@ -1369,6 +1370,9 @@
       }
     },
     "env_type_ci": {
+      "type": "boolean"
+    },
+    "env_type_dev": {
       "type": "boolean"
     },
     "ntp": {
