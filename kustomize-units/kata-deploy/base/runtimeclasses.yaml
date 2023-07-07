@@ -10,4 +10,4 @@ overhead:
         cpu: "250m"
 scheduling:
     nodeSelector:
-      katacontainers.io/kata-runtime: "true"
+        katacontainers.io/kata-runtime: "true"
