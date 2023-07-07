@@ -741,6 +741,7 @@ units:
   metal3:
     depends_on:
       cert-manager: true
+      '{{ .Values._internal.default_storage_class_unit }}': true
     repo: metal3
     helm_chart_artifact_name: metal3
     helmrelease_spec:

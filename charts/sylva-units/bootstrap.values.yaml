@@ -2,6 +2,8 @@
 #
 # These value are meant to be used as overrides to the default values from values.yaml
 # when the chart is instantiated in the bootstrap cluster
+_internal:
+  default_storage_class_unit: "bootstrap-local-path"
 
 unit_kustomization_spec_default:
   interval: 100000m   # for bootstrap, we don't care about having flux update things on the longterm
@@ -13,8 +15,6 @@ unit_helmrelease_spec_default:
 units:
 
   metal3:
-    depends_on:
-      bootstrap-local-path: true
     helmrelease_spec:
       values:
         # ironicIPADownloaderBaseURI:
