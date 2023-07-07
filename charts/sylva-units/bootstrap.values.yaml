@@ -106,6 +106,9 @@ units:
           - op: replace
             path: /metadata/name
             value: copy-configs-job
+          - op: replace
+            path: /spec/template/metadata/annotations/checksum
+            value: '{{ .Values | toJson | sha256sum }}'
       - target:
           kind: ConfigMap
           name: job-scripts
