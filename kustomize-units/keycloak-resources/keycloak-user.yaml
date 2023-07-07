@@ -21,5 +21,5 @@ spec:
         value: "${SSO_PASSWORD}"
         temporary: false
     clientRoles:
-      - query-users
-      - query-groups
+      ranchers:
+        - view-users

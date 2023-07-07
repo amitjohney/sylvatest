@@ -22,7 +22,6 @@ spec:
       - "https://${RANCHER_DNS}"
     standardFlowEnabled: true
     directAccessGrantsEnabled: true
-    serviceAccountsEnabled: true
     defaultClientScopes:
       - "profile"
       - "email"
@@ -54,6 +53,19 @@ spec:
           access.token.claim: "false"
           userinfo.token.claim: "true"
           claim.name: full_group_path
-  serviceAccountRealmRoles:
-    - query-users
-    - query-groups
+  roles:
+    - name: query-users
+      composite: false
+      client_role: true
+    - name: query-groups
+      composite: false
+      client_role: true
+    - name: view-users
+      composite: true
+      composites:
+        client:
+          rancher:
+            - query-users
+            - query-groups
+      client_role: true
+
