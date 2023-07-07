@@ -776,6 +776,12 @@ units:
         mariadb:
           persistence:
             storageClass: '{{ .Values._internal.default_storage_class }}'
+        podSecurityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
     helm_secret_values:
       mariadb:
         auth:

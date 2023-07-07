@@ -10,6 +10,14 @@ patches:
     patch: |-
       - op: remove
         path: /spec/conversion/webhook/clientConfig/caBundle
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/securityContext/seccompProfile
+        value: null
 # Add labels to enable clusterctl move to retrieve resources correponding to capm3 CRDs
 labels:
   - pairs:
