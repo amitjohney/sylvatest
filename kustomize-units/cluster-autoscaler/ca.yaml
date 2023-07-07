@@ -52,7 +52,7 @@ spec:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: cluster-autoscaler-manik
+  name: cluster-autoscaler-manik-rb
   namespace: ${AUTOSCALER_NS}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -93,12 +93,6 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: cluster-autoscaler
-  namespace: ${AUTOSCALER_NS}
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: cluster-autoscaler-manik
   namespace: ${AUTOSCALER_NS}
 ---
 kind: ClusterRole
