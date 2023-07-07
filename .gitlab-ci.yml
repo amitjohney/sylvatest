@@ -8,6 +8,7 @@ workflow:
 
 stages:
   - test
+  - security-test
   - build
   - deploy
   - delete

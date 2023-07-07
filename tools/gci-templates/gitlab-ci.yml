@@ -27,3 +27,9 @@ default:
 .kustomize-build:
   script:
     - kubectl kustomize ${KUSTOMIZATION_PATH}
+
+.kube-score:
+  script:
+    - wget -q --show-progress --progress=bar:force https://github.com/zegl/kube-score/releases/download/v1.17.0/kube-score_1.17.0_linux_arm64 -O /usr/local/bin/kube-score
+    - chmod +x /usr/local/bin/kube-score
+    - kubectl kustomize ${KUSTOMIZATION_PATH} | kube-score score -
