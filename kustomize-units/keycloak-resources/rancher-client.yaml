@@ -56,10 +56,10 @@ spec:
   roles:
     - name: query-users
       composite: false
-      client_role: true
+      clientRole: true
     - name: query-groups
       composite: false
-      client_role: true
+      clientRole: true
     - name: view-users
       composite: true
       composites:
@@ -67,5 +67,5 @@ spec:
           rancher:
             - query-users
             - query-groups
-      client_role: true
+      clientRole: true
 
