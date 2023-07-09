@@ -69,7 +69,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.0.7
+        tag: 0.0.9
 
   local-path-provisioner:
     kind: GitRepository
@@ -1102,6 +1102,7 @@ units:
     - '{{ tuple . "rancher" | include "unit-enabled" }}'
     repo: sylva-core
     depends_on:
+      capi: true
       capvc: true
     kustomization_spec:
       path: ./kustomize-units/vcluster

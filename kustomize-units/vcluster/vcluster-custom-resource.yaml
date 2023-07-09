@@ -25,27 +25,16 @@ spec:
         enabled: true
         ingressClassName: ${INGRESS_CLASS_NAME}
         host: ${VCLUSTER_API_EXTERNAL_URL}
-      sync:  # https://www.vcluster.com/docs/architecture/synced-resources#sync-all-secrets-and-configmaps
+      # https://www.vcluster.com/docs/architecture/synced-resources#sync-all-secrets-and-configmaps
+      sync:
         secrets:
           all: true
         configmaps:
           all: true
         ingresses:
           enabled: true
-        # generic:
-        #   clusterRole:
-        #     extraRules:
-        #       - apiGroups: ["apiextensions.k8s.io"]
-        #         resources: ["customresourcedefinitions"]
-        #         verbs: ["get", "list", "watch"]
-        #       - apiGroups: ["infrastructure.cluster.x-k8s.io"]
-        #         resources: ["vclusters"]
-        #         verbs: ["get", "list", "watch"]
-      fallbackHostDns: true  # https://www.vcluster.com/docs/architecture/networking#fallback-to-host-dns
-      # mapServices:  # https://www.vcluster.com/docs/architecture/networking#map-host-cluster-service-to-vcluster-service
-      #   fromHost:
-      #   - from: keycloak/${KEYCLOAK_EXTERNAL_URL}
-      #     to: vcluster/${KEYCLOAK_EXTERNAL_URL}  # maybe not needed
+      # https://www.vcluster.com/docs/architecture/networking#fallback-to-host-dns
+      fallbackHostDns: true
       syncer:
         extraArgs:
         - --tls-san=${VCLUSTER_API_EXTERNAL_URL}
