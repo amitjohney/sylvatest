@@ -33,15 +33,16 @@ spec:
           all: true
         ingresses:
           enabled: true
-      # https://www.vcluster.com/docs/architecture/networking#fallback-to-host-dns
-      fallbackHostDns: true
+      # # https://www.vcluster.com/docs/architecture/networking#fallback-to-host-dns
+      # fallbackHostDns: true # not supported in cluser chart 0.11.0 https://github.com/loft-sh/vcluster/blob/v0.11.0/charts/k3s/values.yaml
       syncer:
         extraArgs:
         - --tls-san=${VCLUSTER_API_EXTERNAL_URL}
     chart:
       name: "vcluster"  # "k3s" distro of vcluster; other available options: "vcluster-k8s", "vcluster-k0s" and "vcluster-eks".
       repo: "https://charts.loft.sh"
-      version: "v0.15.2"  # https://github.com/loft-sh/vcluster/releases; see https://github.com/loft-sh/cluster-api-provider-vcluster/blob/v0.1.3/pkg/constants/constants.go#L7
+      version: "v0.11.1"  # CAPVC version 0.1.3 is only compatible with vcluser chart 0.11.0 https://github.com/loft-sh/cluster-api-provider-vcluster/pull/23
+      # version: "v0.15.2"  # https://github.com/loft-sh/vcluster/releases; see https://github.com/loft-sh/cluster-api-provider-vcluster/blob/v0.1.3/pkg/constants/constants.go#L7
   controlPlaneEndpoint:
     host: "${VCLUSTER_API_EXTERNAL_URL}"
     port: 443
