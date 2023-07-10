@@ -1797,7 +1797,6 @@ units:
           cluster:
             helmrelease_spec:
               values:
-                name: '{{ .Values.cluster.test_workload_cluster_name }}'
                 control_plane_replicas: 1
                 capo:
                   control_plane_security_group_name: "capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}"
