@@ -1953,7 +1953,7 @@ cluster:
             project_name: # replace me
             username: # replace me
             password: # replace me
-          region_name: # optional
+          region_name: # replace me
           verify: # e.g. false
     #cacert: # cert used to validate CA of OpenStack APIs
     storageClass:

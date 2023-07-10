@@ -828,6 +828,7 @@ properties:
                           additionalProperties: true
                           required:
                             - auth
+                            - region_name
                           properties:
 
                             auth:  # -------------------------------
@@ -855,9 +856,7 @@ properties:
                                 password:  # -------------------------------
                                   type: string
                             region_name:  # -------------------------------
-                              anyOf:
-                                - type: string
-                                - type: "null"
+                              type: string
                             verify:  # -------------------------------
                               type: boolean
 

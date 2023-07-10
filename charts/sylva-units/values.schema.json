@@ -1084,7 +1084,8 @@
                             "type": "object",
                             "additionalProperties": true,
                             "required": [
-                              "auth"
+                              "auth",
+                              "region_name"
                             ],
                             "properties": {
                               "auth": {
@@ -1121,14 +1122,7 @@
                                 }
                               },
                               "region_name": {
-                                "anyOf": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
+                                "type": "string"
                               },
                               "verify": {
                                 "type": "boolean"
