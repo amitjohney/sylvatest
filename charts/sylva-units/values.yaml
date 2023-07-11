@@ -836,8 +836,9 @@ units:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
     kustomization_spec:
       healthChecks:
-        - apiVersion: cluster.x-k8s.io/v1beta1
-          kind: Cluster
+        # wait for OpenStackCluster when this provider is used, as Cluser will be seen as non-ready when it will be paused (as observedGeneration will differ from generation)
+        - apiVersion: '{{ (eq .Values.cluster.capi_providers.infra_provider "capo") | ternary "infrastructure.cluster.x-k8s.io/v1alpha6" "cluster.x-k8s.io/v1beta1" }}'
+          kind: '{{       (eq .Values.cluster.capi_providers.infra_provider "capo") | ternary "OpenStackCluster"                         "Cluster" }}'
           name: '{{ .Values.cluster.name }}'
           namespace: '{{ .Release.Namespace }}'
         # wait for the control plane to be ready (the api/version/kind to look for depends on the bootstrap provider in use)
@@ -961,6 +962,100 @@ units:
       _components:
         - '{{ tuple "../cluster-manifests/components/capo-vip-floating-ip"
             (and .Values.cluster.capo.external_network_id (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
+
+  pause-cluster-reconciliation:
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+    # Following condition is required in bootstrap phase, when sylva-units is installed in management-cluster
+    # with cluster unit disabled before pivoting, this unit can't depend on a disabled unit in that case
+    - '{{ tuple . "cluster" | include "unit-enabled" }}'
+    depends_on:
+      cluster: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/kube-job
+      wait: true
+      force: true
+      _patches:
+      - target:
+          kind: Job
+          name: kube-job
+        patch: |
+          - op: replace
+            path: /metadata/name
+            value: pause-cluster-reconciliation-job
+          - op: replace
+            path: /spec/template/metadata/annotations/checksum
+            value: '{{ .Values | toJson | sha256sum }}'
+      # We need to create at least one RoleBinding per namespace as they are referring to namespaced serviceAccounts
+      - target:
+          kind: ClusterRoleBinding
+          name: kube-job
+        patch: |
+          - op: replace
+            path: /metadata/name
+            value: 'kube-job-{{ .Release.Namespace }}'
+      - target:
+          kind: ConfigMap
+          name: job-scripts
+        patch: |
+          - op: replace
+            path: /data/entrypoint.sh
+            value: |
+              #!/bin/bash
+              $(dirname $0)/kube-job.sh
+              echo "All done"
+          - op: replace
+            path: /data/kube-job.sh
+            value: |
+              #!/bin/bash
+              kubectl wait --for condition=Ready --timeout 600s --all machine
+              kubectl patch cluster.cluster.x-k8s.io  {{ .Values.cluster.name }} --type merge -p '{"spec":{"paused": true}}'
+
+  resume-cluster-reconciliation:
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+    # This unit should not be enabled on first run when cluster kustomisation is not yet created
+    - '{{ not (lookup "kustomize.toolkit.fluxcd.io/v1beta2" "Kustomization" .Release.Namespace "cluster" | empty) }}'
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/kube-job
+      wait: true
+      force: true
+      _patches:
+      - target:
+          kind: Job
+          name: kube-job
+        patch: |
+          - op: replace
+            path: /metadata/name
+            value: resume-cluster-reconciliation-job
+          - op: replace
+            path: /spec/template/metadata/annotations/checksum
+            value: '{{ .Values | toJson | sha256sum }}'
+      # We need to create at least one RoleBinding per namespace as they are referring to namespaced serviceAccounts
+      - target:
+          kind: ClusterRoleBinding
+          name: kube-job
+        patch: |
+          - op: replace
+            path: /metadata/name
+            value: 'kube-job-{{ .Release.Namespace }}'
+      - target:
+          kind: ConfigMap
+          name: job-scripts
+        patch: |
+          - op: replace
+            path: /data/entrypoint.sh
+            value: |
+              #!/bin/bash
+              $(dirname $0)/kube-job.sh
+              echo "All done"
+          - op: replace
+            path: /data/kube-job.sh
+            value: |
+              #!/bin/bash
+              kubectl patch cluster.cluster.x-k8s.io  {{ .Values.cluster.name }} --type merge -p '{"spec":{"paused": false}}'
 
   calico-crd:
     enabled_conditions:
