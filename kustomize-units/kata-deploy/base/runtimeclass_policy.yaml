@@ -10,7 +10,7 @@ metadata:
     policies.kyverno.io/subject: Pod
     policies.kyverno.io/description: >-
       To have greater level of isolation on kernel.
-      If any pod will have annotation untrusted as 'true' then this policy will
+      If any pod will have label untrusted as 'true' then this policy will
       add runtimeclassname in spec
       The value of untrusted tag must be passed as string.
 spec:
