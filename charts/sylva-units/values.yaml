@@ -1693,6 +1693,14 @@ units:
         spec:
           chart: longhorn
           version: 102.2.0+up1.4.1
+      values:
+        enablePSP: true
+        defaultSettings:
+          createDefaultDiskLabeledNodes: true
+          defaultDataPath: /var/lib/longhorn
+          deletingConfirmationFlag: true
+          autoCleanupSystemGeneratedSnapshot: true
+
 
   # this unit is an example of how to use sylva-units to deploy a workload-cluster
   workload-cluster:
@@ -1786,6 +1794,7 @@ units:
             storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
           cluster_external_domain: '{{ .Values.cluster.cluster_external_domain }}'
           air_gapped: '{{ .Values.cluster.air_gapped | include "preserve-type" }}'
+          enable_longhorn: '{{ tuple . "longhorn" | include "unit-enabled" }}'
 
         metallb_helm_oci_url: '{{ .Values.metallb_helm_oci_url | include "preserve-type" }}'
 
