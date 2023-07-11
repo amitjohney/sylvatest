@@ -310,6 +310,7 @@ units_override_enabled:
   - '{{ .Values.cluster.capi_providers.infra_provider }}'
   - '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
   - '{{ tuple "metal3" (.Values.cluster.capi_providers.infra_provider | eq "capm3") | include "set-only-if" }}'
+  - '{{ tuple "os-image-server" (.Values.cluster.capi_providers.infra_provider | eq "capm3") | include "set-only-if" }}'
   - bootstrap-local-path
   - cluster
   - calico-crd
