@@ -455,6 +455,11 @@ spec:
           LmdycGMudjEuY3JpIi5jb250YWluZXJkLnJ1bnRpbWVzLiJ7eyRrfX0iLm9wdGlvbnNdCiAgQmlu
           YXJ5TmFtZSA9ICJ7eyR2LkJpbmFyeU5hbWV9fSIKe3tlbmR9fQo=
       preRKE2Commands:
+        - if [ {{ds.meta_data.longhorn}} ]; then
+        - mkfs.ext4 {{ds.meta_data.disk}}
+        - mkdir -p /var/lib/longhorn
+        - mount -t ext4 {{ds.meta_data.disk}} /var/lib/longhorn
+        - fi
         - netplan apply
         - export HTTP_PROXY=${HTTP_PROXY} HTTPS_PROXY=${HTTP_PROXY} NO_PROXY=${NO_PROXY}
         - sleep 30 # fix to give OS time to become ready
@@ -582,6 +587,11 @@ spec:
           LmdycGMudjEuY3JpIi5jb250YWluZXJkLnJ1bnRpbWVzLiJ7eyRrfX0iLm9wdGlvbnNdCiAgQmlu
           YXJ5TmFtZSA9ICJ7eyR2LkJpbmFyeU5hbWV9fSIKe3tlbmR9fQo=
       preRKE2Commands:
+        - if [ {{ds.meta_data.longhorn}} ]; then
+        - mkfs.ext4 {{ds.meta_data.disk}}
+        - mkdir -p /var/lib/longhorn
+        - mount -t ext4 {{ds.meta_data.disk}} /var/lib/longhorn
+        - fi
         - netplan apply
         - export HTTP_PROXY=${HTTP_PROXY} HTTPS_PROXY=${HTTP_PROXY} NO_PROXY=${NO_PROXY}
         - sleep 30 # fix to give OS time to become ready
