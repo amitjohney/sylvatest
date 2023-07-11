@@ -1495,6 +1495,19 @@ units:
                           seccompProfile:
                             $patch: delete
                             type: RuntimeDefault
+              # add RBAC for the SSO user, so that flux-webui SA impersonates it
+              - kind: ClusterRoleBinding
+                apiVersion: rbac.authorization.k8s.io/v1
+                metadata:
+                  name: sylva-admin-user-read-resources-cr
+                roleRef:
+                  apiGroup: rbac.authorization.k8s.io
+                  kind: ClusterRole
+                  name: wego-admin-cluster-role
+                subjects:
+                  - apiGroup: rbac.authorization.k8s.io
+                    kind: User
+                    name: sylva-admin@example.com
 
   monitoring-crd:
     enabled_conditions:
