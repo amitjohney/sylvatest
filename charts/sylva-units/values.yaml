@@ -1449,6 +1449,7 @@ units:
           username: '{{ .Values.cluster.flux_webui.admin_user }}'
           createSecret: false
         rbac:
+          impersonationResourceNames: ["infra-admins"]
           additionalRules:
             - apiGroups: ["*"]
               resources: ["*"]
