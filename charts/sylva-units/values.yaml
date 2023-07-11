@@ -261,6 +261,17 @@ units:
             runAsGroup: 10000
             runAsUser: 10000
 
+# kata-deploy enable cluster to use kata containers
+  kata-deploy:
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+    - '{{ tuple . "kyverno" | include "unit-enabled" }}'
+    depends_on:
+      kyverno: true
+    repo: sylva-core
+    kustomization_spec:
+      path: '{{ ternary "./kustomize-units/kata-deploy/base" "./kustomize-units/kata-deploy/rke2" (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") }}'
+      wait: true
 
 # sylva-ca provides a Certificate Authority for Components of the management cluster
   sylva-ca:
