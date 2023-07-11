@@ -17,6 +17,7 @@ cluster:
             auth_url: https://1.2.3.4
             user_domain_name: foo
             project_domain_name: foo
+          region_name: RegionOne
     storageClass:
       type: my-cinder-volume-type
 
