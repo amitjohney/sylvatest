@@ -784,16 +784,17 @@ units:
           runAsUser: 1000
       _postRenderers:
         - kustomize:
-            patchesStrategicMerge:
-              - kind: Deployment
-                apiVersion: apps/v1
-                spec:
-                  template:
-                    spec:
-                      securityContext:
-                        runAsNonRoot: true
-                        runAsUser: 1000
-
+            patches:
+              - target:
+                  kind: Deployment
+                  group: apps
+                  version: v1
+                patch:
+                  op: add
+                  path: /spec/template/spec/securityContext
+                  value:
+                    runAsNonRoot: true
+                    runAsUser: 1000
     helm_secret_values:
       mariadb:
         auth:
