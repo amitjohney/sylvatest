@@ -1794,7 +1794,6 @@ units:
             storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
           cluster_external_domain: '{{ .Values.cluster.cluster_external_domain }}'
           air_gapped: '{{ .Values.cluster.air_gapped | include "preserve-type" }}'
-          enable_longhorn: '{{ tuple . "longhorn" | include "unit-enabled" }}'
 
         metallb_helm_oci_url: '{{ .Values.metallb_helm_oci_url | include "preserve-type" }}'
 
@@ -1807,6 +1806,7 @@ units:
             helmrelease_spec:
               values:
                 control_plane_replicas: 1
+                enable_longhorn: '{{ tuple . "longhorn" | include "unit-enabled" }}'
                 capo:
                   control_plane_security_group_name: "capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}"
                   worker_security_group_name: "capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}"
