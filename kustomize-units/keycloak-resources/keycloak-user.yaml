@@ -18,6 +18,10 @@ spec:
       - infra-admins
     realmRoles:
       - default-roles-sylva
+    clientRoles:
+      realm-management:
+        - manage-users
+        - view-users
     credentials:
       - type: password
         value: "${SSO_PASSWORD}"
