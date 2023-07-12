@@ -88,6 +88,18 @@ units:
       kubeConfig: null  # cancel what is inherited from unit_kustomization_spec_default
       targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
 
+  resume-cluster-reconciliation:
+    enabled: true
+    kustomization_spec:
+      kubeConfig: null
+      targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
+
+  pause-cluster-reconciliation:
+    enabled: true
+    kustomization_spec:
+      kubeConfig: null
+      targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
+
   namespace-defs:
     enabled: true
     depends_on:
