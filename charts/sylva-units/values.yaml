@@ -789,12 +789,12 @@ units:
                   kind: Deployment
                   group: apps
                   version: v1
-                patch:
-                  op: add
-                  path: /spec/template/spec/securityContext
-                  value:
-                    runAsNonRoot: true
-                    runAsUser: 1000
+                patch: |
+                  - op: add
+                    path: /spec/template/spec/securityContext
+                    value:
+                      runAsNonRoot: true
+                      runAsUser: 1000
     helm_secret_values:
       mariadb:
         auth:
