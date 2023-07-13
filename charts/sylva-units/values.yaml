@@ -2175,11 +2175,11 @@ _internal:
 
   # These values are used only if `cluster.os_images` is empty
   default_os_images:
-    ubuntu-2004-hardened-qcow2:
-      uri: oci://registry.gitlab.com/sylva-projects/sylva-elements/diskimage-builder/diskimage-builder-hardened:0.0.4
-      filename: ubuntu-20.04-hardened.qcow2
-      checksum: 3979b6f735ecc19a161e6e81e747bd648f081e46a094105839e02dfb1c01fd5a
-    ubuntu-2004-plain-qcow2:
-      uri: oci://registry.gitlab.com/sylva-projects/sylva-elements/diskimage-builder/diskimage-builder-plain:0.0.4
-      filename: ubuntu-20.04-plain.qcow2
-      checksum: 955cb3251eb11755094fc6620ef140d8ceea9bc636efc96ac4a07c3207899963
+    ubuntu-2204-hardened-qcow2:
+      uri: oci://registry.gitlab.com/sylva-projects/sylva-elements/diskimage-builder/diskimage-builder-hardened:0.0.7
+      filename: ubuntu-22.04-hardened.qcow2
+      checksum: 7c30799295607c2dcd440a079e7f418cae77f5f2a340a997fada256d95e3365b
+    ubuntu-2204-plain-qcow2:
+      uri: oci://registry.gitlab.com/sylva-projects/sylva-elements/diskimage-builder/diskimage-builder-plain:0.0.7
+      filename: ubuntu-22.04-plain.qcow2
+      checksum: 56a6363f25a5491aa955e4dda6fae17faa10c5e0850d01fe2a10c996c7830971
