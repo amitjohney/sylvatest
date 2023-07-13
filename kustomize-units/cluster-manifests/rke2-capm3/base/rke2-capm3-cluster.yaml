@@ -480,8 +480,6 @@ spec:
               - if [ ! -f "/var/lib/grub-init" ]; then
               - touch "/var/lib/grub-init"
               - current_grub=$(grep '^GRUB_CMDLINE_LINUX_DEFAULT=' /etc/default/grub | tail -1 | sed -e "s/^[^=]*=[\"']\\?//" -e "s/['\"]$//")
-              # - additional_grub_settings="iommu=pt intel_iommu=on hugepagesz=2M hugepages=0 hugepagesz=1G hugepages=32 default_hugepagesz=1G"
-              # - next_grub="$current_grub $additional_grub_settings"
               - next_grub="$current_grub ${ENABLE_SRIOV} ${HUGE_PAGES}"
               # No need for a timeout. Nobody attends
               - sed -i -e '/GRUB_TIMEOUT=5/ d' /etc/default/grub
@@ -612,8 +610,6 @@ spec:
               - if [ ! -f "/var/lib/grub-init" ]; then
               - touch "/var/lib/grub-init"
               - current_grub=$(grep '^GRUB_CMDLINE_LINUX_DEFAULT=' /etc/default/grub | tail -1 | sed -e "s/^[^=]*=[\"']\\?//" -e "s/['\"]$//")
-              # - additional_grub_settings="iommu=pt intel_iommu=on hugepagesz=2M hugepages=0 hugepagesz=1G hugepages=32 default_hugepagesz=1G"
-              # - next_grub="$current_grub $additional_grub_settings"
               - next_grub="$current_grub ${HUGE_PAGES}"
               # No need for a timeout. Nobody attends
               - sed -i -e '/GRUB_TIMEOUT=5/ d' /etc/default/grub
