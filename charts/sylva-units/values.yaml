@@ -920,10 +920,12 @@ units:
               created-by/authors: Project-Sylva
             annotations:
               repo: "https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster"
+              cluster.x-k8s.io/cluster-api-autoscaler-node-group-max-size: "5"
+              cluster.x-k8s.io/cluster-api-autoscaler-node-group-min-size: "1"
           network_interfaces: {}
         machine_deployments:
           md0:
-            replicas: '{{ .Values.cluster.worker_replicas | include "preserve-type" }}'
+#            replicas: '{{ .Values.cluster.worker_replicas | include "preserve-type" }}'
             failure_domain: ""
             network_interfaces: {}
         capi_rancher_import: false
