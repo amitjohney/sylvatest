@@ -170,6 +170,10 @@ check-docs-markdown:
     - yq -i '.cluster.name = strenv(MANAGEMENT_CLUSTER_NAME)' $values_file
     - yq -i '.cluster.test_workload_cluster_name = strenv(TEST_WORKLOAD_CLUSTER_NAME)' $values_file
     - yq -i '.env_type_ci = true' $values_file
+    - |
+      if [ ${CUSTOM_VALUES_FILE} ]; then
+        yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file $CUSTOM_VALUES_FILE
+      fi
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_common\r\e[0K"
   script_capd:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capd[collapsed=true]\r\e[0KApplying specific capd configuration\e[0m"
@@ -330,6 +334,17 @@ deploy-kubeadm-capo-oci:
   artifacts:
     expose_as: kubeadm-capo-oci
 
+deploy-m3-units-in-capo:
+  timeout: 15min
+  extends: deploy-kubeadm-capo
+  variables:
+    ENV_NAME: "kubeadm-capo"
+    CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-M3-OCI"
+    OCI_TAG: $OCI_TAG_FORMAT
+    CUSTOM_VALUES_FILE: tools/gci-templates/configuration/m3-units-in-capo.yml
+  artifacts:
+    expose_as: m3-units-in-capo
+
 .cleanup-capo:
   stage: delete
   image:
@@ -379,6 +394,15 @@ cleanup-kubeadm-capo-oci:
     OCI_TAG: $OCI_TAG_FORMAT # required to match the same rules as OCI based deployments
   needs:
     - deploy-kubeadm-capo-oci
+
+cleanup-m3-units-in-capo:
+  extends: .cleanup-capo
+  variables:
+    ENV_NAME: "kubeadm-capo"
+    CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-M3-OCI"
+    OCI_TAG: $OCI_TAG_FORMAT # required to match the same rules as OCI based deployments
+  needs:
+    - deploy-m3-units-in-capo
 
 scheduled-cleanup-capo:
   stage: delete
