@@ -2179,6 +2179,8 @@ _internal:
       uri: oci://registry.gitlab.com/sylva-projects/sylva-elements/diskimage-builder/diskimage-builder-hardened:0.0.4
       filename: ubuntu-20.04-hardened.qcow2
       checksum: 3979b6f735ecc19a161e6e81e747bd648f081e46a094105839e02dfb1c01fd5a
+      persistence:
+        size: 3Gi
     ubuntu-2004-plain-qcow2:
       uri: oci://registry.gitlab.com/sylva-projects/sylva-elements/diskimage-builder/diskimage-builder-plain:0.0.4
       filename: ubuntu-20.04-plain.qcow2
