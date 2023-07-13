@@ -1449,7 +1449,7 @@ units:
           username: '{{ .Values.cluster.flux_webui.admin_user }}'
           createSecret: false
         rbac:
-          impersonationResourceNames: ["admin", "sylva-admin@example.com"] # the Keycloak user name set in unit keycloak-resources
+          impersonationResourceNames: ["admin", "infra-admins"] # the Keycloak user name set in unit keycloak-resources
           additionalRules:
             - apiGroups: ["*"]
               resources: ["*"]
@@ -1504,8 +1504,11 @@ units:
                     kind: User
                     name: '{{ .Values.cluster.flux_webui.admin_user }}'
                   - apiGroup: rbac.authorization.k8s.io
-                    kind: User
-                    name: sylva-admin@example.com  # add same RBAC for the SSO user, so that when flux-webui SA impersonates it has privileges
+                    kind: Group
+                    name: infra-admins
+                  # - apiGroup: rbac.authorization.k8s.io
+                  #   kind: User
+                  #   name: sylva-admin@example.com  # add same RBAC for the SSO user, so that when flux-webui SA impersonates it has privileges
 
   monitoring-crd:
     enabled_conditions:
