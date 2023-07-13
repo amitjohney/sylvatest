@@ -1449,7 +1449,6 @@ units:
           username: '{{ .Values.cluster.flux_webui.admin_user }}'
           createSecret: false
         rbac:
-          impersonationResourceNames: ["admin", "infra-admins"] # the Keycloak user name set in unit keycloak-resources
           additionalRules:
             - apiGroups: ["*"]
               resources: ["*"]
