@@ -46,6 +46,7 @@ Priority:         0
 Service Account:  default
 
 `````
+
 ### Pod with kata containers
 
 ```
