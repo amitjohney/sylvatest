@@ -1797,7 +1797,7 @@ units:
           autoCleanupSystemGeneratedSnapshot: true
   rook-ceph:
     enabled: false
-    helm_repo_url: https://charts.rook.io/
+    helm_repo_url: https://charts.rook.io/release/
     helmrelease_spec:
       releaseName: release
       targetNamespace: rook-ceph
