@@ -1947,7 +1947,7 @@ units:
           cluster:
             helmrelease_spec:
               values:
-#                control_plane_replicas: 1
+                control_plane_replicas: 1
                 enable_longhorn: '{{ .Values.units | dig "workload-cluster" "helmrelease_spec" "values" "units" "longhorn" "enabled" false | include "preserve-type" }}'
                 capo:
                   control_plane_security_group_name: "capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}"
