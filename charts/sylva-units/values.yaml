@@ -1795,7 +1795,14 @@ units:
           defaultDataPath: /var/lib/longhorn
           deletingConfirmationFlag: true
           autoCleanupSystemGeneratedSnapshot: true
-
+  rook-ceph:
+    enabled: false
+    helm_repo_url: https://charts.rook.io/
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: rook-ceph
+          version: release
 
   # this unit is an example of how to use sylva-units to deploy a workload-cluster
   workload-cluster:
