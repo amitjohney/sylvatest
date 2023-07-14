@@ -509,6 +509,8 @@ units:
           kind: StatefulSet
           name: keycloak
           namespace: keycloak
+      _components:
+        - '{{ tuple "components/keycloak-operator-proxies" (.Values.proxies.https_proxy) | include "set-only-if" }}'
 
   keycloak-legacy-operator:
     enabled_conditions:
