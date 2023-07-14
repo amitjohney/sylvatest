@@ -8,6 +8,7 @@ The results are summarized by the following table:
 
 | Date                      | Management Cluster CAPI Providers | Sylva-Core main commit ID        | Result                                       | Test logs (only for failed tests) |
 |---------------------------|-----------------------------------|----------------------------------|----------------------------------------------|-----------------------------------|
+|2023-07-14 02:30|kubeadm-capv|9952b8fbf77d584e4ef244bcba0a6f2b1a33aed0|:x: failed|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/49944a2530567fbaba87e0614289dc89/test-kubeadm-capv.gz)|
 |2023-07-13 09:45|kubeadm-capv|d23a884cc80c71a2d649dd729089facc5a689669|:white_check_mark: success||
 |2023-07-12 09:10|kubeadm-capv|df4b89e899119fb742dd70c6dc2f85a4b432f873|:white_check_mark: success||
 |2023-07-07 02:30|kubeadm-capv|0603323bb2025ec4cedc096a48c980d419011e18|:x: failed|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/0740b7d84010bb356936ac3bb237d686/test-kubeadm-capv.gz)|
@@ -26,7 +27,6 @@ The results are summarized by the following table:
 |2023-06-10 02:22|kubeadm-capv|24cbcd77b1476ea92f523fb297f12674c1a9219d|:white_check_mark: success||
 |2023-06-09 02:19|kubeadm-capv|a58803c8f580d3cead468600de4913e347cf9740|:white_check_mark: success||
 |2023-06-08 02:19|kubeadm-capv|8b008d325fb446ce2f812557e7ca67240a4b975e|:white_check_mark: success||
-|2023-06-07 02:21|kubeadm-capv|f2b7dec229af6b52800af8e11c23d03b6574a5b7|:white_check_mark: success||
 |2023-05-31 02:12|kubeadm-capv|bf88c6bd0260c7736b4e8ab43a3ed26ad76023de|:white_check_mark: success||
 |2023-05-30 02:11|kubeadm-capv|22811e85844001cdc4643c45a57a9599e74909f8|:white_check_mark: success||
 
