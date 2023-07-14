@@ -1798,11 +1798,13 @@ units:
   rook-ceph:
     enabled: false
     helm_repo_url: https://charts.rook.io/
+    releaseName: release
+      targetNamespace: rook-ceph
     helmrelease_spec:
       chart:
         spec:
           chart: rook-ceph
-          version: release
+          version: release-1.11
 
   # this unit is an example of how to use sylva-units to deploy a workload-cluster
   workload-cluster:
