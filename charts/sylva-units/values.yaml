@@ -1798,9 +1798,9 @@ units:
   rook-ceph:
     enabled: false
     helm_repo_url: https://charts.rook.io/
-    releaseName: release
-      targetNamespace: rook-ceph
     helmrelease_spec:
+      releaseName: release
+      targetNamespace: rook-ceph
       chart:
         spec:
           chart: rook-ceph
