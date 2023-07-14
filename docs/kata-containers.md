@@ -23,7 +23,7 @@ This feature needs to have hardware virtualization enabled on the underlying nod
 
 ### Output Expected
 
-Already created two similar pods with a difference in label as mentioned in manual steps. Pods yaml files and it's description looks like :- 
+Already created two similar pods with a difference in label as mentioned in manual steps. Pods yaml files and it's description looks like :-
 
 ### Basic Pod
 
@@ -46,8 +46,6 @@ Priority:         0
 Service Account:  default
 
 `````
-
-
 ### Pod with kata containers
 
 ```
@@ -74,7 +72,7 @@ Service Account:     default
 
 `````
 
-### Kernel version output inside Pods- 
+### Kernel version output inside Pods-
 
 ```
 kubectl --kubeconfig management-cluster-kubeconfig exec -it ubuntu -- /bin/bash
