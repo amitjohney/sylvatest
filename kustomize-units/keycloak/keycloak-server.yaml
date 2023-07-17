@@ -17,10 +17,7 @@ spec:
   hostname:
     hostname: ${KEYCLOAK_DNS}
   http:
-    httpEnabled: true
-    httpPort: 8080
-    #httpsPort: 8443
-    #tlsSecret: keycloak-tls
+    tlsSecret: keycloak-tls
   ingress:
     enabled: false
   instances: 1
