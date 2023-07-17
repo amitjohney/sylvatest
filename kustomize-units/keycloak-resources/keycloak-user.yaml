@@ -16,6 +16,8 @@ spec:
     lastName: sylva
     groups:
       - infra-admins
+    realmRoles:
+      - default-roles-sylva
     credentials:
       - type: password
         value: "${SSO_PASSWORD}"
