@@ -69,7 +69,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.0.13
+        tag: 0.0.14
 
   local-path-provisioner:
     kind: GitRepository
@@ -880,7 +880,9 @@ units:
           resources_tag: '{{ .Values.cluster.capo.resources_tag }}'
         capv:
           dataCenter: '{{ .Values.cluster.capv.dataCenter }}'
-          network: '{{ .Values.cluster.capv.network }}'
+          networks:
+            default:
+              networkName: '{{ .Values.cluster.capv.network }}'
           server: '{{ .Values.cluster.capv.server }}'
           dataStore: '{{ .Values.cluster.capv.dataStore }}'
           tlsThumbprint: '{{ .Values.cluster.capv.tlsThumbprint }}'
@@ -888,6 +890,13 @@ units:
           folder: '{{ .Values.cluster.capv.folder }}'
           resourcePool: '{{ .Values.cluster.capv.resourcePool }}'
           storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
+          control_plane_profile:
+            numCPUs: 2
+            memoryMiB: 8192
+            diskGiB: 25
+          storageClass:
+            storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
+            fsType: ext4
         machine_deployment_default:
           metadata:
             labels:
@@ -1901,6 +1910,13 @@ units:
             folder: '{{ .Values.cluster.capv.folder }}'
             resourcePool: '{{ .Values.cluster.capv.resourcePool }}'
             storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
+            control_plane_profile:
+              numCPUs: 2
+              memoryMiB: 8192
+              diskGiB: 25
+            storageClass:
+              storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
+              fsType: ext4
           cluster_external_domain: '{{ .Values.cluster.cluster_external_domain }}'
           air_gapped: '{{ .Values.cluster.air_gapped | include "preserve-type" }}'
 
