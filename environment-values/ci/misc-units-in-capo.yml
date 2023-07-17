@@ -142,6 +142,8 @@ units:
     enabled: true
   cluster-creator-policy:
     enabled: true
+  sbom-operator:
+    enabled: true
 cluster:
   control_plane_replicas: 3
   capo:

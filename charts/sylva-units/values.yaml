@@ -1423,6 +1423,61 @@ units:
     kustomization_substitute_secrets:
       SECRET_VALUES: '{{ index (tuple . .Values.shared_workload_clusters_secret_values | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | b64enc }}'
 
+  sbom-operator:
+    info:
+      description: installs SBOM operator
+      maturity: beta
+    enabled: no
+    unit_templates:
+    - base-deps
+    helm_repo_url: https://ckotzbauer.github.io/helm-charts
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: sbom-operator
+          version: 0.30.0
+      targetNamespace: sbom-operator
+      install:
+        createNamespace: true
+      values:
+        serviceAccount:
+          create: true
+          name: sbom-operator
+        securityContext:
+          capabilities:
+            drop:
+            - ALL
+          privileged: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 10001
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          limits:
+            cpu: 500m
+            memory: 500Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        args:
+          targets: '{{ .Values.security.sbom_operator.targets }}'
+          dtrack-base-url: '{{ .Values.security.sbom_operator.dtrack_base_url }}'
+          dtrack-api-key: '{{ .Values.security.sbom_operator.dtrack_api_key }}'
+          oci-registry: '{{ .Values.security.sbom_operator.oci_registry }}'
+          oci-user: '{{ .Values.security.sbom_operator.oci_user }}'
+          oci-token: '{{ .Values.security.sbom_operator.oci_token }}'
+          verbosity: debug
+          format: cyclonedx
+          cron: "0 30 * * * *" # see cron format at https://pkg.go.dev/github.com/robfig/cron#hdr-CRON_Expression_Format
+        envVars:
+          - name: https_proxy
+            value: '{{ .Values.proxies.https_proxy }}'
+          - name: http_proxy
+            value: '{{ .Values.proxies.https_proxy }}'
+          - name: no_proxy
+            value: '{{ include "sylva-units.no_proxy" (tuple .) }}'
+
   capi:
     info:
       description: installs Cluster API core operator
@@ -5227,6 +5282,8 @@ get_openstack_images_per_image_timeout_minutes: 20
 security:
   calico_wireguard_enabled: false  # disable wireguard by default
   neuvector_scanning_enabled: false # disable Neuvector scanning capability by default
+  sbom_operator:
+    targets: configmap # string with comma separated targets. Supported targets are configmap and/or OCI and/or dtrack, e.g. "oci,dtrack"
 
 monitoring:
   thanos_receive_url: https://{{ .Values.external_hostnames.thanos_receive }}:443/api/v1/receive  # for workload clusters, this is overridden via shared_workload_clusters_values to point to the mgmt cluster Thanos

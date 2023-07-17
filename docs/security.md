@@ -54,13 +54,11 @@ spec:
 
 Rather than using the internal PKI to sign the certificates of the exposed services, it is possible to import certificates signed by a trusted PKI. It improves the level of confidence in the received server certificates and avoids importing CA certificates in the browser (assuming that the CA certificate of the trusted CA is already part of the system bundle).
 
-The steps to follow are:  
+The steps to follow are:
 
 1. Create pairs of private key and certificate for every exposed service
 
-   The way to obtain certificates depends on the authority delivering them, on the organisation of the project, ...  
-   The script `./tools/generate_csr.sh` automates the generation of a key and of a CSR for each exposed service and can serve as an example. It expects one argument which is the domain of the platform being deployed. Environment values can be used to configure the subject of the certificates. Run `./tools/generate_csr.sh --help` for additional details. The CSRs can then be sent to the PKI which provides a certificate in return.
-
+   The way to obtain certificates depends on the authority delivering them, on the organisation of the project, ...The script `./tools/generate_csr.sh` automates the generation of a key and of a CSR for each exposed service and can serve as an example. It expects one argument which is the domain of the platform being deployed. Environment values can be used to configure the subject of the certificates. Run `./tools/generate_csr.sh --help` for additional details. The CSRs can then be sent to the PKI which provides a certificate in return.
 2. Add to `secrets.yaml` the dictionary `external_certificates`, with a `cacert` attribute to store external CA certificates (there can be several of them), and for each exposed service a `cert` and `key` attribute that can be set with the corresponding values.
 
    ```
@@ -151,7 +149,7 @@ If you don't set a password here, helm shall pick a random one. You can retrieve
 
 ## Vault
 
-The passwords for `Keycloak`, `Rancher`, `flux-webui` and `Neuvector` can be retrieved from `Vault`. You can authenticate against `Vault` through the OIDC authentication method or by using the `Vault` root token. <br/>
+The passwords for `Keycloak`, `Rancher`, `flux-webui` and `Neuvector` can be retrieved from `Vault`. You can authenticate against `Vault` through the OIDC authentication method or by using the `Vault` root token. `<br/>`
 
 > **_NOTE:_** If you don't provide `.admin_password` in the environment file `secrets.yaml`, connect to Vault by using the `Vault` root token and retrieve the randomly generated password for the SSO account in the vault path `/secret/sso-account`.
 
@@ -535,42 +533,14 @@ kubectl  get -n kyverno configmap kyverno-cleanup-admission-reports-28146180-l6j
 brotli -d sbom.br
 ```
 
-Instead of `configmaps`, the SBOMs can be exported to Git, OCI registry or [Dependency Track](https://owasp.org/www-project-dependency-track/). The later is an interesting OWASP tool for the analysis of the SBOM's component. To build  and export the Sylva SBOMs to an external Dependency Track server, you can modify the `values.yaml` of the `sbom-operator` chart file as follows:
+Instead of saving SBOMs in `configmaps`, the former can be exported to an OCI registry or [Dependency Track](https://owasp.org/www-project-dependency-track/). The later is an interesting OWASP tool for the analysis of the SBOM's component. To build  and export the Sylva SBOMs to an external Dependency Track server, you can modify the `secrets.yaml` of the  chart as follows:
 
 ```yaml
-serviceAccount:
-  create: true
-  name: sbom-operator
-securityContext:
-   capabilities:
-     drop:
-     - ALL
-   privileged: false
-   readOnlyRootFilesystem: true
-   runAsNonRoot: true
-   runAsUser: 10001
-   seccompProfile:
-     type: RuntimeDefault
-resources:
-   limits:
-     cpu: 500m
-     memory: 500Mi
-   requests:
-     cpu: 100m
-     memory: 100Mi
-args:
-  targets: dtrack
-  verbosity: debug
-  format: cyclonedx
-  dtrack-base-url: https://dependency-track.example
-  dtrack-api-key: xGNE...
-envVars: # if using proxy
-      - name: https_proxy
-        value: http://proxy.example:8080
-      - name: http_proxy
-        value: http://proxy.example:8080
-      - name: no_proxy
-        value: localhost,127.0.0.0/8,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8,172.20.36.130,keycloak.sylva,.cluster.local,.cluster.local.,.svc
+security:
+  sbom_operator:
+    targets: dtrack
+    dtrack-api-key: odt_xxxxx
+    dtrack-base-url: https://dt-example.mydomain.com
 ```
 
 Dependency track displays all imported SBOMs and gives a summary of the vulnerabilities for each of them:
