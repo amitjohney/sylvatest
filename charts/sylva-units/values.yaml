@@ -1588,7 +1588,7 @@ units:
 
   workload-capo-cluster-resources:
     enabled_conditions:
-    - '{{ .Values.units | dig "workload-cluster" "helmrelease_spec" "values" "cluster" "capi_providers" "infra_provider" "" | eq "capo"  }}'
+    - '{{ .Values.units | dig "workload-cluster" "helmrelease_spec" "values" "cluster" "capi_providers" "infra_provider" "" | eq "capo" }}'
     - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
     repo: sylva-core
     depends_on:
