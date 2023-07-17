@@ -54,8 +54,6 @@ units:
               values:
                 cis_profile: ""  # until https://gitlab.com/sylva-projects/sylva-core/-/issues/391 is fully solved (item (C))
 
-                machine_deployments: null
-
                 metal3:
                   machine_image_url: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2
                   machine_image_format: qcow2
@@ -114,6 +112,37 @@ units:
                   provisioning_pool_interface: bond0
                   public_pool_interface: bond0.13
 
+                machine_deployments:
+                  md0:
+                    infra_provider: capm3
+                    replicas: 2
+                    capm3:
+                      hostSelector:
+                        matchLabels:
+                          cluster-role: worker # tweak as needed must match cluster-role defined in baremetal_hosts
+                    failure_domain: region0
+                    network_interfaces: # tweak network configuration as needed ...
+                      bond0:
+                        bond_mode: 802.3ad
+                        interfaces:
+                          - ens1f0
+                          - ens1f1
+                        vlans:
+                          - id: 13
+                      ens1f0:
+                        type: phy
+                      ens1f1:
+                        type: phy
+                    rke2:
+                      additionalUserData:
+                        users:
+                          - name: ubuntu
+                            groups: users
+                            sudo: ALL=(ALL) NOPASSWD:ALL
+                            shell: /bin/bash
+                            ssh_authorized_keys:
+                              - ssh-rsa AAAA...... YOUR KEY HERE ....UqnQ==
+
                 baremetal_hosts:
                   # this example is based on what worked on an HP Proliant DL360 Gen10
                   my-server:  # corresponding credentials need to be set in secrets.yaml
@@ -132,6 +161,25 @@ units:
                         disableCertificateVerification: true
                       automatedCleaningMode: metadata
                       bootMACAddress: ba:ad:00:c0:ff:ee    # put the real address here!
+                      bootMode: legacy
+                      rootDeviceHints:
+                        hctl: 2:1:0:0   # tweak as needed
+                  my-server2:  # corresponding credentials need to be set in secrets.yaml
+                    bmh_metadata:
+                      labels:
+                        cluster-role: worker
+                        longhorn: "true"
+                      annotations:
+                        disk: /dev/sdb # this disk will be mounted on the K8S node in a dedicated directory and used by Longhorn
+                    bmh_spec:
+                      description: Downstream dev clusters
+                      online: true
+                      externallyProvisioned: false
+                      bmc:
+                        address: redfish-virtualmedia://66.66.66.67/redfish/v1/Systems/1   # put the real BMC address here ()
+                        disableCertificateVerification: true
+                      automatedCleaningMode: metadata
+                      bootMACAddress: ba:ad:00:c0:ff:ef    # put the real address here!
                       bootMode: legacy
                       rootDeviceHints:
                         hctl: 2:1:0:0   # tweak as needed
