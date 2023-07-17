@@ -1,6 +1,6 @@
 # Sylva-core project
 
-This project provides the tools and configuration to set up a Sylva management cluster in a declarative way. It relies on [Cluster API](https://cluster-api.sigs.k8s.io/) to manage cluster lifecycle, and uses [Flux](https://fluxcd.io/flux/) to keep clusters and infrastructure components in sync with their definitions in Git.
+This project provides the tools and configurations to set up a Sylva management cluster in a declarative way. It relies on [Cluster API](https://cluster-api.sigs.k8s.io/) to manage cluster lifecycle, and uses [Flux](https://fluxcd.io/flux/) to keep clusters and infrastructure components in sync with their definitions in Git.
 
 This project is delivering the sylva-units helm chart that creates Flux objects used to deploy various software components, called "units". Each of these unit definition will be derived into a set of flux resources (Gitrepositories, Kustomizations, HelmReleases...) following the specific settings defined for the deployment.
 
@@ -33,7 +33,7 @@ In following readme, we assume that the reader is familiar with [cluster-api](ht
 
 ### Defining your environment values
 
-Management cluster configuration is done through the `sylva-units` chart values, as overrides over the chart defaults. In order properly configure the cluster, it is important to understand how this configuration will be generated. The values are made of two sections:
+Management cluster configuration is done through the `sylva-units` chart values, as overrides over the chart [default values](./charts/sylva-units/values.yaml). In order properly configure the cluster, it is important to understand how this configuration will be generated. The values are made of two sections:
 
 - The first one contains a list of sources and units that will be installed by Flux in the cluster. For example, following repo & unit definition will install the OpenStack infrastructure provider for cluster api (aka. capo) using a kustomization [./kustomize-units/capo](./kustomize-units/capo) hosted in the current repository.
 
@@ -113,13 +113,13 @@ Deploying clusters in Docker using CAPD (click to expand)
 
 Even if it is not representative of any real-life deployment use-case, running clusters in Docker is useful to enable the testing of lifecycle management of clusters without any infrastructure requirement.
 
-It can be used to test that stack on a laptop or in [GitLab-ci](.gitlab-ci.yml). You just have to [install Docker](https://docs.docker.com/engine/install/) as a prerequisite, and then clone this [project](https://gitlab.com/sylva-projects/sylva-core).
+It can be used to test that stack on a laptop or in [GitLab-ci](.gitlab-ci.yml). You just have to [install Docker](https://docs.docker.com/engine/install/) as a prerequisite, and then clone this [project](https://gitlab.com/sylva-projects/sylva-core). The recommended Docker version is 23.0.6 which is proven to work by [GitLab-ci](.gitlab-ci.yml). There is a known issue described in [issue #273](https://gitlab.com/sylva-projects/sylva-core/-/issues/273) when using Docker 24.0.0.
 
-The `bootstrap.sh` script which you'll use below, will create for you a kind cluster that will be used as the bootstrap cluster. If available in the environment, the following vars will be used to customize this kind cluster:
+The `bootstrap.sh` script which you'll use below, will create for you a kind cluster that will be used as the bootstrap cluster. If available in the Linux environment variables, the following vars will be used to customize this kind cluster:
 
-- [`KIND_POD_SUBNET`](https://kind.sigs.k8s.io/docs/user/configuration/#pod-subnet);
-- [`KIND_SVC_SUBNET`](https://kind.sigs.k8s.io/docs/user/configuration/#service-subnet);
-- `KIND_CLUSTER_NAME`.
+- [`KIND_POD_SUBNET`](https://kind.sigs.k8s.io/docs/user/configuration/#pod-subnet)
+- [`KIND_SVC_SUBNET`](https://kind.sigs.k8s.io/docs/user/configuration/#service-subnet)
+- [`KIND_CLUSTER_NAME`](https://kind.sigs.k8s.io/docs/user/configuration/#name-your-cluster)
 
 As we'll be creating a fair amount of containers, it is recommended to increase the filesystem watcher limit in order to avoid reaching the limit.
 
@@ -135,7 +135,9 @@ You should also add your user to Docker group, it'll allow you to run the rest o
 sudo usermod -aG docker $USER
 ```
 
-Then you may adapt your environment values (in `environment-values/kubeadm-capd/values.yaml`)
+Then you may adapt your environment values in `environment-values/kubeadm-capd/values.yaml` (using kubeadm) or
+`environment-values/rke2-capd/values.yaml` (using cluster-api-rke2 bootstrap provider).
+
 For capd deployment, you have to:
 
 - provide the proxy address if you are using one:
@@ -147,23 +149,27 @@ proxies:
   no_proxy: 127.0.0.1,localhost,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8
 ```
 
-- modify existing parameter `cluster_external_ip: xx.xx.xx.xx` in file [`environment-values/kubeadm-capd/values.yaml`](https://gitlab.com/sylva-projects/sylva-core/-/blob/main/environment-values/kubeadm-capd/values.yaml#L21) accordingly
+- modify existing parameter `cluster_external_ip: xx.xx.xx.xx` in file [`environment-values/kubeadm-capd/values.yaml`](environment-values/kubeadm-capd/values.yaml) or [`environment-values/rke2-capd/values.yaml`](environment-values/rke2-capd/values.yaml) accordingly
 
-Then you can bootstrap the management cluster creation:
+Then you can bootstrap the management cluster creation with kubeadm:
 
 ```shell
 ./bootstrap.sh environment-values/kubeadm-capd
 ```
 
-If you want to deploy a cluster using cluster-api-rke2 bootstrap provider, you just have to use the [environment-values/rke2-capd](environment-values/rke2-capd) directory instead.
+If you want to deploy a cluster using cluster-api-rke2 bootstrap provider, you just have to use the [`environment-values/rke2-capd`](environment-values/rke2-capd) directory instead:
+
+```shell
+./bootstrap.sh environment-values/rke2-capd
+```
+
+For more details on environment-values generation you can have a look at the [dedicated README](environment-values/README.md).
 
 > **_NOTE:_** If you intent to contribute back to this project (we would be happy to welcome you!), you should probably create your own copy of environment-values prior to edit them. This way you won't be editing files that are tracked by Git, and will not commit them by inadvertence:
 >
 > ```shell
 > cp -a environment-values/rke2-capd environment-values/my-rke2-capd
 > ```
-
-For more details on environment-values generation you can have a look at the [dedicated README](environment-values/README.md).
 
 </details>
 
@@ -356,7 +362,20 @@ In previous deployment examples we use an intermediate temporary/disposable boot
 
 Deploying a workload cluster the gitops way means that some specific kustomizations defining the workload clusters have to be defined. This is done by the unit named `workload-cluster`. If this unit is enabled in the user values given to the `sylva-units` Helm chart, then a workload cluster will be deployed.
 
-You'll be able to see it and access it from the Rancher Web UI.
+For CAPD, you will need to explicitly enable the `workload-cluster` unit:
+
+```yaml
+units:
+  cluster:
+    [...]
+
+  workload-cluster:
+    enabled: true
+
+  [...]
+```
+
+You'll be able to see it and access it from the Rancher Web UI after completing the deployment (note that for this to work with `capd` you'll need to explicitly enable the `rancher` and `capi-rancher-import` units).
 
 You can also retrieve it's `kubeconfig` with:
 
@@ -364,8 +383,8 @@ You can also retrieve it's `kubeconfig` with:
 kubectl -n workload-cluster get secret first-workload-cluster-kubeconfig -o jsonpath='{.data.value}' | base64 -d > first-workload-cluster-kubeconfig
 ```
 
-**Note well** that this way of defining a workload clusters is an expedient for early versions of Sylva. The target is to have a lifecycle for multiple workload clusters, independent from the lifecycle
-of the management cluster and relying on GitOps patterns.
+**Note well** that using this way to define one workload cluster is an expedient for early versions of Sylva.
+The target is to manage lifecycle of multiple workload clusters, independently from the lifecycle of the management cluster and relying on GitOps patterns.
 
 ### Security Considerations
 
@@ -373,13 +392,30 @@ Please refer to [Sylva Security](./docs/security.md).
 
 ## Tips and Troubleshooting
 
-As the stack if highly relying on flux, it is the main entry point to start with when something goes wrong. As all units are managed by kustomizations, this is the fist thing to look at:
+As the stack is highly relying on flux, it is the main entry point to start with when something goes wrong. As all units are managed by kustomizations, this is the fist thing to look at:
 
 ```shell
 kubectl get kustomizations
 ```
 
-> You can also install and use use [flux cli](https://fluxcd.io/flux/installation/#install-the-flux-cli) to watch these ressources. As we are creating flux resources in default namespace, we recommand you to `export FLUX_SYSTEM_NAMESPACE=default`, this way you'll be able to issue flux commands without having to provide the namespace at each time. With flux cli, the equivalent of previous command would be `flux get kustomizations`
+You can also use [Flux CLI](https://fluxcd.io/flux/installation/#install-the-flux-cli) to watch these resources. This tool will be downloaded automatically alongside with other utilities during bootstrap.
+
+In order to make them accessible in current shell, it is recommended to use provided env file:
+
+```shell
+# this puts sylva-core/bin in the $PATH, sets up completion for all tools and sets up FLUX_SYSTEM_NAMESPACE:
+# (run this from sylva-core directory)
+source bin/env
+
+# alternative: export FLUX_SYSTEM_NAMESPACE=default
+```
+
+After setting this environment variable, you'll be able to issue flux commands without having to provide the namespace at each time.
+With flux cli, the equivalent of previous command would be:
+
+```shell
+flux get kustomizations
+```
 
 If you don't have any kustomization in your cluster, it means that the sylva-units chart has not been properly instantiated. In that case you should have a look at the resources that are managing that chart:
 
@@ -565,7 +601,7 @@ OK
 
 The documentation at the top of charts/sylva-units/values.schema.yaml explains how to validate the schema itself and provides tools to understand validation errors better than with `helm template` command.
 
-### Working directly on the management cluster
+## Working directly on the management cluster
 
 Once the bootstrap phase is done, and the pivot is done, the management cluster can be updated with:
 
@@ -573,10 +609,12 @@ Once the bootstrap phase is done, and the pivot is done, the management cluster 
 ./apply.sh <your-environment-name>
 ```
 
-### Cleaning things up
+## Cleaning things up
 
 <!-- markdownlint-disable MD044 -->
 
-One limitation of this approach is that management cluster can not delete himself properly, as it will shoot itself in the foot at some point. [openstack-cleanup.sh](tools/openstack-cleanup.sh) script is provided to help cleaning the resources created by capo.
+One limitation of this approach is that management cluster can not delete itself properly, as it will shoot itself in the foot at some point.
+
+For resources created by CAPO, the [`tools/openstack-cleanup.sh`](tools/openstack-cleanup.sh) script is provided to help cleaning the resources.
 
 <!-- markdownlint-enable MD044 -->
