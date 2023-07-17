@@ -40,14 +40,14 @@ data:
 {{ end }}
 {{ end }}
 {{ if eq .Values.cluster.capi_providers.infra_provider "capv" }}
-  VS_DC_NAME: {{ .Values.cluster.capv.dataCenter }}
+  VS_DC_NAME: {{ .Values.cluster.capv.dataCenter | quote }}
   VS_NETWORK: {{ .Values.cluster.capv.network }}
   VS_SERVER: {{ .Values.cluster.capv.server }}
-  VS_DATASTORE: {{ .Values.cluster.capv.dataStore }}
+  VS_DATASTORE: {{ .Values.cluster.capv.dataStore | quote }}
   VS_TLS_THUMBPRINT: {{ .Values.cluster.capv.tlsThumbprint }}
-  VS_FOLDER: {{ .Values.cluster.capv.folder }}
-  VS_RESOURCEPOOL: {{ .Values.cluster.capv.resourcePool }}
-  VS_STORAGEPOLICY_NAME: {{ .Values.cluster.capv.storagePolicyName }}
+  VS_FOLDER: {{ .Values.cluster.capv.folder | quote }}
+  VS_RESOURCEPOOL: {{ .Values.cluster.capv.resourcePool | quote }}
+  VS_STORAGEPOLICY_NAME: {{ .Values.cluster.capv.storagePolicyName | quote }}
 {{ end }}
 {{ if  hasKey .Values.cluster "cis_profile" }}
   CIS_PROFILE: {{ .Values.cluster.cis_profile }}
