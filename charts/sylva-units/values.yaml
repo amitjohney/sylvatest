@@ -1588,8 +1588,10 @@ units:
 
   workload-capo-cluster-resources:
     enabled_conditions:
-    # - '{{ or (.Values.cluster.capi_providers.infra_provider | eq "capo") (lookup "v1" "ConfigMap" "default" "management-cluster-values" | dig "data" "values" "" | fromYaml | dig "units" "workload-cluster" "helmrelease_spec" "values" "cluster" "capi_providers" "infra_provider" "" | eq "capo") }}'
-    - '{{ lookup "v1" "Secret" "default" "sylva-units-values-debug" | dig "data" "values" "" | b64dec | fromYaml | dig "units" "workload-cluster" "helmrelease_spec" "values" "cluster" "capi_providers" "infra_provider" "" | eq "capo" }}'
+    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+    # - '{{ lookup "v1" "ConfigMap" "default" "management-cluster-values" | dig "data" "values" "" | fromYaml | dig "units" "workload-cluster" "helmrelease_spec" "values" "cluster" "capi_providers" "infra_provider" "" | eq "capo" }}'
+    - '{{ tuple (lookup "v1" "ConfigMap" "default" "management-cluster-values" | dig "data" "values" "" | fromYaml | dig "units" "workload-cluster" "helmrelease_spec" "values" "cluster" "capi_providers" "infra_provider" "" | eq "capo") (lookup "v1" "ConfigMap" "default" "management-cluster-values" | dig "data" "values" "" | fromYaml | dig "units" "workload-cluster" "helmrelease_spec" "values" "cluster" "capi_providers" dict | hasKey "infra_provider") | include "set-only-if" }}'
+    # - '{{ lookup "v1" "Secret" "default" "sylva-units-values-debug" | dig "data" "values" "" | b64dec | fromYaml | dig "units" "workload-cluster" "helmrelease_spec" "values" "cluster" "capi_providers" "infra_provider" "" | eq "capo" }}'
     - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
     repo: sylva-core
     depends_on:
