@@ -737,6 +737,9 @@
                   "$ref": "#/$defs/string-with-gotpl"
                 }
               ]
+            },
+            "sylva_admin_uuid": {
+              "type": "string"
             }
           }
         },

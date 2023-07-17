@@ -15,6 +15,7 @@ spec:
     emailVerified: true
     firstName: sylva
     lastName: sylva
+    id: ${SYLVA_ADMIN_UUID}
     groups:
       - infra-admins
     realmRoles:

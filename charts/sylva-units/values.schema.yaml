@@ -571,6 +571,9 @@ properties:
                 format: hostname
               - $ref: "#/$defs/string-with-gotpl"
 
+          sylva_admin_uuid:  # -------------------------------
+            type: string
+
       flux: # -------------------------------
         type: object
         additionalProperties: false
