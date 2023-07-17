@@ -60,10 +60,3 @@ spec:
           access.token.claim: "true"
           claim.name: resource_access.${client_id}.roles
           multivalued: "true"
-      - name: realm roles
-        protocol: openid-connect
-        protocolMapper: oidc-usermodel-realm-role-mapper
-        config:
-          access.token.claim: "true"
-          claim.name: realm_access.roles
-          multivalued: "true"

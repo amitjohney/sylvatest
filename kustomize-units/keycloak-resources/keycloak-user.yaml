@@ -20,7 +20,6 @@ spec:
       - default-roles-sylva
     clientRoles:
       realm-management:
-        - manage-users
         - view-users
     credentials:
       - type: password
