@@ -319,22 +319,22 @@ Before trigerring bootstrap.sh, some prerequisites need to be satisfied.
 ### Defining your environment secrets
 
 Beyond the secrets specific to the Cluster API infra provider (covered above), you need to set in the `secrets.yaml` file
-of your environment values the admin password that will be used for the different services (Rancher, Flux Web UI, Keycloak example accounts).
+of your environment values the admin password that will be used for accessing the different services (Rancher, Flux Web UI and Vault) through the Keycloak default SSO account.
+
+> **_IMPORTANT NOTICE:_** this password must follow the Sylva password policy (default: length(12) and upperCase(1) and lowerCase(1) and digits(1)), otherwise the default SSO account is not created.
 
 `secrets.yaml`:
 
 ```yaml
   cluster:
-    admin_password: "RancherPass"
+    admin_password: a string compliant with the password policy, e.g. output of the command "< /dev/urandom tr -dc 'A-Za-z0-9' | head -c12"
 ```
 
-If you don't do this, a random password will be set, which you can retrieve with:
+If you don't do this, a random password will be set, which you can retrieve from Vault (path secret/sso-account) or with the command:
 
-```
+```shell
 kubectl get secrets sylva-units-values-debug -o yaml | yq .data.values | base64 -d | yq .cluster.admin_password
 ```
-
-However, as of today we have nothing to guarantee that this secret will not be dynamically regenerated when you update sylva-units (e.g. with `apply.sh`).
 
 **Note well** that this reflects the current state of Sylva, but does not match the target, which is to rely on Vault to
 have per-service distinct randomly generated secrets.
@@ -366,6 +366,10 @@ kubectl -n workload-cluster get secret first-workload-cluster-kubeconfig -o json
 
 **Note well** that this way of defining a workload clusters is an expedient for early versions of Sylva. The target is to have a lifecycle for multiple workload clusters, independent from the lifecycle
 of the management cluster and relying on GitOps patterns.
+
+### Security Considerations
+
+Please refer to [Sylva Security](./docs/security.md).
 
 ## Tips and Troubleshooting
 
