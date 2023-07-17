@@ -90,7 +90,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/os-image-server.git
       ref:
-        tag: 1.3.0
+        tag: 1.4.0
 
 helm_repo_spec_default:
   interval: 60m0s
@@ -2177,10 +2177,6 @@ _internal:
 
   # These values are used only if `cluster.os_images` is empty
   default_os_images:
-    ubuntu-2204-hardened-qcow2:
-      uri: oci://registry.gitlab.com/sylva-projects/sylva-elements/diskimage-builder/diskimage-builder-hardened:0.0.7
-      filename: ubuntu-22.04-hardened.qcow2
-      checksum: 7c30799295607c2dcd440a079e7f418cae77f5f2a340a997fada256d95e3365b
     ubuntu-2204-plain-qcow2:
       uri: oci://registry.gitlab.com/sylva-projects/sylva-elements/diskimage-builder/diskimage-builder-plain:0.0.7
       filename: ubuntu-22.04-plain.qcow2
