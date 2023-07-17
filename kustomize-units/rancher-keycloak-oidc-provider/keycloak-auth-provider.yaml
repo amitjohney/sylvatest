@@ -16,5 +16,3 @@ rancherUrl: "https://${RANCHER_EXTERNAL_URL}/verify-auth"
 scope: openid profile email
 type: keyCloakOIDCConfig
 groupSearchEnabled: true
-allowedPrincipalIds:
-  - keycloakoidc_user://${SYLVA_ADMIN_UUID}
