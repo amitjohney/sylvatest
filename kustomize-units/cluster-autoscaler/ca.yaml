@@ -25,7 +25,7 @@ spec:
         - --cloud-provider=clusterapi
         - --kubeconfig=/mnt/kubeconfig/value
         - --clusterapi-cloud-config-authoritative
-        - --node-group-auto-discovery=clusterapi:clusterName=${CLUSTER_NAME},namespace=${CAPI_NS}
+        - --node-group-auto-discovery=clusterapi:clusterName=${CLUSTER_NAME}
         - --scale-down-delay-after-add=1m0s
         - --scale-down-unneeded-time=1m0s
         - --scale-down-unready-time=1m0s
