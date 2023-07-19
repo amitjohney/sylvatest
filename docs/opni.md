@@ -122,7 +122,7 @@ List of **required** configuration properties:
 | **opni.gateway.auth.openid.wellKnownConfiguration.userinfo_endpoint** | URL that will be used for retrieving information about the logged in user |`""`                             |
 | **opni.gateway.auth.openid.wellKnownConfiguration.jwks_uri**| URL for the [JSON Web Key Sets](https://auth0.com/docs/secure/tokens/json-web-tokens/json-web-key-sets) of the OpenID provider |`""`|
 
-> **_NOTE:_**  `opni.gateway.auth.openid.discovery` and `opni.gateway.auth.openid.wellKnownConfiguration` are mutually exclusive. If the openid provider has a discovery endpoint, it should be configured in the discovery field, otherwise the well-known configuration fields can be set manually.  
+> **_NOTE:_**  `opni.gateway.auth.openid.discovery` and `opni.gateway.auth.openid.wellKnownConfiguration` are mutually exclusive. If the openid provider has a discovery endpoint, it should be configured in the discovery field, otherwise the well-known configuration fields can be set manually.
 >
 > **_NOTE:_**  `opni.gateway.auth.openid.clientID` and `opni.gateway.auth.openid.clientSecret` should **NOT** be set in the `values.yaml` of the Sylva environment dir. Instead they should be set in the `secrets.yaml` file of the same directory. That way you will not expose sensitive data in your repo.
 
@@ -190,7 +190,7 @@ By setting `opni.gateway.auth.useInternalKeycloak: true` the following happens:
 4. The `clientID` and `clientSecret` will be automatically passed to Opni's configuration
 5. All `openid` configuration will be automatically filled and passed to Opni's configuration
 
-> **_NOTE:_** You can see the `username` of the created Keycloak user form the Keycloak Admin UI. The `password` for the user is the one passed in the `environment-values/<env>/secrets.yaml` file under `cluster.admin_password`. If you have not provided a password, then a random password will be generated. Randomly generated password can be retrieved by doing `kubectl get secrets sylva-units-values-debug -n default -o template="{{ .data.values }}" | base64 -d | grep admin_password` in the `management-cluster`. The user has `admin` privileges in Opni's **Monitoring** backend (Grafana).  
+> **_NOTE:_** You can see the `username` of the created Keycloak user form the Keycloak Admin UI. The `password` for the user is the one passed in the `environment-values/<env>/secrets.yaml` file under `cluster.admin_password`. If you have not provided a password, then a random password will be generated. Randomly generated password can be retrieved by doing `kubectl get secrets sylva-units-values-debug -n default -o template="{{ .data.values }}" | base64 -d | grep admin_password` in the `management-cluster`. The user has `admin` privileges in Opni's **Monitoring** backend (Grafana).
 >
 > **_NOTE:_**  The default values for `openid` are as follows:
 >
@@ -204,9 +204,9 @@ By setting `opni.gateway.auth.useInternalKeycloak: true` the following happens:
 > 8. `opni.gateway.auth.openid.wellKnownConfiguration.userinfo_endpoint: "https://keycloak.sylva/realms/sylva/protocol/openid-connect/userinfo"`
 > 9. `opni.gateway.auth.openid.wellKnownConfiguration.jwks_uri: "https://keycloak.sylva/realms/sylva/protocol/openid-connect/certs"`
 >
->Should you need a different `identifyingClaim` you can pass it to the `environment-values/<env>/secrets.yaml` file configuration as follows: `cluster.opni.gateway.auth.openid.identifyingClaim: "foo"`.
+>Should you need a different `identifyingClaim` you can pass it to the `environment-values/<env>/values.yaml` file configuration as follows: `cluster.opni.gateway.auth.openid.identifyingClaim: "foo"`.
 > The `opni.gateway.auth.openid.roleAttributePath` and `opni.gateway.auth.openid.scopes` are hardcoded based on the created Keycloak client and user which were created following Grafana's [docs](https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/configure-authentication/keycloak/).
-> The `wellKnownConfiguration` was retrieved from the `https://keycloak.sylva/realms/sylva/.well-known/openid-configuration` URL.  
+> The `wellKnownConfiguration` was retrieved from the `https://keycloak.sylva/realms/sylva/.well-known/openid-configuration` URL.
 >
 > **_WARNING:_** One **manual** step would need to be performed before using Sylva's Keycloak as IDP for Opni's **Monitoring** backend.. Sylva's CA certificate must be manually mounted to the Grafana pod that will be created once the **Monitoring** backend is enabled. Sadly with the current version of Opni this cannot be automated before hand, as the Grafana pod is created dynamically and preconfiguration is not possible at the moment (this will be fixed in future versions of Opni). How to do this is covered below.
 
