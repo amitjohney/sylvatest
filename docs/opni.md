@@ -1,4 +1,6 @@
+
 # Opni in Sylva
+
 1. [Introduction](#introduction)
 2. [Opni architecture](#opni-architecture)
 3. [How to enable opni in Sylva](#how-to-enable-opni-in-sylva)
@@ -21,11 +23,12 @@
 
 ## Introduction
 
-Opni is an optional component of the Sylva stack that is responsible for multi-cluster and multi-tenant observability. It simplifies the process of creating and managing backends, agents, and data related to logging, monitoring, and tracing. 
+Opni is an optional component of the Sylva stack that is responsible for multi-cluster and multi-tenant observability. It simplifies the process of creating and managing backends, agents, and data related to logging, monitoring, and tracing.
 
 With built-in AIOps, Opni allows users to swiftly detect anomalous activities in their data.
 
 This document covers:
+
 1. An overview of Opni's architecture
 2. How one can can enable Opni as a `sylva-unit` in order to monitor **logs, metrics and traces** of clusters deployed by Sylva
     - Examples of different Opni setups
@@ -43,6 +46,7 @@ Links to the upstream repositories:
 - [Opni helm charts](https://github.com/rancher/opni/tree/charts-repo/charts)
 
 ## Opni architecture
+
 The opni project aims at extending existing open source solutions so that it is easier to manage the **logs, metrics and traces** (what Opni calls "observability data") of a multi-cluster setup.
 
 From Opni's docs:
@@ -63,6 +67,7 @@ On the **Upstream Opni Cluster** (in Sylva's case this would be the `management-
 4. **Alerting and SLOs** - Creating triggers and reliability targets for services allows you to utilize your data effectively and make informed decisions regarding software operations. Opni alerting enables this through its alerting and SLO interface.
 
 Microservices responsible for managing these components include:
+
 1. `opni-gateway` - Serves as an observability backend for `opni-agents` and offers the **Opni dashboard** through which all Opni components can be managed
 2. `opni-manager` - Responsible for setting up the `opni-gateway` and anyother opni related microservice/resource
 
@@ -83,7 +88,7 @@ units:
   helmrelease_spec:
     values:
       units:
-        # config only needed if opni-agents will be deployed on the 
+        # config only needed if opni-agents will be deployed on the
         # workload cluster
         cert-manager:
           enabled: true
@@ -97,7 +102,8 @@ cluster:
 ```
 
 ## How to configure opni in Sylva
-Below you can find a table showing all possible configuration values enabled for the `opni` unit (both optional and required). In general the only configuration that needs to be done is OpenID configuration for Opni's **Monitoring** backend. 
+
+Below you can find a table showing all possible configuration values enabled for the `opni` unit (both optional and required). In general the only configuration that needs to be done is OpenID configuration for Opni's **Monitoring** backend.
 
 List of **required** configuration properties:
 | Property                                          | Description                                                                               | Example                             |
@@ -119,7 +125,6 @@ List of **required** configuration properties:
 
 > **_NOTE:_**  `opni.gateway.auth.openid.clientID` and `opni.gateway.auth.openid.clientSecret` should **NOT** be set in the `values.yaml` of the Sylva environment dir. Instead they should be set in the `secrets.yaml` file of the same directory. That way you will not expose sensitive data in your repo.
 
-
 List of **optional** configuration properties:
 | Property                                          | Description                                                                                       | Default                        |
 | ------------------------------------------------- | ------------------------------------------------------------------------------------------------- | -----------------------------  |
@@ -139,12 +144,15 @@ List of **optional** configuration properties:
 | **opni.opni_prometheus_crd.enabled**              | Deploy Prometheus CRDs (should be **false** if `opni.opni_agent.kube_prometheus_stack` is enabled)  |`false`                        |
 
 ### Opni example configurations
+
 This section aims to show examples of how to configure Opni's **required** values, so that you could deploy Opni on a `management` and `workload` clusters.
 
 #### Monitoring backend authentication using Sylva's Keycloak as IDP
+
 Sylva's [keycloak](https://gitlab.com/sylva-projects/sylva-core/-/tree/main/kustomize-units/keycloak) unit can be used in Opni's **Monitoring** backend OpenID authentication. Below you can find configuration steps on how to achieve this.
 
 Config in `environment-values/<env>/values.yaml`:
+
 ```yaml
 # Example for kubeadm-capd environment deployment
 units:
@@ -154,7 +162,7 @@ units:
   helmrelease_spec:
     values:
       units:
-        # config only needed if opni-agents will be deployed on the 
+        # config only needed if opni-agents will be deployed on the
         # workload cluster
         cert-manager:
           enabled: true
@@ -174,15 +182,17 @@ cluster:
 ```
 
 By setting `opni.gateway.auth.useInternalKeycloak: true` the following happens:
+
 1. A Keycloak client is automatically created in the Keycloak applicaiton.
 2. A Keycloak user is automatically created in the Keycloak applicaiton. If you want to use different users, you can use the created user as a template.
-3. Sylva's CA cert is mounted to the `opni-manager` and `opni-gateway` microservices. This is needed in order for the microservices to be able to call Sylva's Keycloak url.
+3. Sylva's CA cert is mounted to the `opni-manager` and `opni-gateway` microservices. This is needed in order for the microservices to be able to call Sylva's Keycloak URL.
 4. The `clientID` and `clientSecret` will be automatically passed to Opni's configuration
 5. All `openid` configuration will be automatically filled and passed to Opni's configuration
 
 > **_NOTE:_** You can see the `username` of the created Keycloak user form the Keycloak Admin UI. The `password` for the user is the one passed in the `environment-values/<env>/secrets.yaml` file under `cluster.admin_password`. If you have not provided a password, then a random password will be generated. Randomly generated password can be retrieved by doing `kubectl get secrets sylva-units-values-debug -n default -o template="{{ .data.values }}" | base64 -d | grep admin_password` in the `management-cluster`. The user has `admin` privileges in Opni's **Monitoring** backend (Grafana).
 
 > **_NOTE:_**  The default values for `openid` are as follows:
+>
 > 1. `opni.gateway.auth.openid.identifyingClaim: "sub"`
 > 2. `opni.gateway.auth.openid.insecureSkipVerify: false`
 > 3. `opni.gateway.auth.openid.scopes: ["openid", "profile", "email", "offline_access", "roles"]`
@@ -192,10 +202,10 @@ By setting `opni.gateway.auth.useInternalKeycloak: true` the following happens:
 > 7. `opni.gateway.auth.openid.wellKnownConfiguration.token_endpoint: "https://keycloak.sylva/realms/sylva/protocol/openid-connect/token"`
 > 8. `opni.gateway.auth.openid.wellKnownConfiguration.userinfo_endpoint: "https://keycloak.sylva/realms/sylva/protocol/openid-connect/userinfo"`
 > 9. `opni.gateway.auth.openid.wellKnownConfiguration.jwks_uri: "https://keycloak.sylva/realms/sylva/protocol/openid-connect/certs"`
-> 
+>
 >Should you need a different `identifyingClaim` you can pass it to the `environment-values/<env>/secrets.yaml` file configuration as follows: `cluster.opni.gateway.auth.openid.identifyingClaim: "foo"`.
 > The `opni.gateway.auth.openid.roleAttributePath` and `opni.gateway.auth.openid.scopes` are hardcoded based on the created Keycloak client and user which were created following Grafana's [docs](https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/configure-authentication/keycloak/).
-> The `wellKnownConfiguration` was retrieved from the `https://keycloak.sylva/realms/sylva/.well-known/openid-configuration` url.
+> The `wellKnownConfiguration` was retrieved from the `https://keycloak.sylva/realms/sylva/.well-known/openid-configuration` URL.
 
 
 > **_WARNING:_** One **manual** step would need to be performed before using Sylva's Keycloak as IDP for Opni's **Monitoring** backend.. Sylva's CA certificate must be manually mounted to the Grafana pod that will be created once the **Monitoring** backend is enabled. Sadly with the current version of Opni this cannot be automated before hand, as the Grafana pod is created dynamically and preconfiguration is not possible at the moment (this will be fixed in future versions of Opni). How to do this is covered below.
@@ -206,7 +216,8 @@ Once you have enabled Opni's **Monitoring** backend (but not yet installed it on
 
 Patch steps:
 
-(1) Save patch configurations to a file (`patch.yaml`): 
+(1) Save patch configurations to a file (`patch.yaml`):
+
 ```yaml
 spec:
   grafana:
@@ -221,9 +232,11 @@ spec:
         secret:
           secretName: sylva-ca.crt
 ```
+
 The `sylva-ca.crt` secret is automatically created and present in the namespace where the `opni` unit is deployed.
 
 (2) Apply patch to the `MonitoringCluster` resource:
+
 ```bash
 kubectl patch monitoringcluster opni -n opni --patch-file patch.yaml --type=merge
 ```
@@ -237,6 +250,7 @@ For faster development/testing of Opni's **Monitoring** backend using Sylva's Ke
 By doing this you would not have to manually mount Sylva's CA certificate to the Grafana pod.
 
 Config in `environment-values/<env>/values.yaml`:
+
 ```yaml
 # Example for kubeadm-capd environment deployment
 units:
@@ -246,7 +260,7 @@ units:
   helmrelease_spec:
     values:
       units:
-        # config only needed if opni-agents will be deployed on the 
+        # config only needed if opni-agents will be deployed on the
         # workload cluster
         cert-manager:
           enabled: true
@@ -271,8 +285,10 @@ After Opni has deployed, you can continue to enable the **Monitoring** backend w
 
 > **_NOTE:_** It is not advisable to use `insecureSkipVerify` on production environments.
 
-#### Monitoring backend authentication using an external IDP 
+#### Monitoring backend authentication using an external IDP
+
 ##### IDP with a discovery endpoint
+
 If you want to use an external identity provider and the provider has a discovery endpoint, then your configuration in `environment-values/<env>/values.yaml` should be:
 
 ```yaml
@@ -284,7 +300,7 @@ units:
   helmrelease_spec:
     values:
       units:
-        # config only needed if opni-agents will be deployed on the 
+        # config only needed if opni-agents will be deployed on the
         # workload cluster
         cert-manager:
           enabled: true
@@ -308,6 +324,7 @@ cluster:
 ```
 
 Your `secrets.yaml` file should look like this:
+
 ```yaml
 cluster:
   opni:
@@ -315,11 +332,13 @@ cluster:
       auth:
         openid:
           clientID: "foo"
-          clientSecret: "bar" 
+          clientSecret: "bar"
 ```
 
 ##### IDP without a discovery endpoint
+
 If you want to use an external identity provider and the provider does not have a discovery endpoint, then your configuration in `environment-values/<env>/values.yaml` should be:
+
 ```yaml
 # Example for kubeadm-capd environment deployment
 units:
@@ -329,7 +348,7 @@ units:
   helmrelease_spec:
     values:
       units:
-        # config only needed if opni-agents will be deployed on the 
+        # config only needed if opni-agents will be deployed on the
         # workload cluster
         cert-manager:
           enabled: true
@@ -354,7 +373,9 @@ cluster:
             jwks_uri: ""
   ...
 ```
+
 Your `secrets.yaml` file should look like this:
+
 ```yaml
 cluster:
   opni:
@@ -362,13 +383,14 @@ cluster:
       auth:
         openid:
           clientID: "foo"
-          clientSecret: "bar" 
+          clientSecret: "bar"
 ```
 
 ## Opni usage
+
 This section covers how to use Opni inside of a Sylva cluster deployemnt. It aims to only cover Sylva specific configurations. For additional info on Opni's usage plese refer to their [docs](https://opni.io).
 
-> **_NOTE:_** This section assumes that your **Opni dashboard** url resolves to the value of the following template: `{{ .Values.cluster.display_external_ip }}`. The property can be viewed from th `values.yaml` file of the Sylva helm chart.
+> **_NOTE:_** This section assumes that your **Opni dashboard** URL resolves to the value of the following template: `{{ .Values.cluster.display_external_ip }}`. The property can be viewed from th `values.yaml` file of the Sylva helm chart.
 
 ### Enabling the Monitoring backend
 
@@ -386,8 +408,9 @@ This will create a `MonitoringCluster` resource from which a Grafana pod will be
 From here on you can proceed to setup monitoring `RBAC` roles and role bindings for users. As described in the Opni [docs](https://opni.io/installation/opni/backends#access-control).
 
 An example of a correctly setup `RBAC` config would include:
+
 1. RBAC role with a label setup. Example: `view=production`
-2. RBAC role binding that utilizes the created role and has for a subject whatever you have provided under `opni.gateway.auth.openid.identifyingClaim`. Example: 
+2. RBAC role binding that utilizes the created role and has for a subject whatever you have provided under `opni.gateway.auth.openid.identifyingClaim`. Example:
     - `opni.gateway.auth.openid.identifyingClaim: "sub"`
     - Subject in role binding would then be: `e06eae79-f23f-4561-9e0e-ddae736b3e73` ("sub" value should be taken for your user from your OpenID provider)
 3. Label agents with the created role
@@ -407,15 +430,15 @@ After that you can safely navigate to `https://grafana.opni.sylva` and login wit
 
 After that you can refer to the Opni [docs](https://opni.io/installation/opni/backends) for further information.
 
-After the installation has completed you can access Opni's Logging backend on the `https://logging.opni.sylva`url.
+After the installation has completed you can access Opni's Logging backend on the `https://logging.opni.sylva` URL.
 
 ### Adding additional Opni agents
 
 1. Navigate to the **Opni Dashboard**, if you have not configured a different host, it should be on the following endpoint: `https://dashboard.opni.sylva/`
 2. Navigate to **Agents** and click **Add**
 3. From there open `Manual Install Information` and copy the `Bootstrap Token` and `Certificate Pin`
-4. Open Rancher UI 
-    - Navigate to the local cluster 
+4. Open Rancher UI
+    - Navigate to the local cluster
         - Cluster -> Nodes -> Copy Node IP
         - Service Discovery -> Services -> Copy `opni` service NodePort value. By default the `opni` service is of type `NodePort`. If you have selected something else for the `opni.gateway.serviceType` value, then these steps might differ.
     - Navigate to the `workload-cluster` and follow the `opni-agent` installation steps from the Opni [docs](https://opni.io/installation/opni_agent).
@@ -427,20 +450,24 @@ After the installation has finished you should see the agent in the `Opni Dashbo
 ## Known Problems
 
 ### Prometheus provider is not working for Monitoring backend
+
 Currently collecting monitoring data with Prometheus is not working (see https://github.com/rancher/opni/issues/1540). In order for Opni's Monitoring backend to work `OpenTelemetry` metrics would have to be enabled (which is done by a click of a button).
 
 ### Opni Logging backend Controlplane configuration
+
 In order for Opni's `Logging` backend to function as expected, when configuring it, you would need to pass a replica number for the `Controlplane Pods` of no lower than '3'. Any lower than this value will cause the `Logging` backend to not work as expected.
 
-## Troubleshooting 
+## Troubleshooting
+
 In case of issues there may be a wide range of reasons.
 
 The following commands might help you in determining the cause of the problem:
+
 ```bash
 # Check the logs of the opni-manager
 kubectl logs deployment/opni-manager -n opni -c manager
 
-# Check the logs of the opni-gateway 
+# Check the logs of the opni-gateway
 kubectl logs deployment/opni-gateway -n opni
 
 # Check the logs of the opni-agent
@@ -452,7 +479,7 @@ kubectl exec -it opni-gateway-865c7c76d7-vdjx9 -n opni -- opni -h
 # or you can directly ssh into the pod and use 'opni' binary from there
 kubectl exec -it <opni-gateway-pod-name> -n opni -- /bin/bash
 
-# Check if the configuration in the Gateway resource is the 
+# Check if the configuration in the Gateway resource is the
 # same as the one you have provided in the env values.yaml file
 kubectl get gateway opni-gateway -o yaml
 
