@@ -203,28 +203,28 @@ units:
           version: 0.10.0
       targetNamespace: opni
       values:
-        volumes: '{{ .Values.cluster.opni.gateway.auth.useInternalKeycloak | ternary 
+        volumes: '{{ .Values.cluster.opni.gateway.auth.useInternalKeycloak | ternary
                         (.Files.Get "elements/configtemplate-opni-keycloak.tpl" | fromYaml | dig "volumes" list | include "preserve-type")
-                        (.Values.cluster.opni.volumes | include "preserve-type") 
-                  }}' 
-        volumeMounts: '{{ .Values.cluster.opni.gateway.auth.useInternalKeycloak | ternary 
+                        (.Values.cluster.opni.volumes | include "preserve-type")
+                  }}'
+        volumeMounts: '{{ .Values.cluster.opni.gateway.auth.useInternalKeycloak | ternary
                         (.Files.Get "elements/configtemplate-opni-keycloak.tpl" | fromYaml | dig "volumeMounts" list | include "preserve-type")
-                        (.Values.cluster.opni.volumeMounts | include "preserve-type") 
+                        (.Values.cluster.opni.volumeMounts | include "preserve-type")
                       }}'
         gateway:
           serviceType: '{{ .Values.cluster.opni.gateway.serviceType }}'
           hostname: '{{ .Values.cluster.opni.gateway.external_hostname }}'
-          auth: 
+          auth:
             provider: '{{ .Values.cluster.opni.gateway.auth.provider }}'
-            openid: '{{ .Values.cluster.opni.gateway.auth.useInternalKeycloak | ternary 
+            openid: '{{ .Values.cluster.opni.gateway.auth.useInternalKeycloak | ternary
                         (.Files.Get "elements/configtemplate-opni-keycloak.tpl" | fromYaml | dig "openid" dict | include "preserve-type")
-                        (.Values.cluster.opni.gateway.auth.openid | include "preserve-type") 
+                        (.Values.cluster.opni.gateway.auth.openid | include "preserve-type")
                     }}'
             noauth: '{{ .Values.cluster.opni.gateway.auth.noauth | include "preserve-type" }}'
           serviceAnnotations: '{{ .Values.cluster.opni.gateway.serviceAnnotations | include "preserve-type" }}'
-          extraVolumeMounts: '{{ .Values.cluster.opni.gateway.auth.useInternalKeycloak | ternary 
+          extraVolumeMounts: '{{ .Values.cluster.opni.gateway.auth.useInternalKeycloak | ternary
                                 (.Files.Get "elements/configtemplate-opni-keycloak.tpl" | fromYaml | dig "extraVolumeMounts" list | include "preserve-type")
-                                (.Values.cluster.opni.gateway.extraVolumeMounts | include "preserve-type") 
+                                (.Values.cluster.opni.gateway.extraVolumeMounts | include "preserve-type")
                               }}'
         opni-agent:
           kube-prometheus-stack:

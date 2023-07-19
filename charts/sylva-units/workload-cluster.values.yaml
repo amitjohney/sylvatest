@@ -166,7 +166,7 @@ units:
     unit_template: base-deps
 
   cert-manager:
-    enabled: false 
+    enabled: false
     unit_template: base-deps
 
   cluster-import:
@@ -185,5 +185,5 @@ units:
         substitute:
           CLUSTER_FLAVOR: '{{ upper .Values.cluster.capi_providers.bootstrap_provider }} {{ upper .Values.cluster.capi_providers.infra_provider }}'
           CLUSTER_NAME: '{{ .Values.cluster.name }}'
-  
+
 

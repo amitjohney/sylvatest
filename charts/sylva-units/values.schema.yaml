@@ -570,7 +570,7 @@ properties:
               - type: string
                 format: hostname
               - $ref: "#/$defs/string-with-gotpl"
-              
+
       opni: # -------------------------------
         type: object
         additionalProperties: false
@@ -610,10 +610,10 @@ properties:
                 properties:
 
                   useInternalKeycloak:  # -------------------------------
-                    type: boolean     
+                    type: boolean
 
                   provider:  # -------------------------------
-                    type: string 
+                    type: string
                     pattern: "^(openid|noauth)$"
 
                   openid:  # -------------------------------
@@ -631,21 +631,21 @@ properties:
 
                           path:  # -------------------------------
                             type: string
-                          
+
                           issuer:  # -------------------------------
-                            type: string     
+                            type: string
 
                       insecureSkipVerify:  # -------------------------------
-                        type: boolean     
+                        type: boolean
 
                       identifyingClaim:  # -------------------------------
-                        type: string     
+                        type: string
 
                       clientID:  # -------------------------------
-                        type: string    
+                        type: string
 
                       clientSecret:  # -------------------------------
-                        type: string  
+                        type: string
 
                       scopes: # -------------------------------
                         type: array
@@ -667,19 +667,19 @@ properties:
                         properties:
 
                           issuer:  # -------------------------------
-                            type: string 
+                            type: string
 
                           authorization_endpoint:  # -------------------------------
-                            type: string 
+                            type: string
 
                           token_endpoint:  # -------------------------------
-                            type: string 
+                            type: string
 
                           userinfo_endpoint:  # -------------------------------
-                            type: string 
+                            type: string
 
                           jwks_uri:  # -------------------------------
-                            type: string 
+                            type: string
 
                   noauth:  # -------------------------------
                     type: object
@@ -687,7 +687,7 @@ properties:
                     properties:
 
                       grafanaHostname:  # -------------------------------
-                        type: string 
+                        type: string
 
               serviceAnnotations: # -------------------------------
                 type: object
@@ -697,7 +697,7 @@ properties:
                   - type: string
                     format: hostname
                   - $ref: "#/$defs/string-with-gotpl"
-              
+
           monitoring:  # -------------------------------
             type: object
             additionalProperties: false
@@ -742,7 +742,7 @@ properties:
                 properties:
 
                   enabled:  # -------------------------------
-                    type: boolean    
+                    type: boolean
 
           opni_prometheus_crd:  # -------------------------------
             type: object
@@ -750,7 +750,7 @@ properties:
             properties:
 
               enabled:  # -------------------------------
-                type: boolean  
+                type: boolean
 
       flux: # -------------------------------
         type: object

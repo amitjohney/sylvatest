@@ -27,3 +27,4 @@ spec:
       remoteRef:
         key: keycloak-client-secret-opni-monitoring-client
         property: CLIENT_ID
+
