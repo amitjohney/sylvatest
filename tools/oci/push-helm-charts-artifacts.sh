@@ -7,6 +7,10 @@
 # If run manually, the tool can be used after having preliminarily done
 # a 'docker login registry.gitlab.com' with suitable credentials.
 #
+# To enable signing when running manually, export the environment variables:
+# - COSIGN_PASSWORD
+# - COSIGN_PRIVATE_KEY (in PEM format)
+#
 # Requirements:
 # - helm
 # - git
@@ -17,7 +21,8 @@ set -o pipefail
 SECONDS=0
 
 BASE_DIR="$(realpath $(dirname $0)/../..)"
-OCI_REGISTRY="${1:-oci://registry.gitlab.com/sylva-projects/sylva-core/}"
+REGISTRY_URI="registry.gitlab.com/sylva-projects/sylva-core"
+OCI_REGISTRY="${1:-oci://$REGISTRY_URI/}"
 LOG_ERROR_FILE=$(mktemp)
 VALUES_FILE="$BASE_DIR/charts/sylva-units/values.yaml"
 
@@ -89,7 +94,14 @@ function process_chart_in_helm_repo {
       fi
 
       # Push Helm chart to OCI
-      helm push $tgz_file $OCI_REGISTRY
+      helm push $tgz_file $OCI_REGISTRY >output 2>&1
+      cat output
+      DIGEST=$(grep 'Digest:' output | sed 's/^.*: //')
+      if [[ -v COSIGN_PRIVATE_KEY ]]; then
+      # Sign the Helm chart, it adds a new tag
+         cosign sign -y --key env://COSIGN_PRIVATE_KEY $REGISTRY_URI/$chart_name@$DIGEST
+      fi
+      rm -f output
       rm -f $tgz_file
     else
       if ls $chart_name*tgz >/dev/null 2>&1; then
@@ -118,7 +130,15 @@ function process_chart_in_git {
     helm package --version $revision $TMPD/$chart_path
     if [[ -e $tgz_file ]]; then
       # Push Helm chart to OCI
-      helm push "$tgz_file" $OCI_REGISTRY
+      helm push "$tgz_file" $OCI_REGISTRY >output 2>&1
+      cat output
+      DIGEST=$(grep 'Digest:' output | sed 's/^.*: //')
+      if [[ -v COSIGN_PRIVATE_KEY ]]; then
+      # Sign the Helm chart, it adds a new tag
+         cosign sign -y --key env://COSIGN_PRIVATE_KEY $REGISTRY_URI/$chart_name@$DIGEST
+      fi
+      rm -f $tgz_file
+      rm -f output
       #flux push artifact $OCI_REGISTRY/$chart_name:$git_revision --path=$chart_path --source=$git_repo --revision=$git_revision ${creds:-}
     else
       error $chart_name "The $tgz_file is not present after the 'helm package' operation, check that the chart version is correct"
@@ -148,6 +168,10 @@ function artifact_exists {
 ### Helm registry login with credentials of Gitlab job environment
 if [[ -n ${CI_REGISTRY_USER:-} ]]; then
     echo "$CI_REGISTRY_PASSWORD" | helm registry login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
+fi
+
+if ! [[ -v COSIGN_PRIVATE_KEY ]]; then
+   echo "[WARNING] Unable to sign the Helm Charts, the private key is not set"
 fi
 
 ### Parse values file ###
