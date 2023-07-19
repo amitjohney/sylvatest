@@ -1,0 +1,8 @@
+# Keycloak client and user resources that will be used
+# to automate Opni's Monitoring authentication through Sylva's Keycloak 
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - opni-monitoring-client.yaml
+  - opni-monitoring-user.yaml

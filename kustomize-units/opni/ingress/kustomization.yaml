@@ -1,0 +1,8 @@
+# Ingress resources and certificates responsible for exposing key Opni endpoints.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - opni-ing-http.yaml
+  - opni-ing-https.yaml
+  - opni-tls.yaml

@@ -1,0 +1,55 @@
+# Client is setup according to https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/configure-authentication/keycloak/
+apiVersion: legacy.k8s.keycloak.org/v1alpha1
+kind: KeycloakClient
+metadata:
+  name: opni-monitoring-client
+  labels:
+    realm1: sylva
+spec:
+  realmSelector:
+    matchLabels:
+      realm1: sylva
+  roles:
+    - name: admin
+    - name: editor
+    - name: viewer
+  client:
+    clientId: opni-monitoring
+    name: opni-monitoring
+    enabled: true
+    protocol: openid-connect
+    publicClient: false
+    implicitFlowEnabled: false
+    clientAuthenticatorType: client-secret
+    rootUrl: "https://${OPNI_MONITORING_DNS}"
+    adminUrl: "https://${OPNI_MONITORING_DNS}"
+    baseUrl: "https://${OPNI_MONITORING_DNS}"
+    redirectUris:
+      - "https://${OPNI_MONITORING_DNS}/*"
+    webOrigins:
+      - "https://${OPNI_MONITORING_DNS}"
+    directAccessGrantsEnabled: true
+    standardFlowEnabled: true
+    attributes:
+      use.refresh.tokens: "false"
+    defaultClientScopes:
+      - "profile"
+      - "openid"
+      - "email"
+      - "roles"
+      - "offline_access"
+    optionalClientScopes:
+      - "phone"
+      - "openid"
+      - "address"
+    protocolMappers:
+      - name: opni_monitoring_user_client_role
+        protocol: openid-connect
+        protocolMapper: oidc-usermodel-client-role-mapper
+        config:
+          multivalued: "true"
+          userinfo.token.claim: "true"
+          id.token.claim: "true"
+          access.token.claim: "true"
+          claim.name: "roles"
+          usermodel.clientRoleMapping.clientId: "opni-monitoring"

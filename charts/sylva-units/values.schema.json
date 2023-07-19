@@ -740,6 +740,228 @@
             }
           }
         },
+        "opni": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "gateway"
+          ],
+          "properties": {
+            "volumes": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            "volumeMounts": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            "gateway": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "auth"
+              ],
+              "properties": {
+                "extraVolumeMounts": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                },
+                "serviceType": {
+                  "type": "string",
+                  "pattern": "^(NodePort|ClusterIP|LoadBalancer)$"
+                },
+                "auth": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "useInternalKeycloak": {
+                      "type": "boolean"
+                    },
+                    "provider": {
+                      "type": "string",
+                      "pattern": "^(openid|noauth)$"
+                    },
+                    "openid": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "discovery": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "path",
+                            "issuer"
+                          ],
+                          "properties": {
+                            "path": {
+                              "type": "string"
+                            },
+                            "issuer": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "insecureSkipVerify": {
+                          "type": "boolean"
+                        },
+                        "identifyingClaim": {
+                          "type": "string"
+                        },
+                        "clientID": {
+                          "type": "string"
+                        },
+                        "clientSecret": {
+                          "type": "string"
+                        },
+                        "scopes": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "roleAttributePath": {
+                          "type": "string"
+                        },
+                        "wellKnownConfiguration": {
+                          "type": "object",
+                          "additionalProperties": true,
+                          "required": [
+                            "issuer",
+                            "authorization_endpoint",
+                            "token_endpoint",
+                            "userinfo_endpoint",
+                            "jwks_uri"
+                          ],
+                          "properties": {
+                            "issuer": {
+                              "type": "string"
+                            },
+                            "authorization_endpoint": {
+                              "type": "string"
+                            },
+                            "token_endpoint": {
+                              "type": "string"
+                            },
+                            "userinfo_endpoint": {
+                              "type": "string"
+                            },
+                            "jwks_uri": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "noauth": {
+                      "type": "object",
+                      "additionalProperties": true,
+                      "properties": {
+                        "grafanaHostname": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "serviceAnnotations": {
+                  "type": "object"
+                },
+                "external_hostname": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "hostname"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    }
+                  ]
+                }
+              }
+            },
+            "monitoring": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "external_hostname": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "hostname"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    }
+                  ]
+                }
+              }
+            },
+            "logging": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "external_hostname": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "hostname"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    }
+                  ]
+                }
+              }
+            },
+            "dashboard": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "external_hostname": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "hostname"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    }
+                  ]
+                }
+              }
+            },
+            "opni_agent": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kube_prometheus_stack": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            },
+            "opni_prometheus_crd": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
         "flux": {
           "type": "object",
           "additionalProperties": false,

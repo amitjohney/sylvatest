@@ -1,0 +1,24 @@
+# Ingress for services that require https communication
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+  name: opni-ing-https
+spec:
+  ingressClassName: nginx
+  tls:
+  - secretName: opni-tls
+    hosts:
+      - ${OPNI_LOGGING_DNS}
+  rules:
+    - host: ${OPNI_LOGGING_DNS}
+      http:
+        paths:
+        - pathType: Prefix
+          path: "/"
+          backend:
+            service:
+              name: opni-opensearch-svc-dashboards
+              port:
+                number: 5601

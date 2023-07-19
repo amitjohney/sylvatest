@@ -169,6 +169,149 @@ units:
   #   unit_template: optional, today used only for units that use sylva-units itself
   #                  the settings for the unit are inherited from the corresponding entry under unit_templates
 
+  opni-ns:
+    enabled_conditions:
+    - '{{ tuple . "opni" | include "unit-enabled" }}'
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/opni/namespace
+      wait: true
+
+  opni-crd:
+    enabled_conditions:
+    - '{{ tuple . "opni" | include "unit-enabled" }}'
+    helm_repo_url: https://raw.githubusercontent.com/rancher/opni/charts-repo
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: opni-crd
+          version: 0.10.0
+
+  opni:
+    enabled: false
+    depends_on:
+      opni-ns: true
+      cert-manager: true
+      opni-crd: true
+      opni-keycloak-eso: '{{ tuple . "opni-keycloak-eso" | include "unit-enabled" }}'
+      opni-keycloak-resources: '{{ tuple . "opni-keycloak-resources" | include "unit-enabled" }}'
+    helm_repo_url: https://raw.githubusercontent.com/rancher/opni/charts-repo
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: opni
+          version: 0.10.0
+      targetNamespace: opni
+      values:
+        volumes: '{{ .Values.cluster.opni.gateway.auth.useInternalKeycloak | ternary 
+                        (.Files.Get "elements/configtemplate-opni-keycloak.tpl" | fromYaml | dig "volumes" list | include "preserve-type")
+                        (.Values.cluster.opni.volumes | include "preserve-type") 
+                  }}' 
+        volumeMounts: '{{ .Values.cluster.opni.gateway.auth.useInternalKeycloak | ternary 
+                        (.Files.Get "elements/configtemplate-opni-keycloak.tpl" | fromYaml | dig "volumeMounts" list | include "preserve-type")
+                        (.Values.cluster.opni.volumeMounts | include "preserve-type") 
+                      }}'
+        gateway:
+          serviceType: '{{ .Values.cluster.opni.gateway.serviceType }}'
+          hostname: '{{ .Values.cluster.opni.gateway.external_hostname }}'
+          auth: 
+            provider: '{{ .Values.cluster.opni.gateway.auth.provider }}'
+            openid: '{{ .Values.cluster.opni.gateway.auth.useInternalKeycloak | ternary 
+                        (.Files.Get "elements/configtemplate-opni-keycloak.tpl" | fromYaml | dig "openid" dict | include "preserve-type")
+                        (.Values.cluster.opni.gateway.auth.openid | include "preserve-type") 
+                    }}'
+            noauth: '{{ .Values.cluster.opni.gateway.auth.noauth | include "preserve-type" }}'
+          serviceAnnotations: '{{ .Values.cluster.opni.gateway.serviceAnnotations | include "preserve-type" }}'
+          extraVolumeMounts: '{{ .Values.cluster.opni.gateway.auth.useInternalKeycloak | ternary 
+                                (.Files.Get "elements/configtemplate-opni-keycloak.tpl" | fromYaml | dig "extraVolumeMounts" list | include "preserve-type")
+                                (.Values.cluster.opni.gateway.extraVolumeMounts | include "preserve-type") 
+                              }}'
+        opni-agent:
+          kube-prometheus-stack:
+            enabled: '{{ .Values.cluster.opni.opni_agent.kube_prometheus_stack.enabled | include "preserve-type" }}'
+        opni-prometheus-crd:
+          enabled: '{{ .Values.cluster.opni.opni_prometheus_crd.enabled | include "preserve-type" }}'
+      valuesFrom: '{{ tuple (.Files.Get "elements/configtemplate-opni-keycloak.tpl" | fromYaml | dig "valuesFrom" list | include "preserve-type") .Values.cluster.opni.gateway.auth.useInternalKeycloak | include "set-only-if" }}'
+
+  opni-keycloak-eso:
+    enabled_conditions:
+    - '{{ tuple . "opni" | include "unit-enabled" }}'
+    - '{{ tuple . "opni-keycloak-resources" | include "unit-enabled" }}'
+    - '{{ .Values.cluster.opni.gateway.auth.useInternalKeycloak }}'
+    depends_on:
+      opni-ns: true
+      cert-manager: true
+      sylva-ca-certs: true
+      eso-secret-stores: true
+      opni-keycloak-resources: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/opni/eso
+      postBuild:
+        substitute:
+          OPNI_MONITORING_DNS: '{{ .Values.cluster.opni.monitoring.external_hostname }}'
+      wait: false
+      healthChecks:  #  cannot use __wait: true__ here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/144
+        # Sylva CA cert secret,
+        # will be consumed by the 'opni' unit
+        - apiVersion: v1
+          kind: Secret
+          name: sylva-ca.crt
+          namespace: opni
+        # Secret containing keycloak clientID and clientSecret,
+        # will be consumed by the 'opni' unit
+        - apiVersion: v1
+          kind: Secret
+          name: opni-oidc-auth
+          namespace: default
+
+  opni-keycloak-resources:
+    enabled_conditions:
+    - '{{ tuple . "opni" | include "unit-enabled" }}'
+    - '{{ tuple . "keycloak" | include "unit-enabled" }}'
+    - '{{ .Values.cluster.opni.gateway.auth.useInternalKeycloak }}'
+    depends_on:
+      keycloak: true
+      keycloak-legacy-operator: true
+      keycloak-resources: true
+    repo: sylva-core
+    kustomization_substitute_secrets:
+      SSO_PASSWORD: '{{ .Values.cluster.admin_password }}'
+    kustomization_spec:
+      path: ./kustomize-units/opni/keycloak-resources
+      targetNamespace: keycloak
+      postBuild:
+        substitute:
+          OPNI_MONITORING_DNS: '{{ .Values.cluster.opni.monitoring.external_hostname }}'
+      healthChecks:  #  cannot use __wait: true__ here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/144
+        - apiVersion: v1
+          kind: Secret
+          name: keycloak-client-secret-opni-monitoring-client  # this secret is a byproduct of the opni-monitoring-client KeycloakClient resource
+          namespace: keycloak
+
+  opni-ingress:
+    annotations:
+      sylvactl/readyMessage: "Opni's Dashboard UI can be reached at https://{{ .Values.cluster.opni.dashboard.external_hostname }} ({{ .Values.cluster.opni.dashboard.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }}) \n Opni's Monioring UI, once enabled through 'Opni Monitoring', can be reached at https://{{ .Values.cluster.opni.monitoring.external_hostname }} ({{ .Values.cluster.opni.monitoring.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }}) \n Opni's Logging UI, once enabled through 'Opni Logging', can be reached at https://{{ .Values.cluster.opni.logging.external_hostname }} ({{ .Values.cluster.opni.logging.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
+    enabled_conditions:
+    - '{{ tuple . "opni" | include "unit-enabled" }}'
+    depends_on:
+      cert-manager: true
+      opni: true
+      opni-ns: true
+      ingress-nginx: true
+      sylva-ca-certs: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/opni/ingress
+      targetNamespace: opni
+      wait: true
+      postBuild:
+        substitute:
+          OPNI_DNS: '{{ .Values.cluster.opni.external_hostname }}'
+          OPNI_MONITORING_DNS: '{{ .Values.cluster.opni.monitoring.external_hostname }}'
+          OPNI_DASHBOARD_DNS: '{{ .Values.cluster.opni.dashboard.external_hostname }}'
+          OPNI_LOGGING_DNS: '{{ .Values.cluster.opni.logging.external_hostname }}'
+
   flux-system:
     # note that Flux is always installed on the current cluster as a pre-requisite to installing the chart
     # this units contains Flux definitions *to manage the Flux system itself via gitops*
@@ -2130,6 +2273,26 @@ cluster:
 
   os_image_server:
     external_hostname: ''
+
+  opni:
+    gateway:
+      serviceType: "NodePort"
+      external_hostname: 'opni.{{ .Values.cluster.cluster_external_domain }}'
+      auth:
+        provider: "openid"
+        useInternalKeycloak: false
+        openid: {}
+    monitoring:
+      external_hostname: 'grafana.{{ .Values.cluster.opni.gateway.external_hostname }}'
+    logging:
+      external_hostname: 'logging.{{ .Values.cluster.opni.gateway.external_hostname }}'
+    dashboard:
+      external_hostname: 'dashboard.{{ .Values.cluster.opni.gateway.external_hostname }}'
+    opni_agent:
+      kube_prometheus_stack:
+        enabled: true
+    opni_prometheus_crd:
+      enabled: false
 
   # osImages images that should be served and from where they should be downloaded
   # if empty default value are used (default_os_images)
