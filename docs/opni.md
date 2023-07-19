@@ -297,12 +297,13 @@ cluster:
   opni:
     gateway:
       auth:
-        discovery:
-          path: "" # Example: "/.well-known/openid-configuration"
-          issuer: "" # Example: "https://foo.bar.com/"
-        identifyingClaim: "" # Example: "nickname", "sub", "email", etc.
-        scopes: [] # Example: ["openid", "profile", "email"]
-        roleAttributePath: "" # Example: "contains(roles[*], 'admin') && 'Admin' || contains(roles[*], 'editor') && 'Editor' || 'Viewer'"
+        openid:
+          discovery:
+            path: "" # Example: "/.well-known/openid-configuration"
+            issuer: "" # Example: "https://foo.bar.com/"
+          identifyingClaim: "" # Example: "nickname", "sub", "email", etc.
+          scopes: [] # Example: ["openid", "profile", "email"]
+          roleAttributePath: "" # Example: "contains(roles[*], 'admin') && 'Admin' || contains(roles[*], 'editor') && 'Editor' || 'Viewer'"
   ...
 ```
 
@@ -341,15 +342,16 @@ cluster:
   opni:
     gateway:
       auth:
-        identifyingClaim: "" # Example: "nickname", "sub", "email", etc.
-        scopes: [] # Example: ["openid", "profile", "email"]
-        roleAttributePath: "" # Example: "contains(roles[*], 'admin') && 'Admin' || contains(roles[*], 'editor') && 'Editor' || 'Viewer'"
-        wellKnownConfiguration:
-          issuer: ""
-          authorization_endpoint: ""
-          token_endpoint: ""
-          userinfo_endpoint: ""
-          jwks_uri: ""
+        openid:
+          identifyingClaim: "" # Example: "nickname", "sub", "email", etc.
+          scopes: [] # Example: ["openid", "profile", "email"]
+          roleAttributePath: "" # Example: "contains(roles[*], 'admin') && 'Admin' || contains(roles[*], 'editor') && 'Editor' || 'Viewer'"
+          wellKnownConfiguration:
+            issuer: ""
+            authorization_endpoint: ""
+            token_endpoint: ""
+            userinfo_endpoint: ""
+            jwks_uri: ""
   ...
 ```
 Your `secrets.yaml` file should look like this:
