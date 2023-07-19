@@ -18,6 +18,12 @@ spec:
     passwordPolicy: length(12) and upperCase(1) and lowerCase(1) and digits(1)
     groups:
     - name: infra-admins
+      clientRoles:
+        realm-management:
+          - view-users
+    - name: infra-restricted-admins
+    - name: infra-standard-users
+    - name: infra-base-users
 ---
 apiVersion: legacy.k8s.keycloak.org/v1alpha1
 kind: KeycloakRealm
