@@ -1,4 +1,4 @@
-# External Secret Objects that will be used to automate 
+# External Secret Objects that will be used to automate
 # Opni's Monitoring authentication through Sylva's Keycloak
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
