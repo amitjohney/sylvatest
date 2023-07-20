@@ -15,6 +15,9 @@ unit_helmrelease_spec_default:
 units:
 
   metal3:
+    depends_on:
+      cert-manager: true
+      '{{ .Values._internal.default_storage_class_unit }}': true
     helmrelease_spec:
       values:
         # ironicIPADownloaderBaseURI:
@@ -66,6 +69,16 @@ units:
           name: '{{ .Values.cluster.name }}-kubeconfig'
     labels:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
+
+  m3capo-sushy:
+   depends_on:
+     cert-manager: true
+   kustomization_spec:
+     path: ./kustomize-units/m3capo-sushy
+     wait: true
+     postBuild:
+       substitute:
+         BOOTSTRAP_IP: '{{ .Values.cluster.capm3.bootstrap_ip }}'
 
   management-cluster-flux:
     depends_on:
@@ -264,13 +277,16 @@ units:
               echo "-- Wait for all Kustomizations related to Cluster API to be installed on management cluster"
               # instead of looking at Ready condition (which temporarily become False if a reconciliation is ongoing)
               # we check that the observed generation is the same as the target
-              for unit in capi {{ .Values.cluster.capi_providers.infra_provider }} {{ .Values.cluster.capi_providers.bootstrap_provider }}; do
+              for unit in capi {{ .Values.cluster.capi_providers.infra_provider }} {{ .Values.cluster.capi_providers.bootstrap_provider }} metal3; do
                 echo "------ ... waiting for $unit unit to be applied"
                 generation=$(kubectl --kubeconfig management-cluster-kubeconfig get kustomizations.kustomize.toolkit.fluxcd.io capi -o jsonpath='{.metadata.generation}')
                 kubectl --kubeconfig management-cluster-kubeconfig wait kustomization $unit \
                   "--for=jsonpath={status.observedGeneration}=$generation" \
-                  --timeout=300s
+                  --timeout=900s
               done
+
+              echo '--- Waitiing for baremetalhost crd'
+              kubectl --kubeconfig management-cluster-kubeconfig wait crd baremetalhosts.metal3.io --for condition=established --timeout=900s
 
               echo "-- Suspend Kustomizations and HelmReleases in bootstrap cluster that relate to the management cluster"
               kubectl patch $(kubectl get helmreleases.helm.toolkit.fluxcd.io,kustomizations.kustomize.toolkit.fluxcd.io \
@@ -319,5 +335,7 @@ units_override_enabled:
   - management-sylva-units
   - pivot
   - heat-operator
+  - m3capo-cluster-resources
+  - m3capo-sushy
   - capo-cluster-resources
   - reconcile-sylva-units

@@ -165,6 +165,38 @@ units:
     enabled: true
     unit_template: base-deps
 
+  m3capo-cluster-resources:
+    depends_on:
+      heat-operator: false
+      capo-cluster-resources: false
+    enabled: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/m3capo-cluster-resources
+      kubeConfig: null
+      targetNamespace:  '{{ .Release.Namespace }}'
+      wait: true
+      _patches:
+        - target:
+            kind: HeatStack
+          patch: |
+            - op: replace
+              path: /spec/identityRef
+              value: cloud-config
+      postBuild:
+        substitute:
+          M3CAPO_STACK_NAME_PREFIX: 'workload-m3capo-cluster-{{ tuple . .Values.cluster.capo.resources_tag | include "interpret-as-string" | replace "." "-" }}'
+          M3CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
+          M3CAPO_FLAVOR_NAME: '{{ .Values.cluster.capo.flavor_name }}'
+          M3CAPO_IMAGE_NAME: '{{ .Values.cluster.image }}'
+          M3CAPO_TAG: '{{ .Values.cluster.capo.resources_tag }}'
+          M3CAPO_SERVERS_NUMBER: '{{ .Values.cluster.control_plane_replicas }}'
+          M3CAPO_PREFIX_SERVER_NAME: "workloadserver"
+        substituteFrom:
+        - kind: ConfigMap
+          name: capo-cluster-resources
+          optional: true
+
   cluster-import:
     enabled: false  # overriden depending on whether Rancher is enabled or not
     unit_template: base-deps

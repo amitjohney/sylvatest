@@ -10,7 +10,7 @@ data:
   MACHINE_IMAGE: {{ .Values.cluster.image }}
   K8S_VERSION: {{ .Values.cluster.k8s_version }}
   WORKER_MACHINE_IMAGE: {{ .Values.cluster.worker_machine_image | default .Values.cluster.image }}
-{{ if eq .Values.cluster.capi_providers.infra_provider "capo" }}
+{{ if or (.Values.cluster.capi_providers.infra_provider | eq "capo") (.Values.cluster.capm3.emulate_bm | include "preserve-type") }}
   FLAVOR_NAME: {{ .Values.cluster.capo.flavor_name }}
   WORKER_FLAVOR_NAME: {{ .Values.cluster.capo.worker_flavor_name | default .Values.cluster.capo.flavor_name }}
   CONTROL_PLANE_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}'

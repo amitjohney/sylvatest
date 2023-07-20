@@ -1,0 +1,135 @@
+---
+apiVersion: heatoperator.sylva/v1
+kind: HeatStack
+metadata:
+  labels:
+    app.kubernetes.io/name: heatstack
+    app.kubernetes.io/instance: heatstack-m3capo-cluster-resources
+    app.kubernetes.io/part-of: heat-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: heat-operator
+  name: heatstack-m3capo-cluster-resources
+spec:
+  heatStack:
+    namePrefix: "${M3CAPO_STACK_NAME_PREFIX}"
+    tag: ${M3CAPO_TAG}
+    nestedTemplate:
+      heat_template_version: "2018-08-31"
+
+      parameters:
+        server_index:
+          type: string
+          description: "Server index"
+        prefix_server_name:
+          type: string
+          description: "Prefix server name"
+        flavor:
+          type: string
+          description: "Flavor name"
+        image:
+          type: string
+          description: "Image name"
+        mgmt_network:
+          type: string
+          description: "Mgmt network name"
+        provision_network:
+          type: string
+          description: "Provision network name"
+        allowed_address:
+          type: string
+          description: "Allowed address on mgmt network"
+        allowed_address_provision:
+          type: string
+          description: "Allowed address on provision network"
+
+      resources:
+        server:
+          type: OS::Nova::Server
+          properties:
+            name:
+              list_join: ['_', [ {get_param: prefix_server_name}, {get_param: server_index}]]
+            flavor: { get_param: flavor }
+            networks: [ { port : { get_resource: provision_port } }, { port: { get_resource: mgmt_port } } ]
+            block_device_mapping_v2: [ { image_id: { get_param: image }, volume_size: 100, delete_on_termination: true  } ]
+
+        mgmt_port:
+          type: OS::Neutron::Port
+          properties:
+            allowed_address_pairs: [ { ip_address: { get_param: allowed_address } } ]
+            network: { get_param: mgmt_network }
+
+        provision_port:
+          type: OS::Neutron::Port
+          properties:
+            allowed_address_pairs: [ { ip_address: { get_param: allowed_address_provision } } ]
+            network: { get_param: provision_network }
+
+    template:
+      heat_template_version: "2018-08-31"
+
+      parameters:
+        mgmt_network:
+          type: string
+          description: "Network name"
+        flavor:
+          type: string
+          description: "Flavor name"
+        image:
+          type: string
+          description: "Image name"
+        provision_net_name:
+          type: string
+          description: CIDR for provision network
+          default: "provision"
+        allowed_address:
+          type: string
+          description: Allowed address
+        servers_number:
+          type: string
+          description: Servers number
+        prefix_server_name:
+          type: string
+          description: Server name
+
+      resources:
+
+        provision_port:
+          type: OS::Neutron::Port
+          properties:
+            network: { get_param: provision_net_name }
+
+        my_indexed_group:
+          type: OS::Heat::ResourceGroup
+          properties:
+            count: { get_param: servers_number }
+            resource_def:
+              type: nested.yaml
+              properties:
+                server_index: "%index%"
+                prefix_server_name: { get_param: prefix_server_name }
+                image: { get_param: image }
+                flavor: { get_param: flavor }
+                provision_network: { get_param: provision_net_name }
+                mgmt_network: { get_param: mgmt_network }
+                allowed_address: { get_param: allowed_address }
+                allowed_address_provision: { get_attr: [provision_port, fixed_ips, 0, ip_address] }
+
+      outputs:
+        BOOTSTRAP_IP:
+          value: { get_attr: [provision_port, fixed_ips, 0, ip_address] }
+          description: IP address allocated to the port
+
+    environment:
+      parameters:
+        flavor: "${M3CAPO_FLAVOR_NAME}"
+        image: "${M3CAPO_IMAGE_NAME}"
+        mgmt_network: "${M3CAPO_NETWORK_ID}"
+        servers_number: "${M3CAPO_SERVERS_NUMBER}"
+        prefix_server_name: "${M3CAPO_PREFIX_SERVER_NAME}"
+        allowed_address: "${allocated_ip}"
+  outputConfigMap:
+    name: m3capo-cluster-resources
+    labels:
+      copy-from-bootstrap-to-management: ""
+  identityRef: management-cluster-cloud-config
+  cloudName: capo_cloud

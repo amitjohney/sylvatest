@@ -1240,6 +1240,9 @@
                   "external_bootstrap_ip": {
                     "type": "string",
                     "format": "ipv4"
+                  },
+                  "emulate_bm": {
+                    "type": "boolean"
                   }
                 }
               }

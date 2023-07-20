@@ -85,7 +85,7 @@ fi
 # Try to retrieve ironic bootstrap_ip config in values.yaml and expose port if defined
 if yq -e '.cluster.capm3.bootstrap_ip' ${VALUES_FILE} &>/dev/null; then
     BOOTSTRAP_IP=$(yq -e '.cluster.capm3.bootstrap_ip' ${VALUES_FILE})
-    for port in "5050/TCP" "6180/TCP" "6385/TCP"; do
+    for port in "5050/TCP" "6180/TCP" "6385/TCP" "9999/TCP" "443/TCP"; do
         KIND_CONFIG=$(echo "$KIND_CONFIG" | yq '.nodes[0].extraPortMappings += [{"containerPort": '${port%/*}', "hostPort": '${port%/*}', "listenAddress": "'$BOOTSTRAP_IP'", "protocol": "'${port#*/}'"}]')
     done
 fi

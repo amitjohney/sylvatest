@@ -943,6 +943,8 @@ properties:
                   type: string
                   format: ipv4
 
+                emulate_bm:  # -------------------------------
+                  type: boolean
 
   proxies:  # -------------------------------
     type: object

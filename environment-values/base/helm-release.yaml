@@ -56,6 +56,11 @@ spec:
     valuesKey: worker_servergroup_id
     targetPath: cluster.capo.worker_servergroup_id
     optional: true
+  - kind: ConfigMap
+    name: m3capo-cluster-resources
+    valuesKey: BOOTSTRAP_IP
+    targetPath: cluster.capm3.external_bootstrap_ip
+    optional: true
 
   values:
     source_templates:
