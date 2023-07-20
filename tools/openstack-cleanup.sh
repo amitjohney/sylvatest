@@ -58,12 +58,9 @@ do
   fi
 done
 
-for vol in $(openstack ${OS_ARGS} volume list --status available -f value -c Name | grep '^pvc'); do
-    vol_property=$(openstack ${OS_ARGS} volume show $vol -c properties -f json | jq '.properties."cinder.csi.openstack.org/cluster"' -r)
-    if [ "${vol_property}" = "${CAPO_TAG}" ]; then
+for vol in $(openstack ${OS_ARGS} volume list --status available --long -c Name -c Properties -f json | jq -r ".[] | select(.Properties.\"cinder.csi.openstack.org/cluster\" == \"$CAPO_TAG\").Name"); do
         echo "openstack ${OS_ARGS} volume delete $vol --purge"
         openstack ${OS_ARGS} volume delete $vol --purge
-    fi
 done
 
 if [ -n "$(openstack ${OS_ARGS} server list -f value --tags ${CAPO_TAG})" ]; then
@@ -73,6 +70,10 @@ if [ -n "$(openstack ${OS_ARGS} server list -f value --tags ${CAPO_TAG})" ]; the
 elif [ -n "$(openstack ${OS_ARGS} security group list -f value --tags ${CAPO_TAG})" ]; then
     echo "The following CAPO security group tagged ${CAPO_TAG} were not removed, please try again, and delete the corresponding stacks"
     openstack ${OS_ARGS} security group list --tags ${CAPO_TAG} -f value -c Name
+    exit 1
+elif [ -n "$(openstack ${OS_ARGS} volume list --long -c Name -c Properties -f json | jq -r ".[] | select(.Properties.\"cinder.csi.openstack.org/cluster\" == \"$CAPO_TAG\").Name")" ]; then
+    echo "The following CAPO PVC volume tagged ${CAPO_TAG} were not removed, please try again, and delete the corresponding stacks"
+    openstack ${OS_ARGS} volume list --long -c Name -c Properties -f json | jq -r ".[] | select(.Properties.\"cinder.csi.openstack.org/cluster\" == \"$CAPO_TAG\").Name"
     exit 1
 else
     openstack ${OS_ARGS} stack list --tags ${CAPO_TAG} -f value -c ID | xargs -tr openstack ${OS_ARGS} stack delete || true
