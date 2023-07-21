@@ -48,7 +48,8 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/capi-rancher-import.git
       ref:
-        tag: 0.1.2
+        # tag: 0.1.2
+        branch: remove-cattle-agent-dnsPolicy
 
   weave-gitops:
     kind: GitRepository
@@ -770,8 +771,8 @@ units:
             accessMode: "ReadWriteOnce"
         services:
           ironic:
-            # Specify the IP address used by Ironic service
-            ironicIP: '{{ .Values.cluster.cluster_external_ip }}'
+            # Specify the IP address used by Ironic service as it's being known to IPA
+            ironicIP: '{{ .Values.cluster.display_external_ip }}'
             # We allow shared IPs because we are exposing (by design) a single cluster external IP
             annotations:
               metallb.universe.tf/allow-shared-ip: '{{ .Values.cluster.cluster_external_ip }}'
@@ -1773,6 +1774,7 @@ units:
       path: ./kustomize-units/coredns
       wait: true
       _patches:
+        - '{{ tuple (.Files.Get "elements/coredns_cm.tpl" | fromYaml) (and .Values.cluster.capo.floating_ip (.Values.cluster.capi_providers.infra_provider | eq "capo")) | include "set-only-if }}'
         - target:
             kind: ConfigMap
             name: coredns
@@ -1936,7 +1938,7 @@ units:
                   control_plane_security_group_name: "capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}"
                   worker_security_group_name: "capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}"
                 mgmt_cluster_external_domain: '{{ .Values.cluster.cluster_external_domain }}'
-                mgmt_cluster_external_ip: '{{ .Values.cluster.cluster_external_ip }}'
+                mgmt_cluster_external_ip: '{{ .Values.cluster.display_external_ip }}'
                 capi_rancher_import: true
 
           #multus:   ## can be overriden via environment values

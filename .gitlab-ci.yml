@@ -424,11 +424,19 @@ scheduled-cleanup-capo:
       done
     - |
       # skip the cleanup for resources with tags present in exclude-tags.txt
-      comm -3 -2 <(sort tags.txt) <(sort exclude-tags.txt) | sort -u | while read -r CAPO_TAG; do
+      set +e
+      echo "Remaining stacks:" > scheduled_cleanup_status
+      for CAPO_TAG in $(comm -3 -2 <(sort tags.txt) <(sort exclude-tags.txt) | sort -u); do
         echo -e "\e[1m\e[0Ksection_start:`date +%s`:scheduled_cleanup[collapsed=true]\r\e[0K\U0001F5D1  Cleaning tag: ${CAPO_TAG} \e[0m"
-        ./tools/openstack-cleanup.sh capo_cloud ${CAPO_TAG}
+        if ! ./tools/openstack-cleanup.sh capo_cloud ${CAPO_TAG}; then
+          global_cleanup_status=1
+          echo "${CAPO_STACK} was not deleted properly" >> scheduled_cleanup_status
+        fi
         echo -e "\e[0Ksection_end:`date +%s`:scheduled_cleanup\r\e[0K"
       done
+      set -e
+      cat scheduled_cleanup_status || true
+      exit ${global_cleanup_status-0}
   variables:
     OS_CLOUD: "capo_cloud"
   rules:
