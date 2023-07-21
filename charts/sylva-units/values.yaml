@@ -1823,6 +1823,12 @@ units:
             allowMultiplePerNode: true
           mgr:
             allowMultiplePerNode: true
+        podSecurityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
 
   # this unit is an example of how to use sylva-units to deploy a workload-cluster
   workload-cluster:
