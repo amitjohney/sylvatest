@@ -181,3 +181,7 @@ units:
         substitute:
           CLUSTER_FLAVOR: '{{ upper .Values.cluster.capi_providers.bootstrap_provider }} {{ upper .Values.cluster.capi_providers.infra_provider }}'
           CLUSTER_NAME: '{{ .Values.cluster.name }}'
+
+  coredns:
+    enabled: true
+    unit_template: base-deps

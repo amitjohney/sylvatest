@@ -1774,7 +1774,7 @@ units:
       path: ./kustomize-units/coredns
       wait: true
       _patches:
-        - '{{ tuple (.Files.Get "elements/coredns_cm.tpl" | fromYaml) (and .Values.cluster.capo.floating_ip (.Values.cluster.capi_providers.infra_provider | eq "capo")) | include "set-only-if }}'
+        - '{{ tuple (.Files.Get "elements/coredns_cm.tpl" | fromYaml) (and .Values.cluster.capo.floating_ip (.Values.cluster.capi_providers.infra_provider | eq "capm3")) | include "set-only-if" }}'
         - target:
             kind: ConfigMap
             name: coredns
