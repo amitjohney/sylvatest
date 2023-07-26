@@ -23,7 +23,7 @@ echo "-- Login Rancher server and retrieve login token good for 1 minute"
 USERNAME=admin
 LOGIN_TOKEN=`curl --insecure -s https://rancher.cattle-system.svc.cluster.local/v3-public/localProviders/local?action=login -H 'content-type: application/json' --data-binary '{"username":"'$USERNAME'","password":"'$BOOTSTRAP_PASSWORD'","ttl":60000}' | jq -r .token`
 
-if [ -z "${LOGIN_TOKEN-unset}" ]; then
+if [ -z "${LOGIN_TOKEN-unset}" ] || [ "${LOGIN_TOKEN}" = "null" ] ; then
     echo "LOGIN_TOKEN is set to the empty string, will try again"
     exit 1
 fi
