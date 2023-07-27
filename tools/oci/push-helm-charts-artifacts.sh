@@ -11,9 +11,12 @@
 # - COSIGN_PASSWORD
 # - COSIGN_PRIVATE_KEY (in PEM format)
 #
+# Cosign default signing material is available on sylva project gitlab://43786055
+#
 # Requirements:
 # - helm
 # - git
+# - cosign
 
 set -eu
 set -o pipefail
@@ -67,6 +70,21 @@ function check_invalid_semver_tag {
   echo "${new_version:-$version}"
 }
 
+function push_and_sign {
+ 
+      local tgz_file=$1
+      local chart_name=$2
+      
+      helm push $tgz_file $OCI_REGISTRY >output 2>&1
+      cat output
+      local digest=$(grep 'Digest:' output | sed 's/^.*: //')
+      if [[ -v COSIGN_PRIVATE_KEY ]]; then
+      # Sign the Helm chart, it adds a new tag
+         cosign sign -y --key  env://COSIGN_PRIVATE_KEY  $REGISTRY_URI/$chart_name@$digest
+      fi
+      rm -f output
+}
+
 function process_chart_in_helm_repo {
   local helm_repo=$1
   local chart_name=$2
@@ -93,15 +111,8 @@ function process_chart_in_helm_repo {
         tgz_file=$new_tgz_file
       fi
 
-      # Push Helm chart to OCI
-      helm push $tgz_file $OCI_REGISTRY >output 2>&1
-      cat output
-      DIGEST=$(grep 'Digest:' output | sed 's/^.*: //')
-      if [[ -v COSIGN_PRIVATE_KEY ]]; then
-      # Sign the Helm chart, it adds a new tag
-         cosign sign -y --key env://COSIGN_PRIVATE_KEY $REGISTRY_URI/$chart_name@$DIGEST
-      fi
-      rm -f output
+      # Push Helm chart to OCI, then sign if signing material is available
+      push_and_sign $tgz_file $chart_name
       rm -f $tgz_file
     else
       if ls $chart_name*tgz >/dev/null 2>&1; then
@@ -129,16 +140,9 @@ function process_chart_in_git {
     helm dep update $TMPD/$chart_path
     helm package --version $revision $TMPD/$chart_path
     if [[ -e $tgz_file ]]; then
-      # Push Helm chart to OCI
-      helm push "$tgz_file" $OCI_REGISTRY >output 2>&1
-      cat output
-      DIGEST=$(grep 'Digest:' output | sed 's/^.*: //')
-      if [[ -v COSIGN_PRIVATE_KEY ]]; then
-      # Sign the Helm chart, it adds a new tag
-         cosign sign -y --key env://COSIGN_PRIVATE_KEY $REGISTRY_URI/$chart_name@$DIGEST
-      fi
+      # Push Helm chart to OCI, then sign if signing material is available
+      push_and_sign $tgz_file $chart_name
       rm -f $tgz_file
-      rm -f output
       #flux push artifact $OCI_REGISTRY/$chart_name:$git_revision --path=$chart_path --source=$git_repo --revision=$git_revision ${creds:-}
     else
       error $chart_name "The $tgz_file is not present after the 'helm package' operation, check that the chart version is correct"

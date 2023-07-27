@@ -67,7 +67,7 @@ sha256:b4affd8071d5c30f302b50a29b524d97cc25727dddc3d1ab9a46275ac5471a3b
 Authenticate to the registry before signing because the signature shall be stored in the OCI repository as a new tag:
 
 ```shell
-docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD registry.gitlab.com/sylva-projects/sylva-elements/diskimage-builder
+docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD registry.gitlab.com
 ```
 
 Then sign the artifact. In the CI, we can sign by refering the environment variable `COSIGN_PRIVATE_KEY`:
