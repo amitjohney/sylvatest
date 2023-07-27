@@ -15,7 +15,7 @@ stages:
 default:
   tags:
     - gitlab-org-docker
-  image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image:v1.0.7
+  image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image:v1.0.8
 
 variables:
   DOCKER_TLS_CERTDIR: ""
@@ -23,6 +23,7 @@ variables:
   DOCKER_HOST: tcp://docker:2375/
   CAPO_PLATFORM_TAG: capo-ci
   OCI_TAG_FORMAT: "0.0.0-git-$CI_COMMIT_SHORT_SHA"
+  RUNNER_GENERATE_ARTIFACTS_METADATA: "true"
 
 include:
   - project: "to-be-continuous/gitleaks"
@@ -474,3 +475,69 @@ publish-sylva-units-artifact:
   extends: .build-base
   script:
     - tools/oci/build-sylva-units-artifact.sh ${OCI_TAG}
+
+## sign the artifacts provenance of the deployment jobs as long as long it is not done by the runner (see gitlab-org/gitlab-runner#29063)
+
+.sign-provenance-base:
+  rules:
+    - if: $COSIGN_PRIVATE_KEY != null  # sign the provenance attestation only if signing material is available
+      when: always
+    - when: never
+  stage: deploy
+  variables:
+    RUNNER_GENERATE_ARTIFACTS_METADATA: "false"
+  script:
+    - cosign sign-blob -y --key env://COSIGN_PRIVATE_KEY artifacts-metadata.json --tlog-upload=false > $SIGNATURE_NAME
+  artifacts:
+    paths:
+      - $SIGNATURE_NAME
+    expose_as: provenance-signatures
+
+sign-kubeadm-capd-oci-provenance:
+  extends: .sign-provenance-base
+  variables:
+    SIGNATURE_NAME: kubeadm-capd-oci-artifacts-metadata.sig
+  needs:
+    - deploy-kubeadm-capd-oci
+
+sign-kubeadm-capd-provenance:
+  extends: .sign-provenance-base
+  variables:
+    SIGNATURE_NAME: kubeadm-capd-artifacts-metadata.sig
+  needs:
+    - deploy-kubeadm-capd
+
+sign-rke2-capo-provenance:
+  extends: .sign-provenance-base
+  variables:
+    SIGNATURE_NAME: rke2-capo-artifacts-metadata.sig
+  needs:
+    - deploy-rke2-capo
+
+sign-rke2-capo-oci-provenance:
+  extends: .sign-provenance-base
+  variables:
+    SIGNATURE_NAME: rke2-capo-oci-artifacts-metadata.sig
+  needs:
+    - deploy-rke2-capo-oci
+
+sign-kubeadm-capo-provenance:
+  extends: .sign-provenance-base
+  variables:
+    SIGNATURE_NAME: kubeadm-capo-artifacts-metadata.sig
+  needs:
+    - deploy-kubeadm-capo
+
+sign-kubeadm-capo-oci-provenance:
+  extends: .sign-provenance-base
+  variables:
+    SIGNATURE_NAME: kubeadm-capo-oci-artifacts-metadata.sig
+  needs:
+    - deploy-kubeadm-capo-oci
+
+sign-m3-units-in-capo-provenance:
+  extends: .sign-provenance-base
+  variables:
+    SIGNATURE_NAME: m3-units-in-capo-artifacts-metadata.sig
+  needs:
+    - deploy-m3-units-in-capo
