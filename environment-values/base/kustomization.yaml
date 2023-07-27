@@ -7,15 +7,14 @@ resources:
 buildMetadata:
 - originAnnotations
 
-
 # Generate empty secret & configmap to let kustomize overlays & descendants add data with 'behavior: merge'
 
 configMapGenerator:
-- name: management-cluster-values
+- name: sylva-units-values
   options:
     disableNameSuffixHash: true
 
 secretGenerator:
-- name: management-cluster-secrets
+- name: sylva-units-secrets
   options:
     disableNameSuffixHash: true

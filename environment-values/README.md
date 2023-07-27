@@ -16,7 +16,7 @@ resources:
   - ../../kustomize-units/sylva-units/base
 
 configMapGenerator:
-- name: management-cluster-values
+- name: sylva-units-values
   options:
     disableNameSuffixHash: true
   files:
@@ -31,7 +31,7 @@ patches:
       path: /spec/valuesFrom/-
       value:
         kind: ConfigMap
-        name: management-cluster-values
+        name: sylva-units-values
         valuesKey: values
 ```
 
