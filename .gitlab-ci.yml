@@ -23,6 +23,7 @@ variables:
   DOCKER_HOST: tcp://docker:2375/
   CAPO_PLATFORM_TAG: capo-ci
   OCI_TAG_FORMAT: "0.0.0-git-$CI_COMMIT_SHORT_SHA"
+  RUNNER_GENERATE_ARTIFACTS_METADATA: "true"
 
 include:
   - project: "to-be-continuous/gitleaks"
