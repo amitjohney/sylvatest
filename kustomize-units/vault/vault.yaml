@@ -248,7 +248,7 @@ spec:
             login: sylva-admin
             password: ${ADMIN_PASSWORD}
     audit:
-      - file: file
+      - type: file
         options:
           file_path: /tmp/vault.log
 
