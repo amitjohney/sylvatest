@@ -46,6 +46,8 @@ Service Account:  default
 
 ### Pod with kata containers
 
+Now, if we look at the pod description, we can see that a Runtime Class has been added by the kyverno policy:
+
 ```yaml
 apiVersion: v1
 kind: Pod
