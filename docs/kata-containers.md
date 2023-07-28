@@ -1,10 +1,9 @@
 # Kata Containers in Sylva
 
-We have started the exploration work on kata-containers.
 
-I have created a new kustomize unit in sylva-core by the name kata-deploy. The unit is applicable to management cluster for capo infra provider and both the bootstrap providers ( kubeadm and rke2 ), default state of the unit is disabled.
+The kustomize unit `kata-deploy` introduces additional container isolation for untrusted pods. The default state of the unit is disabled. It is recommended to enable `kata-deploy`  on workload clusters hosting untrused applications. TThe unit introduces a `kyverno` policy to enforce `kata containers` runtime based on `untrusted` label.. 
 
-For other infra provider I will test and introduce at later stage. I have also introduced kyverno policy to enforce kata containers runtime based on "untrusted" label.
+The unit is validated on both the bootstrap providers ( `kubeadm` and `rke2` ) and on `capo` infra provider. Kata container on infra provider `capm3` is still pending.
 
 This feature needs to have hardware virtualization enabled on the underlying nodes. In the testing part, this setting seems to be enabled by default on the CAPO. For now, there is no validation implemented to check if it is enabled or not. In future, if required validation can be added.
 
@@ -19,15 +18,15 @@ This feature needs to have hardware virtualization enabled on the underlying nod
 - Check for kata-deploy daemonsets in kube-system namespace
 - Check for runtimeclass kata-qemu.
 - Check for kyverno policy by the name `kata-containers-on-untrusted-pod`
-- Add a label `untrusted: "true"` to pod, the runtimeclassname should be added as kata-qemu.
+- Add a label `untrusted: "true"` to untrusted pod, the runtimeclassname should be added as kata-qemu.
 
 ### Output Expected
 
-Already created two similar pods with a difference in label as mentioned in manual steps. Pods yaml files and it's description looks like :-
+Already created two similar pods with a difference in label as mentioned in manual steps. Pods manifests looks like :
 
-### Basic Pod
+### Trusted Pod
 
-```
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -37,8 +36,6 @@ spec:
   - name: ubuntu
     image: ubuntu:20.04
     command: ['sh', '-c', 'sleep 3600']
-
----
 kubectl --kubeconfig management-cluster-kubeconfig describe po ubuntu
 Name:             ubuntu
 Namespace:        default
@@ -49,7 +46,7 @@ Service Account:  default
 
 ### Pod with kata containers
 
-```
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -62,7 +59,6 @@ spec:
     image: ubuntu:20.04
     command: ['sh', '-c', 'sleep 3600']
 
----
 kubectl --kubeconfig management-cluster-kubeconfig describe po ubuntu-kata
 
 Name:                ubuntu-kata
