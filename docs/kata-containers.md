@@ -1,7 +1,6 @@
 # Kata Containers in Sylva
 
-
-The kustomize unit `kata-deploy` introduces additional container isolation for untrusted pods. The default state of the unit is disabled. It is recommended to enable `kata-deploy`  on workload clusters hosting untrused applications. TThe unit introduces a `kyverno` policy to enforce `kata containers` runtime based on `untrusted` label.. 
+The kustomize unit `kata-deploy` introduces additional container isolation for untrusted pods. The default state of the unit is disabled. It is recommended to enable `kata-deploy`  on workload clusters hosting untrused applications. TThe unit introduces a `kyverno` policy to enforce `kata containers` runtime based on `untrusted` label..
 
 The unit is validated on both the bootstrap providers ( `kubeadm` and `rke2` ) and on `capo` infra provider. Kata container on infra provider `capm3` is still pending.
 
