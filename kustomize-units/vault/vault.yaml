@@ -247,6 +247,10 @@ spec:
           data:
             login: sylva-admin
             password: ${ADMIN_PASSWORD}
+    audit:
+      - file: file
+        options:
+          file_path: /tmp/vault.log
 
   vaultEnvsConfig:
     - name: VAULT_LOG_LEVEL
