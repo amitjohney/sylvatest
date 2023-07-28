@@ -1,0 +1,39 @@
+---
+apiVersion: v1
+data:
+  # this contains a read-only token for registry.gitlab.tech.orange/oln/otc-caas/release
+  .dockerconfigjson: eyJhdXRocyI6eyJyZWdpc3RyeS5naXRsYWIudGVjaC5vcmFuZ2UiOnsidXNlcm5hbWUiOiJvdGNfcmVsZWFzZV9yZWFkX3Rva2VuIiwicGFzc3dvcmQiOiJ1UVZ0dlNLNmdIM2dtczVVZTV2eSIsImF1dGgiOiJiM1JqWDNKbGJHVmhjMlZmY21WaFpGOTBiMnRsYmpwMVVWWjBkbE5MTm1kSU0yZHRjelZWWlRWMmVRPT0ifX19
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: otc-caas-release-registry
+type: kubernetes.io/dockerconfigjson
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: OCIRepository
+metadata:
+  name: otc-caas-release
+spec:
+  interval: 10m
+  url: oci://registry.gitlab.tech.orange/oln/otc-caas/release/otc-caas-flux
+  ref:
+    tag: 0.2.0-mvp
+  secretRef:
+    name: otc-caas-release-registry
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: otc-caas-deploy
+  labels:
+    previewNamespace: sylva-units-preview
+spec:
+  interval: 10m
+  prune: true
+  sourceRef:
+    kind: OCIRepository
+    name: otc-caas-release
+  path: .
+  postBuild:
+    substitute:
+      FORCE_FLUX_SUBSTITUTION: yes

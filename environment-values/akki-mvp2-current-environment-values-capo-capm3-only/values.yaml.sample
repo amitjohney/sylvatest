@@ -1,0 +1,53 @@
+---
+cluster:
+  image: "ubuntu-rke2-base"             # CHANGE ME, the name of the OpenStack image for VMs turned into K8s nodes
+  # worker_machine_image: "ubuntu-rke2-base-worker"       # CHANGE ME if needed, the name of the OpenStack image for VMs turned into K8s worker nodes; defaults to the one used by control plane nodes
+  capo:
+    ssh_key_name: my_key                # CHANGE ME, the name of the OpenStack key name
+    network_id: NET_ID                  # CHANGE ME, needs to be a pre-existing OpenStack tenant network, or a provider network (see pre-requisites)
+    # external_network_id: EXT_NET_ID   # CHANGE ME, this needs to be an OpenStack external network, it's optional and if set, a Floating IP will be defined on this network, pointing to the IP of the mgmt cluster (the network specified by network_id must have a router attached to this external network)
+    ## If cinder CSI is used, provide a name for the storage class and the storage type from OpenStack
+    rootVolume:
+      diskSize: 100
+      volumeType: ceph_ssd              # CHANGE ME
+    storageClass:
+      type: "ceph_ssd"                  # CHANGE ME
+    worker_az: "WORKER_AZ"              # CHANGE ME, name of the availability zone for the workers
+    flavor_name: "FLAVOR"               # CHANGE ME, this is the management cluster master node flavor
+    worker_flavor_name: "FLAVOR"        # CHANGE ME, this is the management cluster worker node flavor
+    # resources_tag: my-deployment-MVP2   # CHANGE ME if needed, tag set for OpenStack resources in management and test workload cluster; by default set to sylva-<$OS_USERNAME>
+  control_plane_replicas: 3             # Management cluster control plane replicas
+  worker_replicas: 1                    # Management cluster workers replicas
+
+units:
+  workload-cluster:
+    enabled: true
+    helmrelease_spec:
+      values:
+        units:
+          cluster:
+            helmrelease_spec:
+              values:
+                control_plane_replicas: 3   # Workload cluster control plane replicas
+                capo:
+                  flavor_name: '{{ .Values.cluster.capo.flavor_name }}'                 # CHANGE ME if needed, this is the test workload cluster worker node flavor; by default same value as for management cluster is used
+                  worker_flavor_name: '{{ .Values.cluster.capo.worker_flavor_name }}'   # CHANGE ME if needed, this is the test workload cluster worker node flavor; by default same value as for management cluster is used
+                machine_deployments:
+                  md0:
+                    replicas: 1             # Workload cluster worker replicas
+                    infra_provider: capo
+                    failure_domain: '{{ .Values.cluster.capo.worker_az }}' # CHANGE ME if needed, this is the test workload cluster worker node AZ; by default same value as for management cluster is used
+                    network_interfaces: {}
+
+proxies:
+  # put your own proxy settings here if you need
+  # In NIS context theses proxies values are mandatory
+  http_proxy: "http://172.20.73.196:3128"
+  https_proxy: "http://172.20.73.196:3128"
+  no_proxy: "127.0.0.0/8,localhost,10.0.0.0/8,172.16.0.0/12,172.30.0.0/24,192.168.0.0/16,.sylva,.repos.tech.orange"
+
+ntp:
+  enabled: yes
+  servers:
+  - NTP_SERVER_1                        # CHANGE ME, ip address of NTP servers reachable from your tenant
+  - NTP_SERVER_2                        # CHANGE ME, ip address of NTP servers reachable from your tenant

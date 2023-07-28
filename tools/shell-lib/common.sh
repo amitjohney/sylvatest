@@ -147,28 +147,8 @@ function inject_bootstrap_values() {
   # this function transforms the output of 'kubectl kustomize ${ENV_PATH}'
   # to add bootstrap.values.yaml into the valuesFiles field of the HelmRelease
   #
-  # this field is not exactly the same depending on whether we use a GitRepository as sources
-  # or a HelmRepository (which is what we use for a deployment from OCI artifacts)
-
-  # additionally, in the case of an OCI-based deployment, we need to insert "bootstrap.values.yaml"
-  # before the "use-oci-artifacts.values.yaml" which has to be the last element to have
-  # precedence over what is defined in "bootstrap.values.yaml"
-
   # shellcheck disable=SC2016
-  yq eval-all '
-    (select(.kind == "HelmRepository" and .spec.type == "oci") | length > 0 | to_yaml | trim) as $oci
-    | select(.kind == "HelmRelease").spec.chart.spec.valuesFiles = ([
-      {"true":"","false":"charts/sylva-units/"}[$oci] + "values.yaml",
-      {"true":"","false":"charts/sylva-units/"}[$oci] + "management.values.yaml",
-      {"true":"","false":"charts/sylva-units/"}[$oci] + "bootstrap.values.yaml"
-    ] + {"true":["use-oci-artifacts.values.yaml"],"false":[]}[$oci])
-    | select(.kind == "HelmRelease").spec.chart.spec.valuesFiles = (select(.kind == "HelmRelease").spec.chart.spec.valuesFiles | unique)
-  '
-  # explanations on the code above:
-  # - ... as $oci on the first line produces a boolean (or nearly, see below)
-  # - we use the {true: A, false: B}[x] construct to emulate the behavior of 'if x then A else B' (jq has such an if/else statement, but yq does not)
-  # - the keys of this true/false map are actually strings, because yq does not support booleans as indexes
-  # - this is why $oci is made into a string ('| to_yaml | trim' emulates '|tostring' which is not provided by yq)
+  yq eval-all 'select(.kind == "Kustomization").spec.postBuild.substitute.BOOTSTRAP_VALUES_FILE = "bootstrap.values.yaml"'
 }
 
 function validate_sylva_units() {
@@ -192,6 +172,17 @@ function validate_sylva_units() {
               - op: add
                 path: /spec/targetNamespace
                 value: sylva-units-preview
+          - target:
+              kind: Kustomization
+              labelSelector: previewNamespace=sylva-units-preview
+            patch: |
+              kind: _unused_
+              metadata:
+                name: _unused_
+              spec:
+                postBuild:
+                  substitute:
+                    SUSPEND: "true"
 EOF
 
   # for bootstrap cluster, we need to inject bootstrap values

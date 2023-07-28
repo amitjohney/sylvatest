@@ -1,0 +1,372 @@
+# This example environment values files will let you build
+# a Sylva CAPO mgmt cluster (inheriting from ../rke2-capo)
+# plus a single-node Metal3 workload cluster
+
+cluster:
+  image: "ubuntu-rke2-base" # image name used to create mgmt cluster on OpenStack
+  capi_providers:
+    infra_provider: capo
+    bootstrap_provider: cabpr
+  capo:
+    ssh_key_name: my_key # put the name of your nova SSH keypair here
+    network_id: c314d52c-80fe-42b6-9092-55be383d1951 # the network id is provided by remote target unit if Kustomize remote target is used, but can be overwritten
+    flavor_name: "m1.xlarge" # put the name of the flavor from OpenStack
+    rootVolume:
+      diskSize: 100
+      volumeType: ceph_sas
+    ## If cinder CSI is used, provide a name for the storage class and the storage type from OpenStack
+    storageClass:
+      name: "cinder-ceph-ssd"
+      type: "ceph_ssd"
+  control_plane_replicas: 1
+  worker_replicas: 0
+
+units:
+
+  cluster:
+    kustomization_spec:
+      interval: 240h
+    helmrelease_spec:
+      values:
+        cis_profile: ""
+
+  capm3:
+    enabled: true
+  metal3:
+    enabled: true
+  workload-capo-cluster-resources:
+    enabled: false
+  workload-cluster:
+    enabled: true
+    helmrelease_spec:
+      values:
+
+        cluster:
+          capi_providers:
+            infra_provider: capm3
+            bootstrap_provider: cabpr
+          control_plane_replicas: 1
+          cluster_external_ip: 172.20.36.173
+
+        units:
+          longhorn:
+            enabled: true
+          cluster:
+            helmrelease_spec:
+              values:
+                cis_profile: ""  # until https://gitlab.com/sylva-projects/sylva-core/-/issues/391 is fully solved (item (C))
+
+                metal3:
+                  machine_image_url: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2
+                  machine_image_format: qcow2
+                  machine_image_checksum: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2.sha256sum
+                  machine_image_checksum_type: sha256
+                  worker_machine_image_url: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2
+                  worker_machine_image_format: qcow2
+                  worker_machine_image_checksum: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2.sha256sum
+                  worker_machine_image_checksum_type: sha256
+                  public_pool_name: "public-pool"
+                  public_pool_network: 172.20.36.128            # CHANGE ME, needs to be a pre-existing public network (see pre-requisites)
+                  public_pool_gateway: 172.20.36.129            # CHANGE ME
+                  public_pool_start: 172.20.36.171              # CHANGE ME, starting address in the public network range
+                  public_pool_end: 172.20.36.175                # CHANGE ME, end address in the public network range
+                  public_pool_prefix: "26"                      # CHANGE ME, Public pool IP address collection
+                  provisioning_pool_name: "provisioning-pool"
+                  provisioning_pool_network: 172.20.39.192      # CHANGE ME, needs to be a pre-existing provisioning network (see pre-requisites)
+                  provisioning_pool_gateway: 172.20.39.193      # CHANGE ME
+                  provisioning_pool_start: 172.20.39.195        # CHANGE ME, starting address in the provisioning address range
+                  provisioning_pool_end: 172.20.39.196          # CHANGE ME, end address in the provisioning address range
+                  provisioning_pool_prefix: "27"                # CHANGE ME, Provisiong pool IP address collection
+                  dns_server: 10.193.21.160                           # CHANGE ME
+
+                control_plane:   # tweak network configuration as needed ...
+                  infra:
+                    provisioning_pool_interface: bond0
+                    public_pool_interface: bond0.13
+                    network_interfaces:
+                      # for CAPM3 folowing are used and mapped to Metal3Data.spec.template.spec.networkData.links
+                      bond0:
+                        # bond_mode can be one of balance-rr, active-backup, balance-xor, broadcast, balance-tlb, balance-alb, 802.3ad
+                        # https://github.com/metal3-io/cluster-api-provider-metal3/blob/main/api/v1alpha5/metal3datatemplate_types.go#L201-L202
+                        bond_mode: 802.3ad
+                        interfaces:
+                          - ens1f0
+                          - ens1f1
+                        vlans:
+                          - id: 13
+                      ens1f0:
+                        type: phy
+                      ens1f1:
+                        type: phy
+                  rke2:
+                    additionalUserData:  # sylva-capi-cluster pushes this under the .config key (we have to fix that)
+                      users:
+                        - name: ubuntu
+                          groups: users
+                          sudo: ALL=(ALL) NOPASSWD:ALL
+                          shell: /bin/bash
+                          lock_passwd: false
+                          passwd: $6$gwLxr/rEczCWRnTM$S/6h7fR.Mqu3DeTqiRAtk/eHHCauTykzkHnuuwNxJhpTAYfnXtiO9QNXUR4.KsVaEdhdJzeBRIZViAHFv91.v1 # (copy pasted from /etc/shadow or created with "mkpasswd" --method=SHA-512 --stdin")
+                          ssh_authorized_keys:
+                            - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCtyRQNGiGWixzfPAvqWD7qWrpopLCaukuSK4dgru9ijfU8MNSYC6D26PtydjEe8dsOIDlZf/+3xaetko9rVL5fv+fBUwtnMZviuUZrP96QOPe6f7tOSH922XvJNp6S34B/9BmY/QoeEAI7F9drJd0xXI7fRHBZsjMcNG0TJCph3AatHgN3Od64b54EDSznfSb7Stp1nDNKf3dmsBEZnjUbIT562WtHL3/DjSDvau4jC5boKu/HHsNIaUwD7Wz0Hb5S80izwoXMh2QCyJy3QorqrSMojpQMoiUvW8TPEv7OrCXZArubL5MbLosJsRJ4BWSUC7tt7r7cIlvaJh5VrLZXE5oF3rQJXB1Zl39tIRH72j1nirTIMqvbImEiFV81/yDpoUL8+zf2fS26kqvhLQpsNUKZI0Ll5CJtK/1CNEegjdR2swA5WPyg6CLj5vlYNOlxZIFPExSDCvxnKQP6sb9CEuDHTKvHePU3NO9GRqVFqI3wXMWFksqUrVq61NRUVq0= ubuntu@akki-otccaas-b-vm-hybrid
+                        - name: akki
+                          groups: users
+                          sudo: ALL=(ALL) NOPASSWD:ALL
+                          shell: /bin/bash
+                          lock_passwd: false
+                          passwd: Akki@12345678
+                          ssh_authorized_keys:
+                            - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCtyRQNGiGWixzfPAvqWD7qWrpopLCaukuSK4dgru9ijfU8MNSYC6D26PtydjEe8dsOIDlZf/+3xaetko9rVL5fv+fBUwtnMZviuUZrP96QOPe6f7tOSH922XvJNp6S34B/9BmY/QoeEAI7F9drJd0xXI7fRHBZsjMcNG0TJCph3AatHgN3Od64b54EDSznfSb7Stp1nDNKf3dmsBEZnjUbIT562WtHL3/DjSDvau4jC5boKu/HHsNIaUwD7Wz0Hb5S80izwoXMh2QCyJy3QorqrSMojpQMoiUvW8TPEv7OrCXZArubL5MbLosJsRJ4BWSUC7tt7r7cIlvaJh5VrLZXE5oF3rQJXB1Zl39tIRH72j1nirTIMqvbImEiFV81/yDpoUL8+zf2fS26kqvhLQpsNUKZI0Ll5CJtK/1CNEegjdR2swA5WPyg6CLj5vlYNOlxZIFPExSDCvxnKQP6sb9CEuDHTKvHePU3NO9GRqVFqI3wXMWFksqUrVq61NRUVq0= ubuntu@akki-otccaas-b-vm-hybrid
+
+                machine_deployment_default: # tweak as needed ...
+                  provisioning_pool_interface: bond0
+                  public_pool_interface: bond0.13
+
+                machine_deployments:
+                  md0:
+                    infra_provider: capm3
+                    replicas: 1
+                    capm3:
+                      hostSelector:
+                        matchLabels:
+                          cluster-role: worker # tweak as needed must match cluster-role defined in baremetal_hosts
+                    failure_domain: region0
+                    network_interfaces: # tweak network configuration as needed ...
+                      bond0:
+                        bond_mode: 802.3ad
+                        interfaces:
+                          - ens1f0
+                          - ens1f1
+                        vlans:
+                          - id: 13
+                      ens1f0:
+                        type: phy
+                      ens1f1:
+                        type: phy
+                    rke2:
+                      additionalUserData:
+                        users:
+                          - name: ubuntu
+                            groups: users
+                            sudo: ALL=(ALL) NOPASSWD:ALL
+                            shell: /bin/bash
+                            ssh_authorized_keys:
+                              - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCtyRQNGiGWixzfPAvqWD7qWrpopLCaukuSK4dgru9ijfU8MNSYC6D26PtydjEe8dsOIDlZf/+3xaetko9rVL5fv+fBUwtnMZviuUZrP96QOPe6f7tOSH922XvJNp6S34B/9BmY/QoeEAI7F9drJd0xXI7fRHBZsjMcNG0TJCph3AatHgN3Od64b54EDSznfSb7Stp1nDNKf3dmsBEZnjUbIT562WtHL3/DjSDvau4jC5boKu/HHsNIaUwD7Wz0Hb5S80izwoXMh2QCyJy3QorqrSMojpQMoiUvW8TPEv7OrCXZArubL5MbLosJsRJ4BWSUC7tt7r7cIlvaJh5VrLZXE5oF3rQJXB1Zl39tIRH72j1nirTIMqvbImEiFV81/yDpoUL8+zf2fS26kqvhLQpsNUKZI0Ll5CJtK/1CNEegjdR2swA5WPyg6CLj5vlYNOlxZIFPExSDCvxnKQP6sb9CEuDHTKvHePU3NO9GRqVFqI3wXMWFksqUrVq61NRUVq0= ubuntu@akki-otccaas-b-vm-hybrid
+                          - name: akki
+                            groups: users
+                            sudo: ALL=(ALL) NOPASSWD:ALL
+                            shell: /bin/bash
+                            lock_passwd: false
+                            passwd: Akki@12345678
+                            ssh_authorized_keys:
+                              - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCtyRQNGiGWixzfPAvqWD7qWrpopLCaukuSK4dgru9ijfU8MNSYC6D26PtydjEe8dsOIDlZf/+3xaetko9rVL5fv+fBUwtnMZviuUZrP96QOPe6f7tOSH922XvJNp6S34B/9BmY/QoeEAI7F9drJd0xXI7fRHBZsjMcNG0TJCph3AatHgN3Od64b54EDSznfSb7Stp1nDNKf3dmsBEZnjUbIT562WtHL3/DjSDvau4jC5boKu/HHsNIaUwD7Wz0Hb5S80izwoXMh2QCyJy3QorqrSMojpQMoiUvW8TPEv7OrCXZArubL5MbLosJsRJ4BWSUC7tt7r7cIlvaJh5VrLZXE5oF3rQJXB1Zl39tIRH72j1nirTIMqvbImEiFV81/yDpoUL8+zf2fS26kqvhLQpsNUKZI0Ll5CJtK/1CNEegjdR2swA5WPyg6CLj5vlYNOlxZIFPExSDCvxnKQP6sb9CEuDHTKvHePU3NO9GRqVFqI3wXMWFksqUrVq61NRUVq0= ubuntu@akki-otccaas-b-vm-hybrid
+
+                baremetal_hosts:
+                  # this example is based on what worked on an HP Proliant DL360 Gen10
+                  dl360-31:  # corresponding credentials need to be set in secrets.yaml
+                    bmh_metadata:
+                      labels:
+                        cluster-role: control-plane
+                        longhorn: "true"
+                      annotations:
+                        disk: /dev/sdb # this disk will be mounted on the K8S node in a dedicated directory and used by Longhorn
+                    bmh_spec:
+                      description: Downstream dev clusters
+                      online: true
+                      externallyProvisioned: false
+                      bmc:
+                        address: redfish-virtualmedia://172.20.188.239/redfish/v1/Systems/1    # CHANGE ME, <impi-address> is the physical device host IP
+                        disableCertificateVerification: true
+                      automatedCleaningMode: metadata
+                      bootMACAddress: 48:df:37:e7:68:c8    # CHANGE ME, this is the MAC address of baremetal server
+                      bootMode: legacy
+                      rootDeviceHints:
+                        hctl: 2:1:0:0
+
+  workload-cluster:
+    enabled: true
+    helmrelease_spec:
+      values:
+
+        cluster:
+          capi_providers:
+            infra_provider: capm3
+            bootstrap_provider: cabpr
+          control_plane_replicas: 1
+          cluster_external_ip: 172.20.36.177
+
+        units:
+          longhorn:
+            enabled: true
+          cluster:
+            helmrelease_spec:
+              values:
+                cis_profile: ""  # until https://gitlab.com/sylva-projects/sylva-core/-/issues/391 is fully solved (item (C))
+
+                metal3:
+                  machine_image_url: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2
+                  machine_image_format: qcow2
+                  machine_image_checksum: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2.sha256sum
+                  machine_image_checksum_type: sha256
+                  worker_machine_image_url: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2
+                  worker_machine_image_format: qcow2
+                  worker_machine_image_checksum: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2.sha256sum
+                  worker_machine_image_checksum_type: sha256
+                  public_pool_name: "public-pool"
+                  public_pool_network: 172.20.36.128            # CHANGE ME, needs to be a pre-existing public network (see pre-requisites)
+                  public_pool_gateway: 172.20.36.129            # CHANGE ME
+                  public_pool_start: 172.20.36.176              # CHANGE ME, starting address in the public network range
+                  public_pool_end: 172.20.36.180                # CHANGE ME, end address in the public network range
+                  public_pool_prefix: "26"                      # CHANGE ME, Public pool IP address collection
+                  provisioning_pool_name: "provisioning-pool"
+                  provisioning_pool_network: 172.20.39.192      # CHANGE ME, needs to be a pre-existing provisioning network (see pre-requisites)
+                  provisioning_pool_gateway: 172.20.39.193      # CHANGE ME
+                  provisioning_pool_start: 172.20.39.197        # CHANGE ME, starting address in the provisioning address range
+                  provisioning_pool_end: 172.20.39.199          # CHANGE ME, end address in the provisioning address range
+                  provisioning_pool_prefix: "27"                # CHANGE ME, Provisiong pool IP address collection
+                  dns_server: 10.193.21.160                           # CHANGE ME
+
+                control_plane:   # tweak network configuration as needed ...
+                  infra:
+                    provisioning_pool_interface: bond0
+                    public_pool_interface: bond0.13
+                    network_interfaces:
+                      # for CAPM3 folowing are used and mapped to Metal3Data.spec.template.spec.networkData.links
+                      bond0:
+                        # bond_mode can be one of balance-rr, active-backup, balance-xor, broadcast, balance-tlb, balance-alb, 802.3ad
+                        # https://github.com/metal3-io/cluster-api-provider-metal3/blob/main/api/v1alpha5/metal3datatemplate_types.go#L201-L202
+                        bond_mode: 802.3ad
+                        interfaces:
+                          - ens1f0
+                          - ens1f1
+                        vlans:
+                          - id: 13
+                      ens1f0:
+                        type: phy
+                      ens1f1:
+                        type: phy
+                  rke2:
+                    additionalUserData:  # sylva-capi-cluster pushes this under the .config key (we have to fix that)
+                      users:
+                        - name: ubuntu
+                          groups: users
+                          sudo: ALL=(ALL) NOPASSWD:ALL
+                          shell: /bin/bash
+                          lock_passwd: false
+                          passwd: $6$gwLxr/rEczCWRnTM$S/6h7fR.Mqu3DeTqiRAtk/eHHCauTykzkHnuuwNxJhpTAYfnXtiO9QNXUR4.KsVaEdhdJzeBRIZViAHFv91.v1 # (copy pasted from /etc/shadow or created with "mkpasswd" --method=SHA-512 --stdin")
+                          ssh_authorized_keys:
+                            - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCtyRQNGiGWixzfPAvqWD7qWrpopLCaukuSK4dgru9ijfU8MNSYC6D26PtydjEe8dsOIDlZf/+3xaetko9rVL5fv+fBUwtnMZviuUZrP96QOPe6f7tOSH922XvJNp6S34B/9BmY/QoeEAI7F9drJd0xXI7fRHBZsjMcNG0TJCph3AatHgN3Od64b54EDSznfSb7Stp1nDNKf3dmsBEZnjUbIT562WtHL3/DjSDvau4jC5boKu/HHsNIaUwD7Wz0Hb5S80izwoXMh2QCyJy3QorqrSMojpQMoiUvW8TPEv7OrCXZArubL5MbLosJsRJ4BWSUC7tt7r7cIlvaJh5VrLZXE5oF3rQJXB1Zl39tIRH72j1nirTIMqvbImEiFV81/yDpoUL8+zf2fS26kqvhLQpsNUKZI0Ll5CJtK/1CNEegjdR2swA5WPyg6CLj5vlYNOlxZIFPExSDCvxnKQP6sb9CEuDHTKvHePU3NO9GRqVFqI3wXMWFksqUrVq61NRUVq0= ubuntu@akki-otccaas-b-vm-hybrid
+                        - name: akki
+                          groups: users
+                          sudo: ALL=(ALL) NOPASSWD:ALL
+                          shell: /bin/bash
+                          lock_passwd: false
+                          passwd: Akki@12345678
+                          ssh_authorized_keys:
+                            - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCtyRQNGiGWixzfPAvqWD7qWrpopLCaukuSK4dgru9ijfU8MNSYC6D26PtydjEe8dsOIDlZf/+3xaetko9rVL5fv+fBUwtnMZviuUZrP96QOPe6f7tOSH922XvJNp6S34B/9BmY/QoeEAI7F9drJd0xXI7fRHBZsjMcNG0TJCph3AatHgN3Od64b54EDSznfSb7Stp1nDNKf3dmsBEZnjUbIT562WtHL3/DjSDvau4jC5boKu/HHsNIaUwD7Wz0Hb5S80izwoXMh2QCyJy3QorqrSMojpQMoiUvW8TPEv7OrCXZArubL5MbLosJsRJ4BWSUC7tt7r7cIlvaJh5VrLZXE5oF3rQJXB1Zl39tIRH72j1nirTIMqvbImEiFV81/yDpoUL8+zf2fS26kqvhLQpsNUKZI0Ll5CJtK/1CNEegjdR2swA5WPyg6CLj5vlYNOlxZIFPExSDCvxnKQP6sb9CEuDHTKvHePU3NO9GRqVFqI3wXMWFksqUrVq61NRUVq0= ubuntu@akki-otccaas-b-vm-hybrid
+
+                machine_deployment_default: # tweak as needed ...
+                  provisioning_pool_interface: bond0
+                  public_pool_interface: bond0.13
+
+                machine_deployments:
+                  md0:
+                    infra_provider: capm3
+                    replicas: 1
+                    capm3:
+                      hostSelector:
+                        matchLabels:
+                          cluster-role: worker # tweak as needed must match cluster-role defined in baremetal_hosts
+                    failure_domain: region0
+                    network_interfaces: # tweak network configuration as needed ...
+                      bond0:
+                        bond_mode: 802.3ad
+                        interfaces:
+                          - ens1f0
+                          - ens1f1
+                        vlans:
+                          - id: 13
+                      ens1f0:
+                        type: phy
+                      ens1f1:
+                        type: phy
+                    rke2:
+                      additionalUserData:
+                        users:
+                          - name: ubuntu
+                            groups: users
+                            sudo: ALL=(ALL) NOPASSWD:ALL
+                            shell: /bin/bash
+                            ssh_authorized_keys:
+                              - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCtyRQNGiGWixzfPAvqWD7qWrpopLCaukuSK4dgru9ijfU8MNSYC6D26PtydjEe8dsOIDlZf/+3xaetko9rVL5fv+fBUwtnMZviuUZrP96QOPe6f7tOSH922XvJNp6S34B/9BmY/QoeEAI7F9drJd0xXI7fRHBZsjMcNG0TJCph3AatHgN3Od64b54EDSznfSb7Stp1nDNKf3dmsBEZnjUbIT562WtHL3/DjSDvau4jC5boKu/HHsNIaUwD7Wz0Hb5S80izwoXMh2QCyJy3QorqrSMojpQMoiUvW8TPEv7OrCXZArubL5MbLosJsRJ4BWSUC7tt7r7cIlvaJh5VrLZXE5oF3rQJXB1Zl39tIRH72j1nirTIMqvbImEiFV81/yDpoUL8+zf2fS26kqvhLQpsNUKZI0Ll5CJtK/1CNEegjdR2swA5WPyg6CLj5vlYNOlxZIFPExSDCvxnKQP6sb9CEuDHTKvHePU3NO9GRqVFqI3wXMWFksqUrVq61NRUVq0= ubuntu@akki-otccaas-b-vm-hybrid
+                          - name: akki
+                            groups: users
+                            sudo: ALL=(ALL) NOPASSWD:ALL
+                            shell: /bin/bash
+                            lock_passwd: false
+                            passwd: Akki@12345678
+                            ssh_authorized_keys:
+                              - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCtyRQNGiGWixzfPAvqWD7qWrpopLCaukuSK4dgru9ijfU8MNSYC6D26PtydjEe8dsOIDlZf/+3xaetko9rVL5fv+fBUwtnMZviuUZrP96QOPe6f7tOSH922XvJNp6S34B/9BmY/QoeEAI7F9drJd0xXI7fRHBZsjMcNG0TJCph3AatHgN3Od64b54EDSznfSb7Stp1nDNKf3dmsBEZnjUbIT562WtHL3/DjSDvau4jC5boKu/HHsNIaUwD7Wz0Hb5S80izwoXMh2QCyJy3QorqrSMojpQMoiUvW8TPEv7OrCXZArubL5MbLosJsRJ4BWSUC7tt7r7cIlvaJh5VrLZXE5oF3rQJXB1Zl39tIRH72j1nirTIMqvbImEiFV81/yDpoUL8+zf2fS26kqvhLQpsNUKZI0Ll5CJtK/1CNEegjdR2swA5WPyg6CLj5vlYNOlxZIFPExSDCvxnKQP6sb9CEuDHTKvHePU3NO9GRqVFqI3wXMWFksqUrVq61NRUVq0= ubuntu@akki-otccaas-b-vm-hybrid
+
+                baremetal_hosts:
+                  dl360-33:  # corresponding credentials need to be set in secrets.yaml
+                    bmh_metadata:
+                      labels:
+                        cluster-role: worker
+                        longhorn: "true"
+                      annotations:
+                        disk: /dev/sdb # this disk will be mounted on the K8S node in a dedicated directory and used by Longhorn
+                    bmh_spec:
+                      description: Downstream dev clusters
+                      online: true
+                      externallyProvisioned: false
+                      bmc:
+                        address: redfish-virtualmedia://172.20.188.241/redfish/v1/Systems/1    # CHANGE ME, <impi-address> is the physical device host IP
+                        disableCertificateVerification: true
+                      automatedCleaningMode: metadata
+                      bootMACAddress: 48:df:37:e6:0d:64    # CHANGE ME, this is the MAC address of baremetal server
+                      bootMode: legacy
+                      rootDeviceHints:
+                        hctl: 2:1:0:0   # CHANGE ME, A SCSI bus address of the OS Disk. Parameters like deviceName, model could also be used instead of hctl
+                        # deviceName: /dev/sda
+
+proxies:
+  # put your own proxy settings here if you need
+  http_proxy: "http://172.20.73.196:3128"
+  https_proxy: "http://172.20.73.196:3128"
+  no_proxy: ".repos.tech.orange,localhost,127.0.0.1,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8,docker-proxy-asis-gitlab.repos.tech.orange"
+
+# configure containerd registry mirrors following https://github.com/containerd/containerd/blob/main/docs/hosts.md
+# see charts/syla-units/values.yaml for a more detailled example
+registry_mirrors:
+  default_settings:
+    skip_verify: true
+    override_path: true
+  hosts_config:
+    docker.io:
+      - mirror_url: https://172.20.129.169/v2/proxy_cache_diod_docker.io
+    quay.io:
+      - mirror_url: https://172.20.129.169/v2/proxy_cache_diod_quay.io
+    registry.gitlab.com:
+      - mirror_url: https://172.20.129.169/v2/proxy_cache_diod_registry.gitlab.com
+    k8s.gcr.io:
+      - mirror_url: https://172.20.129.169/v2/proxy_cache_diod_k8s.gcr.io
+    ghcr.io:
+      - mirror_url: https://172.20.129.169/v2/proxy_cache_diod_ghcr.io
+    registry.k8s.io:
+      - mirror_url: https://172.20.129.169/v2/proxy_cache_diod_registry.k8s.io
+
+# registry_mirrors:
+#   hosts_config:
+#     docker.io:
+#     - mirror_url: http://your.mirror/docker
+
+# add ntp servers if you need
+ntp:
+  enabled: yes
+  servers:
+  - 172.20.1.104                        # CHANGE ME, ip address of NTP servers reachable from your tenant
+  - 172.20.1.105
+  # - 1.2.3.4
+  # - 1.2.3.5
+
