@@ -86,20 +86,6 @@ patches:
     patch: |-
       - op: remove
         path: /spec/conversion/webhook/clientConfig/caBundle
-  - target:
-      kind: Deployment
-      name: capi-controller-manager
-    patch: |-
-      kind: Deployment
-      apiVersion: apps/v1
-      metadata:
-        name: all
-      spec:
-        template:
-          spec:
-            securityContext:
-              seccompProfile:
-                $patch: delete
 
 
 # We must use a lot of specific remove operations as annotationSelector doesn't support special characters in value
