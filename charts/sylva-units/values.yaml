@@ -2117,6 +2117,10 @@ cluster:
     resourcePool: ""
     storagePolicyName: ""
 
+  capm3:
+    image_name: ""
+    image_checksum: ""
+
   flux_webui:
     admin_user: admin
 
