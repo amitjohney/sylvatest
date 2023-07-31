@@ -895,6 +895,12 @@ units:
           storageClass:
             storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
             fsType: ext4
+        metal3:
+          machine_image_url: http://{{ .Values.cluster.display_external_ip }}/{{ .Values.cluster.capm3.image_name }}
+          machine_image_checksum: http://{{ .Values.cluster.display_external_ip }}/{{ .Values.cluster.capm3.image_name }}.sha256sum
+          worker_machine_image_url: http://{{ .Values.cluster.display_external_ip }}/{{ .Values.cluster.capm3.image_name }}
+          worker_machine_image_checksum: http://{{ .Values.cluster.display_external_ip }}/{{ .Values.cluster.capm3.image_name }}.sha256sum
+
         machine_deployment_default:
           metadata:
             labels:

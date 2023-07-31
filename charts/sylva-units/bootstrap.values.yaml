@@ -41,9 +41,32 @@ units:
       path: ./kustomize-units/bootstrap-local-path
       wait: true
 
+  os-image-server:
+    enabled_conditions:
+      - '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+    annotations:
+      sylvactl/readyMessage: |
+        OS images are served at:
+        {{- $osImageFqdn := (coalesce .Values.cluster.os_image_server.external_hostname .Values.cluster.capm3.bootstrap_ip) -}}
+        {{- range $imageName, $imageParams := (coalesce .Values.cluster.os_images .Values._internal.default_os_images) }}
+          * https://{{ $osImageFqdn }}/{{ $imageParams.filename }}(.sha256sum)
+        {{- end }}
+        {{- if not (eq $osImageFqdn .Values.cluster.capm3.bootstrap_ip)}}
+        ({{ .Values.cluster.os_image_server.external_hostname }} must resolve to {{ .Values.cluster.capm3.bootstrap_ip }})
+        {{- end }}
+
+
   cluster:
     depends_on:
       reconcile-sylva-units: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+      os-image-server: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+    helmrelease_spec:
+      values:
+        metal3:
+          machine_image_url: http://{{ dig "capm3" "external_bootstrap_ip" (dig "capm3" "bootstrap_ip" "127.0.0.1" .Values.cluster) .Values.cluster }}/{{ .Values.cluster.capm3.image_name }}
+          machine_image_checksum: http://{{ dig "capm3" "external_bootstrap_ip" (dig "capm3" "bootstrap_ip" "127.0.0.1" .Values.cluster) .Values.cluster }}/{{ .Values.cluster.capm3.image_name }}.sha256sum
+          worker_machine_image_url: http://{{ dig "capm3" "external_bootstrap_ip" (dig "capm3" "bootstrap_ip" "127.0.0.1" .Values.cluster) .Values.cluster }}/{{ .Values.cluster.capm3.image_name }}
+          worker_machine_image_checksum: http://{{ dig "capm3" "external_bootstrap_ip" (dig "capm3" "bootstrap_ip" "127.0.0.1" .Values.cluster) .Values.cluster }}/{{ .Values.cluster.capm3.image_name }}.sha256sum
 
   calico-crd:
     # overload calico-crd definition in bootstrap context to deploy in the management cluster
@@ -310,6 +333,7 @@ units_override_enabled:
   - '{{ .Values.cluster.capi_providers.infra_provider }}'
   - '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
   - '{{ tuple "metal3" (.Values.cluster.capi_providers.infra_provider | eq "capm3") | include "set-only-if" }}'
+  - os-image-server
   - bootstrap-local-path
   - cluster
   - calico-crd
