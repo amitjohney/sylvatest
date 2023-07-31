@@ -445,6 +445,18 @@ You can also install and use the [clusterctl tool](https://github.com/kubernetes
 clusterctl describe cluster management-cluster --show-conditions all
 ```
 
+If you need to check the values set to the sylva-units HelmRelease(s) deployed, possibly for debug purposes, you could get them with:
+
+```shell
+kubectl get secret sylva-units-values-debug -o template='{{ .data.values }}' | base64 -d
+```
+
+For example, if you want to get the final values passed to a specific unit, such as ones set to the cluster unit (instantiation of sylva-capi-cluster Helm chart),you could use:
+
+```shell
+kubectl get secret sylva-units-values-debug -o template='{{ .data.values }}' | base64 -d | yq .units.cluster.helmrelease_spec.values
+```
+
 ### Knowing the state of a deployment
 
 When a deployment (a first one or an update) is done, this is reflected in the status of the `sylva-units`
