@@ -291,7 +291,7 @@ units:
         createNamespace: true
       values:
         psp:
-          enabled: true
+          enabled: '{{ .Values.cluster.cis_profile | eq "cis-1.6" }}'
 
 # Vault assumes that the certificate vault-tls has been issued
   vault:
@@ -432,7 +432,7 @@ units:
         global:
           cattle:
             psp:
-              enabled: true
+              enabled: '{{ .Values.cluster.cis_profile | eq "cis-1.6" }}'
 
   # this allows for running a CIS scan for management cluster
   # generates a report which can be viewed and downloaded in CSV from the Rancher UI, at https://rancher.sylva/dashboard/c/local/cis/cis.cattle.io.clusterscan
