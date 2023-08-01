@@ -939,6 +939,12 @@ properties:
                   type: string
                   format: ipv4
 
+                image_name:
+                  type: string
+
+                image_checksum:
+                  type: string
+
                 external_bootstrap_ip:  # -------------------------------
                   type: string
                   format: ipv4
