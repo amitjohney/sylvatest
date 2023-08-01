@@ -90,7 +90,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/os-image-server.git
       ref:
-        tag: 1.4.0
+        branch: priya/add-external-ip
 
 helm_repo_spec_default:
   interval: 60m0s
