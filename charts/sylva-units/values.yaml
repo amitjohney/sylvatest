@@ -69,7 +69,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/manik.bindlish/sylva-capi-cluster.git
       ref:
-        tag: 0.0.14
+        branch: main
 
   local-path-provisioner:
     kind: GitRepository
