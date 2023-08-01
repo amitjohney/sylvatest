@@ -66,6 +66,8 @@ units:
                   {{- end -}}
               {{- end -}}
               {{- $result -}}
+        ingress:
+          className: null
 
 
   cluster:
