@@ -12,6 +12,16 @@ unit_kustomization_spec_default:
 unit_helmrelease_spec_default:
   interval: 100000m
 
+_internal.bootstrap_node_ip:
+  - |
+    {{- $result := "not found" -}}
+    {{- range $address := lookup "v1" "Node" "" "" | dig "items" list | first | default dict |  dig "status" "addresses" list -}}
+      {{- if and (eq $address.type "InternalIP") (eq $result "not found") -}}
+        {{- $result = $address.address -}}
+      {{- end -}}
+    {{- end -}}
+    {{- $result -}}
+
 units:
 
   metal3:
@@ -23,15 +33,7 @@ units:
             # Address of the host, that will be reachable from the outside
             ironicIP: '{{ dig "capm3" "external_bootstrap_ip" (dig "capm3" "bootstrap_ip" "127.0.0.1" .Values.cluster) .Values.cluster }}'
             # Address of kind container/node, that will be used to bind ironic service
-            externalIPs:
-              - |
-                {{- $result := "not found" -}}
-                {{- range $address := lookup "v1" "Node" "" "" | dig "items" list | first | default dict |  dig "status" "addresses" list -}}
-                  {{- if and (eq $address.type "InternalIP") (eq $result "not found") -}}
-                    {{- $result = $address.address -}}
-                  {{- end -}}
-                {{- end -}}
-                {{- $result -}}
+            externalIPs: '{{ .Values._internal.bootstrap_node_ip }}'
 
   bootstrap-local-path:
     enabled_conditions:
@@ -48,15 +50,7 @@ units:
       values:
         controller:
           service:
-            externalIPs:
-              - |
-                {{- $result := "not found" -}}
-                {{- range $address := lookup "v1" "Node" "" "" | dig "items" list | first | default dict |  dig "status" "addresses" list -}}
-                  {{- if and (eq $address.type "InternalIP") (eq $result "not found") -}}
-                      {{- $result = $address.address -}}
-                    {{- end -}}
-                {{- end -}}
-                {{- $result -}}
+            externalIPs: '{{ .Values._internal.bootstrap_node_ip }}'
 
   os-image-server:
     enabled_conditions:
@@ -83,13 +77,6 @@ units:
     depends_on:
       reconcile-sylva-units: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
       os-image-server: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
-    helmrelease_spec:
-      values:
-        metal3:
-          machine_image_url: http://{{ dig "capm3" "external_bootstrap_ip" (dig "capm3" "bootstrap_ip" "127.0.0.1" .Values.cluster) .Values.cluster }}/{{ .Values.cluster.capm3.image_name }}
-          machine_image_checksum: http://{{ dig "capm3" "external_bootstrap_ip" (dig "capm3" "bootstrap_ip" "127.0.0.1" .Values.cluster) .Values.cluster }}/{{ .Values.cluster.capm3.image_name }}.sha256sum
-          worker_machine_image_url: http://{{ dig "capm3" "external_bootstrap_ip" (dig "capm3" "bootstrap_ip" "127.0.0.1" .Values.cluster) .Values.cluster }}/{{ .Values.cluster.capm3.image_name }}
-          worker_machine_image_checksum: http://{{ dig "capm3" "external_bootstrap_ip" (dig "capm3" "bootstrap_ip" "127.0.0.1" .Values.cluster) .Values.cluster }}/{{ .Values.cluster.capm3.image_name }}.sha256sum
 
   calico-crd:
     # overload calico-crd definition in bootstrap context to deploy in the management cluster
@@ -348,6 +335,8 @@ units:
 
               echo "-- All done"
 
+cluster:
+  pivoted_external_ip: '{{ dig "capm3" "external_bootstrap_ip" (dig "capm3" "bootstrap_ip" "127.0.0.1" .Values.cluster) .Values.cluster }}'
 
 # only those components will be enabled on bootstrap cluster (this overrides 'units.<component>.enabled')
 units_override_enabled:
