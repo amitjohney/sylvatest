@@ -515,7 +515,7 @@ properties:
       display_external_ip:  # ------------------------------
         type: string
 
-      pivoted_external_ip :  # ------------------------------
+      pivoted_external_ip:  # ------------------------------
         type: string
 
       cluster_external_domain:  # -------------------------------
@@ -941,12 +941,6 @@ properties:
                 bootstrap_ip:  # -------------------------------
                   type: string
                   format: ipv4
-
-                image_name:
-                  type: string
-
-                image_checksum:
-                  type: string
 
                 external_bootstrap_ip:  # -------------------------------
                   type: string
