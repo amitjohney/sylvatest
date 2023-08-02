@@ -43,7 +43,12 @@ units:
 
   ingress-nginx:
     enabled_conditions:
-    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+      - '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+    helmrelease_spec:
+      values:
+          service:
+            externalIPs:
+            - '{{ .Values.cluster.capm3.bootstrap_ip }}'
 
   os-image-server:
     enabled_conditions:
@@ -63,6 +68,7 @@ units:
     helmrelease_spec:
       values:
         service:
+          type: LoadBalancer
           externalIPs:
             - |
               {{- $result := "not found" -}}
@@ -72,8 +78,6 @@ units:
                   {{- end -}}
               {{- end -}}
               {{- $result -}}
-        ingress:
-          className: null
 
 
   cluster:
