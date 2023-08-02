@@ -63,6 +63,7 @@ units:
       - '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
     depends_on:
       ingress-nginx: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+      capm3: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
     annotations:
       sylvactl/readyMessage: |
         OS images are served at:
