@@ -1041,6 +1041,3 @@ properties:
 
   _internal:
     type: object
-
-  _internal.bootstrap_node_ip:
-    type: array

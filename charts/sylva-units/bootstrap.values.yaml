@@ -4,16 +4,8 @@
 # when the chart is instantiated in the bootstrap cluster
 _internal:
   default_storage_class_unit: "bootstrap-local-path"
-
-unit_kustomization_spec_default:
-  interval: 100000m   # for bootstrap, we don't care about having flux update things on the longterm
-  retryInterval: 30s  # but we want it to retry quickly so that the system converges faster (quicker reaction when a dependency is met)
-
-unit_helmrelease_spec_default:
-  interval: 100000m
-
-_internal.bootstrap_node_ip:
-  - |
+  bootstrap_node_ip:
+    - |
     {{- $result := "not found" -}}
     {{- range $address := lookup "v1" "Node" "" "" | dig "items" list | first | default dict |  dig "status" "addresses" list -}}
       {{- if and (eq $address.type "InternalIP") (eq $result "not found") -}}
@@ -21,6 +13,13 @@ _internal.bootstrap_node_ip:
       {{- end -}}
     {{- end -}}
     {{- $result -}}
+
+unit_kustomization_spec_default:
+  interval: 100000m   # for bootstrap, we don't care about having flux update things on the longterm
+  retryInterval: 30s  # but we want it to retry quickly so that the system converges faster (quicker reaction when a dependency is met)
+
+unit_helmrelease_spec_default:
+  interval: 100000m
 
 units:
 
@@ -33,7 +32,7 @@ units:
             # Address of the host, that will be reachable from the outside
             ironicIP: '{{ dig "capm3" "external_bootstrap_ip" (dig "capm3" "bootstrap_ip" "127.0.0.1" .Values.cluster) .Values.cluster }}'
             # Address of kind container/node, that will be used to bind ironic service
-            externalIPs: ["{{ .Values._internal.bootstrap_node_ip }}"]
+            externalIPs: '{{ .Values._internal.bootstrap_node_ip }}'
 
   bootstrap-local-path:
     enabled_conditions:
@@ -50,7 +49,7 @@ units:
       values:
         controller:
           service:
-            externalIPs: ["{{ .Values._internal.bootstrap_node_ip }}"]
+            externalIPs: '{{ .Values._internal.bootstrap_node_ip }}'
 
   os-image-server:
     enabled_conditions:
