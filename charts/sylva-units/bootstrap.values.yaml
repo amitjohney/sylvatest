@@ -46,9 +46,9 @@ units:
       - '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
     helmrelease_spec:
       values:
-          service:
-            externalIPs:
-            - '{{ .Values.cluster.capm3.bootstrap_ip }}'
+        service:
+          externalIPs:
+          - '{{ .Values.cluster.capm3.bootstrap_ip }}'
 
   os-image-server:
     enabled_conditions:
