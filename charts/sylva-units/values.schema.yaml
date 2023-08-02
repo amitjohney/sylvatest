@@ -515,6 +515,9 @@ properties:
       display_external_ip:  # ------------------------------
         type: string
 
+      pivoted_external_ip :  # ------------------------------
+        type: string
+
       cluster_external_domain:  # -------------------------------
         type: string
         format: hostname
