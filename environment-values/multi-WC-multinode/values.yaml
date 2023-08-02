@@ -145,13 +145,13 @@ units:
                   public_pool_network: 172.20.36.128            # CHANGE ME, needs to be a pre-existing public network (see pre-requisites)
                   public_pool_gateway: 172.20.36.129            # CHANGE ME
                   public_pool_start: 172.20.36.171              # CHANGE ME, starting address in the public network range
-                  public_pool_end: 172.20.36.180                # CHANGE ME, end address in the public network range
+                  public_pool_end: 172.20.36.175                # CHANGE ME, end address in the public network range
                   public_pool_prefix: "26"                      # CHANGE ME, Public pool IP address collection
                   provisioning_pool_name: "provisioning-pool"
                   provisioning_pool_network: 172.20.39.192      # CHANGE ME, needs to be a pre-existing provisioning network (see pre-requisites)
                   provisioning_pool_gateway: 172.20.39.193      # CHANGE ME
                   provisioning_pool_start: 172.20.39.195        # CHANGE ME, starting address in the provisioning address range
-                  provisioning_pool_end: 172.20.39.199          # CHANGE ME, end address in the provisioning address range
+                  provisioning_pool_end: 172.20.39.197          # CHANGE ME, end address in the provisioning address range
                   provisioning_pool_prefix: "27"                # CHANGE ME, Provisiong pool IP address collection
                   dns_server: 10.193.21.160                           # CHANGE ME
 
@@ -339,33 +339,9 @@ units:
             infra_provider: capm3
             bootstrap_provider: cabpr
           control_plane_replicas: 1
-          cluster_external_ip: 172.20.36.173  # CHANGE ME, Control Plane endpoint of the workload k8s cluster, last ip address of the public pool
-
-          # uncomment following lines to provision SR-IOV VFs on the supported NICs of cluster nodes
-          #sriov:
-          #  node_policies:
-          #    mypolicy1:
-          #      # nodeSelector: {}  # <<< lets you further limit the SR-IOV capable nodes on which the VFs have to be created in a certain config; if not set it applies to all SR-IOV nodes
-          #      resourceName: sriov_policy
-          #      numVfs: 12
-          #      nicSelector:
-          #        # Supported device IDs and vendors can be found at: https://github.com/k8snetworkplumbingwg/sriov-network-operator/blob/master/doc/supported-hardware.md
-          #        #deviceID: "158b"       # for Intel XXV710
-          #        #vendor: "8086"         # Intel
-          #        #vfNames: []
-          #        rootDevices:
-          #          - "0000:37:00.0"
-          #          - "0000:37:00.1"
+          cluster_external_ip: 172.20.36.178  # CHANGE ME, Control Plane endpoint of the workload k8s cluster, last ip address of the public pool
 
         units:
-
-          # uncomment following lines to enable multus & sriov components on workload cluster
-          #multus:
-          #  enabled: true
-          #sriov:
-          #  enabled: true
-          #sriov-resources:
-          #  enabled: true
 
           longhorn:
             enabled: true
@@ -386,13 +362,13 @@ units:
                   public_pool_name: "public-pool"
                   public_pool_network: 172.20.36.128            # CHANGE ME, needs to be a pre-existing public network (see pre-requisites)
                   public_pool_gateway: 172.20.36.129            # CHANGE ME
-                  public_pool_start: 172.20.36.171              # CHANGE ME, starting address in the public network range
+                  public_pool_start: 172.20.36.176              # CHANGE ME, starting address in the public network range
                   public_pool_end: 172.20.36.180                # CHANGE ME, end address in the public network range
                   public_pool_prefix: "26"                      # CHANGE ME, Public pool IP address collection
                   provisioning_pool_name: "provisioning-pool"
                   provisioning_pool_network: 172.20.39.192      # CHANGE ME, needs to be a pre-existing provisioning network (see pre-requisites)
                   provisioning_pool_gateway: 172.20.39.193      # CHANGE ME
-                  provisioning_pool_start: 172.20.39.195        # CHANGE ME, starting address in the provisioning address range
+                  provisioning_pool_start: 172.20.39.198        # CHANGE ME, starting address in the provisioning address range
                   provisioning_pool_end: 172.20.39.199          # CHANGE ME, end address in the provisioning address range
                   provisioning_pool_prefix: "27"                # CHANGE ME, Provisiong pool IP address collection
                   dns_server: 10.193.21.160                           # CHANGE ME
@@ -417,33 +393,8 @@ units:
                       ens1f1:
                         type: phy
 
-                  # uncomment following lines to configure specific cpu & topology managers policies in control-plane nodes
-                  #kubelet_extra_args:
-                  #  feature-gates: "TopologyManager=true,CPUManager=true"
-                  #  topology-manager-policy: "best-effort"
-                  #  cpu-manager-policy: "static"
-                  #  system-reserved: "cpu=100m"
-                  #  kube-reserved: "cpu=100m"
-
                   rke2:
                     additionalUserData:  # sylva-capi-cluster pushes this under the .config key (we have to fix that)
-
-                      # uncomment following lines to provide specific kernel parameters to enable iommu and hugepages in control-plane nodes
-                      #bootcmd:
-                      #  - if [ ! -f "/var/lib/grub-init" ]; then
-                      #  - touch "/var/lib/grub-init"
-                      #  - current_grub=$(grep '^GRUB_CMDLINE_LINUX_DEFAULT=' /etc/default/grub | tail -1 | sed -e "s/^[^=]*=[\"']\\?//" -e "s/['\"]$//")
-                      #  - next_grub="$current_grub iommu=pt intel_iommu=on hugepagesz=2M hugepages=0 hugepagesz=1G hugepages=32 default_hugepagesz=1G"
-                      #  # No need for a timeout. Nobody attends
-                      #  - sed -i -e '/GRUB_TIMEOUT=5/ d' /etc/default/grub
-                      #  # Delete the old command-line
-                      #  - sed -i -e '/^GRUB_CMDLINE_LINUX_DEFAULT=/ d' /etc/default/grub
-                      #  # No wait on reboot (first considered as failed)
-                      #  - echo "GRUB_RECORDFAIL_TIMEOUT=1" >> /etc/default/grub
-                      #  - echo "GRUB_CMDLINE_LINUX_DEFAULT=\"$next_grub\"" >> /etc/default/grub
-                      #  - update-grub
-                      #  - cloud-init clean --reboot
-                      #  - fi
 
                       users:
                         - name: ubuntu
@@ -489,32 +440,8 @@ units:
                       ens1f1:
                         type: phy
 
-                    # uncomment following lines to provide specific cpu & topology managers policies to worker nodes
-                    #kubelet_extra_args:
-                    #  feature-gates: "TopologyManager=true,CPUManager=true"
-                    #  topology-manager-policy: "best-effort"
-                    #  cpu-manager-policy: "static"
-                    #  system-reserved: "cpu=100m"
-                    #  kube-reserved: "cpu=100m"
-
                     rke2:
                       additionalUserData:
-                        # uncomment following lines to provide specific kernel parameters to enables iommu and hugepages 
-                        #bootcmd:
-                        #  - if [ ! -f "/var/lib/grub-init" ]; then
-                        #  - touch "/var/lib/grub-init"
-                        #  - current_grub=$(grep '^GRUB_CMDLINE_LINUX_DEFAULT=' /etc/default/grub | tail -1 | sed -e "s/^[^=]*=[\"']\\?//" -e "s/['\"]$//")
-                        #  - next_grub="$current_grub iommu=pt intel_iommu=on hugepagesz=2M hugepages=0 hugepagesz=1G hugepages=32 default_hugepagesz=1G"
-                        #  # No need for a timeout. Nobody attends
-                        #  - sed -i -e '/GRUB_TIMEOUT=5/ d' /etc/default/grub
-                        #  # Delete the old command-line
-                        #  - sed -i -e '/^GRUB_CMDLINE_LINUX_DEFAULT=/ d' /etc/default/grub
-                        #  # No wait on reboot (first considered as failed)
-                        #  - echo "GRUB_RECORDFAIL_TIMEOUT=1" >> /etc/default/grub
-                        #  - echo "GRUB_CMDLINE_LINUX_DEFAULT=\"$next_grub\"" >> /etc/default/grub
-                        #  - update-grub
-                        #  - cloud-init clean --reboot
-                        #  - fi
                         users:
                           - name: ubuntu
                             groups: users
@@ -531,7 +458,7 @@ units:
 
                 baremetal_hosts:
                   # this example is based on what worked on an HP Proliant DL360 Gen10
-                  dl360-34:  # corresponding credentials need to be set in secrets.yaml
+                  dl360-37:  # corresponding credentials need to be set in secrets.yaml
                     bmh_metadata:
                       labels:
                         cluster-role: control-plane
@@ -546,12 +473,12 @@ units:
                         address: redfish-virtualmedia://172.20.188.239/redfish/v1/Systems/1    # CHANGE ME, <impi-address> is the physical device host IP
                         disableCertificateVerification: true
                       automatedCleaningMode: metadata
-                      bootMACAddress: 48:df:37:e7:68:c9    # CHANGE ME, this is the MAC address of baremetal server
+                      bootMACAddress: 48:df:37:e6:0b:a8    # CHANGE ME, this is the MAC address of baremetal server
                       bootMode: legacy
                       rootDeviceHints:
                         hctl: 2:1:0:0   # CHANGE ME, A SCSI bus address of the OS Disk. Parameters like deviceName, model could also be used instead of hctl
 
-                  dl360-35:  # corresponding credentials need to be set in secrets.yaml
+                  dl360-38:  # corresponding credentials need to be set in secrets.yaml
                     bmh_metadata:
                       labels:
                         cluster-role: worker
@@ -566,8 +493,215 @@ units:
                         address: redfish-virtualmedia://172.20.188.241/redfish/v1/Systems/1    # CHANGE ME, <impi-address> is the physical device host IP
                         disableCertificateVerification: true
                       automatedCleaningMode: metadata
-                      bootMACAddress: 48:df:37:e6:0d:65    # CHANGE ME, this is the MAC address of baremetal server
+                      bootMACAddress: 48:df:37:e6:0b:a8    # CHANGE ME, this is the MAC address of baremetal server
                       bootMode: legacy
                       rootDeviceHints:
                         hctl: 2:1:0:0   # CHANGE ME, A SCSI bus address of the OS Disk. Parameters like deviceName, model could also be used instead of hctl
                         # deviceName: /dev/sda
+  workload-cluster2:
+    depends_on:
+      namespace-defs: true
+      #for capo:
+      workload-capo-cluster-resources: '{{ tuple . "workload-capo-cluster-resources" | include "unit-enabled" }}'   # produces the capo-cluster-resources used below
+      workload-cluster-cloud-config: '{{ tuple . "workload-cluster-cloud-config" | include "unit-enabled" }}'
+    unit_template: sylva-units
+    kustomization_spec:
+      targetNamespace: cattle-system  # this ensures that the HelmRelease below is created in 'workload-cluster' ns
+        #targetNamespace: workload-cluster2  # this ensures that the HelmRelease below is created in 'workload-cluster' ns
+      healthChecks:
+        - apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+          kind: Kustomization
+          name: sylva-units-status
+          namespace: cattle-system
+            #namespace: workload-cluster2
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: charts/sylva-units
+          reconcileStrategy: Revision
+          # copy sourceRef from sylva-units HelmRelease in default ns
+          # with an override of namespace field to point to the source livig in the default ns
+          sourceRef: '{{ lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units" | dig "spec" "chart" "spec" "sourceRef" dict | mergeOverwrite (dict "namespace" "default") | include "preserve-type" }}'
+          valuesFiles:
+            - charts/sylva-units/values.yaml
+            - charts/sylva-units/workload-cluster.values.yaml
+            # if main sylva-units release uses OCI artifacts, do the same for this release
+            - '{{ tuple "use-oci-artifacts.values.yaml" (lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units" | dig "spec" "chart" "spec" "valuesFiles" list | has "use-oci-artifacts.values.yaml") | include "set-only-if" }}'
+
+      valuesFrom:  # this Helm release receives some parameters from the capo-cluster-resources ConfigMap
+                   # which is produced by the workload-capo-cluster-resources unit
+                   # ConfigMaps are mapped as optional to circumvent 'not found' errors for infra providers other than capo
+        - kind: ConfigMap
+          name: capo-cluster-resources
+          valuesKey: allocated_ip
+          targetPath: cluster.cluster_external_ip
+          optional: true
+        - kind: ConfigMap
+          name: capo-cluster-resources
+          valuesKey: allocated_fip
+          targetPath: cluster.capo.floating_ip
+          optional: true
+        - kind: ConfigMap
+          name: capo-cluster-resources
+          valuesKey: control_plane_servergroup_id
+          targetPath: cluster.capo.control_plane_servergroup_id
+          optional: true
+        - kind: ConfigMap
+          name: capo-cluster-resources
+          valuesKey: worker_servergroup_id
+          targetPath: cluster.capo.worker_servergroup_id
+          optional: true
+
+      values:
+
+        source_templates:
+          sylva-core:
+            existing_source: '{{ deepCopy .Values._internal.sylva_core_existing_source | merge (dict "namespace" .Release.Namespace) | include "preserve-type" }}'
+
+        cluster:
+          name: '{{ .Values.cluster.test_workload_cluster_name }}'
+          image: '{{ .Values.cluster.image }}'
+          worker_machine_image: '{{ .Values.cluster.worker_machine_image }}'
+          capi_providers:
+            infra_provider: '{{ .Values.cluster.capi_providers.infra_provider }}'
+            bootstrap_provider: '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
+          k8s_version: '{{ .Values.cluster.k8s_version }}'
+          cis_profile: '{{ .Values.cluster.cis_profile }}'
+          capo:
+            ssh_key_name: '{{ .Values.cluster.capo.ssh_key_name }}'
+            resources_tag: '{{ tuple . (.Values.cluster | dig "capo" "resources_tag" "") | include "interpret-as-string" }}'
+            storageClass: '{{ .Values.cluster | dig "capo" "storageClass" dict | include "preserve-type" }}'
+            network_id: '{{ .Values.cluster.capo.network_id | default "" }}'
+            flavor_name: '{{ .Values.cluster.capo.flavor_name | default "" }}'
+            worker_flavor_name: '{{ .Values.cluster.capo.worker_flavor_name | default "" }}'
+            control_plane_az: '{{ tuple (.Values.cluster | dig "capo" "control_plane_az" list | include "preserve-type") (.Values.cluster | dig "capo" "control_plane_az" nil) | include "set-only-if" }}'
+            worker_az: '{{ .Values.cluster.capo.worker_az }}'
+            rootVolume:
+              diskSize: '{{ .Values.cluster.capo.rootVolume.diskSize | include "preserve-type" }}'
+              volumeType: '{{ .Values.cluster.capo.rootVolume.volumeType | include "preserve-type" }}'
+          capv:
+            dataCenter: '{{ .Values.cluster.capv.dataCenter }}'
+            network: '{{ .Values.cluster.capv.network }}'
+            server: '{{ .Values.cluster.capv.server }}'
+            dataStore: '{{ .Values.cluster.capv.dataStore }}'
+            tlsThumbprint: '{{ .Values.cluster.capv.tlsThumbprint }}'
+            ssh_key: '{{ .Values.cluster.capv.ssh_key }}'
+            folder: '{{ .Values.cluster.capv.folder }}'
+            resourcePool: '{{ .Values.cluster.capv.resourcePool }}'
+            storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
+            control_plane_profile:
+              numCPUs: 2
+              memoryMiB: 8192
+              diskGiB: 25
+            storageClass:
+              storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
+              fsType: ext4
+          cluster_external_domain: '{{ .Values.cluster.cluster_external_domain }}'
+          air_gapped: '{{ .Values.cluster.air_gapped | include "preserve-type" }}'
+
+        metallb_helm_oci_url: '{{ .Values.metallb_helm_oci_url | include "preserve-type" }}'
+
+        units:
+
+          cluster-import:
+            enabled: '{{ tuple . "rancher" | include "unit-enabled" }}'
+
+          cluster:
+            helmrelease_spec:
+              values:
+                control_plane_replicas: 1
+                enable_longhorn: '{{ .Values.units | dig "workload-cluster" "helmrelease_spec" "values" "units" "longhorn" "enabled" false | include "preserve-type" }}'
+                capo:
+                  control_plane_security_group_name: "capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}"
+                  worker_security_group_name: "capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}"
+                mgmt_cluster_external_domain: '{{ .Values.cluster.cluster_external_domain }}'
+                mgmt_cluster_external_ip: '{{ .Values.cluster.cluster_external_ip }}'
+                capi_rancher_import: true
+
+          #multus:   ## can be overriden via environment values
+          #  enabled: true
+
+          #longhorn:   ## can be overriden via environment values
+          #  enabled: true
+
+          #sriov:   ## can be overriden via environment values
+          #  enabled: true
+
+          #sriov-resources:  ## can be overriden via environment values
+          #  enabled: true
+
+        proxies: '{{ .Values.proxies | include "preserve-type" }}'
+
+        ntp: '{{ .Values.ntp | include "preserve-type" }}'
+
+        registry_mirrors: '{{ .Values.registry_mirrors | include "preserve-type" }}'
+
+    helm_secret_values:
+      cluster:
+        capo:
+          clouds_yaml: '{{ .Values.cluster | dig "capo" "clouds_yaml" dict | include "preserve-type" }}'  # for CAPO and cinder-csi
+        capv:
+          username: '{{ .Values.cluster.capv.username }}'
+
+  workload-cluster-cloud-config2:
+    enabled_conditions:
+      - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+      - '{{ tuple . "workload-cluster2" | include "unit-enabled" }}'
+    repo: sylva-core
+    depends_on:
+      namespace-defs: true
+      external-secrets-operator: true
+    kustomization_spec:
+      path: ./kustomize-units/workload-cluster-cloud-config
+      wait: true
+
+  workload-capo-cluster-resources2:
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+    - '{{ tuple . "workload-cluster2" | include "unit-enabled" }}'
+    repo: sylva-core
+    depends_on:
+      namespace-defs: true
+      heat-operator: true
+      workload-cluster-cloud-config: true
+    kustomization_spec:
+      targetNamespace: cattle-system
+      path: ./kustomize-units/capo-cluster-resources
+      wait: true
+      _patches:
+        - target:
+            kind: HeatStack
+          patch: |
+            - op: replace
+              path: /spec/identityRef
+              value: cloud-config  #  cloud-config Secret is produced by workload-cluster-cloud-config unit (ExternalSecret to copy cloud config from default ns to workload-cluster ns)
+            - op: replace
+              path: /spec/heatStack/template/parameters/control_plane_rules
+              value:
+                type: json
+                description: "Security group rules associated with the control plane VMs"
+                default:
+                  direction: [ingress, ingress, ingress, egress]
+                  port: ['80', '443', '22', '53']
+                  protocol: [tcp, tcp, tcp, udp]
+                  remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
+            - op: replace
+              path: /spec/heatStack/template/parameters/worker_rules
+              value:
+                type: json
+                description: "Security group rules associated with the worker VMs"
+                default:
+                  direction: [ingress, ingress, ingress, egress]
+                  port: ['80', '443', '22', '53']
+                  protocol: [tcp, tcp, tcp, udp]
+                  remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
+      postBuild:
+        substitute:
+          STACK_NAME_PREFIX: 'workload-cluster-{{ tuple . .Values.cluster.capo.resources_tag | include "interpret-as-string" | replace "." "-" }}'
+          CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
+          CAPO_TAG: '{{ .Values.cluster.capo.resources_tag }}'
+          CONTROL_PLANE_AFFINITY_POLICY: '{{ .Values.cluster.capo.control_plane_affinity_policy }}'
+          WORKER_AFFINITY_POLICY: '{{ .Values.cluster.capo.worker_affinity_policy }}'
+          CONTROL_PLANE_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}'
+          WORKER_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}'
+
