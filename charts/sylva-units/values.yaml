@@ -895,11 +895,6 @@ units:
           storageClass:
             storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
             fsType: ext4
-        metal3:
-          machine_image_url: http://{{ .Values.cluster.display_external_ip }}/{{ .Values.cluster.capm3.image_name }}
-          machine_image_checksum: http://{{ .Values.cluster.display_external_ip }}/{{ .Values.cluster.capm3.image_name }}.sha256sum
-          worker_machine_image_url: http://{{ .Values.cluster.display_external_ip }}/{{ .Values.cluster.capm3.image_name }}
-          worker_machine_image_checksum: http://{{ .Values.cluster.display_external_ip }}/{{ .Values.cluster.capm3.image_name }}.sha256sum
 
         machine_deployment_default:
           metadata:
@@ -2101,6 +2096,7 @@ cluster:
   cluster_external_ip: 55.55.55.55
   cluster_external_domain: sylva
   display_external_ip: '{{ .Values.cluster.capo.floating_ip | eq "" | ternary .Values.cluster.cluster_external_ip .Values.cluster.capo.floating_ip }}'
+  pivoted_external_ip: '{{ .Values.cluster.display_external_ip }}'
 
   capd:
     docker_host: unix:///var/run/docker.sock
