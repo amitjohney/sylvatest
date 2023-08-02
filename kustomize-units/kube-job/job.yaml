@@ -1,58 +1,80 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kube-job
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: kube-job
-  namespace: default
+  name: ${JOB_NAME}-${JOB_TARGET_NAMESPACE:-default}
+  namespace: kube-job
 spec:
   backoffLimit: 5
   activeDeadlineSeconds: 1800
   template:
     metadata:
       annotations:
-        checksum: ""
+        checksum: ${JOB_CHECKSUM}
     spec:
       containers:
       - name: run-script
         image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/kube-job:v1.0.0
-        command: ["/bin/sh", "-c", "/opt/entrypoint.sh"]
+        command: ["/bin/sh", "-c", "/opt/kube-job.sh"]
+        env:
+        - name: TARGET_NAMESPACE
+          value: ${JOB_TARGET_NAMESPACE:-default}
         volumeMounts:
         - mountPath: /opt/
           name: script-volume
       imagePullSecrets:
       - name: registry-secret
       restartPolicy: Never
-      serviceAccountName: source-cluster-kubeconfig
+      serviceAccountName: ${JOB_NAME}-sa
       volumes:
       - name: script-volume
         configMap:
-          name: job-scripts
+          name: ${JOB_NAME}-cm
           defaultMode: 0755
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: source-cluster-kubeconfig
-  namespace: default
+  name: ${JOB_NAME}-sa
+  namespace: kube-job
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: Role
 metadata:
-  name: kube-job
+  name: ${JOB_NAME}
+  namespace: ${JOB_TARGET_NAMESPACE:-default}
 rules:
 - apiGroups: ["*"]
   resources: ["*"]
   verbs: ["*"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+kind: RoleBinding
 metadata:
-  name: kube-job
+  name: ${JOB_NAME}
+  namespace: ${JOB_TARGET_NAMESPACE:-default}
 subjects:
 - kind: ServiceAccount
-  name: source-cluster-kubeconfig
-  namespace: default
+  name: ${JOB_NAME}-sa
+  namespace: kube-job
 roleRef:
-  kind: ClusterRole
-  name: kube-job
+  kind: Role
+  name: ${JOB_NAME}
   apiGroup: rbac.authorization.k8s.io
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kube-job-cm
+  namespace: kube-job
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+data:
+  kube-job.sh: |
+  #sleep 20
