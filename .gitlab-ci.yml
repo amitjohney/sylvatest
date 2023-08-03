@@ -204,15 +204,17 @@ check-docs-markdown:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capm3_vbmh[collapsed=true]\r\e[0KApplying specific capm3-vbmh configuration\e[0m"
     - export DIND_HOST_IP=$(getent hosts $(uname -n) | awk '{print $1}' | sort -u)
     - yq -i '.cluster.capm3.bootstrap_ip = strenv(DIND_HOST_IP)' $values_file
-    - git config --global credential.helper cache
-    - export VBMH_CI_INFRA_ID=$((${CI_MERGE_REQUEST_IID}%3))
-    # the CI_COMPONENT_* & VBMH_CI_COMPONENT_REPO_PATH variables below are set in the gitlab runner configuration
-    # and allow to enable extra kustomize components needed in the context of the platform
-    # on which this test actually runs
-    - git clone --depth=1 https://foo:${CI_COMPONENT_REPO_PAT}@${CI_COMPONENT_REPO}
-    - export CI_COMPONENT="https://${CI_COMPONENT_REPO}//${VBMH_CI_COMPONENT_REPO_PATH}/${ENV_NAME}-${VBMH_CI_INFRA_ID}?ref=capm3-vbmh"
-    - if [ $(yq '.components | length' environment-values/$ENV_NAME/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' environment-values/$ENV_NAME/kustomization.yaml; fi
-    - yq -i '.components += strenv(CI_COMPONENT)' environment-values/$ENV_NAME/kustomization.yaml
+    # for now we just merge test-values in values file, since remote kustomize target is not available for runner atm
+    - yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file ${ENV_PATH}/test-values/values.yaml
+    # - git config --global credential.helper cache
+    # - export VBMH_CI_INFRA_ID=$((${CI_MERGE_REQUEST_IID}%3))
+    # # the CI_COMPONENT_* & VBMH_CI_COMPONENT_REPO_PATH variables below are set in the gitlab runner configuration
+    # # and allow to enable extra kustomize components needed in the context of the platform
+    # # on which this test actually runs
+    # - git clone --depth=1 https://foo:${CI_COMPONENT_REPO_PAT}@${CI_COMPONENT_REPO}
+    # - export CI_COMPONENT="https://${CI_COMPONENT_REPO}//${VBMH_CI_COMPONENT_REPO_PATH}/${ENV_NAME}-${VBMH_CI_INFRA_ID}?ref=capm3-vbmh"
+    # - if [ $(yq '.components | length' environment-values/$ENV_NAME/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' environment-values/$ENV_NAME/kustomization.yaml; fi
+    # - yq -i '.components += strenv(CI_COMPONENT)' environment-values/$ENV_NAME/kustomization.yaml
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capm3_vbmh\r\e[0K"
   post_deployment_common:
     - kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}' | xargs --no-run-if-empty -n1 kubectl --kubeconfig management-cluster-kubeconfig logs || true
