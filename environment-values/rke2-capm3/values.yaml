@@ -1,0 +1,28 @@
+---
+units:
+  # Disabling some units for lightweight deployment testing
+  monitoring:
+    enabled: false
+  keycloak:
+    enabled: false
+  flux-webui:
+    enabled: false
+
+cluster:
+  capi_providers:
+    infra_provider: capm3
+    bootstrap_provider: cabpr
+  control_plane_replicas: 1
+  worker_replicas: 1
+
+proxies:
+  # put your own proxy settings here if you need
+  http_proxy: ""
+  https_proxy: ""
+  no_proxy: ""
+# configure containerd registry mirrors following https://github.com/containerd/containerd/blob/main/docs/hosts.md
+# see charts/syla-units/values.yaml for a more detailled example
+# registry_mirrors:
+#   hosts_config:
+#     docker.io:
+#     - mirror_url: http://your.mirror/docker
