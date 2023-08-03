@@ -237,8 +237,6 @@ check-docs-markdown:
     - export CI_COMPONENT="https://${CI_COMPONENT_REPO}//${VBMH_CI_COMPONENT_REPO_PATH}-${ENV_NAME}-${VBMH_CI_INFRA_ID}?ref=capm3-vbmh"
     - if [ $(yq '.components | length' environment-values/$ENV_NAME/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' environment-values/$ENV_NAME/kustomization.yaml; fi
     - yq -i '.components += strenv(CI_COMPONENT)' environment-values/$ENV_NAME/kustomization.yaml
-    - yq -e '.registry_mirrors' $(basename ${CI_COMPONENT_REPO} .git)/${CI_COMPONENT_REPO_PATH}-base/values.yaml > registry_mirrors.yml
-    - yq -i eval-all 'select(fileIndex==0).registry_mirrors = select(fileIndex==1) | select(fileIndex==0)' $values_file registry_mirrors.yml
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capm3_vbmh\r\e[0K"
   post_deployment_common:
     - kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}' | xargs --no-run-if-empty -n1 kubectl --kubeconfig management-cluster-kubeconfig logs || true
