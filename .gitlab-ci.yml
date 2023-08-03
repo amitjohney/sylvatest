@@ -234,7 +234,7 @@ check-docs-markdown:
     # and allow to enable extra kustomize components needed in the context of the platform
     # on which this test actually runs
     - git clone --depth=1 https://foo:${CI_COMPONENT_REPO_PAT}@${CI_COMPONENT_REPO}
-    - export CI_COMPONENT="https://${CI_COMPONENT_REPO}//${VBMH_CI_COMPONENT_REPO_PATH}-${ENV_NAME}-${VBMH_CI_INFRA_ID}?ref=capm3-vbmh"
+    - export CI_COMPONENT="https://${CI_COMPONENT_REPO}//${VBMH_CI_COMPONENT_REPO_PATH}/${ENV_NAME}-${VBMH_CI_INFRA_ID}?ref=capm3-vbmh"
     - if [ $(yq '.components | length' environment-values/$ENV_NAME/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' environment-values/$ENV_NAME/kustomization.yaml; fi
     - yq -i '.components += strenv(CI_COMPONENT)' environment-values/$ENV_NAME/kustomization.yaml
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capm3_vbmh\r\e[0K"
