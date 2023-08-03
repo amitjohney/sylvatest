@@ -8,6 +8,7 @@ spec:
    secretStoreRef:
       name: vault
       kind: ClusterSecretStore
+   refreshInterval: 0
    target:
       creationPolicy: Orphan
       name: cluster-user-auth
