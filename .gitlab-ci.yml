@@ -1,4 +1,3 @@
-
 workflow:
   rules:
     # prevent branch pipeline when an MR is open (prefer MR pipeline)
@@ -149,6 +148,7 @@ check-docs-markdown:
     - export DOCKER_IP=$(getent ahostsv4 docker | awk '{print $1}' | sort -u)
     - export ENV_PATH=environment-values/${ENV_NAME}
     - values_file=environment-values/${ENV_NAME}/values.yaml
+    - export DOCKER_HOST=tcp://localhost:2375/
     - docker network create --attachable kind
     - KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
     - ip route add $KIND_PREFIX via $DOCKER_IP
