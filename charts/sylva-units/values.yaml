@@ -2096,7 +2096,6 @@ cluster:
   cluster_external_ip: 55.55.55.55
   cluster_external_domain: sylva
   display_external_ip: '{{ .Values.cluster.capo.floating_ip | eq "" | ternary .Values.cluster.cluster_external_ip .Values.cluster.capo.floating_ip }}'
-  pivoted_external_ip: '{{ .Values.cluster.display_external_ip }}'
 
   capd:
     docker_host: unix:///var/run/docker.sock
