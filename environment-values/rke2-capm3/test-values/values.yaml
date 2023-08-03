@@ -41,7 +41,7 @@ units:
           server1:
             credentials:
               username: root
-              password: "SylvaCIpass"          
+              password: "SylvaCIpass"
             bmh_metadata:
               labels:
                 cluster-role: control-plane
@@ -147,7 +147,7 @@ units:
                   server2:
                     credentials:
                       username: root
-                      password: "SylvaCIpass"                  
+                      password: "SylvaCIpass"
                     bmh_metadata:
                       labels:
                         cluster-role: control-plane
@@ -166,7 +166,7 @@ units:
                   server3:
                     credentials:
                       username: root
-                      password: "SylvaCIpass"                  
+                      password: "SylvaCIpass"
                     bmh_metadata:
                       labels:
                         cluster-role: worker
