@@ -146,10 +146,9 @@ check-docs-markdown:
     - export DOCKER_IP=$(getent ahostsv4 docker | awk '{print $1}' | sort -u)
     - export ENV_PATH=environment-values/${ENV_NAME}
     - values_file=environment-values/${ENV_NAME}/values.yaml
-    - export DOCKER_HOST=tcp://localhost:2375/
-    - docker network create --attachable kind
-    - KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
-    - ip route add $KIND_PREFIX via $DOCKER_IP
+    - sudo docker network create --attachable kind
+    - KIND_PREFIX=$(sudo docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
+    - sudo ip route add $KIND_PREFIX via $DOCKER_IP
     - export KIND_CLUSTER_NAME=bootstrap-${CI_PIPELINE_ID}-${ENV_NAME}
     - export MANAGEMENT_CLUSTER_NAME="management-cluster-${CI_PIPELINE_ID}-${ENV_NAME}"
     - export TEST_WORKLOAD_CLUSTER_NAME="first-workload-cluster-${CI_PIPELINE_ID}-${ENV_NAME}"
