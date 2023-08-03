@@ -141,9 +141,7 @@ check-docs-markdown:
       if [[ ! $CI_RUNNER_TAGS =~ ".*oro-libvirt.*" ]]; then
         # sudo echo "127.0.0.1  localhost docker" >> /etc/hosts
         # echo "We install docker 23.0.6 in Libvirt VM env of the job"
-        # curl https://releases.rancher.com/install-docker/23.0.6.sh | sudo sh
-        sudo apt update -y
-        sudo apt install -y docker.io
+        curl https://releases.rancher.com/install-docker/23.0.6.sh | sudo sh
       fi
     - export DOCKER_IP=$(getent ahostsv4 docker | awk '{print $1}' | sort -u)
     - export ENV_PATH=environment-values/${ENV_NAME}
