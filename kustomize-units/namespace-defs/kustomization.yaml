@@ -6,6 +6,7 @@ resources:
   - vault-namespace.yaml
   - rancher-namespace.yaml
   - rancher-global-data-namespace.yaml
+  - cattle-system.yaml
   - cattle-monitoring-system.yaml
   - cinder-csi.yaml
   - workload-cluster.yaml
