@@ -8,6 +8,7 @@ spec:
    secretStoreRef:
       name: vault
       kind: ClusterSecretStore
+   refreshInterval: 0
    target:
       creationPolicy: Orphan
       name: keycloak-initial-admin
@@ -21,3 +22,4 @@ spec:
      remoteRef:
         key: secret/data/keycloak
         property: password.hcl
+#        version: "1"  # setting the version here should not be necessary if ExternalSecret.spec.refreshInterval: 0
