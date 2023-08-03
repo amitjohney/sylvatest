@@ -920,8 +920,8 @@ units:
               created-by/authors: Project-Sylva
             annotations:
               repo: "https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster"
-              cluster.x-k8s.io/cluster-api-autoscaler-node-group-max-size: "5"
-              cluster.x-k8s.io/cluster-api-autoscaler-node-group-min-size: "1"
+              cluster.x-k8s.io/cluster-api-autoscaler-node-group-max-size: "6"
+              cluster.x-k8s.io/cluster-api-autoscaler-node-group-min-size: "3"
           network_interfaces: {}
         machine_deployments:
           md0:
