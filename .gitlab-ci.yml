@@ -430,7 +430,8 @@ scheduled-cleanup-capo:
         echo -e "\e[1m\e[0Ksection_start:`date +%s`:scheduled_cleanup[collapsed=true]\r\e[0K\U0001F5D1  Cleaning tag: ${CAPO_TAG} \e[0m"
         if ! ./tools/openstack-cleanup.sh capo_cloud ${CAPO_TAG}; then
           global_cleanup_status=1
-          echo "${CAPO_STACK} was not deleted properly" >> scheduled_cleanup_status
+          echo "Following stack(s) cleanup failed:" >> scheduled_cleanup_status
+          openstack stack list --tags ${CAPO_TAG} >> scheduled_cleanup_status
         fi
         echo -e "\e[0Ksection_end:`date +%s`:scheduled_cleanup\r\e[0K"
       done
