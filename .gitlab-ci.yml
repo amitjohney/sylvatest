@@ -22,6 +22,7 @@ variables:
   GITLEAKS_ARGS: '--verbose --log-opts=$CI_COMMIT_SHA'
   DOCKER_HOST: tcp://docker:2375/
   CAPO_PLATFORM_TAG: capo-ci
+  CAPM3_PLATFORM_TAG: capm3-vbmh
   OCI_TAG_FORMAT: "0.0.0-git-$CI_COMMIT_SHORT_SHA"
 
 include:
@@ -467,7 +468,7 @@ cleanup-m3-units-in-capo:
       when: manual
     - !reference [.common-deployment, rules]
   tags:
-    - $CAPm3_PLATFORM_TAG
+    - $CAPM3_PLATFORM_TAG
 
 deploy-rke2-capm3:
   timeout: 90min
