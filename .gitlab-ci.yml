@@ -1,3 +1,4 @@
+
 workflow:
   rules:
     # prevent branch pipeline when an MR is open (prefer MR pipeline)
@@ -21,7 +22,6 @@ variables:
   GITLEAKS_ARGS: '--verbose --log-opts=$CI_COMMIT_SHA'
   DOCKER_HOST: tcp://docker:2375/
   CAPO_PLATFORM_TAG: capo-ci
-  # CAPM3_PLATFORM_TAG: capm3-vbmh
   CAPM3_PLATFORM_TAG: oro-libvirt
   OCI_TAG_FORMAT: "0.0.0-git-$CI_COMMIT_SHORT_SHA"
 
@@ -138,17 +138,20 @@ check-docs-markdown:
   script_common:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_common[collapsed=true]\r\e[0KRunning common deployment steps\e[0m"
     - |
-      if [[ ! $CI_RUNNER_TAGS =~ ".*oro-libvirt.*" ]]; then
-        # sudo echo "127.0.0.1  localhost docker" >> /etc/hosts
-        # echo "We install docker 23.0.6 in Libvirt VM env of the job"
+      if [ ${CI_RUNNER_TAGS} == "oro-libvirt" ]; then
+        echo "We install docker 23.0.6 in Libvirt VM env of the job"
         curl https://releases.rancher.com/install-docker/23.0.6.sh | sudo sh
+        sudo docker network create --attachable kind
       fi
-    - export DOCKER_IP=$(getent ahostsv4 docker | awk '{print $1}' | sort -u)
     - export ENV_PATH=environment-values/${ENV_NAME}
     - values_file=environment-values/${ENV_NAME}/values.yaml
-    - sudo docker network create --attachable kind
-    - KIND_PREFIX=$(sudo docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
-    - sudo ip route add $KIND_PREFIX via $DOCKER_IP
+    - |
+      if [ ! ${CI_RUNNER_TAGS} == "oro-libvirt" ]; then
+        docker network create --attachable kind
+        export DOCKER_IP=$(getent ahostsv4 docker | awk '{print $1}' | sort -u)
+        KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
+        ip route add $KIND_PREFIX via $DOCKER_IP
+      fi
     - export KIND_CLUSTER_NAME=bootstrap-${CI_PIPELINE_ID}-${ENV_NAME}
     - export MANAGEMENT_CLUSTER_NAME="management-cluster-${CI_PIPELINE_ID}-${ENV_NAME}"
     - export TEST_WORKLOAD_CLUSTER_NAME="first-workload-cluster-${CI_PIPELINE_ID}-${ENV_NAME}"
@@ -467,6 +470,14 @@ deploy-kubeadm-capm3:
     ENV_NAME: "kubeadm-capm3"
   artifacts:
     expose_as: kubeadm-capm3
+
+deploy-kubeadm-capm3-oci:
+  extends: deploy-kubeadm-capm3
+  variables:
+    ENV_NAME: "kubeadm-capm3"
+    OCI_TAG: $OCI_TAG_FORMAT
+  artifacts:
+    expose_as: kubeadm-capm3-oci
 
 scheduled-cleanup-capo:
   stage: delete
