@@ -140,6 +140,11 @@ check-docs-markdown:
     - export DOCKER_IP=$(getent ahostsv4 docker | awk '{print $1}' | sort -u)
     - export ENV_PATH=environment-values/${ENV_NAME}
     - values_file=environment-values/${ENV_NAME}/values.yaml
+    - |
+      if [[ "$CI_RUNNER_TAGS" =~ .*"capm3-vbmh".* ]]; then
+        echo -e "Pointing to docker host config for shell runner"
+        export DOCKER_HOST=unix:///var/run/docker.sock
+      fi
     - docker network create --attachable kind
     - KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
     - ip route add $KIND_PREFIX via $DOCKER_IP
