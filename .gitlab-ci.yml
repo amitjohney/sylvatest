@@ -474,7 +474,7 @@ cleanup-m3-units-in-capo:
   script:
     - !reference [.common-deployment, script_common]
     - !reference [.common-deployment, script_capm3_vmh]
-    - ./bootstrap.sh environment-values/${ENV_NAME}
+    - sudo ./bootstrap.sh environment-values/${ENV_NAME}
     - !reference [.common-deployment, post_deployment_common]
   rules:
     - if: $CI_MERGE_REQUEST_LABELS =~ /renovate/
