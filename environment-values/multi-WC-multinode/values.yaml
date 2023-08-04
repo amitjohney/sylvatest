@@ -330,378 +330,310 @@ units:
                         hctl: 2:1:0:0   # CHANGE ME, A SCSI bus address of the OS Disk. Parameters like deviceName, model could also be used instead of hctl
                         # deviceName: /dev/sda
 
-#  workload-cluster2:
-#    enabled: true
-#    helmrelease_spec:
-#      values:
-#        cluster:
-#          capi_providers:
-#            infra_provider: capm3
-#            bootstrap_provider: cabpr
-#          control_plane_replicas: 1
-#          cluster_external_ip: 172.20.36.178  # CHANGE ME, Control Plane endpoint of the workload k8s cluster, last ip address of the public pool
-#
-#        units:
-#
-#          longhorn:
-#            enabled: true
-#          cluster:
-#            helmrelease_spec:
-#              values:
-#                cis_profile: ""
-#                air_gapped: false
-#                metal3:
-#                  machine_image_url: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2
-#                  machine_image_format: qcow2
-#                  machine_image_checksum: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2.sha256sum
-#                  machine_image_checksum_type: sha256
-#                  worker_machine_image_url: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2
-#                  worker_machine_image_format: qcow2
-#                  worker_machine_image_checksum: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2.sha256sum
-#                  worker_machine_image_checksum_type: sha256
-#                  public_pool_name: "public-pool"
-#                  public_pool_network: 172.20.36.128            # CHANGE ME, needs to be a pre-existing public network (see pre-requisites)
-#                  public_pool_gateway: 172.20.36.129            # CHANGE ME
-#                  public_pool_start: 172.20.36.176              # CHANGE ME, starting address in the public network range
-#                  public_pool_end: 172.20.36.180                # CHANGE ME, end address in the public network range
-#                  public_pool_prefix: "26"                      # CHANGE ME, Public pool IP address collection
-#                  provisioning_pool_name: "provisioning-pool"
-#                  provisioning_pool_network: 172.20.39.192      # CHANGE ME, needs to be a pre-existing provisioning network (see pre-requisites)
-#                  provisioning_pool_gateway: 172.20.39.193      # CHANGE ME
-#                  provisioning_pool_start: 172.20.39.198        # CHANGE ME, starting address in the provisioning address range
-#                  provisioning_pool_end: 172.20.39.199          # CHANGE ME, end address in the provisioning address range
-#                  provisioning_pool_prefix: "27"                # CHANGE ME, Provisiong pool IP address collection
-#                  dns_server: 10.193.21.160                           # CHANGE ME
-#
-#                control_plane:   # tweak network configuration as needed ...
-#                  infra:
-#                    provisioning_pool_interface: bond0
-#                    public_pool_interface: bond0.13
-#                    network_interfaces:
-#                      # for CAPM3 folowing are used and mapped to Metal3Data.spec.template.spec.networkData.links
-#                      bond0:
-#                        # bond_mode can be one of balance-rr, active-backup, balance-xor, broadcast, balance-tlb, balance-alb, 802.3ad
-#                        # https://github.com/metal3-io/cluster-api-provider-metal3/blob/main/api/v1alpha5/metal3datatemplate_types.go#L201-L202
-#                        bond_mode: 802.3ad
-#                        interfaces:
-#                          - ens1f0
-#                          - ens1f1
-#                        vlans:
-#                          - id: 13
-#                      ens1f0:
-#                        type: phy
-#                      ens1f1:
-#                        type: phy
-#
-#                  rke2:
-#                    additionalUserData:  # sylva-capi-cluster pushes this under the .config key (we have to fix that)
-#
-#                      users:
-#                        - name: ubuntu
-#                          groups: users
-#                          sudo: ALL=(ALL) NOPASSWD:ALL
-#                          shell: /bin/bash
-#                          lock_passwd: false
-#                          passwd: $6$gwLxr/rEczCWRnTM$S/6h7fR.Mqu3DeTqiRAtk/eHHCauTykzkHnuuwNxJhpTAYfnXtiO9QNXUR4.KsVaEdhdJzeBRIZViAHFv91.v1 # (copy pasted from /etc/shadow or created with "mkpasswd" --method=SHA-512 --stdin")
-#                          ssh_authorized_keys:
-#                            - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCtyRQNGiGWixzfPAvqWD7qWrpopLCaukuSK4dgru9ijfU8MNSYC6D26PtydjEe8dsOIDlZf/+3xaetko9rVL5fv+fBUwtnMZviuUZrP96QOPe6f7tOSH922XvJNp6S34B/9BmY/QoeEAI7F9drJd0xXI7fRHBZsjMcNG0TJCph3AatHgN3Od64b54EDSznfSb7Stp1nDNKf3dmsBEZnjUbIT562WtHL3/DjSDvau4jC5boKu/HHsNIaUwD7Wz0Hb5S80izwoXMh2QCyJy3QorqrSMojpQMoiUvW8TPEv7OrCXZArubL5MbLosJsRJ4BWSUC7tt7r7cIlvaJh5VrLZXE5oF3rQJXB1Zl39tIRH72j1nirTIMqvbImEiFV81/yDpoUL8+zf2fS26kqvhLQpsNUKZI0Ll5CJtK/1CNEegjdR2swA5WPyg6CLj5vlYNOlxZIFPExSDCvxnKQP6sb9CEuDHTKvHePU3NO9GRqVFqI3wXMWFksqUrVq61NRUVq0= ubuntu@akki-otccaas-b-vm-hybrid
-#                        - name: akki
-#                          groups: users
-#                          sudo: ALL=(ALL) NOPASSWD:ALL
-#                          shell: /bin/bash
-#                          lock_passwd: false
-#                          passwd: Akki@12345678
-#                          ssh_authorized_keys:
-#                            - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCtyRQNGiGWixzfPAvqWD7qWrpopLCaukuSK4dgru9ijfU8MNSYC6D26PtydjEe8dsOIDlZf/+3xaetko9rVL5fv+fBUwtnMZviuUZrP96QOPe6f7tOSH922XvJNp6S34B/9BmY/QoeEAI7F9drJd0xXI7fRHBZsjMcNG0TJCph3AatHgN3Od64b54EDSznfSb7Stp1nDNKf3dmsBEZnjUbIT562WtHL3/DjSDvau4jC5boKu/HHsNIaUwD7Wz0Hb5S80izwoXMh2QCyJy3QorqrSMojpQMoiUvW8TPEv7OrCXZArubL5MbLosJsRJ4BWSUC7tt7r7cIlvaJh5VrLZXE5oF3rQJXB1Zl39tIRH72j1nirTIMqvbImEiFV81/yDpoUL8+zf2fS26kqvhLQpsNUKZI0Ll5CJtK/1CNEegjdR2swA5WPyg6CLj5vlYNOlxZIFPExSDCvxnKQP6sb9CEuDHTKvHePU3NO9GRqVFqI3wXMWFksqUrVq61NRUVq0= ubuntu@akki-otccaas-b-vm-hybrid
-#
-#                machine_deployment_default: # tweak as needed ...
-#                  provisioning_pool_interface: bond0
-#                  public_pool_interface: bond0.13
-#
-#                machine_deployments:
-#                  md0:
-#                    infra_provider: capm3
-#                    replicas: 1
-#                    capm3:
-#                      hostSelector:
-#                        matchLabels:
-#                          cluster-role: worker # tweak as needed must match cluster-role defined in baremetal_hosts
-#                    failure_domain: region0
-#                    network_interfaces: # tweak network configuration as needed ...
-#                      bond0:
-#                        bond_mode: 802.3ad
-#                        interfaces:
-#                          - ens1f0
-#                          - ens1f1
-#                        vlans:
-#                          - id: 13
-#                      ens1f0:
-#                        type: phy
-#                      ens1f1:
-#                        type: phy
-#
-#                    rke2:
-#                      additionalUserData:
-#                        users:
-#                          - name: ubuntu
-#                            groups: users
-#                            sudo: ALL=(ALL) NOPASSWD:ALL
-#                            shell: /bin/bash
-#                            ssh_authorized_keys:
-#                              - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCtyRQNGiGWixzfPAvqWD7qWrpopLCaukuSK4dgru9ijfU8MNSYC6D26PtydjEe8dsOIDlZf/+3xaetko9rVL5fv+fBUwtnMZviuUZrP96QOPe6f7tOSH922XvJNp6S34B/9BmY/QoeEAI7F9drJd0xXI7fRHBZsjMcNG0TJCph3AatHgN3Od64b54EDSznfSb7Stp1nDNKf3dmsBEZnjUbIT562WtHL3/DjSDvau4jC5boKu/HHsNIaUwD7Wz0Hb5S80izwoXMh2QCyJy3QorqrSMojpQMoiUvW8TPEv7OrCXZArubL5MbLosJsRJ4BWSUC7tt7r7cIlvaJh5VrLZXE5oF3rQJXB1Zl39tIRH72j1nirTIMqvbImEiFV81/yDpoUL8+zf2fS26kqvhLQpsNUKZI0Ll5CJtK/1CNEegjdR2swA5WPyg6CLj5vlYNOlxZIFPExSDCvxnKQP6sb9CEuDHTKvHePU3NO9GRqVFqI3wXMWFksqUrVq61NRUVq0= ubuntu@akki-otccaas-b-vm-hybrid
-#                          - name: akki
-#                            groups: users
-#                            sudo: ALL=(ALL) NOPASSWD:ALL
-#                            shell: /bin/bash
-#                            lock_passwd: false
-#                            passwd: Akki@12345678
-#
-#                baremetal_hosts:
-#                  # this example is based on what worked on an HP Proliant DL360 Gen10
-#                  dl360-37:  # corresponding credentials need to be set in secrets.yaml
-#                    bmh_metadata:
-#                      labels:
-#                        cluster-role: control-plane
-#                        longhorn: "true"
-#                      annotations:
-#                        disk: /dev/sdb # this disk will be mounted on the K8S node in a dedicated directory and used by Longhorn
-#                    bmh_spec:
-#                      description: Downstream dev clusters
-#                      online: true
-#                      externallyProvisioned: false
-#                      bmc:
-#                        address: redfish-virtualmedia://172.20.188.239/redfish/v1/Systems/1    # CHANGE ME, <impi-address> is the physical device host IP
-#                        disableCertificateVerification: true
-#                      automatedCleaningMode: metadata
-#                      bootMACAddress: 48:df:37:e6:0b:a8    # CHANGE ME, this is the MAC address of baremetal server
-#                      bootMode: legacy
-#                      rootDeviceHints:
-#                        hctl: 2:1:0:0   # CHANGE ME, A SCSI bus address of the OS Disk. Parameters like deviceName, model could also be used instead of hctl
-#
-#                  dl360-38:  # corresponding credentials need to be set in secrets.yaml
-#                    bmh_metadata:
-#                      labels:
-#                        cluster-role: worker
-#                        longhorn: "true"
-#                      annotations:
-#                        disk: /dev/sdb # this disk will be mounted on the K8S node in a dedicated directory and used by Longhorn
-#                    bmh_spec:
-#                      description: Downstream dev clusters
-#                      online: true
-#                      externallyProvisioned: false
-#                      bmc:
-#                        address: redfish-virtualmedia://172.20.188.241/redfish/v1/Systems/1    # CHANGE ME, <impi-address> is the physical device host IP
-#                        disableCertificateVerification: true
-#                      automatedCleaningMode: metadata
-#                      bootMACAddress: 48:df:37:e6:0b:a8    # CHANGE ME, this is the MAC address of baremetal server
-#                      bootMode: legacy
-#                      rootDeviceHints:
-#                        hctl: 2:1:0:0   # CHANGE ME, A SCSI bus address of the OS Disk. Parameters like deviceName, model could also be used instead of hctl
-#                        # deviceName: /dev/sda
   workload-cluster2:
     depends_on:
       namespace-defs: true
-      #for capo:
-      workload-capo-cluster-resources: '{{ tuple . "workload-capo-cluster-resources" | include "unit-enabled" }}'   # produces the capo-cluster-resources used below
-      workload-cluster-cloud-config: '{{ tuple . "workload-cluster-cloud-config" | include "unit-enabled" }}'
-    unit_template: sylva-units
-    kustomization_spec:
-      targetNamespace: cattle-system  # this ensures that the HelmRelease below is created in 'workload-cluster' ns
-        #targetNamespace: workload-cluster2  # this ensures that the HelmRelease below is created in 'workload-cluster' ns
-      healthChecks:
-        - apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
-          kind: Kustomization
-          name: sylva-units-status
-          namespace: cattle-system
-            #namespace: workload-cluster2
+      #workload-capo-cluster-resources2: '{{ tuple . "workload-capo-cluster-resources2" | include "unit-enabled" }}'   # produces the capo-cluster-resources used below
+      #workload-cluster-cloud-config2: '{{ tuple . "workload-cluster-cloud-config2" | include "unit-enabled" }}'
+      #workload-capo-cluster-resources: ""
+      #workload-cluster-cloud-config: ""
+    enabled: true
+    helm_secret_values:
+      cluster:
+        capo:
+          clouds_yaml:
+            clouds:
+              capo_cloud:
+                auth:
+                  auth_url: https://172.20.129.60:13002/v3
+                  password: Akshay.Akshay.otccaas
+                  project_domain_name: default
+                  project_name: Akshay.Akshay.otccaas
+                  user_domain_name: default
+                  username: Akshay.Akshay.otccaas
+                region_name: RegionOne
+                verify: false
+        capv:
+          password: ""
+          username: ""
     helmrelease_spec:
       chart:
         spec:
           chart: charts/sylva-units
           reconcileStrategy: Revision
-          # copy sourceRef from sylva-units HelmRelease in default ns
-          # with an override of namespace field to point to the source livig in the default ns
-          sourceRef: '{{ lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units" | dig "spec" "chart" "spec" "sourceRef" dict | mergeOverwrite (dict "namespace" "default") | include "preserve-type" }}'
+          sourceRef:
+            kind: HelmRepository
+            name: sylva-core
+            namespace: default
           valuesFiles:
             - charts/sylva-units/values.yaml
             - charts/sylva-units/workload-cluster.values.yaml
-            # if main sylva-units release uses OCI artifacts, do the same for this release
-            - '{{ tuple "use-oci-artifacts.values.yaml" (lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units" | dig "spec" "chart" "spec" "valuesFiles" list | has "use-oci-artifacts.values.yaml") | include "set-only-if" }}'
-
-      valuesFrom:  # this Helm release receives some parameters from the capo-cluster-resources ConfigMap
-                   # which is produced by the workload-capo-cluster-resources unit
-                   # ConfigMaps are mapped as optional to circumvent 'not found' errors for infra providers other than capo
-        - kind: ConfigMap
-          name: capo-cluster-resources
-          valuesKey: allocated_ip
-          targetPath: cluster.cluster_external_ip
-          optional: true
-        - kind: ConfigMap
-          name: capo-cluster-resources
-          valuesKey: allocated_fip
-          targetPath: cluster.capo.floating_ip
-          optional: true
-        - kind: ConfigMap
-          name: capo-cluster-resources
-          valuesKey: control_plane_servergroup_id
-          targetPath: cluster.capo.control_plane_servergroup_id
-          optional: true
-        - kind: ConfigMap
-          name: capo-cluster-resources
-          valuesKey: worker_servergroup_id
-          targetPath: cluster.capo.worker_servergroup_id
-          optional: true
-
+            - use-oci-artifacts.values.yaml
       values:
-
+        cluster:
+          air_gapped: true
+          capi_providers:
+            bootstrap_provider: cabpr
+            infra_provider: capm3
+          capo:
+            flavor_name: m1.xlarge
+            network_id: c314d52c-80fe-42b6-9092-55be383d1951
+            resources_tag: sylva-Akshay.Akshay.otccaas
+            rootVolume:
+              diskSize: 100
+              volumeType: ceph_sas
+            ssh_key_name: my_key
+            storageClass:
+              name: cinder-csi
+              type: ceph_sas
+            worker_az: dev-az
+            worker_flavor_name: m1.xlarge
+          capv:
+            control_plane_profile:
+              diskGiB: 25
+              memoryMiB: 8192
+              numCPUs: 2
+            dataCenter: ""
+            dataStore: ""
+            folder: ""
+            network: ""
+            resourcePool: ""
+            server: ""
+            ssh_key: ""
+            storageClass:
+              fsType: ext4
+              storagePolicyName: ""
+            storagePolicyName: ""
+            tlsThumbprint: ""
+          cis_profile: cis-1.6
+          cluster_external_domain: sylva
+          cluster_external_ip: 172.20.36.178
+          control_plane_replicas: 1
+          image: ubuntu-rke2-base
+          k8s_version: v1.24.12+rke2r1
+          name: second-workload-cluster
+            #name: first-workload-cluster
+          worker_machine_image: ""
+        metallb_helm_oci_url: oci://docker-proxy-asis-gitlab.repos.tech.orange/sylva-projects/sylva-core/metallb
+        ntp:
+          enabled: true
+          servers:
+            - 172.20.1.104
+            - 172.20.1.105
+        proxies:
+          http_proxy: http://172.20.73.196:3128
+          https_proxy: http://172.20.73.196:3128
+          no_proxy: .repos.tech.orange,localhost,127.0.0.1,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8,docker-proxy-asis-gitlab.repos.tech.orange
+        registry_mirrors:
+          default_settings:
+            capabilities:
+              - pull
+              - resolve
+            override_path: true
+            skip_verify: true
+          hosts_config:
+            docker.io:
+              - mirror_url: https://172.20.129.169/v2/proxy_cache_diod_docker.io
+            gcr.io:
+              - mirror_url: https://docker-proxy-asis-google.repos.tech.orange
+            ghcr.io:
+              - mirror_url: https://172.20.129.169/v2/proxy_cache_diod_ghcr.io
+            k8s.gcr.io:
+              - mirror_url: https://172.20.129.169/v2/proxy_cache_diod_k8s.gcr.io
+            quay.io:
+              - mirror_url: https://172.20.129.169/v2/proxy_cache_diod_quay.io
+            registry.gitlab.com:
+              - mirror_url: https://172.20.129.169/v2/proxy_cache_diod_registry.gitlab.com
+            registry.k8s.io:
+              - mirror_url: https://172.20.129.169/v2/proxy_cache_diod_registry.k8s.io
         source_templates:
           sylva-core:
-            existing_source: '{{ deepCopy .Values._internal.sylva_core_existing_source | merge (dict "namespace" .Release.Namespace) | include "preserve-type" }}'
-
-        cluster:
-          name: '{{ .Values.cluster.test_workload_cluster_name }}'
-          image: '{{ .Values.cluster.image }}'
-          worker_machine_image: '{{ .Values.cluster.worker_machine_image }}'
-          capi_providers:
-            infra_provider: '{{ .Values.cluster.capi_providers.infra_provider }}'
-            bootstrap_provider: '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
-          k8s_version: '{{ .Values.cluster.k8s_version }}'
-          cis_profile: '{{ .Values.cluster.cis_profile }}'
-          capo:
-            ssh_key_name: '{{ .Values.cluster.capo.ssh_key_name }}'
-            resources_tag: '{{ tuple . (.Values.cluster | dig "capo" "resources_tag" "") | include "interpret-as-string" }}'
-            storageClass: '{{ .Values.cluster | dig "capo" "storageClass" dict | include "preserve-type" }}'
-            network_id: '{{ .Values.cluster.capo.network_id | default "" }}'
-            flavor_name: '{{ .Values.cluster.capo.flavor_name | default "" }}'
-            worker_flavor_name: '{{ .Values.cluster.capo.worker_flavor_name | default "" }}'
-            control_plane_az: '{{ tuple (.Values.cluster | dig "capo" "control_plane_az" list | include "preserve-type") (.Values.cluster | dig "capo" "control_plane_az" nil) | include "set-only-if" }}'
-            worker_az: '{{ .Values.cluster.capo.worker_az }}'
-            rootVolume:
-              diskSize: '{{ .Values.cluster.capo.rootVolume.diskSize | include "preserve-type" }}'
-              volumeType: '{{ .Values.cluster.capo.rootVolume.volumeType | include "preserve-type" }}'
-          capv:
-            dataCenter: '{{ .Values.cluster.capv.dataCenter }}'
-            network: '{{ .Values.cluster.capv.network }}'
-            server: '{{ .Values.cluster.capv.server }}'
-            dataStore: '{{ .Values.cluster.capv.dataStore }}'
-            tlsThumbprint: '{{ .Values.cluster.capv.tlsThumbprint }}'
-            ssh_key: '{{ .Values.cluster.capv.ssh_key }}'
-            folder: '{{ .Values.cluster.capv.folder }}'
-            resourcePool: '{{ .Values.cluster.capv.resourcePool }}'
-            storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
-            control_plane_profile:
-              numCPUs: 2
-              memoryMiB: 8192
-              diskGiB: 25
-            storageClass:
-              storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
-              fsType: ext4
-          cluster_external_domain: '{{ .Values.cluster.cluster_external_domain }}'
-          air_gapped: '{{ .Values.cluster.air_gapped | include "preserve-type" }}'
-
-        metallb_helm_oci_url: '{{ .Values.metallb_helm_oci_url | include "preserve-type" }}'
-
+            existing_source:
+              kind: OCIRepository
+              name: sylva-core
+              namespace: default
         units:
-
-          cluster-import:
-            enabled: '{{ tuple . "rancher" | include "unit-enabled" }}'
-
           cluster:
             helmrelease_spec:
               values:
-                control_plane_replicas: 1
-                enable_longhorn: '{{ .Values.units | dig "workload-cluster" "helmrelease_spec" "values" "units" "longhorn" "enabled" false | include "preserve-type" }}'
-                capo:
-                  control_plane_security_group_name: "capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}"
-                  worker_security_group_name: "capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}"
-                mgmt_cluster_external_domain: '{{ .Values.cluster.cluster_external_domain }}'
-                mgmt_cluster_external_ip: '{{ .Values.cluster.cluster_external_ip }}'
+                air_gapped: false
+                baremetal_hosts:
+                  dl360-37:
+                    bmh_metadata:
+                      annotations:
+                        disk: /dev/sdb
+                      labels:
+                        cluster-role: control-plane
+                        longhorn: "true"
+                    bmh_spec:
+                      automatedCleaningMode: metadata
+                      bmc:
+                        address: redfish-virtualmedia://172.20.188.245/redfish/v1/Systems/1
+                        disableCertificateVerification: true
+                      bootMACAddress: 48:df:37:e6:0b:a8
+                      bootMode: legacy
+                      description: Downstream dev clusters
+                      externallyProvisioned: false
+                      online: true
+                      rootDeviceHints:
+                        hctl: "2:1:0:0"
+                        #   dl360-33:
+                        # bmh_metadata:
+                        #   annotations:
+                        #   disk: /dev/sdb
+                        #  labels:
+                        # cluster-role: worker
+                        # longhorn: "true"
+                        #   bmh_spec:
+                        # automatedCleaningMode: metadata
+                        #   bmc:
+                        #  address: redfish-virtualmedia://172.20.188.241/redfish/v1/Systems/1
+                        #   disableCertificateVerification: true
+                        # bootMACAddress: 48:df:37:e6:0d:64
+                        # bootMode: legacy
+                        #  description: Downstream dev clusters
+                        #  externallyProvisioned: false
+                        #  online: true
+                        #  rootDeviceHints:
+                        # hctl: "2:1:0:0"
+                        #  credentials:
+                        #  password: 7XF79WDC
+                        #  username: Administrator
                 capi_rancher_import: true
-
-          #multus:   ## can be overriden via environment values
-          #  enabled: true
-
-          #longhorn:   ## can be overriden via environment values
-          #  enabled: true
-
-          #sriov:   ## can be overriden via environment values
-          #  enabled: true
-
-          #sriov-resources:  ## can be overriden via environment values
-          #  enabled: true
-
-        proxies: '{{ .Values.proxies | include "preserve-type" }}'
-
-        ntp: '{{ .Values.ntp | include "preserve-type" }}'
-
-        registry_mirrors: '{{ .Values.registry_mirrors | include "preserve-type" }}'
-
-    helm_secret_values:
-      cluster:
-        capo:
-          clouds_yaml: '{{ .Values.cluster | dig "capo" "clouds_yaml" dict | include "preserve-type" }}'  # for CAPO and cinder-csi
-        capv:
-          username: '{{ .Values.cluster.capv.username }}'
-
-  workload-cluster-cloud-config2:
-    enabled_conditions:
-      - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
-      - '{{ tuple . "workload-cluster2" | include "unit-enabled" }}'
-    repo: sylva-core
-    depends_on:
-      namespace-defs: true
-      external-secrets-operator: true
+                capo:
+                  control_plane_security_group_name: capo-first-workload-cluster-security-group-ctrl-plane-sylva-Akshay.Akshay.otccaas
+                  worker_security_group_name: capo-first-workload-cluster-security-group-workers-sylva-Akshay.Akshay.otccaas
+                cis_profile: ""
+                control_plane:
+                  infra:
+                    network_interfaces:
+                      bond0:
+                        bond_mode: 802.3ad
+                        interfaces:
+                          - ens1f0
+                          - ens1f1
+                        vlans:
+                          - id: 13
+                      ens1f0:
+                        type: phy
+                      ens1f1:
+                        type: phy
+                    provisioning_pool_interface: bond0
+                    public_pool_interface: bond0.13
+                  rke2:
+                    additionalUserData:
+                      users:
+                        - groups: users
+                          lock_passwd: false
+                          name: ubuntu
+                          passwd: $6$gwLxr/rEczCWRnTM$S/6h7fR.Mqu3DeTqiRAtk/eHHCauTykzkHnuuwNxJhpTAYfnXtiO9QNXUR4.KsVaEdhdJzeBRIZViAHFv91.v1
+                          shell: /bin/bash
+                          ssh_authorized_keys:
+                            - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCtyRQNGiGWixzfPAvqWD7qWrpopLCaukuSK4dgru9ijfU8MNSYC6D26PtydjEe8dsOIDlZf/+3xaetko9rVL5fv+fBUwtnMZviuUZrP96QOPe6f7tOSH922XvJNp6S34B/9BmY/QoeEAI7F9drJd0xXI7fRHBZsjMcNG0TJCph3AatHgN3Od64b54EDSznfSb7Stp1nDNKf3dmsBEZnjUbIT562WtHL3/DjSDvau4jC5boKu/HHsNIaUwD7Wz0Hb5S80izwoXMh2QCyJy3QorqrSMojpQMoiUvW8TPEv7OrCXZArubL5MbLosJsRJ4BWSUC7tt7r7cIlvaJh5VrLZXE5oF3rQJXB1Zl39tIRH72j1nirTIMqvbImEiFV81/yDpoUL8+zf2fS26kqvhLQpsNUKZI0Ll5CJtK/1CNEegjdR2swA5WPyg6CLj5vlYNOlxZIFPExSDCvxnKQP6sb9CEuDHTKvHePU3NO9GRqVFqI3wXMWFksqUrVq61NRUVq0= ubuntu@akki-otccaas-b-vm-hybrid
+                          sudo: ALL=(ALL) NOPASSWD:ALL
+                        - groups: users
+                          lock_passwd: false
+                          name: akki
+                          passwd: Akki@12345678
+                          shell: /bin/bash
+                          ssh_authorized_keys:
+                            - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCtyRQNGiGWixzfPAvqWD7qWrpopLCaukuSK4dgru9ijfU8MNSYC6D26PtydjEe8dsOIDlZf/+3xaetko9rVL5fv+fBUwtnMZviuUZrP96QOPe6f7tOSH922XvJNp6S34B/9BmY/QoeEAI7F9drJd0xXI7fRHBZsjMcNG0TJCph3AatHgN3Od64b54EDSznfSb7Stp1nDNKf3dmsBEZnjUbIT562WtHL3/DjSDvau4jC5boKu/HHsNIaUwD7Wz0Hb5S80izwoXMh2QCyJy3QorqrSMojpQMoiUvW8TPEv7OrCXZArubL5MbLosJsRJ4BWSUC7tt7r7cIlvaJh5VrLZXE5oF3rQJXB1Zl39tIRH72j1nirTIMqvbImEiFV81/yDpoUL8+zf2fS26kqvhLQpsNUKZI0Ll5CJtK/1CNEegjdR2swA5WPyg6CLj5vlYNOlxZIFPExSDCvxnKQP6sb9CEuDHTKvHePU3NO9GRqVFqI3wXMWFksqUrVq61NRUVq0= ubuntu@akki-otccaas-b-vm-hybrid
+                          sudo: ALL=(ALL) NOPASSWD:ALL
+                control_plane_replicas: 1
+                enable_longhorn: true
+                machine_deployment_default:
+                  provisioning_pool_interface: bond0
+                  public_pool_interface: bond0.13
+                machine_deployments:
+                  md0:
+                    capm3:
+                      hostSelector:
+                        matchLabels:
+                          cluster-role: worker
+                    failure_domain: region0
+                    infra_provider: capm3
+                    network_interfaces:
+                      bond0:
+                        bond_mode: 802.3ad
+                        interfaces:
+                          - ens1f0
+                          - ens1f1
+                        vlans:
+                          - id: 13
+                      ens1f0:
+                        type: phy
+                      ens1f1:
+                        type: phy
+                    replicas: 1
+                    rke2:
+                      additionalUserData:
+                        users:
+                          - groups: users
+                            name: ubuntu
+                            shell: /bin/bash
+                            ssh_authorized_keys:
+                              - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCtyRQNGiGWixzfPAvqWD7qWrpopLCaukuSK4dgru9ijfU8MNSYC6D26PtydjEe8dsOIDlZf/+3xaetko9rVL5fv+fBUwtnMZviuUZrP96QOPe6f7tOSH922XvJNp6S34B/9BmY/QoeEAI7F9drJd0xXI7fRHBZsjMcNG0TJCph3AatHgN3Od64b54EDSznfSb7Stp1nDNKf3dmsBEZnjUbIT562WtHL3/DjSDvau4jC5boKu/HHsNIaUwD7Wz0Hb5S80izwoXMh2QCyJy3QorqrSMojpQMoiUvW8TPEv7OrCXZArubL5MbLosJsRJ4BWSUC7tt7r7cIlvaJh5VrLZXE5oF3rQJXB1Zl39tIRH72j1nirTIMqvbImEiFV81/yDpoUL8+zf2fS26kqvhLQpsNUKZI0Ll5CJtK/1CNEegjdR2swA5WPyg6CLj5vlYNOlxZIFPExSDCvxnKQP6sb9CEuDHTKvHePU3NO9GRqVFqI3wXMWFksqUrVq61NRUVq0= ubuntu@akki-otccaas-b-vm-hybrid
+                            sudo: ALL=(ALL) NOPASSWD:ALL
+                          - groups: users
+                            lock_passwd: false
+                            name: akki
+                            passwd: Akki@12345678
+                            shell: /bin/bash
+                            sudo: ALL=(ALL) NOPASSWD:ALL
+                metal3:
+                  dns_server: 10.193.21.160
+                  machine_image_checksum: http://172.20.129.252/ubuntu-22.04-plain.qcow2.sha256sum
+                  machine_image_checksum_type: sha256
+                  machine_image_format: qcow2
+                  machine_image_url: http://172.20.129.252/ubuntu-22.04-plain.qcow2
+                  provisioning_pool_end: 172.20.39.199
+                  provisioning_pool_gateway: 172.20.39.193
+                  provisioning_pool_name: provisioning-pool
+                  provisioning_pool_network: 172.20.39.192
+                  provisioning_pool_prefix: "27"
+                  provisioning_pool_start: 172.20.39.198
+                  public_pool_end: 172.20.36.180
+                  public_pool_gateway: 172.20.36.129
+                  public_pool_name: public-pool
+                  public_pool_network: 172.20.36.128
+                  public_pool_prefix: "26"
+                  public_pool_start: 172.20.36.176
+                  worker_machine_image_checksum: http://172.20.129.252/ubuntu-22.04-plain.qcow2.sha256sum
+                  worker_machine_image_checksum_type: sha256
+                  worker_machine_image_format: qcow2
+                  worker_machine_image_url: http://172.20.129.252/ubuntu-22.04-plain.qcow2
+                mgmt_cluster_external_domain: sylva
+                mgmt_cluster_external_ip: 172.20.129.252
+          cluster-import:
+            enabled: ""
+          longhorn:
+            enabled: true
+      valuesFrom:
+        - kind: ConfigMap
+          name: capo-cluster-resources
+          optional: true
+          targetPath: cluster.cluster_external_ip
+          valuesKey: allocated_ip
+        - kind: ConfigMap
+          name: capo-cluster-resources
+          optional: true
+          targetPath: cluster.capo.floating_ip
+          valuesKey: allocated_fip
+        - kind: ConfigMap
+          name: capo-cluster-resources
+          optional: true
+          targetPath: cluster.capo.control_plane_servergroup_id
+          valuesKey: control_plane_servergroup_id
+        - kind: ConfigMap
+          name: capo-cluster-resources
+          optional: true
+          targetPath: cluster.capo.worker_servergroup_id
+          valuesKey: worker_servergroup_id
     kustomization_spec:
-      path: ./kustomize-units/workload-cluster-cloud-config
-      wait: true
-
-  workload-capo-cluster-resources2:
-    enabled_conditions:
-    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
-    - '{{ tuple . "workload-cluster2" | include "unit-enabled" }}'
-    repo: sylva-core
-    depends_on:
-      namespace-defs: true
-      heat-operator: true
-      workload-cluster-cloud-config: true
-    kustomization_spec:
+      healthChecks:
+        - apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+          kind: Kustomization
+          name: sylva-units-status
+          namespace: cattle-system
       targetNamespace: cattle-system
-      path: ./kustomize-units/capo-cluster-resources
-      wait: true
-      _patches:
-        - target:
-            kind: HeatStack
-          patch: |
-            - op: replace
-              path: /spec/identityRef
-              value: cloud-config  #  cloud-config Secret is produced by workload-cluster-cloud-config unit (ExternalSecret to copy cloud config from default ns to workload-cluster ns)
-            - op: replace
-              path: /spec/heatStack/template/parameters/control_plane_rules
-              value:
-                type: json
-                description: "Security group rules associated with the control plane VMs"
-                default:
-                  direction: [ingress, ingress, ingress, egress]
-                  port: ['80', '443', '22', '53']
-                  protocol: [tcp, tcp, tcp, udp]
-                  remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
-            - op: replace
-              path: /spec/heatStack/template/parameters/worker_rules
-              value:
-                type: json
-                description: "Security group rules associated with the worker VMs"
-                default:
-                  direction: [ingress, ingress, ingress, egress]
-                  port: ['80', '443', '22', '53']
-                  protocol: [tcp, tcp, tcp, udp]
-                  remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
-      postBuild:
-        substitute:
-          STACK_NAME_PREFIX: 'workload-cluster-{{ tuple . .Values.cluster.capo.resources_tag | include "interpret-as-string" | replace "." "-" }}'
-          CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
-          CAPO_TAG: '{{ .Values.cluster.capo.resources_tag }}'
-          CONTROL_PLANE_AFFINITY_POLICY: '{{ .Values.cluster.capo.control_plane_affinity_policy }}'
-          WORKER_AFFINITY_POLICY: '{{ .Values.cluster.capo.worker_affinity_policy }}'
-          CONTROL_PLANE_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}'
-          WORKER_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}'
-
+    unit_template: sylva-units
