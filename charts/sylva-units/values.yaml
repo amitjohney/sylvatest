@@ -1897,9 +1897,7 @@ units:
             worker_flavor_name: '{{ .Values.cluster.capo.worker_flavor_name | default "" }}'
             control_plane_az: '{{ tuple (.Values.cluster | dig "capo" "control_plane_az" list | include "preserve-type") (.Values.cluster | dig "capo" "control_plane_az" nil) | include "set-only-if" }}'
             worker_az: '{{ .Values.cluster.capo.worker_az }}'
-            rootVolume:
-              diskSize: '{{ .Values.cluster.capo.rootVolume.diskSize | include "preserve-type" }}'
-              volumeType: '{{ .Values.cluster.capo.rootVolume.volumeType | include "preserve-type" }}'
+            rootVolume: '{{ .Values.cluster.capo.rootVolume | include "preserve-type" }}'
           capv:
             dataCenter: '{{ .Values.cluster.capv.dataCenter }}'
             network: '{{ .Values.cluster.capv.network }}'
