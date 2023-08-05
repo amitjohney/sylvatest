@@ -34,7 +34,7 @@ spec:
         - --scale-down-candidates-pool-ratio=1.0
         - --max-total-unready-percentage=99
         - --new-pod-scale-up-delay=30s
-        - --v=2
+        - --v=4
         volumeMounts:
         - name: worker-cluster-kubeconfig
           mountPath: "/mnt/kubeconfig/"
