@@ -18,7 +18,7 @@ spec:
   secretStoreRef:
     name: vault
     kind: ClusterSecretStore
-  refreshInterval: 0  # `vault-config-operator` can create new versions (>1) of the Vault secret/keycloak value and ESO would by default sync that in Keycloak's credential-external-keycloak secret, but Keycloak app itself would only be using the initial version 1; this stops new version sync
+  refreshInterval: 0s  # `vault-config-operator` can create new versions (>1) of the Vault secret/keycloak value and ESO would by default sync that in Keycloak's credential-external-keycloak secret, but Keycloak app itself would only be using the initial version 1; this stops new version sync
   target:
     creationPolicy: Orphan
     # this Secret is read by the legacy keycloak-realm-operator

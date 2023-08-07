@@ -8,7 +8,7 @@ spec:
    secretStoreRef:
       name: vault
       kind: ClusterSecretStore
-   refreshInterval: 0
+   refreshInterval: 0s
    target:
       creationPolicy: Orphan
       name: keycloak-initial-admin
