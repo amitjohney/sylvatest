@@ -1292,6 +1292,27 @@ units:
           loadBalancerIP: '{{ .Values.cluster.cluster_external_ip }}'
           annotations:
             metallb.universe.tf/allow-shared-ip: '{{ tuple (.Values.cluster.cluster_external_ip) (or (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.capi_providers.infra_provider | eq "capd")) | include "set-only-if" }}'
+      _postRenderers:
+        - kustomize:
+            patchesStrategicMerge:
+              - kind: Deployment
+                apiVersion: apps/v1
+                metadata:
+                  name: k8s-gateway
+                spec:
+                  template:
+                    spec:
+                      containers:
+                      - name: k8s-gateway
+                        securityContext:
+                          allowPrivilegeEscalation: false
+                          capabilities:
+                            drop:
+                            - ALL
+                          privileged: false
+                          readOnlyRootFilesystem: true
+                          runAsGroup: 1000
+                          runAsUser: 1000
 
   metallb:
     enabled_conditions:
