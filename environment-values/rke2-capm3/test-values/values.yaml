@@ -15,13 +15,13 @@ units:
         control_plane_replicas: 1
         cluster_external_ip: "{{ .Values.cluster.cluster_external_ip }}"
         metal3:
-          machine_image_url: http://192.168.133.2/ubuntu-22.04-plain.qcow2
+          machine_image_url: http://192.168.133.1/ubuntu-22.04-plain.qcow2
           machine_image_format: qcow2
-          machine_image_checksum: http://192.168.133.2/ubuntu-22.04-plain.qcow2.md5sum
+          machine_image_checksum: http://192.168.133.1/ubuntu-22.04-plain.qcow2.md5sum
           machine_image_checksum_type: md5
-          worker_machine_image_url: http://192.168.133.2/ubuntu-22.04-plain.qcow2
+          worker_machine_image_url: http://192.168.133.1/ubuntu-22.04-plain.qcow2
           worker_machine_image_format: qcow2
-          worker_machine_image_checksum: http://192.168.133.2/ubuntu-22.04-plain.qcow2.md5sum
+          worker_machine_image_checksum: http://192.168.133.1/ubuntu-22.04-plain.qcow2.md5sum
           worker_machine_image_checksum_type: md5
           public_pool_name: "public-pool"
           public_pool_network: 192.168.130.0
@@ -121,13 +121,13 @@ units:
                 control_plane_replicas: 1
                 worker_replicas: 1
                 metal3:
-                  machine_image_url: http://192.168.133.2/ubuntu-22.04-plain.qcow2
+                  machine_image_url: http://192.168.133.1/ubuntu-22.04-plain.qcow2
                   machine_image_format: qcow2
-                  machine_image_checksum: http://192.168.133.2/ubuntu-22.04-plain.qcow2.md5sum
+                  machine_image_checksum: http://192.168.133.1/ubuntu-22.04-plain.qcow2.md5sum
                   machine_image_checksum_type: md5
-                  worker_machine_image_url: http://192.168.133.2/ubuntu-22.04-plain.qcow2
+                  worker_machine_image_url: http://192.168.133.1/ubuntu-22.04-plain.qcow2
                   worker_machine_image_format: qcow2
-                  worker_machine_image_checksum: http://192.168.133.2/ubuntu-22.04-plain.qcow2.md5sum
+                  worker_machine_image_checksum: http://192.168.133.1/ubuntu-22.04-plain.qcow2.md5sum
                   worker_machine_image_checksum_type: md5
                   public_pool_name: "public-pool"
                   public_pool_network: 192.168.130.0
