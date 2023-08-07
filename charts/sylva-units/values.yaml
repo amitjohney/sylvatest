@@ -895,7 +895,6 @@ units:
           storageClass:
             storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
             fsType: ext4
-
         machine_deployment_default:
           metadata:
             labels:
