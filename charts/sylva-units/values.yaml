@@ -697,7 +697,7 @@ units:
         spec:
           chart: .
       install:
-        createNamespace: true
+        createNamespace: false
       targetNamespace: metal3-system
       values:  # see https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3/-/blob/main/values.yaml
         global:
@@ -1997,6 +1997,27 @@ units:
         downloader:
           proxy: '{{ get .Values.proxies "https_proxy" }}'
           no_proxy: '{{ include "sylva-units.no_proxy" . }}'
+          securityContext:
+            capabilities:
+              drop:
+              - ALL
+            runAsNonRoot: true
+            runAsUser: 10000
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
+        nginx:
+          securityContext:
+            capabilities:
+              drop:
+              - ALL
+            runAsNonRoot: true
+            runAsUser: 10000
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
         ingress:
           className: nginx
           hosts:
@@ -2006,42 +2027,6 @@ units:
           enabled: true
           size: 1Gi
           storageClass: '{{ .Values._internal.default_storage_class }}'
-      _postRenderers:
-        - kustomize:
-            patchesStrategicMerge:
-              - kind: StatefulSet
-                apiVersion: apps/v1
-                metadata:
-                  namespace: os-images
-                spec:
-                  template:
-                    spec:
-                      containers:
-                      - name: web-server
-                        securityContext:
-                          allowPrivilegeEscalation: false
-                          capabilities:
-                            drop:
-                            - ALL
-                          privileged: false
-                          readOnlyRootFilesystem: true
-                          runAsNonRoot: true
-                          runAsUser: 10000
-                          seccompProfile:
-                            type: RuntimeDefault
-                      initContainers:
-                      - name: init-downloader
-                        securityContext:
-                          allowPrivilegeEscalation: false
-                          capabilities:
-                            drop:
-                            - ALL
-                          privileged: false
-                          readOnlyRootFilesystem: true
-                          runAsNonRoot: true
-                          runAsUser: 10000
-                          seccompProfile:
-                            type: RuntimeDefault
 
 ## stuff related to the 'cluster' unit
 
