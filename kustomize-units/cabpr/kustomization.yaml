@@ -7,3 +7,18 @@ resources:
 labels:
   - pairs:
       clusterctl.cluster.x-k8s.io: ""
+patches:
+- target:
+    kind: Deployment
+  patch: |
+    - op: add
+      path: /spec/template/spec/containers/
+      value:
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+          capabilities:
+            drop:
+              - ALL

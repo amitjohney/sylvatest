@@ -292,6 +292,14 @@ units:
       values:
         psp:
           enabled: '{{ .Values.cluster.cis_profile | eq "cis-1.6" | include "preserve-type" }}'
+        podSecurityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+          capabilities:
+            drop:
+              - ALL
 
 # Vault assumes that the certificate vault-tls has been issued
   vault:
