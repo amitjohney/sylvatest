@@ -486,6 +486,25 @@ units:
           namespace: keycloak
       _components:
         - '{{ tuple "components/keycloak-operator-proxies" (.Values.proxies.https_proxy) | include "set-only-if" }}'
+      _patches:
+        - patch: |
+            apiVersion: apps/v1
+            kind: Deployment
+            metadata:
+              name: keycloak-operator
+            spec:
+              template:
+                spec:
+                  securityContext:
+                    runAsUser: 10000
+                    allowPrivilegeEscalation: false
+                    capabilities:
+                      drop:
+                      - ALL
+                    privileged: false
+                    runAsNonRoot: true
+                    seccompProfile:
+                    type: RuntimeDefault
 
   keycloak-legacy-operator:
     enabled_conditions:
@@ -509,6 +528,14 @@ units:
                 spec:
                   securityContext:
                     runAsUser: 10000
+                    allowPrivilegeEscalation: false
+                    capabilities:
+                      drop:
+                      - ALL
+                    privileged: false
+                    runAsNonRoot: true
+                    seccompProfile:
+                    type: RuntimeDefault
           target:
             kind: Deployment
             name: keycloak-realm-operator
