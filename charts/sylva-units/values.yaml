@@ -504,7 +504,7 @@ units:
                     privileged: false
                     runAsNonRoot: true
                     seccompProfile:
-                    type: RuntimeDefault
+                      type: RuntimeDefault
 
   keycloak-legacy-operator:
     enabled_conditions:
@@ -535,7 +535,7 @@ units:
                     privileged: false
                     runAsNonRoot: true
                     seccompProfile:
-                    type: RuntimeDefault
+                      type: RuntimeDefault
           target:
             kind: Deployment
             name: keycloak-realm-operator
