@@ -16,17 +16,16 @@ patches:
       namespace: rke2-bootstrap-system
     patch: |-
       - op: add
-        path: /spec/template/spec/containers/0
+        path: /spec/template/spec/containers/0/securityContext
         value:
-          securityContext:
-            runAsNonRoot: true
-            seccompProfile:
-              type: RuntimeDefault
-            allowPrivilegeEscalation: false
-            runAsNonRoot: true
-            capabilities:
-              drop:
-                - ALL
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop:
+              - ALL
   - target:
       group: apps
       version: v1
@@ -35,14 +34,13 @@ patches:
       namespace: rke2-control-plane-system
     patch: |-
       - op: add
-        path: /spec/template/spec/containers/0
+        path: /spec/template/spec/containers/0/securityContext
         value:
-          securityContext:
-            runAsNonRoot: true
-            seccompProfile:
-              type: RuntimeDefault
-            allowPrivilegeEscalation: false
-            runAsNonRoot: true
-            capabilities:
-              drop:
-                - ALL
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop:
+              - ALL
