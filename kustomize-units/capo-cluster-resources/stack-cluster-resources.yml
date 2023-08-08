@@ -37,7 +37,7 @@ spec:
           description: "Security group rules associated with the control plane VMs"
           default:
             direction: [ingress, ingress, ingress, ingress]
-            port: '{{ tuple . (and (.Values.units.metal3.enabled | default false) (.Values.cluster.capi_providers.infra_provider | eq "capo")) }}
+            port: '{{ if and (.Values.units.metal3.enabled | default false) (.Values.cluster.capi_providers.infra_provider | eq "capo") }}
                   [ {{ tuple 80 443 22 53 5050 6180 6385 9999 | map "toString" | join ", " | printf "%s" }} ]
                   {{ else }}
                   [ {{ tuple 80 443 22 53 | map "toString" | join ", " | printf "%s" }} ]
@@ -49,7 +49,7 @@ spec:
           description: "Security group rules associated with worker VMs"
           default:
             direction: [ingress, ingress, ingress, ingress]
-            port: '{{ tuple . (and (.Values.units.metal3.enabled | default false) (.Values.cluster.capi_providers.infra_provider | eq "capo")) }}
+            port: '{{ if and (.Values.units.metal3.enabled | default false) (.Values.cluster.capi_providers.infra_provider | eq "capo") }}
                   [ {{ tuple 80 443 22 53 5050 6180 6385 9999 | map "toString" | join ", " | printf "%s" }} ]
                   {{ else }}
                   [ {{ tuple 80 443 22 53 | map "toString" | join ", " | printf "%s" }} ]
