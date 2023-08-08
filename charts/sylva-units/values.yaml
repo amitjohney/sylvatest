@@ -292,22 +292,17 @@ units:
       values:
         psp:
           enabled: '{{ .Values.cluster.cis_profile | eq "cis-1.6" | include "preserve-type" }}'
-        podSecurityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          seccompProfile:
-            type: RuntimeDefault
-          capabilities:
-            drop:
-              - ALL
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          seccompProfile:
-            type: RuntimeDefault
-          capabilities:
-            drop:
-              - ALL
+      _postRenderers:
+        - kustomize:
+            patchesStrategicMerge:
+              - kind: Namespace
+                apiVersion: v1
+                metadata:
+                  name: vault
+                  labels:
+                    pod-security.kubernetes.io/audit: privileged
+                    pod-security.kubernetes.io/enforce: privileged
+                    pod-security.kubernetes.io/warn: privileged
 
 # Vault assumes that the certificate vault-tls has been issued
   vault:
@@ -371,6 +366,14 @@ units:
       values:
         enableCertManager: true
         enableMonitoring: false
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+          capabilities:
+            drop:
+              - ALL
 
   vault-secrets: # generate random secrets in vault, configure password policy, authentication backends, etc...
     repo: sylva-core
@@ -738,6 +741,12 @@ units:
         securityContext:
           runAsNonRoot: true
           runAsUser: 1000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
     helm_secret_values:
       mariadb:
         auth:
@@ -1331,7 +1340,7 @@ units:
                           runAsGroup: 1000
                           runAsUser: 1000
                           seccompProfile:
-                            type: '{{ tuple "RuntimeDefault" ( .Values.cluster.profile | eq "cis-1.23" ) | include "set-only-if" }}'
+                            type: RuntimeDefault
 
   metallb:
     enabled_conditions:
