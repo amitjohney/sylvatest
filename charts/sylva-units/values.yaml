@@ -727,6 +727,12 @@ units:
         podSecurityContext:
           runAsNonRoot: true
           runAsUser: 1000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
         securityContext:
           runAsNonRoot: true
           runAsUser: 1000
@@ -2000,6 +2006,42 @@ units:
           enabled: true
           size: 1Gi
           storageClass: '{{ .Values._internal.default_storage_class }}'
+      _postRenderers:
+        - kustomize:
+            patchesStrategicMerge:
+              - kind: StatefulSet
+                apiVersion: apps/v1
+                metadata:
+                  namespace: os-images
+                spec:
+                  template:
+                    spec:
+                      containers:
+                      - name: web-server
+                        securityContext:
+                          allowPrivilegeEscalation: false
+                          capabilities:
+                            drop:
+                            - ALL
+                          privileged: false
+                          readOnlyRootFilesystem: true
+                          runAsNonRoot: true
+                          runAsUser: 10000
+                          seccompProfile:
+                            type: RuntimeDefault
+                      initContainers:
+                      - name: init-downloader
+                        securityContext:
+                          allowPrivilegeEscalation: false
+                          capabilities:
+                            drop:
+                            - ALL
+                          privileged: false
+                          readOnlyRootFilesystem: true
+                          runAsNonRoot: true
+                          runAsUser: 10000
+                          seccompProfile:
+                            type: RuntimeDefault
 
 ## stuff related to the 'cluster' unit
 
