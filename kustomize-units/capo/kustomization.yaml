@@ -10,6 +10,17 @@ patches:
     patch: |-
       - op: remove
         path: /spec/conversion/webhook/clientConfig/caBundle
+  - target:
+      version: v1
+      kind: namespace
+      metadata:
+        name: capo-system
+    patch: |-
+      - op: add
+        path: /metadata/labels/-
+        value:
+          pod-security.kubernetes.io/enforce: baseline
+          pod-security.kubernetes.io/enforce-version: latest
 # Add labels to enable clusterctl move to retrieve resources correponding to capo CRDs
 labels:
   - pairs:

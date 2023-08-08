@@ -300,6 +300,14 @@ units:
           capabilities:
             drop:
               - ALL
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+          capabilities:
+            drop:
+              - ALL
 
 # Vault assumes that the certificate vault-tls has been issued
   vault:
