@@ -460,6 +460,7 @@ scheduled-cleanup-capo:
     - if: $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
       allow_failure: true
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 publish-kustomize-units-artifact:
   extends: .build-base
