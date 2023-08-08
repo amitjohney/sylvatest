@@ -292,17 +292,6 @@ units:
       values:
         psp:
           enabled: '{{ .Values.cluster.cis_profile | eq "cis-1.6" | include "preserve-type" }}'
-      _postRenderers:
-        - kustomize:
-            patchesStrategicMerge:
-              - kind: Namespace
-                apiVersion: v1
-                metadata:
-                  name: vault
-                  labels:
-                    pod-security.kubernetes.io/audit: privileged
-                    pod-security.kubernetes.io/enforce: privileged
-                    pod-security.kubernetes.io/warn: privileged
 
 # Vault assumes that the certificate vault-tls has been issued
   vault:
