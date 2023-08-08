@@ -37,7 +37,8 @@ spec:
           description: "Security group rules associated with the control plane VMs"
           default:
             direction: [ingress, ingress, ingress, ingress]
-            ports: '{{ ((and (.Values.units.metal3.enabled | default false) (.Values.cluster.capi_providers.infra_provider | eq "capo")) | ternary (list '80', '443', '22', '53', '5050', '6180', '6385', '9999') (list '80', '443', '22', '53')) | toJson }}'
+            ports: '{{ tpl "{{ if and (.Values.units.metal3.enabled | default false) (.Values.cluster.capi_providers.infra_provider | eq "capo") }} list(80 443 22 53 5050 6180 6385 9999) {{ else }} list(80 443 22 53) {{ end }}" . }}'
+
             protocol: [tcp, tcp, tcp, udp]
             remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
         worker_rules:
@@ -45,7 +46,7 @@ spec:
           description: "Security group rules associated with worker VMs"
           default:
             direction: [ingress, ingress, ingress, ingress]
-            ports: '{{ ((and (.Values.units.metal3.enabled | default false) (.Values.cluster.capi_providers.infra_provider | eq "capo")) | ternary (list '80', '443', '22', '53', '5050', '6180', '6385', '9999') (list '80', '443', '22', '53')) | toJson }}'
+            ports: '{{ tpl "{{ if and (.Values.units.metal3.enabled | default false) (.Values.cluster.capi_providers.infra_provider | eq "capo") }} list(80 443 22 53 5050 6180 6385 9999) {{ else }} list(80 443 22 53) {{ end }}" . }}'
             protocol: [tcp, tcp, tcp, udp]
             remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
 
