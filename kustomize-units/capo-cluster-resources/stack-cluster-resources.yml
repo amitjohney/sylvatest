@@ -37,15 +37,14 @@ spec:
           description: "Security group rules associated with the control plane VMs"
           default:
             direction: [ingress, ingress, ingress, ingress]
-            port:  tuple . (and (.Values.units.metal3.enabled | default false) (.Values.cluster.capi_providers.infra_provider | eq "capo")) ['80', '443', '22', '53', '5050', '6180', '6385', '9999'] ['80', '443', '22', '53'] | include "interpret-ternary"
-            protocol: [tcp, tcp, tcp, udp]
+            port: ['80', '443', '22', '53', '5050', '6180', '6385', '9999']
             remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
         worker_rules:
           type: json
           description: "Security group rules associated with worker VMs"
           default:
             direction: [ingress, ingress, ingress, ingress]
-            port:  tuple . (and (.Values.units.metal3.enabled | default false) (.Values.cluster.capi_providers.infra_provider | eq "capo")) ['80', '443', '22', '53', '5050', '6180', '6385', '9999'] ['80', '443', '22', '53'] | include "interpret-ternary"
+            port: ['80', '443', '22', '53', '5050', '6180', '6385', '9999']
             protocol: [tcp, tcp, tcp, udp]
             remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
 
