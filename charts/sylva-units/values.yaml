@@ -1011,6 +1011,8 @@ units:
                   - ALL
               privileged: false
               runAsNonRoot: true
+              runAsGroup: 1000
+              runAsUser: 1000
               seccompProfile:
                 type: RuntimeDefault
       # We need to create at least one RoleBinding per namespace as they are referring to namespaced serviceAccounts
@@ -1078,6 +1080,8 @@ units:
                   - ALL
               privileged: false
               runAsNonRoot: true
+              runAsGroup: 1000
+              runAsUser: 1000
               seccompProfile:
                 type: RuntimeDefault
       # We need to create at least one RoleBinding per namespace as they are referring to namespaced serviceAccounts
@@ -1429,7 +1433,16 @@ units:
       interval: 1m0s
       values:
         securityContext:
-          runAsUser: 1
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          privileged: false
+          runAsNonRoot: true
+          runAsGroup: 1000
+          runAsUser: 1000
+          seccompProfile:
+            type: RuntimeDefault
         conf:
           env:
             - name: URL_REMAP
