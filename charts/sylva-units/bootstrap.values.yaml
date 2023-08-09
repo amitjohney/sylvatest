@@ -322,7 +322,7 @@ units:
               echo "-- All done"
 
 cluster:
-  display_external_ip: '{{ dig "capm3" "external_bootstrap_ip" (dig "capm3" "bootstrap_ip" "127.0.0.1" .Values.cluster) .Values.cluster }}'
+  display_external_ip: '{{ .Values.cluster | dig "capm3" "external_bootstrap_ip" (.Values.cluster | dig "capm3" "bootstrap_ip" "127.0.0.1") }}'
 
 # only those components will be enabled on bootstrap cluster (this overrides 'units.<component>.enabled')
 units_override_enabled:
