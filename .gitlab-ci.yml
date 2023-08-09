@@ -299,7 +299,7 @@ deploy-kubeadm-capd-oci:
     - $CAPO_PLATFORM_TAG
 
 deploy-rke2-capo:
-  timeout: 90min
+  timeout: 60min
   extends: .deploy-capo
   variables:
     ENV_NAME: "rke2-capo"
@@ -317,7 +317,7 @@ deploy-rke2-capo-oci:
     expose_as: rke2-capo-oci
 
 deploy-kubeadm-capo:
-  timeout: 75min
+  timeout: 55min
   extends: .deploy-capo
   variables:
     ENV_NAME: "kubeadm-capo"
@@ -411,12 +411,22 @@ scheduled-cleanup-capo:
   script:
     - !reference [.common-deployment, os_cloud]
     - touch tags.txt exclude-tags.txt
+    - MAX_DEPLOY_CAPO_TIMEOUT=$(yq .deploy-*-capo.timeout .gitlab-ci.yml | awk -F"min" '{print $1}' | sort -nr | head -1)
+    - STACK_TTL=$(((MAX_DEPLOY_CAPO_TIMEOUT+5)*60))
     - |
       for STACK in $(openstack stack list -f value -c "Stack Name" | grep -E '^(management|workload|capo)-cluster' ); do
         STACK_TIME=$(date -d "$(openstack stack show ${STACK} -c creation_time -f value | tr T ' ' | tr -d Z )" +%s)
         THIS_TIME=$(date +%s)
-        # we'll only consider for cleanup tags applied to resources created more than 2 hours ago
-        if [ $((THIS_TIME-STACK_TIME)) -gt 7200 ]; then
+        # we'll only consider for cleanup tags applied to resources created more than STACK_TTL seconds ago
+        if [ $((THIS_TIME-STACK_TIME)) -gt ${STACK_TTL} ]; then
+            # and we'll delay the cleanup for tags of stacks where second tag is "please-delay-cleanup"; patched with `openstack stack update --existing --tag sylva-foo.bar,please-delay-cleanup ${STACK}
+            if openstack stack show ${STACK} -c tags -f json | jq .tags[] -r | grep -xq "please-delay-cleanup"; then
+                # but only for an period of 12 hours after its creation
+                if [ $((THIS_TIME-STACK_TIME)) -lt 43200 ]; then
+                    echo -e "The cleanup of the $(openstack stack show ${STACK} -c tags -f json | jq .tags[0] -r) tag is delayed for $(((STACK_TIME+43200-THIS_TIME)/60)) minutes"
+                    openstack stack show ${STACK} -c tags -f json | jq .tags[0] -r >> exclude-tags.txt
+                fi
+            fi
             openstack stack show ${STACK} -c tags -f json | jq .tags[] -r >> tags.txt
         else
             openstack stack show ${STACK} -c tags -f json | jq .tags[] -r >> exclude-tags.txt
