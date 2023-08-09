@@ -535,23 +535,19 @@ units:
       wait: true
       _patches:
         - patch: |
-            apiVersion: apps/v1
-            kind: Deployment
-            metadata:
-              name: keycloak-realm-operator
-            spec:
-              template:
-                spec:
-                  securityContext:
-                    runAsUser: 10000
-                    allowPrivilegeEscalation: false
-                    capabilities:
-                      drop:
-                      - ALL
-                    privileged: false
-                    runAsNonRoot: true
-                    seccompProfile:
-                      type: RuntimeDefault
+            - op: add
+              path: /spec/template/spec/containers/0/securityContext
+              value:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                privileged: false
+                runAsNonRoot: true
+                runAsGroup: 1000
+                runAsUser: 1000
+                seccompProfile:
+                  type: RuntimeDefault
           target:
             kind: Deployment
             name: keycloak-realm-operator
@@ -612,6 +608,19 @@ units:
           - op: replace
             path: /spec/backoffLimit
             value: 10
+          - op: add
+            path: /spec/template/spec/containers/0/securityContext
+            value:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              privileged: false
+              runAsNonRoot: true
+              runAsGroup: 1000
+              runAsUser: 1000
+              seccompProfile:
+                type: RuntimeDefault
       - target:
           kind: ConfigMap
           name: job-scripts
