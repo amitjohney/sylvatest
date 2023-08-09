@@ -8,3 +8,4 @@ resources:
   - rancher-global-data-namespace.yaml
   - cinder-csi.yaml
   - workload-cluster.yaml
+  - kubevirt.yaml

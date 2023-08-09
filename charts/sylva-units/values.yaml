@@ -1563,6 +1563,13 @@ units:
       install:
         createNamespace: true
 
+  kubevirt:
+#    depends_on:
+#      sylva-ca-certs: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/kubevirt
+
   # this is a Job attempt to check successful import of a CAPI workload clusters in Rancher, still incomplete
   # it would be used along with a definition of a 'workload-cluster' unit
   # and is conditioned by .Values.env_type: ci
