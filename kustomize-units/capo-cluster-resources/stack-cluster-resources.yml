@@ -36,17 +36,18 @@ spec:
           type: json
           description: "Security group rules associated with the control plane VMs"
           default:
-            direction: [ingress, ingress, ingress, ingress]
+            direction: [ingress, ingress, ingress, ingress,ingress, ingress, ingress, ingress]
             port: ['80', '443', '22', '53', '5050', '6180', '6385', '9999']
-            remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
+            protocol: [tcp, tcp, tcp, udp,tcp, tcp, tcp, tcp]
+            remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
         worker_rules:
           type: json
           description: "Security group rules associated with worker VMs"
           default:
-            direction: [ingress, ingress, ingress, ingress]
+            direction: [ingress, ingress, ingress, ingress,ingress, ingress, ingress, ingress]
             port: ['80', '443', '22', '53', '5050', '6180', '6385', '9999']
-            protocol: [tcp, tcp, tcp, udp]
-            remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
+            protocol: [tcp, tcp, tcp, udp, tcp, tcp, tcp, tcp]
+            remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
 
       resources:
         port:
