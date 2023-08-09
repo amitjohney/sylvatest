@@ -505,6 +505,9 @@ units:
                     runAsNonRoot: true
                     seccompProfile:
                       type: RuntimeDefault
+          target:
+            kind: Deployment
+            name: keycloak-operator
 
   keycloak-legacy-operator:
     enabled_conditions:
@@ -999,6 +1002,17 @@ units:
           - op: replace
             path: /spec/template/metadata/annotations/checksum
             value: '{{ .Values | toJson | sha256sum }}'
+          - op: add
+            path: /spec/template/spec/containers/0/securityContext
+            value:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              privileged: false
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
       # We need to create at least one RoleBinding per namespace as they are referring to namespaced serviceAccounts
       - target:
           kind: ClusterRoleBinding
@@ -1055,6 +1069,17 @@ units:
           - op: replace
             path: /spec/template/metadata/annotations/checksum
             value: '{{ .Values | toJson | sha256sum }}'
+          - op: add
+            path: /spec/template/spec/containers/0/securityContext
+            value:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              privileged: false
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
       # We need to create at least one RoleBinding per namespace as they are referring to namespaced serviceAccounts
       - target:
           kind: ClusterRoleBinding
