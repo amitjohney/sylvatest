@@ -488,26 +488,39 @@ units:
         - '{{ tuple "components/keycloak-operator-proxies" (.Values.proxies.https_proxy) | include "set-only-if" }}'
       _patches:
         - patch: |
-            apiVersion: apps/v1
-            kind: Deployment
-            metadata:
-              name: keycloak-operator
-            spec:
-              template:
-                spec:
-                  securityContext:
-                    runAsUser: 10000
-                    allowPrivilegeEscalation: false
-                    capabilities:
-                      drop:
-                      - ALL
-                    privileged: false
-                    runAsNonRoot: true
-                    seccompProfile:
-                      type: RuntimeDefault
+          - op: add
+            path: /spec/template/spec/containers/0/securityContext
+            value:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              privileged: false
+              runAsNonRoot: true
+              runAsGroup: 1000
+              runAsUser: 1000
+              seccompProfile:
+                type: RuntimeDefault
           target:
             kind: Deployment
             name: keycloak-operator
+        - patch: |
+            - op: add
+              path: /spec/unsupported/podTemplate/spec/containers/0/securityContext
+              value:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                privileged: false
+                runAsNonRoot: true
+                runAsGroup: 1000
+                runAsUser: 1000
+                seccompProfile:
+                  type: RuntimeDefault
+          target:
+            kind: Keycloak
+            name: keycloak
 
   keycloak-legacy-operator:
     enabled_conditions:
