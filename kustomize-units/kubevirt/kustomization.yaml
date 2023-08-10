@@ -5,5 +5,5 @@ namespace: kubevirt
 
 resources:
 - kubevirt-config.yaml
-- https://github.com/kubevirt/kubevirt/releases/download/v0.25.0/kubevirt-operator.yaml
-- https://github.com/kubevirt/kubevirt/releases/download/v0.25.0/kubevirt-cr.yaml
+- https://github.com/kubevirt/kubevirt/releases/download/v1.0.0/kubevirt-operator.yaml
+- https://github.com/kubevirt/kubevirt/releases/download/v1.0.0/kubevirt-cr.yaml
