@@ -1,0 +1,77 @@
+---
+
+units:
+  cluster:
+    helmrelease_spec:
+      values:
+        machine_deployments:
+          md0:
+            infra_provider: capo
+            failure_domain: '{{ .Values.cluster.capo.worker_az }}'
+  workload-cluster:
+    helmrelease_spec:
+      values:
+        units:
+          cluster:
+            helmrelease_spec:
+              values:
+                machine_deployments:
+                  md0:
+                    infra_provider: capo
+                    failure_domain: '{{ .Values.cluster.capo.worker_az }}'
+
+cluster:
+  image: capo-ubuntu-2004-kube-v1.23.6-calico-3.23.1
+  capi_providers:
+    infra_provider: capo
+    bootstrap_provider: cabpk
+  capo:
+    ssh_key_name: caas-key-pair
+    network_id: 489b1587-4aa4-49b2-be56-62af67efa68f
+    ## If cinder CSI is used, provide a name for the storage class and the storage type from OpenStack
+    storageClass:
+      name: "cinder-ceph-ssd"
+      type: "ceph_ssd"
+    worker_az: "dev-az"
+  worker_replicas: 1
+
+proxies:
+  # put your own proxy settings here if you need
+  http_proxy: "http://172.20.129.165:3128"
+  https_proxy: "http://172.20.129.165:3128"
+  no_proxy: "127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+
+# configure containerd registry mirrors following https://github.com/containerd/containerd/blob/main/docs/hosts.md
+# see charts/syla-units/values.yaml for a more detailled example
+# registry_mirrors:
+#   hosts_config:
+#     docker.io:
+#     - mirror_url: http://your.mirror/docker
+
+# add ntp servers if you need
+ntp:
+  enabled: true
+  servers:
+  - 172.20.1.104
+  # - 1.2.3.4
+  # - 1.2.3.5
+# BEGIN ANSIBLE MANAGED BLOCK
+registry_mirrors:
+  default_settings:
+    capabilities: ["pull", "resolve"]
+    skip_verify: true
+    override_path: true
+  hosts_config:
+    docker.io:
+      - mirror_url: https://172.20.129.169/v2/proxy_cache_diod_docker.io
+    quay.io:
+      - mirror_url: https://172.20.129.169/v2/proxy_cache_diod_quay.io
+    registry.gitlab.com:
+      - mirror_url: https://172.20.129.169/v2/proxy_cache_diod_registry.gitlab.com
+    k8s.gcr.io:
+      - mirror_url: https://172.20.129.169/v2/proxy_cache_diod_k8s.gcr.io
+    ghcr.io:
+      - mirror_url: https://172.20.129.169/v2/proxy_cache_diod_ghcr.io
+    registry.k8s.io:
+      - mirror_url: https://172.20.129.169/v2/proxy_cache_diod_registry.k8s.io
+# END ANSIBLE MANAGED BLOCK
