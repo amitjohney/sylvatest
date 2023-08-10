@@ -612,8 +612,6 @@ units:
       keycloak-resources: true
       eso-secret-stores: true
     repo: sylva-core
-    kustomization_substitute_secrets:
-      RANCHER_CLIENT_SECRET: '{{ .Values.cluster.admin_password }}'
     kustomization_spec:
       path: ./kustomize-units/keycloak-oidc-external-secrets
       postBuild:
