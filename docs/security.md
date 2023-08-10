@@ -151,7 +151,7 @@ version            1
 ============ Data ============
 Key                      Value
 ---                      -----
-bootstrapPassword.hcl    <..bla bla..>
+bootstrapPassword        <..bla bla..>
 ```
 
 ## Identity and Access Management

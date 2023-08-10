@@ -21,4 +21,4 @@ spec:
    - secretKey: password
      remoteRef:
         key: secret/data/flux-webui
-        property: password.hcl
+        property: password
