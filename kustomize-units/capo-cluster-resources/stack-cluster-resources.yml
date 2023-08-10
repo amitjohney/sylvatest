@@ -36,18 +36,18 @@ spec:
           type: json
           description: "Security group rules associated with the control plane VMs"
           default:
-            direction: '{{ create_ironic_security_group | ternary [ingress, ingress, ingress, ingress, ingress, ingress, ingress, ingress] [ingress, ingress, ingress, ingress] }}'
-            port: '{{ create_ironic_security_group | ternary [ 80, 443, 22, 53, 5050, 6180, 6385, 9999 ] [ 80, 443, 22, 53 ] }}'
-            protocol: '{{ create_ironic_security_group | ternary [tcp, tcp, tcp, udp, tcp, tcp, tcp, tcp ] [tcp, tcp, tcp, udp] }}'
-            remote_ip_prefix: '{{ create_ironic_security_group | ternary [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0] [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0] }}'
+            direction: '{{ .Values.CAPO_CREATE_IRONIC_SECURITY_GROUP | ternary [ingress, ingress, ingress, ingress, ingress, ingress, ingress, ingress] [ingress, ingress, ingress, ingress] }}'
+            port: '{{ .Values.CAPO_CREATE_IRONIC_SECURITY_GROUP | ternary [ 80, 443, 22, 53, 5050, 6180, 6385, 9999 ] [ 80, 443, 22, 53 ] }}'
+            protocol: '{{ .Values.CAPO_CREATE_IRONIC_SECURITY_GROUP | ternary [tcp, tcp, tcp, udp, tcp, tcp, tcp, tcp ] [tcp, tcp, tcp, udp] }}'
+            remote_ip_prefix: '{{ .Values.CAPO_CREATE_IRONIC_SECURITY_GROUP | ternary [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0] [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0] }}'
         worker_rules:
           type: json
           description: "Security group rules associated with worker VMs"
           default:
-            direction: '{{ create_ironic_security_group | ternary [ingress, ingress, ingress, ingress, ingress, ingress, ingress, ingress] [ingress, ingress, ingress, ingress] }}'
-            port: '{{ create_ironic_security_group | ternary [ 80, 443, 22, 53, 5050, 6180, 6385, 9999 ] [ 80, 443, 22, 53 ] }}'
-            protocol: '{{ create_ironic_security_group | ternary [tcp, tcp, tcp, udp, tcp, tcp, tcp, tcp ] [tcp, tcp, tcp, udp] }}'
-            remote_ip_prefix: '{{ create_ironic_security_group | ternary [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0] [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0] }}'
+            direction: '{{ .Values.CAPO_CREATE_IRONIC_SECURITY_GROUP | ternary [ingress, ingress, ingress, ingress, ingress, ingress, ingress, ingress] [ingress, ingress, ingress, ingress] }}'
+            port: '{{ .Values.CAPO_CREATE_IRONIC_SECURITY_GROUP | ternary [ 80, 443, 22, 53, 5050, 6180, 6385, 9999 ] [ 80, 443, 22, 53 ] }}'
+            protocol: '{{ .Values.CAPO_CREATE_IRONIC_SECURITY_GROUP | ternary [tcp, tcp, tcp, udp, tcp, tcp, tcp, tcp ] [tcp, tcp, tcp, udp] }}'
+            remote_ip_prefix: '{{ .Values.CAPO_CREATE_IRONIC_SECURITY_GROUP | ternary [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0] [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0] }}'
       resources:
         port:
           type: OS::Neutron::Port
