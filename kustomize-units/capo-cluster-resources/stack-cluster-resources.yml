@@ -122,7 +122,7 @@ spec:
         worker_affinity_policy: "${WORKER_AFFINITY_POLICY}"
         control_plane_security_group_name: "${CONTROL_PLANE_SECURITY_GROUP_NAME}"
         worker_security_group_name: "${WORKER_SECURITY_GROUP_NAME}"
-        create_ironic_security_group: ${CAPO_CREATE_IRONIC_SECURITY_GROUP}
+        create_ironic_security_group: "${CAPO_CREATE_IRONIC_SECURITY_GROUP}"
   outputConfigMap:
     name: capo-cluster-resources
     labels:
