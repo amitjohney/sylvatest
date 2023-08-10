@@ -126,7 +126,8 @@ Usage:
   {{- $unit_def := index $envAll.Values.units $unit_name -}}
   {{- if $unit_def -}}
     {{- if hasKey $envAll.Values "units_override_enabled" -}}
-      {{- $unit_enabled = has $unit_name $envAll.Values.units_override_enabled -}}
+      {{- $interpreted_units_override_enabled := index (tuple $envAll $envAll.Values.units_override_enabled | include "interpret-inner-gotpl" | fromJson) "result" -}}
+      {{- $unit_enabled = has $unit_name $interpreted_units_override_enabled -}}
     {{- else if hasKey $unit_def "enabled" -}}
       {{- $unit_enabled = index (tuple $envAll $unit_def.enabled (printf "unit:%s" $unit_name) | include "interpret-as-bool" | fromJson) "encapsulated-result" -}}
     {{- end -}}
