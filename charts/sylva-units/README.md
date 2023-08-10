@@ -118,6 +118,17 @@ when instantiating this chart**
 
 Using `env_type_ci: true` will trigger the enablement of a `workload-cluster` (and its dependent units), plus the `worker-cluster-calico` unit if kubeadm bootstrap is chosen. This would have a test workload cluster created and imported into management cluster Rancher server.
 
+Additional checks can be added to via the `_internal` variable:
+
+```yaml
+_internal:
+  checks:
+    foo_check: >-
+      {{- if and (eq .Values.cluster.foo "") (not .Values.env_type_dev) }}
+      {{ fail (printf "FOO can not be empty in a production platform") }}
+      {{- end }}
+```
+
 You can find examples of how the values of this chart are typically overriden for a given deployment
 in the `values.yaml` files in sub-directories of [`environment-values`](../../environment-values).
 

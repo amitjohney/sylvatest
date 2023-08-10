@@ -109,6 +109,7 @@ required:
   - cluster
   - proxies
   - env_type_ci
+  - env_type_dev
   - registry_mirrors
 
 properties:
@@ -489,8 +490,12 @@ properties:
       worker_machine_image:  # -------------------------------
         type: string
       cis_profile:  # -------------------------------
-        type: string
-        pattern: "cis-1.6|cis-1.23"
+        anyOf:
+          - type: string
+            enum:
+            - ""
+            - "cis-1.6"
+            - "cis-1.23"
       air_gapped:  # -------------------------------
         type: boolean
       capi_providers:  # -------------------------------
@@ -1019,6 +1024,9 @@ properties:
       type: string
 
   env_type_ci:
+    type: boolean
+
+  env_type_dev:
     type: boolean
 
   ntp:  # -------------------------------

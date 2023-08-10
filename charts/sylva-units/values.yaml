@@ -2176,6 +2176,8 @@ registry_mirrors:
 
 # boolean conditioning which unit we automatically enable in CI tests
 env_type_ci: false
+# boolean to determine whether the platform is a development environment
+env_type_dev: false
 
 # set NTP servers by IP or FQDN and enable their usage for control plane nodes
 ntp:
