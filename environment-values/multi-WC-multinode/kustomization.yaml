@@ -3,6 +3,14 @@ kind: Kustomization
 
 resources:
   - manifest.yaml
+patches:
+- target:
+    kind: HelmRelease
+    name: sylva-units
+  patch: |
+    - op: replace
+      path: /spec/chart/spec/version
+      value: akki-otc   ## <<< the tag you want to use
 
 commonLabels:
   copy-from-bootstrap-to-management: ""

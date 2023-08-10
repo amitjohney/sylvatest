@@ -477,6 +477,25 @@ units:
                       online: true
                       rootDeviceHints:
                         hctl: "2:1:0:0"
+                  dl360-32:
+                    bmh_metadata:
+                      annotations:
+                        disk: /dev/sdb
+                      labels:
+                        cluster-role: worker
+                        longhorn: "true"
+                    bmh_spec:
+                      automatedCleaningMode: metadata
+                      bmc:
+                        address: redfish-virtualmedia://172.20.188.240/redfish/v1/Systems/1
+                        disableCertificateVerification: true
+                      bootMACAddress: 48:df:37:e7:68:64
+                      bootMode: legacy
+                      description: Downstream dev clusters
+                      externallyProvisioned: false
+                      online: true
+                      rootDeviceHints:
+                        hctl: "2:1:0:0"
                         #   dl360-33:
                         # bmh_metadata:
                         #   annotations:
@@ -582,10 +601,14 @@ units:
                             sudo: ALL=(ALL) NOPASSWD:ALL
                 metal3:
                   dns_server: 10.193.21.160
-                  machine_image_checksum: http://172.20.129.252/ubuntu-22.04-plain.qcow2.sha256sum
-                  machine_image_checksum_type: sha256
+                  machine_image_url: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2
                   machine_image_format: qcow2
-                  machine_image_url: http://172.20.129.252/ubuntu-22.04-plain.qcow2
+                  machine_image_checksum: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2.sha256sum
+                  machine_image_checksum_type: sha256
+                  worker_machine_image_url: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2
+                  worker_machine_image_format: qcow2
+                  worker_machine_image_checksum: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2.sha256sum
+                  worker_machine_image_checksum_type: sha256
                   provisioning_pool_end: 172.20.39.199
                   provisioning_pool_gateway: 172.20.39.193
                   provisioning_pool_name: provisioning-pool
@@ -598,12 +621,8 @@ units:
                   public_pool_network: 172.20.36.128
                   public_pool_prefix: "26"
                   public_pool_start: 172.20.36.176
-                  worker_machine_image_checksum: http://172.20.129.252/ubuntu-22.04-plain.qcow2.sha256sum
-                  worker_machine_image_checksum_type: sha256
-                  worker_machine_image_format: qcow2
-                  worker_machine_image_url: http://172.20.129.252/ubuntu-22.04-plain.qcow2
-                mgmt_cluster_external_domain: sylva
-                mgmt_cluster_external_ip: 172.20.129.252
+              #mgmt_cluster_external_domain: sylva
+              # mgmt_cluster_external_ip: 172.20.129.252
           cluster-import:
             enabled: ""
           longhorn:
