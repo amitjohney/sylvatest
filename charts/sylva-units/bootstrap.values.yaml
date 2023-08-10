@@ -24,6 +24,8 @@ unit_helmrelease_spec_default:
 units:
 
   metal3:
+    enabled_conditions:
+      - '{{ tuple . "capm3" | include "unit-enabled" }}'
     helmrelease_spec:
       values:
         # ironicIPADownloaderBaseURI:
@@ -43,7 +45,8 @@ units:
       wait: true
 
   ingress-nginx:
-    enabled_conditions: []
+    enabled_conditions:  # this purposefully cancels the condition set in values.yaml
+      - '{{ tuple . "os-image-server" | include "unit-enabled" }}'
     helmrelease_spec:
       values:
         controller:
@@ -51,6 +54,8 @@ units:
             externalIPs: '{{ .Values._internal.bootstrap_node_ip | include "preserve-type" }}'
 
   os-image-server:
+    enabled_conditions:
+      - '{{ tuple . "metal3" | include "unit-enabled" }}'
     helmrelease_spec:
       values:
         service:
@@ -327,9 +332,9 @@ units_override_enabled:
   - capi
   - '{{ .Values.cluster.capi_providers.infra_provider }}'
   - '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
-  - '{{ tuple "metal3" (.Values.cluster.capi_providers.infra_provider | eq "capm3") | include "set-only-if" }}'
+  - metal3
   - bootstrap-local-path
-  - '{{ tuple "ingress-nginx" (.Values.cluster.capi_providers.infra_provider | eq "capm3") | include "set-only-if" }}'
+  - ingress-nginx
   - os-image-server
   - cluster
   - calico-crd
