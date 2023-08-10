@@ -54,8 +54,6 @@ units:
             externalIPs: '{{ .Values._internal.bootstrap_node_ip | include "preserve-type" }}'
 
   os-image-server:
-    enabled_conditions:
-      - '{{ tuple . "metal3" | include "unit-enabled" }}'
     helmrelease_spec:
       values:
         service:
