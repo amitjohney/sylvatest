@@ -62,7 +62,6 @@ units:
   cluster:
     depends_on:
       reconcile-sylva-units: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
-      os-image-server: '{{ tuple . "metal3" | include "unit-enabled" }}'
 
   calico-crd:
     # overload calico-crd definition in bootstrap context to deploy in the management cluster

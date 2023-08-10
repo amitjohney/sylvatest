@@ -832,6 +832,7 @@ units:
       '{{ .Values.cluster.capi_providers.bootstrap_provider }}': true
       capo-cluster-resources: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
       metal3: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+      os-image-server: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
     labels:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
     kustomization_spec:
