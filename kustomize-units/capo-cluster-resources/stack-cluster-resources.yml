@@ -36,20 +36,18 @@ spec:
           type: json
           description: "Security group rules associated with the control plane VMs"
           default:
-            CAPO_CREATE_IRONIC_SECURITY_GROUP: '{{ .Values.units.capo-cluster-resources.kustomization_spec.postBuild.substitute.CAPO_CREATE_IRONIC_SECURITY_GROUP }}'
-            direction: '{{ .Values.units.capo-cluster-resources.kustomization_spec.postBuild.substitute.CAPO_CREATE_IRONIC_SECURITY_GROUP | ternary ["ingress", "ingress", "ingress", "ingress", "ingress", "ingress", "ingress", "ingress"] ["ingress", "ingress", "ingress", "ingress"] }}'
-            port: '{{ .Values.units.capo-cluster-resources.kustomization_spec.postBuild.substitute.CAPO_CREATE_IRONIC_SECURITY_GROUP | ternary ["80", "443", "22", "53", "5050", "6180", "6385", "9999"] ["80", "443", "22", "53"] }}'
-            protocol: '{{ .Values.units.capo-cluster-resources.kustomization_spec.postBuild.substitute.CAPO_CREATE_IRONIC_SECURITY_GROUP | ternary ["tcp", "tcp", "tcp", "udp", "tcp", "tcp", "tcp", "tcp" ] ["tcp", "tcp", "tcp , "udp"] }}'
-            remote_ip_prefix: '{{ .Values.units.capo-cluster-resources.kustomization_spec.postBuild.substitute.CAPO_CREATE_IRONIC_SECURITY_GROUP | ternary ["0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0"] ["0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0"] }}'
+            direction: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} | ternary ["ingress", "ingress", "ingress", "ingress", "ingress", "ingress", "ingress", "ingress"] ["ingress", "ingress", "ingress", "ingress"] }}'
+            port: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} | ternary ["80", "443", "22", "53", "5050", "6180", "6385", "9999"] ["80", "443", "22", "53"] }}'
+            protocol: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} | ternary ["tcp", "tcp", "tcp", "udp", "tcp", "tcp", "tcp", "tcp" ] ["tcp", "tcp", "tcp , "udp"] }}'
+            remote_ip_prefix: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} | ternary ["0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0"] ["0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0"] }}'
         worker_rules:
           type: json
           description: "Security group rules associated with worker VMs"
           default:
-            CAPO_CREATE_IRONIC_SECURITY_GROUP1: ${CAPO_CREATE_IRONIC_SECURITY_GROUP}
-            direction: '{{ .Values.units.capo-cluster-resources.kustomization_spec.postBuild.substitute.CAPO_CREATE_IRONIC_SECURITY_GROUP | ternary ["ingress", "ingress", "ingress", "ingress", "ingress", "ingress", "ingress", "ingress"] ["ingress", "ingress", "ingress", "ingress"] }}'
-            port: '{{ .Values.units.capo-cluster-resources.kustomization_spec.postBuild.substitute.CAPO_CREATE_IRONIC_SECURITY_GROUP | ternary ["80", "443", "22", "53", "5050", "6180", "6385", "9999"] ["80", "443", "22", "53"] }}'
-            protocol: '{{ .Values.units.capo-cluster-resources.kustomization_spec.postBuild.substitute.CAPO_CREATE_IRONIC_SECURITY_GROUP | ternary ["tcp", "tcp", "tcp", "udp", "tcp", "tcp", "tcp", "tcp" ] ["tcp", "tcp", "tcp , "udp"] }}'
-            remote_ip_prefix: '{{ .Values.units.capo-cluster-resources.kustomization_spec.postBuild.substitute.CAPO_CREATE_IRONIC_SECURITY_GROUP | ternary ["0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0"] ["0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0"] }}'
+            direction: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} | ternary ["ingress", "ingress", "ingress", "ingress", "ingress", "ingress", "ingress", "ingress"] ["ingress", "ingress", "ingress", "ingress"] }}'
+            port: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} | ternary ["80", "443", "22", "53", "5050", "6180", "6385", "9999"] ["80", "443", "22", "53"] }}'
+            protocol: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} | ternary ["tcp", "tcp", "tcp", "udp", "tcp", "tcp", "tcp", "tcp" ] ["tcp", "tcp", "tcp , "udp"] }}'
+            remote_ip_prefix: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} | ternary ["0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0"] ["0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0"] }}'
       resources:
         port:
           type: OS::Neutron::Port
