@@ -1,45 +1,32 @@
+units_enabled_default: false
+
 units:
+  cert-manager:
+    enabled: true
+  namespace-defs:
+    enabled: true
+  capi:
+    enabled: true
   capm3:
     enabled: true
   metal3:
     enabled: true
-  workload-cluster:
-    enabled: false
-  monitoring:
-    enabled: false
-  keycloak:
-    enabled: false
-  flux-webui:
-    enabled: false
-  rancher:
-    enabled: false
-  k8s-gateway:
-    enabled: false
-  capi-rancher-import:
-    enabled: false
-  kyverno:
-    enabled: false
-  external-secrets-operator:
-    enabled: false
-  eso-secret-stores:
-    enabled: false
-  synchronize-secrets:
-    enabled: false
-  sylva-ca:
-    enabled: false
-  sylva-ca-certs:
-    enabled: false
-  vault-operator:
-    enabled: false
-  vault:
-    enabled: false
-  vault-config-operator:
-    enabled: false
-  vault-secrets:
-    enabled: false
+  os-image-server:
+    enabled: true
+  cinder-csi:
+    enabled: true
+  ingress-nginx:
+    enabled: true
+  heat-operator:
+    enabled: true
+  capo-cluster-resources:
+    enabled: true
   cluster:
+    enabled: true
     helmrelease_spec:
       values:
         machine_deployments: null
+  workload-cluster:
+    enabled: false # explicitly disabled, since env_type_ci is set in .gitlab-ci.yml
 cluster:
   control_plane_replicas: 1
