@@ -952,7 +952,7 @@ units:
           - kind: ConfigMap
             name: cluster-vars
       _components:
-        - '{{ tuple "../cluster-manifests/components/capo-vip-floating-ip"
+        - '{{ tuple "components/capo-vip-floating-ip"
             (and .Values.cluster.capo.external_network_id (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
 
   pause-cluster-reconciliation:
