@@ -304,6 +304,7 @@ units:
 
 
 # only those components will be enabled on bootstrap cluster (this overrides 'units.<component>.enabled')
+# note that this list does *not* override enabled_conditions set on the units, those are still applied
 units_override_enabled:
   - cert-manager
   - capi
