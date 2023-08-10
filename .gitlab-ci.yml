@@ -335,13 +335,14 @@ deploy-kubeadm-capo-oci:
     expose_as: kubeadm-capo-oci
 
 deploy-m3-units-in-capo:
-  timeout: 15min
+  timeout: 25min
   extends: deploy-kubeadm-capo
   variables:
     ENV_NAME: "kubeadm-capo"
     CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-M3-OCI"
     OCI_TAG: $OCI_TAG_FORMAT
     CUSTOM_VALUES_FILE: tools/gci-templates/configuration/m3-units-in-capo.yml
+    RECONCILE_TIMEOUT: 10m
   artifacts:
     expose_as: m3-units-in-capo
 
