@@ -35,7 +35,7 @@ spec:
         control_plane_rules:
           type: json
           description: "Security group rules associated with the control plane VMs"
-          default: |
+          default: |-
             {{- if (eq ${CAPO_CREATE_IRONIC_SECURITY_GROUP} true }}
             [
               {
@@ -58,7 +58,7 @@ spec:
         worker_rules:
           type: json
           description: "Security group rules associated with worker VMs"
-          default: |
+          default: |-
             {{- if (eq ${CAPO_CREATE_IRONIC_SECURITY_GROUP} true }}
             [
               {
