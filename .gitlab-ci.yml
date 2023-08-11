@@ -169,7 +169,7 @@ check-docs-markdown:
       fi
     - yq -i '.cluster.name = strenv(MANAGEMENT_CLUSTER_NAME)' $values_file
     - yq -i '.cluster.test_workload_cluster_name = strenv(TEST_WORKLOAD_CLUSTER_NAME)' $values_file
-    - yq -i '.env_type_ci = true' $values_file
+    - yq -i '.env_type = "ci"' $values_file
     - |
       if [ ${CUSTOM_VALUES_FILE} ]; then
         yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file $CUSTOM_VALUES_FILE

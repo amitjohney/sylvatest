@@ -116,7 +116,7 @@ The [`environment-values`](../../environment-values/README.md) directory is the 
 **TBC: This section needs to be completed with information about what values can be overridden
 when instantiating this chart**
 
-Using `env_type_ci: true` will trigger the enablement of a `workload-cluster` (and its dependent units), plus the `worker-cluster-calico` unit if kubeadm bootstrap is chosen. This would have a test workload cluster created and imported into management cluster Rancher server.
+Using `env_type: ci` will trigger the enablement of a `workload-cluster` (and its dependent units), plus the `worker-cluster-calico` unit if kubeadm bootstrap is chosen. This would have a test workload cluster created and imported into management cluster Rancher server.
 
 Additional checks can be added to via the `_internal` variable:
 
@@ -124,7 +124,7 @@ Additional checks can be added to via the `_internal` variable:
 _internal:
   checks:
     foo_check: >-
-      {{- if and (eq .Values.cluster.foo "") (not .Values.env_type_dev) }}
+      {{- if and (.Values.cluster.foo | eq "") (not (list "dev" "ci" | has .Values.env_type)) }}
       {{ fail (printf "FOO can not be empty in a production platform") }}
       {{- end }}
 ```

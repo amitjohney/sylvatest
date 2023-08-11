@@ -28,7 +28,7 @@ units:
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
 
   workload-cluster:
-    enabled: '{{ .Values.env_type_ci }}'
+    enabled: '{{ .Values.env_type | eq "ci" }}'
 
   os-image-server:
     enabled: '{{ tuple . "metal3" | include "unit-enabled" }}'

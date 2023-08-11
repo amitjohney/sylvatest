@@ -108,8 +108,7 @@ required:
   - units
   - cluster
   - proxies
-  - env_type_ci
-  - env_type_dev
+  - env_type
   - registry_mirrors
 
 properties:
@@ -1023,11 +1022,9 @@ properties:
     items:
       type: string
 
-  env_type_ci:
-    type: boolean
-
-  env_type_dev:
-    type: boolean
+  env_type:
+    type: string
+    pattern: "^(dev|ci|prod)$"
 
   ntp:  # -------------------------------
     type: object
