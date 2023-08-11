@@ -1546,7 +1546,7 @@ units:
 
   # this is a Job attempt to check successful import of a CAPI workload clusters in Rancher, still incomplete
   # it would be used along with a definition of a 'workload-cluster' unit
-  # and is conditioned by a boolean flag .Values.env_type_ci
+  # and is conditioned by .Values.env_type: ci
   check-rancher-clusters:
     enabled_conditions:
     - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
@@ -2174,10 +2174,8 @@ registry_mirrors:
 #   _default:
 #   - mirror_url: ...
 
-# boolean conditioning which unit we automatically enable in CI tests
-env_type_ci: false
-# boolean to determine whether the platform is a development environment
-env_type_dev: false
+# set the type of environment between 3 possible values: dev, ci and prod
+env_type: prod
 
 # set NTP servers by IP or FQDN and enable their usage for control plane nodes
 ntp:
