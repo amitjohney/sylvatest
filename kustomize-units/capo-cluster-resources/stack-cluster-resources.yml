@@ -36,18 +36,18 @@ spec:
           type: json
           description: "Security group rules associated with the control plane VMs"
           default:
-            direction: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} |eq true |ternary ([ingress, ingress, ingress, ingress, ingress, ingress, ingress, ingress]) ([ingress, ingress, ingress, ingress]) }}'
-            port: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} |eq true |ternary (["80", "443", "22", "53", "5050", "6180", "6385", "9999"]) (["80", "443", "22", "53"]) }}'
-            protocol: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} |eq true |ternary ([tcp, tcp, tcp, udp, tcp, tcp, tcp, tcp]) ([tcp, tcp, tcp, udp]) }}'
-            remote_ip_prefix: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} |eq true |ternary ([0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]) ([0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]) }}'
+            direction: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} |eq true |ternary [ingress, ingress, ingress, ingress, ingress, ingress, ingress, ingress] [ingress, ingress, ingress, ingress]| toYaml }}'
+            port: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} |eq true |ternary ["80", "443", "22", "53", "5050", "6180", "6385", "9999"] ["80", "443", "22", "53"]|toYaml }}'
+            protocol: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} |eq true |ternary [tcp, tcp, tcp, udp, tcp, tcp, tcp, tcp] [tcp, tcp, tcp, udp]|toYaml }}'
+            remote_ip_prefix: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} |eq true |ternary [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0] [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]|toYaml }}'
         worker_rules:
           type: json
           description: "Security group rules associated with worker VMs"
           default:
-            direction: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} |eq true |ternary ([ingress, ingress, ingress, ingress, ingress, ingress, ingress, ingress]) ([ingress, ingress, ingress, ingress]) }}'
-            port: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} |eq true |ternary (["80", "443", "22", "53", "5050", "6180", "6385", "9999"]) (["80", "443", "22", "53"]) }}'
-            protocol: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} |eq true |ternary ([tcp, tcp, tcp, udp, tcp, tcp, tcp, tcp]) ([tcp, tcp, tcp, udp]) }}'
-            remote_ip_prefix: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} |eq true |ternary ([0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]) ([0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]) }}'
+            direction: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} |eq true |ternary [ingress, ingress, ingress, ingress, ingress, ingress, ingress, ingress] [ingress, ingress, ingress, ingress]| toYaml }}'
+            port: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} |eq true |ternary ["80", "443", "22", "53", "5050", "6180", "6385", "9999"] ["80", "443", "22", "53"]|toYaml }}'
+            protocol: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} |eq true |ternary [tcp, tcp, tcp, udp, tcp, tcp, tcp, tcp] [tcp, tcp, tcp, udp]|toYaml }}'
+            remote_ip_prefix: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} |eq true |ternary [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0] [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]|toYaml }}'
       resources:
         port:
           type: OS::Neutron::Port
