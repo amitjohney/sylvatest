@@ -48,7 +48,7 @@ spec:
 
 > **_Note_**: Enaling the PKI engine in Vault might allow the workload clusters requesting certifificate to be trusted by this root authority, typically by relying on a cert-manager Vault issuer. This feature is not yet supported but be likely included in one of the next releases.
 
-## Passwords Management
+## Password Management
 
 The Sylva units offering a web UI (**Keycloak**, **Rancher**, **Hashicorp vault** and **flux-webui**) are configured with local administration accounts, which passwords/tokens are unique and randomly generated.
 
@@ -77,20 +77,20 @@ If you don't set a password here, helm shall pick a random one. You can retrieve
 
 ## Hashicorp Vault
 
-The passwords for **Keycloak**, **Rancher** and **flux-webui** can be retrieved from **Vault**. You can authenticate against **Vault** through the OIDC authentication method or by using the **Vault** root token. For a comfortable user experience, we recommend to set  `.cluster.admin_password` in your secrets.yaml environment file and to connect through the OIDC authentication method.
+The passwords for **Keycloak**, **Rancher** and **flux-webui** can be retrieved from **Vault**. You can authenticate against **Vault** through the OIDC authentication method or by using the **Vault** root token. For a comfortable user experience, we recommend to set  `.cluster.admin_password` in your `secrets.yaml` environment file and to connect through the OIDC authentication method.
 
 > **_NOTE:_** If you don't provide `.cluster.admin_password` in the environment file `secrets.yaml`, connect to Vault by using the **Vault** root token and retrieve the randomly generated password for the SSO account in the vault path `/secret/sso-account`.
 
 Note also that the OIDC authentication has restricted rights on **Vault** paths in comparison to the root token authentication, which, by nature, has full privileges on **Vault** resources:
 
-| Privilege                                                    | OIDC authentication | Root Token Authentication |
-| ------------------------------------------------------------ | ------------------- | ------------------------- |
-| Read Secret                                                  | yes                 | yes                       |
-| Update and Create Secret                                     | no                  | yes                       |
-| Manage secrets engines                                       | no                  | yes                       |
-| Create, update, and delete auth methods                      | yes                 | yes                       |
-| Create and manage system policies                            | yes                 | yes                       |
-| Read system health check                                     | yes                 | yes                       |
+| Privilege                                                                        | OIDC authentication | Root Token Authentication |
+| -------------------------------------------------------------------------------- | ------------------- | ------------------------- |
+| Read Secret                                                                      | yes                 | yes                       |
+| Update and Create Secret                                                         | no                  | yes                       |
+| Manage secrets engines                                                           | no                  | yes                       |
+| Create, update, and delete auth methods                                          | yes                 | yes                       |
+| Create and manage system policies                                                | yes                 | yes                       |
+| Read system health check                                                         | yes                 | yes                       |
 | Manage system backend other than health auth and policy (audit, config, etc... ) | no                  | yes                       |
 
 ### OIDC authentication
@@ -155,6 +155,20 @@ bootstrapPassword        <..bla bla..>
 ```
 
 ## Identity and Access Management
+
+Identity and Access Management is addressed by **Keycloak** providing user management, single-sign-on, user federation and identity brokering.
+
+### Keycloak Admin Console
+
+To administrate **Keycloak**, go to the "Keycloak GUI", e.g. `https://keycloak.sylva` and select the [Administration Console](https://keycloak.sylva/admin/master/console).
+
+![keycloak-ui](./img/security/keycloak-ui.png)
+
+Then use the password in **Vault** under the path `secret/keycloak` to authenticate against **Keycloak** (the login name is `admin` by default, see sections above to learn how to get secrets from **Vault**).
+
+> **_NOTE_**: when connecting to the administration console, you are logged in as administrator of the realm `master`. The administrator gets all privileges on other realms, i.e. `sylva`. It is thus useless to connect to the realm `sylva` with the `sylva-admin` credentials. Actually if this credential might grant access to realm `sylva`, it has no authorizations on **Keycloak** ressources.
+
+![keycloak-login](./img/security/keycloak-login.png)
 
 ### Password Policy
 
@@ -255,15 +269,13 @@ Summarizing, **Rancher** acts as an authentication proxy, allowing a fine-graine
 
 High Security Grade clusters SHOULD rely on RKE2. RKE2 is hardened by default and pass the majority of the Kubernetes CIS controls without modification. RKE2 claims to focus on security and compliance within the U.S. Federal Government sector by:
 
-- ​    Providing defaults and configuration options that allow clusters to pass the CIS Kubernetes Benchmark v1.6 with minimal operator intervention.
-
-- ​    Enabling FIPS 140-2 compliance.
-
-- ​    Regularly scanning components for CVEs using trivy in our build pipeline.
+- Providing defaults and configuration options that allow clusters to pass the CIS Kubernetes Benchmark v1.6 with minimal operator intervention.
+- Enabling FIPS 140-2 compliance.
+- Regularly scanning components for CVEs in Rancher build pipeline.
 
 For a complete list of security controls, please refer to https://docs.rke2.io/security/cis_self_assessment16/.
 
-Sylva deploys RKE2 clusters with a`profile` set to `cis-1.6` or `cis-1.23`depending on the Kubernetes release. The profile validates the system configuration against the corresponding CIS benchmark. This flag makes RKE2 check that host-level requirements have been met. It also configures runtime pod security policies and network policies (please refer to https://docs.rke2.io/security/hardening_guide/ for additional details).
+When high security grade is required, Sylva can deploy RKE2 clusters with a `cis_profile` set to `cis-1.6` or `cis-1.23` depending on the Kubernetes release. The profile validates the system configuration against the corresponding CIS benchmark. This flag makes RKE2 check that host-level requirements have been met. It also configures runtime pod security policies and network policies (please refer to https://docs.rke2.io/security/hardening_guide/ for additional details).
 
 ### RKE2 Security Scan
 
@@ -271,7 +283,7 @@ Sylva includes the Kubernetes operator [cis-operator](https://github.com/rancher
 
 ```shell
 $ kubectl get clusterscans
-NAME                CLUSTERSCANPROFILE              TOTAL   PASS   FAIL   SKIP   WARN   NOT APPLICABLE   LASTRUNTIMESTAMP       
+NAME                CLUSTERSCANPROFILE              TOTAL   PASS   FAIL   SKIP   WARN   NOT APPLICABLE   LASTRUNTIMESTAMP   
 rke2-cis-hardened   rke2-cis-1.6-profile-hardened   122     82     4      0      29     7                2023-04-28T14:45:22Z   
 ```
 
@@ -282,7 +294,7 @@ You can get the scan report with `kubectl`:
 ```shell
 $ kubectl get clusterscanreports
 NAME                                  LASTRUNTIMESTAMP                                            BENCHMARKVERSION
-scan-report-rke2-cis-hardened-drnh8   2022-10-28 14:45:40.019124438 +0000 UTC m=+2336.836186254   rke2-cis-1.6-hardened         
+scan-report-rke2-cis-hardened-drnh8   2022-10-28 14:45:40.019124438 +0000 UTC m=+2336.836186254   rke2-cis-1.6-hardened   
 ```
 
 The report is in JSON:
@@ -305,7 +317,7 @@ You can parse the JSON report and dump the output into more readable format with
 ```shell
 $ kubectl get clusterscanreport scan-report-rke2-cis-hardened-drnh8 \
 -o jsonpath="{.spec.reportJSON}" \
-| ./scanreport.py    
+| ./scanreport.py  
 ```
 
 Finally, it should issue a report like this:
@@ -384,7 +396,7 @@ Then we can focus on a report and dig into it for details:
 ```shell
 $ kubectl get -n calico-system vulnerabilityreport replicaset-calico-typha-89798ff7b-calico-typha -o wide
 NAME                                             REPOSITORY                      TAG       SCANNER   AGE   CRITICAL   HIGH
-replicaset-calico-typha-89798ff7b-calico-typha   rancher/mirrored-calico-typha   v3.25.0   Trivy     12m   1          1      
+replicaset-calico-typha-89798ff7b-calico-typha   rancher/mirrored-calico-typha   v3.25.0   Trivy     12m   1          1  
 ```
 
 ```shell

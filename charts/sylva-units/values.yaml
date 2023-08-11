@@ -490,7 +490,7 @@ units:
       postgres: true
       synchronize-secrets: true # make sure that the secret keycloak-initial-admin is ready to be consummed
     annotations:
-      sylvactl/readyMessage: "Keycloak UI can be reached at https://{{ .Values.cluster.keycloak.external_hostname }} ({{ .Values.cluster.keycloak.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
+      sylvactl/readyMessage: "Keycloak admin console can be reached at https://{{ .Values.cluster.keycloak.external_hostname }}/admin/master/console, user 'admin', password in Vault at secret/keycloak ({{ .Values.cluster.keycloak.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/keycloak
