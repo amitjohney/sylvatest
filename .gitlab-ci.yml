@@ -349,7 +349,7 @@ deploy-m3-units-in-capo:
 .cleanup-capo:
   stage: delete
   image:
-    name: registry.gitlab.com/sylva-projects/sylva-elements/container-images/openstack-client:v0.0.4
+    name: registry.gitlab.com/sylva-projects/sylva-elements/container-images/openstack-client:v0.0.5
   script:
     - !reference [.common-deployment, os_cloud]
     - ./tools/openstack-cleanup.sh capo_cloud "${CAPO_TAG}"
@@ -408,7 +408,7 @@ cleanup-m3-units-in-capo:
 scheduled-cleanup-capo:
   stage: delete
   image:
-    name: registry.gitlab.com/sylva-projects/sylva-elements/container-images/openstack-client:v0.0.4
+    name: registry.gitlab.com/sylva-projects/sylva-elements/container-images/openstack-client:v0.0.5
   script:
     - !reference [.common-deployment, os_cloud]
     - touch tags.txt exclude-tags.txt
