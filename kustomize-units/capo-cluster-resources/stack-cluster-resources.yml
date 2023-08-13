@@ -38,67 +38,43 @@ spec:
           default:
             direction: >-
               {{- if ${CAPO_CREATE_IRONIC_SECURITY_GROUP} }}
-              - ingress
-              - ingress
-              - ingress
-              - ingress
-              - ingress
-              - ingress
-              - ingress
-              - ingress
+              {{- range $direction := list ingress ingress ingress ingress ingress ingress ingress ingress }}
+              - {{ $direction }}
+              {{ end }}
               {{- else }}
-              - ingress
-              - ingress
-              - ingress
-              - ingress
+              {{- range $direction := list ingress ingress ingress ingress }}
+              - {{ $direction }}
+              {{ end }}
               {{- end }}
             port: >-
               {{- if ${CAPO_CREATE_IRONIC_SECURITY_GROUP} }}
-              - 80
-              - 443
-              - 22
-              - 53
-              - 5050
-              - 6180
-              - 6385
-              - 9999
+              {{- range $port := list 80 443 22 53 5050 6180 6385 9999 }}
+              - {{ $port }}
+              {{ end }}
               {{- else }}
-              - 80
-              - 443
-              - 22
-              - 53
+              {{- range $port := list 80 443 22 53 }}
+              - {{ $port }}
+              {{ end }}
               {{- end }}
             protocol: >-
               {{- if ${CAPO_CREATE_IRONIC_SECURITY_GROUP} }}
-              - tcp
-              - tcp
-              - tcp
-              - udp
-              - tcp
-              - tcp
-              - tcp
-              - tcp
+              {{- range $protocol := list tcp tcp tcp udp tcp tcp tcp udp }}
+              - {{ $protocol }}
+              {{ end }}
               {{- else }}
-              - tcp
-              - tcp
-              - tcp
-              - udp
+              {{- range $protocol := list tcp tcp tcp udp }}
+              - {{ $protocol }}
+              {{ end }}
               {{- end }}
             remote_ip_prefix: >-
               {{- if ${CAPO_CREATE_IRONIC_SECURITY_GROUP} }}
-              - 0.0.0.0/0
-              - 0.0.0.0/0
-              - 0.0.0.0/0
-              - 0.0.0.0/0
-              - 0.0.0.0/0
-              - 0.0.0.0/0
-              - 0.0.0.0/0
-              - 0.0.0.0/0
+              {{- range $remote_ip_prefix := list 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 }}
+              - {{ $remote_ip_prefix }}
+              {{ end }}
               {{- else }}
-              - 0.0.0.0/0
-              - 0.0.0.0/0
-              - 0.0.0.0/0
-              - 0.0.0.0/0
+              {{- range $remote_ip_prefix := list 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 }}
+              - {{ $remote_ip_prefix }}
+              {{ end }}
               {{- end }}
         worker_rules:
           type: json
@@ -106,67 +82,43 @@ spec:
           default:
             direction: >-
               {{- if ${CAPO_CREATE_IRONIC_SECURITY_GROUP} }}
-              - ingress
-              - ingress
-              - ingress
-              - ingress
-              - ingress
-              - ingress
-              - ingress
-              - ingress
+              {{- range $direction := list ingress ingress ingress ingress ingress ingress ingress ingress }}
+              - {{ $direction }}
+              {{ end }}
               {{- else }}
-              - ingress
-              - ingress
-              - ingress
-              - ingress
+              {{- range $direction := list ingress ingress ingress ingress }}
+              - {{ $direction }}
+              {{ end }}
               {{- end }}
             port: >-
               {{- if ${CAPO_CREATE_IRONIC_SECURITY_GROUP} }}
-              - 80
-              - 443
-              - 22
-              - 53
-              - 5050
-              - 6180
-              - 6385
-              - 9999
+              {{- range $port := list 80 443 22 53 5050 6180 6385 9999 }}
+              - {{ $port }}
+              {{ end }}
               {{- else }}
-              - 80
-              - 443
-              - 22
-              - 53
+              {{- range $port := list 80 443 22 53 }}
+              - {{ $port }}
+              {{ end }}
               {{- end }}
             protocol: >-
               {{- if ${CAPO_CREATE_IRONIC_SECURITY_GROUP} }}
-              - tcp
-              - tcp
-              - tcp
-              - udp
-              - tcp
-              - tcp
-              - tcp
-              - tcp
+              {{- range $protocol := list tcp tcp tcp udp tcp tcp tcp udp }}
+              - {{ $protocol }}
+              {{ end }}
               {{- else }}
-              - tcp
-              - tcp
-              - tcp
-              - udp
+              {{- range $protocol := list tcp tcp tcp udp }}
+              - {{ $protocol }}
+              {{ end }}
               {{- end }}
             remote_ip_prefix: >-
               {{- if ${CAPO_CREATE_IRONIC_SECURITY_GROUP} }}
-              - 0.0.0.0/0
-              - 0.0.0.0/0
-              - 0.0.0.0/0
-              - 0.0.0.0/0
-              - 0.0.0.0/0
-              - 0.0.0.0/0
-              - 0.0.0.0/0
-              - 0.0.0.0/0
+              {{- range $remote_ip_prefix := list 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 }}
+              - {{ $remote_ip_prefix }}
+              {{ end }}
               {{- else }}
-              - 0.0.0.0/0
-              - 0.0.0.0/0
-              - 0.0.0.0/0
-              - 0.0.0.0/0
+              {{- range $remote_ip_prefix := list 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 }}
+              - {{ $remote_ip_prefix }}
+              {{ end }}
               {{- end }}
 
       resources:
