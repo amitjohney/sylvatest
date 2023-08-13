@@ -37,7 +37,7 @@ spec:
           description: "Security group rules associated with the control plane VMs"
           default:
             direction: >-
-              {% if ${CAPO_CREATE_IRONIC_SECURITY_GROUP} %}
+              {{- if ${CAPO_CREATE_IRONIC_SECURITY_GROUP} }}
               - ingress
               - ingress
               - ingress
@@ -46,14 +46,14 @@ spec:
               - ingress
               - ingress
               - ingress
-              {% else %}
+              {{- else }}
               - ingress
               - ingress
               - ingress
               - ingress
-              {% endif %}
+              {{- end }}
             port: >-
-              {% if ${CAPO_CREATE_IRONIC_SECURITY_GROUP} %}
+              {{- if ${CAPO_CREATE_IRONIC_SECURITY_GROUP} }}
               - 80
               - 443
               - 22
@@ -62,14 +62,14 @@ spec:
               - 6180
               - 6385
               - 9999
-              {% else %}
+              {{- else }}
               - 80
               - 443
               - 22
               - 53
-              {% endif %}
+              {{- end }}
             protocol: >-
-              {% if ${CAPO_CREATE_IRONIC_SECURITY_GROUP} %}
+              {{- if ${CAPO_CREATE_IRONIC_SECURITY_GROUP} }}
               - tcp
               - tcp
               - tcp
@@ -78,14 +78,14 @@ spec:
               - tcp
               - tcp
               - tcp
-              {% else %}
+              {{- else }}
               - tcp
               - tcp
               - tcp
               - udp
-              {% endif %}
+              {{- end }}
             remote_ip_prefix: >-
-              {% if ${CAPO_CREATE_IRONIC_SECURITY_GROUP} %}
+              {{- if ${CAPO_CREATE_IRONIC_SECURITY_GROUP} }}
               - 0.0.0.0/0
               - 0.0.0.0/0
               - 0.0.0.0/0
@@ -94,18 +94,18 @@ spec:
               - 0.0.0.0/0
               - 0.0.0.0/0
               - 0.0.0.0/0
-              {% else %}
+              {{- else }}
               - 0.0.0.0/0
               - 0.0.0.0/0
               - 0.0.0.0/0
               - 0.0.0.0/0
-              {% endif %}
+              {{- end }}
         worker_rules:
           type: json
           description: "Security group rules associated with worker VMs"
           default:
             direction: >-
-              {% if ${CAPO_CREATE_IRONIC_SECURITY_GROUP} %}
+              {{- if ${CAPO_CREATE_IRONIC_SECURITY_GROUP} }}
               - ingress
               - ingress
               - ingress
@@ -114,14 +114,14 @@ spec:
               - ingress
               - ingress
               - ingress
-              {% else %}
+              {{- else }}
               - ingress
               - ingress
               - ingress
               - ingress
-              {% endif %}
+              {{- end }}
             port: >-
-              {% if ${CAPO_CREATE_IRONIC_SECURITY_GROUP} %}
+              {{- if ${CAPO_CREATE_IRONIC_SECURITY_GROUP} }}
               - 80
               - 443
               - 22
@@ -130,14 +130,14 @@ spec:
               - 6180
               - 6385
               - 9999
-              {% else %}
+              {{- else }}
               - 80
               - 443
               - 22
               - 53
-              {% endif %}
+              {{- end }}
             protocol: >-
-              {% if ${CAPO_CREATE_IRONIC_SECURITY_GROUP} %}
+              {{- if ${CAPO_CREATE_IRONIC_SECURITY_GROUP} }}
               - tcp
               - tcp
               - tcp
@@ -146,14 +146,14 @@ spec:
               - tcp
               - tcp
               - tcp
-              {% else %}
+              {{- else }}
               - tcp
               - tcp
               - tcp
               - udp
-              {% endif %}
+              {{- end }}
             remote_ip_prefix: >-
-              {% if ${CAPO_CREATE_IRONIC_SECURITY_GROUP} %}
+              {{- if ${CAPO_CREATE_IRONIC_SECURITY_GROUP} }}
               - 0.0.0.0/0
               - 0.0.0.0/0
               - 0.0.0.0/0
@@ -162,12 +162,12 @@ spec:
               - 0.0.0.0/0
               - 0.0.0.0/0
               - 0.0.0.0/0
-              {% else %}
+              {{- else }}
               - 0.0.0.0/0
               - 0.0.0.0/0
               - 0.0.0.0/0
               - 0.0.0.0/0
-              {% endif %}
+              {{- end }}
 
       resources:
         port:
