@@ -134,6 +134,13 @@
       "matchStrings": [
         "process_chart_in_helm_repo \"(?<registryUrl>.*?)\"\\s[\\w\\W]*?(?<depName>.*?)\\s(?<currentValue>.*)"
       ]
+    },
+    {
+      "datasourceTemplate": "helm",
+      "fileMatch": ["charts/sylva-units/values.yaml"],
+      "matchStrings": [
+        "(?<depName>metallb)_helm_version: (?<currentValue>.*)\\s*#\\s*renovate: registryUrl=(?<registryUrl>.*?)"
+      ]
     }
   ]
 }

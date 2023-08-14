@@ -896,7 +896,10 @@ units:
         proxies: '{{ .Values.proxies | include "preserve-type" }}'
         registry_mirrors: '{{ .Values.registry_mirrors | include "preserve-type" }}'
         metallb_helm_oci_url: '{{ .Values.metallb_helm_oci_url | include "preserve-type" }}'
-        metallb_helm_version: 0.13.9 # needs to match tools/oci/push-helm-charts-artifacts.sh special case for chart deployed by rke2
+        # MetalLB version
+        # - needs to match tools/oci/push-helm-charts-artifacts.sh special case for chart deployed by rke2
+        # - annotation below to let renovate bot assist us to handle upgrades
+        metallb_helm_version: 0.13.9  # renovate: registryUrl=https://metallb.github.io/metallb/
       valuesFrom:
         - kind: ConfigMap
           name: capo-cluster-resources
