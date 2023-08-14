@@ -1,7 +1,8 @@
 # Default values for sylva-units.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-
+list_true: [ingress, ingress, ingress, ingress, ingress, ingress, ingress, ingress]
+list_false: [ingress, ingress, ingress, ingress]
 # generic helm chart release name overrides
 nameOverride: ""
 fullnameOverride: ""
