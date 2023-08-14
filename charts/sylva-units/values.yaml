@@ -965,10 +965,10 @@ units:
           CAPO_EXTERNAL_NETWORK_ID: '{{ tuple .Values.cluster.capo.external_network_id
             (and .Values.cluster.capo.external_network_id (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
           CAPO_CREATE_IRONIC_SECURITY_GROUP: '{{ tuple . (and (.Values.units.metal3.enabled | default false) (.Values.cluster.capi_providers.infra_provider | eq "capo")) "true" "false" | include "interpret-ternary" }}'
-          ironic_direction: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} |ternary [ingress, ingress, ingress, ingress, ingress, ingress, ingress, ingress] [ingress, ingress, ingress, ingress] }}'
-          ironic_port: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} |ternary ["80", "443", "22", "53", "5050", "6180", "6385", "9999"] ["80", "443", "22", "53"] }}'
-          ironic_protocol: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} |ternary [tcp, tcp, tcp, udp, tcp, tcp, tcp, tcp] [tcp, tcp, tcp, udp] }}'
-          ironic_remote_ip_prefix: '{{ ${CAPO_CREATE_IRONIC_SECURITY_GROUP} |ternary [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0] [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0] }}'
+          ironic_direction: '{{ ( .Values.units.capo-cluster-resources.kustomization_spec.postBuild.substitute.CAPO_CREATE_IRONIC_SECURITY_GROUP ) |ternary [ingress, ingress, ingress, ingress, ingress, ingress, ingress, ingress] [ingress, ingress, ingress, ingress] }}'
+          ironic_port: '{{ ( .Values.units.capo-cluster-resources.kustomization_spec.postBuild.substitute.CAPO_CREATE_IRONIC_SECURITY_GROUP ) |ternary ["80", "443", "22", "53", "5050", "6180", "6385", "9999"] ["80", "443", "22", "53"] }}'
+          ironic_protocol: '{{ ( .Values.units.capo-cluster-resources.kustomization_spec.postBuild.substitute.CAPO_CREATE_IRONIC_SECURITY_GROUP ) |ternary [tcp, tcp, tcp, udp, tcp, tcp, tcp, tcp] [tcp, tcp, tcp, udp] }}'
+          ironic_remote_ip_prefix: '{{ ( .Values.units.capo-cluster-resources.kustomization_spec.postBuild.substitute.CAPO_CREATE_IRONIC_SECURITY_GROUP ) |ternary [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0] [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0] }}'
         substituteFrom: # for CAPO_NETWORK_ID and *_SECURITY_GROUP_NAME
           - kind: ConfigMap
             name: cluster-vars
