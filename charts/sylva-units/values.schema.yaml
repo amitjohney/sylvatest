@@ -467,11 +467,14 @@ properties:
                   required:
                     - helmrelease_spec
                 then:
-                  properties:
-                    kustomization_spec:
-                      not:
-                        required:
-                          - path
+                  anyOf:
+                    - not:
+                        required: [kustomization_spec]
+                    - not:
+                        properties:
+                          kustomization_spec:
+                            required:
+                              - path
 
   cluster:  # -------------------------------
     type: object
