@@ -591,15 +591,26 @@
                         ]
                       },
                       "then": {
-                        "properties": {
-                          "kustomization_spec": {
+                        "anyOf": [
+                          {
                             "not": {
                               "required": [
-                                "path"
+                                "kustomization_spec"
                               ]
                             }
+                          },
+                          {
+                            "not": {
+                              "properties": {
+                                "kustomization_spec": {
+                                  "required": [
+                                    "path"
+                                  ]
+                                }
+                              }
+                            }
                           }
-                        }
+                        ]
                       }
                     }
                   ]
