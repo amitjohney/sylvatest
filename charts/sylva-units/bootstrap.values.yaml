@@ -174,7 +174,10 @@ units:
         secretRef:
           name: '{{ .Values.cluster.name }}-kubeconfig'
       _patches:  # we need to force the name of the HelmRelease object to `sylva-units`
-        - patch: |
+        - target:
+            kind: HelmRelease
+            name: management-sylva-units
+          patch: |
             - op: replace
               path: /metadata
               value:

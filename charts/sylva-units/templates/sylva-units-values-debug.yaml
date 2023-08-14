@@ -43,7 +43,7 @@ of a deployment with information about the revision and values of the sylva-unit
 {{- end }}
 {{- $deps = append $deps (dict "name" "cluster") -}}
 {{- $time := now }}
-apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: sylva-units-status
