@@ -519,24 +519,6 @@ By using this command, we can inspect the rendered Kubernetes manifests before d
 ```terminal
 $ helm template sylva-units charts/sylva-units
 
-Source: sylva-units/templates/registry-secret.yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  annotations:
-    kubed.appscode.com/sync: add-registry-secret=sylva
-  name: registry-secret
-  labels:
-    helm.sh/chart: sylva-units-0.0.0-git
-    app.kubernetes.io/name: sylva-units
-    app.kubernetes.io/instance: sylva-units
-    app.kubernetes.io/version: "0.0.0"
-    app.kubernetes.io/managed-by: Helm
-type: kubernetes.io/dockerconfigjson
-data:
-  .dockerconfigjson: |
-    eyJhdXRocyI6e319
----
 # Source: sylva-units/templates/sylva-units-values-debug.yaml
 apiVersion: v1
 kind: Secret
