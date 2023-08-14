@@ -266,6 +266,12 @@ properties:
     type: object
     # TODO: detail more
 
+  list_true:
+    type: array
+
+  list_false:
+    type: array
+
   unit_templates:  # -------------------------------
     type: object
     "^[a-z0-9][a-z0-9-]*[a-z0-9]$":  # -------------------------------

@@ -1348,6 +1348,12 @@
     "units_enabled_default": {
       "type": "boolean"
     },
+    "list_true": {
+      "type": "array"
+    },
+    "list_false": {
+      "type": "array"
+    }
     "units_override_enabled": {
       "type": "array",
       "items": {
