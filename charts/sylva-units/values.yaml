@@ -1396,6 +1396,8 @@ units:
       interval: 1m0s
       values:
         controller:
+          readinessProbe:
+            initialDelaySeconds: 3600
           config:
             use-forwarded-headers: true
           kind: DaemonSet
