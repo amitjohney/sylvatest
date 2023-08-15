@@ -45,12 +45,12 @@ spec:
           description: "Security group rules associated with worker VMs"
           default:
             direction: >-
-              {{- if .Values.units.capo-cluster-resources.kustomization_spec.postBuild.substitute.CAPO_CREATE_IRONIC_SECURITY_GROUP }}
-              {{- range $direction := list ingress ingress ingress ingress ingress ingress ingress ingress }}
+              {{- if (eq ${CAPO_CREATE_IRONIC_SECURITY_GROUP}) true }}
+              {{- range $direction := list ingress ingress ingress ingress ingress ingress ingress ingress -}}
               - {{ $direction }}
               {{- end }}
               {{- else }}
-              {{- range $direction := list ingress ingress ingress ingress }}
+              {{- range $direction := list ingress ingress ingress ingress -}}
               - {{ $direction }}
               {{- end }}
               {{- end }}
