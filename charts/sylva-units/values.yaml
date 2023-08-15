@@ -721,6 +721,18 @@ units:
       path: ./kustomize-units/cabpr
       wait: true
 
+  vcluster:
+    helm_repo_url: https://charts.loft.sh
+    helmrelease_spec:
+      releaseName: vcluster
+      targetNamespace: vcluster
+      chart:
+        spec:
+          chart: vcluster
+          version: 0.15.5
+      install:
+        createNamespace: true
+
   metal3:
     depends_on:
       cert-manager: true
