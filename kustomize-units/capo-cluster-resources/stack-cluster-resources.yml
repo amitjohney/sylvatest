@@ -44,19 +44,10 @@ spec:
           type: json
           description: "Security group rules associated with worker VMs"
           default:
-            direction:
-              {{- if (eq ${CAPO_CREATE_IRONIC_SECURITY_GROUP}) true }}
-              {{- range $direction := list ingress ingress ingress ingress ingress ingress ingress ingress -}}
-              - {{ $direction }}
-              {{- end }}
-              {{- else }}
-              {{- range $direction := list ingress ingress ingress ingress -}}
-              - {{ $direction }}
-              {{- end }}
-              {{- end }}
-            port: ['80', '443', '22', '53']
-            protocol: [tcp, tcp, tcp, udp]
-            remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
+            direction: {{ ternary (list ingress ingress ingress ingress ingress ingress ingress ingress) (list ingress ingress ingress ingress) $(CAPO_CREATE_IRONIC_SECURITY_GROUP) }}
+            port: {{ ternary (list 80 443 22 53 5050 6180 6385 9999) (list 80 443 22 53) $(CAPO_CREATE_IRONIC_SECURITY_GROUP) }}
+            protocol: {{ ternary (list tcp tcp tcp udp tcp tcp tcp tcp) (list tcp tcp tcp tcp) $(CAPO_CREATE_IRONIC_SECURITY_GROUP) }}
+            remote_ip_prefix: {{ ternary (list 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0) (list 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0) $(CAPO_CREATE_IRONIC_SECURITY_GROUP) }}
 
       resources:
         port:
