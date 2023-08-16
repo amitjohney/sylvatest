@@ -283,16 +283,8 @@ units:
               kubectl wait --for condition=ControlPlaneReady --timeout 600s --all cluster
               kubectl wait --for condition=NodeHealthy --timeout 600s --all machine
 
-              echo "-- Wait for all Kustomizations related to Cluster API to be installed on management cluster"
-              # instead of looking at Ready condition (which temporarily become False if a reconciliation is ongoing)
-              # we check that the observed generation is the same as the target
-              for unit in capi {{ .Values.cluster.capi_providers.infra_provider }} {{ .Values.cluster.capi_providers.bootstrap_provider }}; do
-                echo "------ ... waiting for $unit unit to be applied"
-                generation=$(kubectl --kubeconfig management-cluster-kubeconfig get kustomizations.kustomize.toolkit.fluxcd.io capi -o jsonpath='{.metadata.generation}')
-                kubectl --kubeconfig management-cluster-kubeconfig wait kustomization $unit \
-                  "--for=jsonpath={status.observedGeneration}=$generation" \
-                  --timeout=300s
-              done
+              echo "-- Wait for all Kustomizations related to Cluster API to be ready in management cluster"
+              kubectl --kubeconfig management-cluster-kubeconfig wait --for=condition=Ready --timeout=20m kustomization capi-providers-pivot-ready
 
               echo "-- Suspend Kustomizations and HelmReleases in bootstrap cluster that relate to the management cluster"
               kubectl patch $(kubectl get helmreleases.helm.toolkit.fluxcd.io,kustomizations.kustomize.toolkit.fluxcd.io \
