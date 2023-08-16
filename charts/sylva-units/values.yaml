@@ -870,6 +870,7 @@ units:
           - 10.43.0.0/16
         cluster_pods_cidrs:
           - 10.42.0.0/16
+
         capo:
           worker_az: 'dev-az'
           flavor_name: '{{ .Values.cluster.capo.flavor_name }}'
