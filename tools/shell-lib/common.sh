@@ -218,3 +218,26 @@ function cleanup_preview() {
     | xargs --no-run-if-empty kubectl delete -n sylva-units-preview
   kubectl delete namespace sylva-units-preview
 }
+
+
+function ci_remaining_minutes_and_at_most() {
+  at_most=$1
+  if [ -z ${CI_JOB_TIMEOUT:-} ]; then
+    # we're not in a CI job
+    echo ${at_most}m
+  else
+    # the value we return is the number of seconds of runtime left for this job
+    # ... minus a safety margin to let debug-on-exit run
+    # ... and we never return more than at_most seconds
+    ci_job_started_at_epoch=$(date +%s --date=$CI_JOB_STARTED_AT)
+    current_time_epoch=$(date +%s)
+    debug_on_exit_max_duration_seconds=200
+
+    # here we compute how much seconds are left before the CI job times out
+    # (minus debug_on_exit_max_duration_seconds)
+    ci_remaining_time=$((ci_job_started_at_epoch+CI_JOB_TIMEOUT-current_time_epoch-debug_on_exit_max_duration_seconds))
+    ci_remaining_time=$((ci_remaining_time > 0 ? ci_remaining_time : 0))
+    ci_remaining_min=$((ci_remaining_time/60))
+    echo $((ci_remaining_min > at_most ? at_most : ci_remaining_min))m
+  fi
+}
