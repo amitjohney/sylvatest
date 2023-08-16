@@ -36,18 +36,18 @@ spec:
           type: json
           description: "Security group rules associated with the control plane VMs"
           default:
-            direction: {{ .Values.units.capo-cluster-resources.kustomization_spec.postBuild.substitute.ironic_direction }}
-            port: {{ .Values.units.capo-cluster-resources.kustomization_spec.postBuild.substitute.ironic_port }}
-            protocol: {{ .Values.units.capo-cluster-resources.kustomization_spec.postBuild.substitute.ironic_protocol }}
-            remote_ip_prefix: {{ .Values.units.capo-cluster-resources.kustomization_spec.postBuild.substitute.ironic_remote_ip_prefix }}
+            direction: ${ironic_direction}
+            port: ${ironic_port}
+            protocol: ${ironic_protocol}
+            remote_ip_prefix: ${ironic_remote_ip_prefix}
         worker_rules:
           type: json
           description: "Security group rules associated with worker VMs"
           default:
-            direction: {{ .Values.units.capo-cluster-resources.kustomization_spec.postBuild.substitute.ironic_direction }}
-            port: {{ .Values.units.capo-cluster-resources.kustomization_spec.postBuild.substitute.ironic_port }}
-            protocol: {{ .Values.units.capo-cluster-resources.kustomization_spec.postBuild.substitute.ironic_protocol }}
-            remote_ip_prefix: {{ .Values.units.capo-cluster-resources.kustomization_spec.postBuild.substitute.ironic_remote_ip_prefix }}
+            direction: ${ironic_direction}
+            port: ${ironic_port}
+            protocol: ${ironic_protocol}
+            remote_ip_prefix: ${ironic_remote_ip_prefix}
 
       resources:
         port:
