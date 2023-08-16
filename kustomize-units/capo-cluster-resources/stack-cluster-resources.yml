@@ -44,10 +44,10 @@ spec:
           type: json
           description: "Security group rules associated with worker VMs"
           default:
-            direction: '{{ ternary (list ingress ingress ingress ingress ingress ingress ingress ingress) (list ingress ingress ingress ingress) true }}'
-            port: '{{ ternary (list 80 443 22 53 5050 6180 6385 9999) (list 80 443 22 53) true }}'
-            protocol: '{{ ternary (list tcp tcp tcp udp tcp tcp tcp tcp) (list tcp tcp tcp tcp) true }}'
-            remote_ip_prefix: '{{ ternary (list 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0) (list 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0) true }}'
+            direction: ternary (list ingress ingress ingress ingress ingress ingress ingress ingress) (list ingress ingress ingress ingress) true
+            port: ternary (list 80 443 22 53 5050 6180 6385 9999) (list 80 443 22 53) true
+            protocol: ternary (list tcp tcp tcp udp tcp tcp tcp tcp) (list tcp tcp tcp tcp) true
+            remote_ip_prefix: ternary (list 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0) (list 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0 0.0.0.0/0) true
 
       resources:
         port:
