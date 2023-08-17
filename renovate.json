@@ -134,13 +134,6 @@
       "matchStrings": [
         "process_chart_in_helm_repo \"(?<registryUrl>.*?)\"\\s[\\w\\W]*?(?<depName>.*?)\\s(?<currentValue>.*)"
       ]
-    },
-    {
-      "datasourceTemplate": "helm",
-      "fileMatch": ["kustomize-units/cluster-manifests/rke2-capo/base/rke2-capo-cluster.yaml"],
-      "matchStrings": [
-        "#\\s?renovate: registryUrl=(?<registryUrl>.*?) chart=(?<depName>.*?)\\n.*?version: (?<currentValue>.*)"
-      ]
     }
   ]
 }
