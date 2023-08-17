@@ -37,7 +37,7 @@ retrieve_kubeconfig &
 KUBECONFIG_PID=$!
 
 echo_b "\U000023F3 Wait for bootstrap units and management cluster to be ready"
-sylvactl watch --reconcile --timeout ${RECONCILE_TIMEOUT:-30m} ${SYLVACTL_SAVE:+--save bootstrap-timeline.html} Kustomization/default/management-sylva-units
+sylvactl watch --reconcile --timeout $(ci_remaining_minutes_and_at_most ${BOOTSTRAP_WATCH_TIMEOUT_MIN:-30}) ${SYLVACTL_SAVE:+--save bootstrap-timeline.html} Kustomization/default/management-sylva-units
 
 if kill $KUBECONFIG_PID &>/dev/null; then
     echo_b "\U00002717 Failed to retrieve management-cluster kubeconfig"
@@ -45,7 +45,7 @@ if kill $KUBECONFIG_PID &>/dev/null; then
 fi
 
 echo_b "\U000023F3 Wait for units installed on management cluster to be ready"
-sylvactl watch --reconcile --kubeconfig management-cluster-kubeconfig --timeout ${RECONCILE_TIMEOUT:-45m} ${SYLVACTL_SAVE:+--save management-cluster-timeline.html}
+sylvactl watch --reconcile --kubeconfig management-cluster-kubeconfig --timeout $(ci_remaining_minutes_and_at_most ${MGMT_WATCH_TIMEOUT_MIN:-45}) ${SYLVACTL_SAVE:+--save management-cluster-timeline.html}
 
 echo_b "\U00002714 Sylva is ready, everything deployed in management cluster (including test workload cluster definition, if enabled)"
 echo "   Management cluster nodes:"
