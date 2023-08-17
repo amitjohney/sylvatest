@@ -4,6 +4,15 @@
 # when the chart is instantiated in the bootstrap cluster
 _internal:
   default_storage_class_unit: "bootstrap-local-path"
+  bootstrap_node_ip:
+    - |
+      {{- $result := "not found" -}}
+      {{- range $address := lookup "v1" "Node" "" "" | dig "items" list | first | default dict |  dig "status" "addresses" list -}}
+        {{- if and (eq $address.type "InternalIP") (eq $result "not found") -}}
+          {{- $result = $address.address -}}
+        {{- end -}}
+      {{- end -}}
+      {{- $result -}}
 
 unit_kustomization_spec_default:
   interval: 100000m   # for bootstrap, we don't care about having flux update things on the longterm
@@ -15,6 +24,8 @@ unit_helmrelease_spec_default:
 units:
 
   metal3:
+    enabled_conditions:
+      - '{{ tuple . "capm3" | include "unit-enabled" }}'
     helmrelease_spec:
       values:
         # ironicIPADownloaderBaseURI:
@@ -23,15 +34,7 @@ units:
             # Address of the host, that will be reachable from the outside
             ironicIP: '{{ dig "capm3" "external_bootstrap_ip" (dig "capm3" "bootstrap_ip" "127.0.0.1" .Values.cluster) .Values.cluster }}'
             # Address of kind container/node, that will be used to bind ironic service
-            externalIPs:
-              - |
-                {{- $result := "not found" -}}
-                {{- range $address := lookup "v1" "Node" "" "" | dig "items" list | first | default dict |  dig "status" "addresses" list -}}
-                  {{- if and (eq $address.type "InternalIP") (eq $result "not found") -}}
-                    {{- $result = $address.address -}}
-                  {{- end -}}
-                {{- end -}}
-                {{- $result -}}
+            externalIPs: '{{ .Values._internal.bootstrap_node_ip | include "preserve-type" }}'
 
   bootstrap-local-path:
     enabled_conditions:
@@ -40,6 +43,25 @@ units:
     kustomization_spec:
       path: ./kustomize-units/bootstrap-local-path
       wait: true
+
+  ingress-nginx:
+    enabled_conditions:  # this purposefully cancels the condition set in values.yaml
+      - '{{ tuple . "os-image-server" | include "unit-enabled" }}'
+    helmrelease_spec:
+      values:
+        controller:
+          service:
+            externalIPs: '{{ .Values._internal.bootstrap_node_ip | include "preserve-type" }}'
+          updateStrategy:
+            rollingUpdate:
+              maxUnavailable: 0
+              maxSurge: 1
+
+  os-image-server:
+    helmrelease_spec:
+      values:
+        service:
+          type: NodePort
 
   cluster:
     depends_on:
@@ -302,6 +324,8 @@ units:
 
               echo "-- All done"
 
+cluster:
+  display_external_ip: '{{ .Values.cluster | dig "capm3" "external_bootstrap_ip" (.Values.cluster | dig "capm3" "bootstrap_ip" "127.0.0.1") }}'
 
 # only those components will be enabled on bootstrap cluster (this overrides 'units.<component>.enabled')
 # note that this list does *not* override enabled_conditions set on the units, those are still applied
@@ -310,8 +334,10 @@ units_override_enabled:
   - capi
   - '{{ .Values.cluster.capi_providers.infra_provider }}'
   - '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
-  - '{{ tuple "metal3" (.Values.cluster.capi_providers.infra_provider | eq "capm3") | include "set-only-if" }}'
+  - metal3
   - bootstrap-local-path
+  - ingress-nginx
+  - os-image-server
   - cluster
   - calico-crd
   - calico

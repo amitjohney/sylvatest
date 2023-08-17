@@ -82,10 +82,10 @@ if yq -e '.registry_mirrors.hosts_config | length > 0' ${VALUES_FILE} &>/dev/nul
         helm template kind-registry-config ${BASE_DIR}/charts/sylva-units --show-only templates/extras/kind.yaml --values - | yq .script | bash
 fi
 
-# Try to retrieve ironic bootstrap_ip config in values.yaml and expose port if defined
+# Try to retrieve bootstrap_ip config in values.yaml and expose ironic and os-image-server ports if defined
 if yq -e '.cluster.capm3.bootstrap_ip' ${VALUES_FILE} &>/dev/null; then
     BOOTSTRAP_IP=$(yq -e '.cluster.capm3.bootstrap_ip' ${VALUES_FILE})
-    for port in "5050/TCP" "6180/TCP" "6385/TCP"; do
+    for port in "5050/TCP" "6180/TCP" "6385/TCP" "80/TCP" "443/TCP"; do
         KIND_CONFIG=$(echo "$KIND_CONFIG" | yq '.nodes[0].extraPortMappings += [{"containerPort": '${port%/*}', "hostPort": '${port%/*}', "listenAddress": "'$BOOTSTRAP_IP'", "protocol": "'${port#*/}'"}]')
     done
 fi
