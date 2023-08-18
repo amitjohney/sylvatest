@@ -360,14 +360,14 @@ deploy-kubeadm-capo-oci:
     expose_as: kubeadm-capo-oci
 
 deploy-m3-units-in-capo:
-  timeout: 25min
+  timeout: 35min
   extends: deploy-kubeadm-capo
   variables:
     ENV_NAME: "kubeadm-capo"
     CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-M3-OCI"
     OCI_TAG: $OCI_TAG_FORMAT
     CUSTOM_VALUES_FILE: tools/gci-templates/configuration/m3-units-in-capo.yml
-    MGMT_WATCH_TIMEOUT_MIN: 10
+    MGMT_WATCH_TIMEOUT_MIN: 20
   artifacts:
     expose_as: m3-units-in-capo
 
