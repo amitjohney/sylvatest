@@ -35,6 +35,8 @@ units:
             ironicIP: '{{ dig "capm3" "external_bootstrap_ip" (dig "capm3" "bootstrap_ip" "127.0.0.1" .Values.cluster) .Values.cluster }}'
             # Address of kind container/node, that will be used to bind ironic service
             externalIPs: '{{ .Values._internal.bootstrap_node_ip | include "preserve-type" }}'
+    labels:
+      suspend-on-pivot: "yes"  # this unit must be suspended before pivot
 
   bootstrap-local-path:
     enabled_conditions:
