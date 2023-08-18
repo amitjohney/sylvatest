@@ -32,22 +32,58 @@ spec:
         worker_security_group_name:
           type: string
           description: "Worker security group name"
+        CAPO_CREATE_IRONIC_SECURITY_GROUP:
+          type: boolean
+          description: "Flag to determine if Ironic security group rules should also be added in control_plane and worker_plane rules"
+          default: ${CAPO_CREATE_IRONIC_SECURITY_GROUP}
         control_plane_rules:
           type: json
           description: "Security group rules associated with the control plane VMs"
           default:
-            direction: ${ironic_direction}
-            port: ${ironic_port}
-            protocol: ${ironic_protocol}
-            remote_ip_prefix: ${ironic_remote_ip_prefix}
+            direction:
+              if:
+                - {get_param: CAPO_CREATE_IRONIC_SECURITY_GROUP}
+                - [ingress, ingress, ingress, ingress, ingress, ingress, ingress, ingress]
+                - [ingress, ingress, ingress, ingress]
+            port:
+              if:
+                - {get_param: CAPO_CREATE_IRONIC_SECURITY_GROUP}
+                - ['80', '443', '22', '53', '5050', '6180', '6385', '9999']
+                - ['80', '443', '22', '53']
+            protocol:
+              if:
+                - {get_param: CAPO_CREATE_IRONIC_SECURITY_GROUP}
+                - [tcp, tcp, tcp, udp, tcp, tcp, tcp, tcp]
+                - [tcp, tcp, tcp, udp]
+            remote_ip_prefix:
+              if:
+                - {get_param: CAPO_CREATE_IRONIC_SECURITY_GROUP}
+                - [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
+                - [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
         worker_rules:
           type: json
           description: "Security group rules associated with worker VMs"
           default:
-            direction: ${ironic_direction}
-            port: ${ironic_port}
-            protocol: ${ironic_protocol}
-            remote_ip_prefix: ${ironic_remote_ip_prefix}
+            direction:
+              if:
+                - {get_param: CAPO_CREATE_IRONIC_SECURITY_GROUP}
+                - [ingress, ingress, ingress, ingress, ingress, ingress, ingress, ingress]
+                - [ingress, ingress, ingress, ingress]
+            port:
+              if:
+                - {get_param: CAPO_CREATE_IRONIC_SECURITY_GROUP}
+                - ['80', '443', '22', '53', '5050', '6180', '6385', '9999']
+                - ['80', '443', '22', '53']
+            protocol:
+              if:
+                - {get_param: CAPO_CREATE_IRONIC_SECURITY_GROUP}
+                - [tcp, tcp, tcp, udp, tcp, tcp, tcp, tcp]
+                - [tcp, tcp, tcp, udp]
+            remote_ip_prefix:
+              if:
+                - {get_param: CAPO_CREATE_IRONIC_SECURITY_GROUP}
+                - [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
+                - [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
 
       resources:
         port:
