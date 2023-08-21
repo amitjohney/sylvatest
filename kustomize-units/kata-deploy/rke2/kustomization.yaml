@@ -1,0 +1,5 @@
+resources:
+- ../base
+
+patchesStrategicMerge:
+- mount_rke2_conf.yaml
