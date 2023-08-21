@@ -967,7 +967,7 @@ units:
           CAPO_CREATE_IRONIC_SECURITY_GROUP: '{{ tuple . (and (.Values.units.metal3.enabled | default false) (.Values.cluster.capi_providers.infra_provider | eq "capo")) "true" "false" | include "interpret-ternary" }}'
         substituteFrom: # for CAPO_NETWORK_ID and *_SECURITY_GROUP_NAME
           - kind: ConfigMap
-            name: cluster-vars
+            name: cluster-vars  
       _components:
         - '{{ tuple "../cluster-manifests/components/capo-vip-floating-ip"
             (and .Values.cluster.capo.external_network_id (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
