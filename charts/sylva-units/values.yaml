@@ -776,6 +776,17 @@ units:
         ironicPassword: '{{ .Values._internal.default_password }}'
         ironicInspectorPassword: '{{ .Values._internal.default_password }}'
 
+  # this unit is here only to have a single thing to look at to determine
+  # if everything is ready for pivot (see bootstrap.values.yaml pivot unit)
+  capi-providers-pivot-ready:
+    repo: sylva-core
+    # we copy the dependencies of the 'cluster' unit
+    # (with the exception of "capo-cluster-resources" which we don't need, given how what it produces is consumed)
+    depends_on: '{{ omit .Values.units.cluster.depends_on "capo-cluster-resources" | include "preserve-type" }}'
+    kustomization_spec:
+      path: ./kustomize-units/dummy  # does not create any relevant resource
+      wait: false
+
   local-path-provisioner:
     repo: local-path-provisioner
     helmrelease_spec:

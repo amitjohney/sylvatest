@@ -11,6 +11,8 @@ units:
     enabled: true
   metal3:
     enabled: true
+  capi-providers-pivot-ready:
+    enabled: true
   os-image-server:
     enabled: true
   cinder-csi:

@@ -350,19 +350,26 @@
               }
             },
             "depends_on": {
-              "type": "object",
-              "patternProperties": {
-                "^([a-z0-9][a-z0-9-]*[a-z0-9](/[a-z0-9][a-z0-9-]*[a-z0-9])?|{{ .* }})$": {
-                  "anyOf": [
-                    {
-                      "type": "boolean"
-                    },
-                    {
-                      "$ref": "#/$defs/gotpl"
+              "anyOf": [
+                {
+                  "type": "object",
+                  "patternProperties": {
+                    "^([a-z0-9][a-z0-9-]*[a-z0-9](/[a-z0-9][a-z0-9-]*[a-z0-9])?|{{ .* }})$": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "$ref": "#/$defs/gotpl"
+                        }
+                      ]
                     }
-                  ]
+                  }
+                },
+                {
+                  "$ref": "#/$defs/gotpl"
                 }
-              }
+              ]
             },
             "ref_override": {
               "type": "string"
