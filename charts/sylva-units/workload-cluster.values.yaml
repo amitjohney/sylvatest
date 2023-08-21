@@ -95,6 +95,27 @@ units:
     kustomization_spec:
       targetNamespace: null  # if we don't do this, there are error because namespaces are a non-namespaced resource
 
+  kyverno:
+    enabled: false
+    unit_template: base-deps
+
+  kyverno-policies:
+    enabled: false
+    depends_on:
+      kyverno: true
+    unit_template: base-deps
+
+  kata-deploy:
+    enabled: false
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+    - '{{ tuple . "kyverno" | include "unit-enabled" }}'
+    depends_on:
+      kyverno: true
+    unit_template: base-deps
+    kustomization_spec:
+      targetNamespace: kube-system
+
   calico-crd:
     enabled: true
     depends_on:

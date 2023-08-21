@@ -81,3 +81,43 @@ kubectl --kubeconfig management-cluster-kubeconfig exec -it ubuntu-kata -- /bin/
 root@ubuntu-kata:/# uname -a
 Linux ubuntu-kata 5.19.2 #1 SMP Wed Apr 26 04:41:36 UTC 2023 x86_64 x86_64 x86_64 GNU/Linux 
 ```
+
+## How to enable unit in management-cluster
+
+To enable kata-containers on managemnet-cluster modify user environment values as shown below -
+
+```yaml
+units:
+  cluster:
+    ...
+    ...
+  workload-cluster:
+    ...
+    ...
+  kata-deploy:
+    enabled: true
+```
+
+## How to enable unit in workload-cluster
+
+Since kyverno is not enabled by default in workload cluster, user needs to enable kyverno as well. To enable kata-containers on workload-cluster modify user environment values as shown below -
+
+```yaml
+units:
+  cluster:
+    helmrelease_spec:
+      ...
+  workload-cluster:
+    enabled: true
+    helmrelease_spec:
+      values:
+        units:
+          kyverno:
+            enabled: true
+          kyverno-policies:
+            enabled: true
+          kata-deploy:
+            enabled: true
+          cluster:
+            ...
+```
