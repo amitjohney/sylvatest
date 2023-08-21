@@ -61,6 +61,8 @@ spec:
             remote_ip_prefix_ironic: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
             remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
 
+    conditions:
+      use_ironic_sg_rules: { equals: [{ get_param: CAPO_CREATE_IRONIC_SECURITY_GROUP }, true] }
 
       resources:
         port:
@@ -87,22 +89,22 @@ spec:
                 for_each:
                   <%direction%>:
                     if:
-                      - { get_param: CAPO_CREATE_IRONIC_SECURITY_GROUP }
+                      - { get_param: use_ironic_sg_rules }
                       - { get_param: [control_plane_rules, direction_ironic] }
                       - { get_param: [control_plane_rules, direction] }
                   <%port%>:
                     if:
-                      - { get_param: CAPO_CREATE_IRONIC_SECURITY_GROUP }
+                      - { get_param: use_ironic_sg_rules }
                       - { get_param: [control_plane_rules, port_ironic] }
                       - { get_param: [control_plane_rules, port] }
                   <%protocol%>:
                     if:
-                      - { get_param: CAPO_CREATE_IRONIC_SECURITY_GROUP }
+                      - { get_param: use_ironic_sg_rules }
                       - { get_param: [control_plane_rules, protocol_ironic] }
                       - { get_param: [control_plane_rules, protocol] }
                   <%remote_ip_prefix%>:
                   if:
-                    - { get_param: CAPO_CREATE_IRONIC_SECURITY_GROUP }
+                    - { get_param: use_ironic_sg_rules }
                     - { get_param: [control_plane_rules, remote_ip_prefix_ironic] }
                     - { get_param: [control_plane_rules, remote_ip_prefix] }
                 template:
@@ -122,22 +124,22 @@ spec:
                 for_each:
                   <%direction%>:
                     if:
-                      - { get_param: CAPO_CREATE_IRONIC_SECURITY_GROUP }
+                      - { get_param: use_ironic_sg_rules }
                       - { get_param: [worker_rules,direction_ironic] }
                       - { get_param: [worker_rules, direction]}
                   <%port%>:
                     if:
-                      - { get_param: CAPO_CREATE_IRONIC_SECURITY_GROUP }
+                      - { get_param: use_ironic_sg_rules }
                       - { get_param: [worker_rules, port_ironic:]}
                       - { get_param: [worker_rules, port] }
                   <%protocol%>:
                     if:
-                      - { get_param: CAPO_CREATE_IRONIC_SECURITY_GROUP }
+                      - { get_param: use_ironic_sg_rules }
                       - { get_param: [worker_rules, protocol_ironic] }
                       - { get_param: [worker_rules, protocol] }
                   <%remote_ip_prefix%>:
                     if:
-                      - { get_param: CAPO_CREATE_IRONIC_SECURITY_GROUP }
+                      - { get_param: use_ironic_sg_rules }
                       - { get_param: [worker_rules, remote_ip_prefix_ironic] }
                       - { get_param: [worker_rules, remote_ip_prefix] }
                 template:
