@@ -305,7 +305,7 @@ units:
   vault:
     depends_on:
       sylva-ca-certs: true
-      ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
+      ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
       '{{ .Values._internal.default_storage_class_unit }}': true
       vault-operator: true
     annotations:
@@ -469,7 +469,7 @@ units:
     depends_on:
       sylva-ca: true
       sylva-ca-certs: true
-      ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
+      ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
       postgres: true
       synchronize-secrets: true # make sure that the secret keycloak-initial-admin is ready to be consummed
     annotations:
@@ -1062,7 +1062,7 @@ units:
 
   calico:
     enabled_conditions:
-    - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
+    - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'  # installed by RKE2 when RKE2 is used
     depends_on:
       calico-crd: true
     helm_repo_url: https://rke2-charts.rancher.io
@@ -1187,7 +1187,7 @@ units:
       cert-manager: true
       k8s-gateway: true
       sylva-ca-certs: true
-      ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
+      ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
       synchronize-secrets: true
     annotations:
       sylvactl/readyMessage: "Rancher UI can be reached at https://{{ .Values.cluster.rancher.external_hostname }} ({{ .Values.cluster.rancher.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
@@ -1366,7 +1366,7 @@ units:
 
   ingress-nginx:
     enabled_conditions:
-    - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
+    - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'  # installed by RKE2 when RKE2 is used
     depends_on:
       metallb-config: '{{ tuple . "metallb" | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io
@@ -1411,7 +1411,7 @@ units:
   flux-webui:
     depends_on:
       flux-system: true
-      ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
+      ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
       keycloak-add-client-scope: true
       keycloak-oidc-external-secrets: true
     annotations:
