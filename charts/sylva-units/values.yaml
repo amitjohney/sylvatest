@@ -1535,8 +1535,8 @@ units:
               - ALL
           privileged: false
           runAsNonRoot: true
-          runAsGroup: 1000
-          runAsUser: 1000
+          runAsGroup: 1
+          runAsUser: 1
           seccompProfile:
             type: RuntimeDefault
         conf:
@@ -1778,6 +1778,17 @@ units:
                   env:
                   - name: CLUSTER_NAME
                     value: '{{ .Values.cluster.test_workload_cluster_name }}'
+                  securityContext:
+                    allowPrivilegeEscalation: false
+                    capabilities:
+                      drop:
+                        - ALL
+                    privileged: false
+                    runAsNonRoot: true
+                    runAsGroup: 1000
+                    runAsUser: 1000
+                    seccompProfile:
+                      type: RuntimeDefault
 
 
   multus:
