@@ -277,9 +277,6 @@ units:
           auth:
             username: postgres
         nameOverride: postgres
-        primary:
-          containerSecurityContext:
-            seccompProfile: null
 
   vault-operator:
     helm_repo_url: https://kubernetes-charts.banzaicloud.com
