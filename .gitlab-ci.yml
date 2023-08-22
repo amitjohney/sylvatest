@@ -367,7 +367,7 @@ deploy-m3-units-in-capo:
     CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-M3-OCI"
     OCI_TAG: $OCI_TAG_FORMAT
     CUSTOM_VALUES_FILE: tools/gci-templates/configuration/m3-units-in-capo.yml
-    MGMT_WATCH_TIMEOUT_MIN: 10m
+    MGMT_WATCH_TIMEOUT_MIN: 10
   artifacts:
     expose_as: m3-units-in-capo
 
