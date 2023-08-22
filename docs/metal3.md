@@ -169,32 +169,32 @@ In order to install metal3 and CAPM3 on a Sylva management cluster, the related 
 
 ```yaml
 units:
-    ...
-
-    capm3:
-        enabled: yes
-
-    metal3:
-        enabled: yes
-        helmrelease_spec:
-            values:
-                <put here your metal3 values.yaml>
-    ...
-cluster:
-    ...
-    metal3:
-        # note that the ironic_ip must be reachable from the servers you want to manage with metal3
-        ironic_ip: <put here the IP for Ironic exposition>
+  #[...]
+  capm3:
+    enabled: yes
+  # (metal3 unit is automatically enabled when "capm3" is enabled)
+  #[...]
 ```
-
-The `metal3` unit configuration can be provided through the [metal3 helm chart](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3/-/tree/main/sylva/metal3) `values.yaml` to be included in the field `units.metal3.helmrelease_spec.values`.
-
-The last piece of configuration is the IP to be used to expose the Ironic Service.
-It must be provided in the field `cluster.metal3.ironic_ip`.
 
 The `capm3` unit doesn't require any configuration, it simply acts as an intermediate layer between CAPI and Metal3, so in addition to configure metal3 enabling `capm3` is enough to enable bare metal3 cluster management with CAPI.
 
-It is strongly suggested to override the default passwords of the metal3 unit, in particular make sure to override the values `auth.ironicPassword`, `auth.ironicInspectorPassword`, `mariadb.auth.rootPassword`, `mariadb.auth.replicationPassword` and `mariadb.auth.ironicPassword`.
+The `metal3` unit configuration can be provided through the [metal3 helm chart](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3/-/tree/main/sylva/metal3) `values.yaml` to be included in the field `units.metal3.helmrelease_spec.values`.  
+
+By default the `metal3` unit deploys Ironic service and automatically configures it. However you may have to need to customize ironic IP if management cluster IP is not directly accessible from workload clusters.  
+
+For example if the management cluster is on OpenStack and you need to access ironic IP through the cluster floating IP, you may have to use such a configuration:
+
+```yaml
+units:
+    #[...]
+  metal3:
+    helmrelease_spec:
+      values:
+        services:
+          ironic:
+            ironicIP: '{{ .Values.cluster.display_external_ip }}'
+    #[...]
+```
 
 ### Networking requirements
 
