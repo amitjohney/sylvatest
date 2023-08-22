@@ -21,3 +21,8 @@ spec:
   ingress:
     enabled: false
   instances: 1
+  unsupported:
+    podTemplate:
+      spec:
+        containers:
+          - securityContext: {}

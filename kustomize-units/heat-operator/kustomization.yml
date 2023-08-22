@@ -3,3 +3,26 @@ kind: Kustomization
 
 resources:
 - https://gitlab.com/sylva-projects/sylva-elements/heat-operator.git/config/default?ref=v0.0.4-pre
+patches:
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: heat-operator-controller-manager
+      namespace: heat-operator-system
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/securityContext/seccompProfile
+        value:
+          type: RuntimeDefault
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: heat-operator-controller-manager
+      namespace: heat-operator-system
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/1/securityContext/seccompProfile
+        value:
+          type: RuntimeDefault

@@ -27,6 +27,8 @@ units:
     enabled_conditions:
       - '{{ tuple . "capm3" | include "unit-enabled" }}'
     helmrelease_spec:
+      install:
+        createNamespace: true
       values:
         # ironicIPADownloaderBaseURI:
         services:
