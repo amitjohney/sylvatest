@@ -1794,6 +1794,17 @@ units:
         spec:
           chart: longhorn-crd
           version: 102.2.0+up1.4.1
+  
+  velero:
+    helm_repo_url: https://vmware-tanzu.github.io/helm-charts
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: vmware-tanzu
+          version: v1.11
+      targetNamespace: velero
+      install:
+        createNamespace: true
 
   longhorn:
     enabled: false
