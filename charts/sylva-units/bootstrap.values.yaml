@@ -29,6 +29,8 @@ units:
     depends_on:
       metal3-sync-secrets: false ## override default set in values.yaml
     helmrelease_spec:
+      install:
+        createNamespace: true
       values:
         # ironicIPADownloaderBaseURI:
         services:

@@ -199,17 +199,6 @@ units:
         createNamespace: true
       values:
         installCRDs: true
-        securityContext:
-          seccompProfile: null
-        webhook:
-          securityContext:
-            seccompProfile: null
-        cainjector:
-          securityContext:
-            seccompProfile: null
-        startupapicheck:
-          securityContext:
-            seccompProfile: null
 
   trivy-operator:
     enabled: no
@@ -312,7 +301,7 @@ units:
         createNamespace: true
       values:
         psp:
-          enabled: true
+          enabled: '{{ .Values.cluster.cis_profile | eq "cis-1.6" | include "preserve-type" }}'
 
 # Vault assumes that the certificate vault-tls has been issued
   vault:
@@ -376,6 +365,15 @@ units:
       values:
         enableCertManager: true
         enableMonitoring: false
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+          capabilities:
+            drop:
+              - ALL
+
 
   vault-secrets: # generate random secrets in vault, configure password policy, authentication backends, etc...
     repo: sylva-core
@@ -414,14 +412,6 @@ units:
         createNamespace: true
       values:
         installCRDs: true
-        securityContext:
-          seccompProfile: null
-        webhook:
-          securityContext:
-            seccompProfile: null
-        certController:
-          securityContext:
-            seccompProfile: null
 
   eso-secret-stores:
     depends_on:
@@ -461,7 +451,7 @@ units:
         global:
           cattle:
             psp:
-              enabled: true
+              enabled: '{{ .Values.cluster.cis_profile | eq "cis-1.6" | include "preserve-type" }}'
 
   # this allows for running a CIS scan for management cluster
   # generates a report which can be viewed and downloaded in CSV from the Rancher UI, at https://rancher.sylva/dashboard/c/local/cis/cis.cattle.io.clusterscan
@@ -507,6 +497,41 @@ units:
           namespace: keycloak
       _components:
         - '{{ tuple "components/keycloak-operator-proxies" (.Values.proxies.https_proxy) | include "set-only-if" }}'
+      _patches:
+        - patch: |
+            - op: add
+              path: /spec/template/spec/containers/0/securityContext
+              value:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                privileged: false
+                runAsNonRoot: true
+                runAsGroup: 1000
+                runAsUser: 1000
+                seccompProfile:
+                  type: RuntimeDefault
+          target:
+            kind: Deployment
+            name: keycloak-operator
+        - patch: |
+            - op: add
+              path: /spec/unsupported/podTemplate/spec/containers/0/securityContext
+              value:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                privileged: false
+                runAsNonRoot: true
+                runAsGroup: 1000
+                runAsUser: 1000
+                seccompProfile:
+                  type: RuntimeDefault
+          target:
+            kind: Keycloak
+            name: keycloak
 
   keycloak-legacy-operator:
     enabled_conditions:
@@ -521,15 +546,19 @@ units:
       wait: true
       _patches:
         - patch: |
-            apiVersion: apps/v1
-            kind: Deployment
-            metadata:
-              name: keycloak-realm-operator
-            spec:
-              template:
-                spec:
-                  securityContext:
-                    runAsUser: 10000
+            - op: add
+              path: /spec/template/spec/containers/0/securityContext
+              value:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                privileged: false
+                runAsNonRoot: true
+                runAsGroup: 1000
+                runAsUser: 1000
+                seccompProfile:
+                  type: RuntimeDefault
           target:
             kind: Deployment
             name: keycloak-realm-operator
@@ -642,26 +671,6 @@ units:
       install:
         createNamespace: true
       values:
-        admissionController:
-          container:
-            securityContext:
-              seccompProfile: null
-          initContainer:
-            securityContext:
-              seccompProfile: null
-        test:
-          securityContext:
-            seccompProfile: null
-        cleanupController:
-          securityContext:
-            seccompProfile: null
-        cleanupJobs:
-          admissionReports:
-            securityContext:
-              seccompProfile: null
-        clusterAdmissionReports:
-          securityContext:
-            seccompProfile: null
         backgroundController:
           rbac:
             clusterRole:
@@ -670,11 +679,6 @@ units:
                 resources:
                   - "helmreleases"
                 verbs: ["get", "patch", "list", "update", "watch"]
-          securityContext:
-            seccompProfile: null
-        reportsController:
-          securityContext:
-            seccompProfile: null
 
   kyverno-policies:
     enabled_conditions:
@@ -798,7 +802,7 @@ units:
         spec:
           chart: .
       install:
-        createNamespace: true
+        createNamespace: false
       targetNamespace: metal3-system
       values:  # see https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3/-/blob/main/values.yaml
         global:
@@ -834,9 +838,21 @@ units:
         podSecurityContext:
           runAsNonRoot: true
           runAsUser: 1000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
         securityContext:
           runAsNonRoot: true
           runAsUser: 1000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
       valuesFrom:
         - kind: Secret
           name: metal3-secrets
@@ -1087,6 +1103,14 @@ units:
             value:
               runAsUser: 1000
               runAsGroup: 3000
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              privileged: false
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
       - target:
           kind: ConfigMap
         patch: |
@@ -1133,6 +1157,14 @@ units:
             value:
               runAsUser: 1000
               runAsGroup: 3000
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              privileged: false
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
       - target:
           kind: ConfigMap
         patch: |
@@ -1444,6 +1476,30 @@ units:
           loadBalancerIP: '{{ .Values.cluster.cluster_external_ip }}'
           annotations:
             metallb.universe.tf/allow-shared-ip: cluster-external-ip
+      _postRenderers:
+        - kustomize:
+            patchesStrategicMerge:
+              - kind: Deployment
+                apiVersion: apps/v1
+                metadata:
+                  name: k8s-gateway
+                spec:
+                  template:
+                    spec:
+                      containers:
+                      - name: k8s-gateway
+                        securityContext:
+                          allowPrivilegeEscalation: false
+                          capabilities:
+                            drop:
+                            - ALL
+                          privileged: false
+                          readOnlyRootFilesystem: true
+                          runAsNonRoot: true
+                          runAsGroup: 1000
+                          runAsUser: 1000
+                          seccompProfile:
+                            type: RuntimeDefault
 
   capd-metallb-config:
     enabled_conditions:
@@ -1476,7 +1532,16 @@ units:
       interval: 1m0s
       values:
         securityContext:
-          runAsUser: 1
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          privileged: false
+          runAsNonRoot: true
+          runAsGroup: 1000
+          runAsUser: 1000
+          seccompProfile:
+            type: RuntimeDefault
         conf:
           env:
             - name: URL_REMAP
@@ -1607,19 +1672,6 @@ units:
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:
-              - kind: Deployment
-                apiVersion: apps/v1
-                metadata:
-                  name: flux-webui-weave-gitops
-                spec:
-                  template:
-                    spec:
-                      containers:
-                      - name: weave-gitops
-                        securityContext:
-                          seccompProfile:
-                            $patch: delete
-                            type: RuntimeDefault
               - kind: ClusterRoleBinding
                 apiVersion: rbac.authorization.k8s.io/v1
                 metadata:
@@ -1633,6 +1685,8 @@ units:
                     name: sylva-admin@example.com  # add same RBAC for the SSO user, so that when flux-webui SA impersonates it has privileges; cannot use "infra-admins" group here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/427
 
   monitoring-crd:
+    depends_on:
+      namespace-defs: true
     enabled_conditions:
     - '{{ tuple . "monitoring" | include "unit-enabled" }}'
     helm_repo_url: https://charts.rancher.io/
@@ -1644,7 +1698,7 @@ units:
           chart: rancher-monitoring-crd
           version: 102.0.1+up40.1.2
       install:
-        createNamespace: true
+        createNamespace: false
       values:
         global:
           cattle:
@@ -1663,7 +1717,7 @@ units:
           chart: rancher-monitoring
           version: 102.0.1+up40.1.2
       install:
-        createNamespace: true
+        createNamespace: false
       values:
         global:
           cattle:
@@ -2030,6 +2084,27 @@ units:
         downloader:
           proxy: '{{ get .Values.proxies "https_proxy" }}'
           no_proxy: '{{ include "sylva-units.no_proxy" . }}'
+          securityContext:
+            capabilities:
+              drop:
+              - ALL
+            runAsNonRoot: true
+            runAsUser: 10000
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
+        nginx:
+          securityContext:
+            capabilities:
+              drop:
+              - ALL
+            runAsNonRoot: true
+            runAsUser: 10000
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
         ingress:
           className: nginx
           hosts:
