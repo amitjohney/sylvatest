@@ -277,9 +277,6 @@ units:
           auth:
             username: postgres
         nameOverride: postgres
-        primary:
-          containerSecurityContext:
-            seccompProfile: null
 
   kubevirt:
     helm_repo_url: https://suse-edge.github.io/charts
