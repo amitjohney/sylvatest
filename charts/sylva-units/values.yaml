@@ -1801,7 +1801,7 @@ units:
       chart:
         spec:
           chart: velero
-          version: v1.11.1
+          version: v1.11
       targetNamespace: velero
       install:
         createNamespace: true
