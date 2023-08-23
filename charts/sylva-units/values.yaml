@@ -844,6 +844,13 @@ units:
           kind: '{{       (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") | ternary "KubeadmControlPlane"                   "RKE2ControlPlane" }}'
           name: '{{ .Values.cluster.name }}-control-plane'
           namespace: '{{ .Release.Namespace }}'
+        # all the above is subject to a race condition: if Flux checks the status too early
+        # it concludes, because CAPI resources aren't fully kstatus compliant, that the resource is ready
+        # waiting for the cluster kubeconfig Secret is a workaround
+        - apiVersion: v1
+          kind: Secret
+          name: '{{ .Values.cluster.name }}-kubeconfig'
+          namespace: '{{ .Release.Namespace }}'
     helmrelease_spec:
       targetNamespace: '{{ .Release.Namespace }}'
       chart:
