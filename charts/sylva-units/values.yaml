@@ -1800,7 +1800,7 @@ units:
     helmrelease_spec:
       chart:
         spec:
-          chart: velero
+          chart: vmware-tanzu/velero
           version: 1.11.1
       targetNamespace: velero
       install:
