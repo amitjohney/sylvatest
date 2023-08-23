@@ -428,7 +428,7 @@ kubectl get helmreleases.helm.toolkit.fluxcd.io sylva-units
 If your management cluster is not properly deploying you should have a look at cluster-api resources:
 
 ```shell
-kubectl get cluster
+kubectl get cluster.cluster
 kubectl get machine
 kubectl get openstackmachine
 ```
