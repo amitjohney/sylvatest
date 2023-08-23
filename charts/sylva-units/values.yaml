@@ -1796,11 +1796,11 @@ units:
           version: 102.2.0+up1.4.1
   
   velero:
-    helm_repo_url: https://vmware-tanzu.github.io/helm-charts
+    helm_repo_url: https://github.com/vmware-tanzu/helm-charts
     helmrelease_spec:
       chart:
         spec:
-          chart: velero/velero
+          chart: velero
           version: 1.6.0
       targetNamespace: velero
       install:
