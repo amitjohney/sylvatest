@@ -1803,10 +1803,8 @@ units:
           chart: velero
           version: 5.0.2
       values:
-        configuration:
-          backupStorageLocation:
-            bucket: velerobucket
-            provider: OpenStack
+        configuration.backupStorageLocation.bucket: velerobucket
+        configuration.backupStorageLocation.provider: OpenStack
       targetNamespace: velero
       install:
         createNamespace: true
