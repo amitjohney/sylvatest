@@ -6,6 +6,11 @@ cluster:
   cluster_external_ip: 192.168.130.32
   capm3:
     bootstrap_ip: # replaced inside .gitlab-ci.yml logic
+  os_images:
+    ubuntu-2204-plain-qcow2:
+      uri: oci://docker-proxy-asis-gitlab.repos.tech.orange/sylva-projects/sylva-elements/diskimage-builder/diskimage-builder-plain:0.0.7
+      filename: ubuntu-22.04-plain.qcow2
+      checksum: 56a6363f25a5491aa955e4dda6fae17faa10c5e0850d01fe2a10c996c7830971
 
 units:
   cluster:
@@ -15,14 +20,14 @@ units:
         control_plane_replicas: 1
         cluster_external_ip: "{{ .Values.cluster.cluster_external_ip }}"
         metal3:
-          machine_image_url: http://192.168.133.2/ubuntu-22.04-plain.qcow2
+          machine_image_url: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2
           machine_image_format: qcow2
-          machine_image_checksum: http://192.168.133.2/ubuntu-22.04-plain.qcow2.md5sum
-          machine_image_checksum_type: md5
-          worker_machine_image_url: http://192.168.133.2/ubuntu-22.04-plain.qcow2
+          machine_image_checksum: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2.sha256sum
+          machine_image_checksum_type: sha256
+          worker_machine_image_url: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2
           worker_machine_image_format: qcow2
-          worker_machine_image_checksum: http://192.168.133.2/ubuntu-22.04-plain.qcow2.md5sum
-          worker_machine_image_checksum_type: md5
+          worker_machine_image_checksum: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2.sha256sum
+          worker_machine_image_checksum_type: sha256
           public_pool_name: "public-pool"
           public_pool_network: 192.168.130.0
           public_pool_gateway: 192.168.130.1
