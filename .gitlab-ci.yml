@@ -159,10 +159,6 @@ check-docs-markdown:
       optional: true
 
 .common-deployment:
-  script_prereq_capm3_vbmh:
-    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_prereq_capm3_vbmh[collapsed=true]\r\e[0KApplying specific capm3-vbmh Docker configuration\e[0m"
-    - export DOCKER_HOST=unix:///var/run/docker.sock
-    - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_prereq_capm3_vbmh\r\e[0K"
   script_common:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_common[collapsed=true]\r\e[0KRunning common deployment steps\e[0m"
     - export DOCKER_IP=$(getent ahostsv4 docker | awk '{print $1}' | sort -u)
@@ -230,6 +226,13 @@ check-docs-markdown:
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capo\r\e[0K"
   script_capm3_vbmh:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capm3_vbmh[collapsed=true]\r\e[0KApplying specific capm3-vbmh configuration\e[0m"
+    - export DOCKER_HOST=unix:///var/run/docker.sock
+    - export KIND_CLUSTER_NAME=bootstrap-${CI_PIPELINE_ID}-${ENV_NAME}
+    - export MANAGEMENT_CLUSTER_NAME="management-cluster-${CI_PIPELINE_ID}-${ENV_NAME}"
+    - export TEST_WORKLOAD_CLUSTER_NAME="first-workload-cluster-${CI_PIPELINE_ID}-${ENV_NAME}"
+    - yq -i '.cluster.name = strenv(MANAGEMENT_CLUSTER_NAME)' $values_file
+    - yq -i '.cluster.test_workload_cluster_name = strenv(TEST_WORKLOAD_CLUSTER_NAME)' $values_file
+    - yq -i '.env_type = "ci"' $values_file
     - export LIBVIRT_VM_HOST_IP=$(ip route get 8.8.8.8 | head -1 | cut -d' ' -f7)
     # for now we just merge test-values in values file, since remote kustomize target is not available for runner atm
     - yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file ${ENV_PATH}/test-values/values.yaml
@@ -464,8 +467,6 @@ cleanup-m3-units-in-capo:
 .deploy-capm3:
   extends: .deploy-base
   script:
-    - !reference [.common-deployment, script_prereq_capm3_vbmh]
-    - !reference [.common-deployment, script_common]
     - !reference [.common-deployment, script_capm3_vbmh]
     - sudo ./bootstrap.sh environment-values/${ENV_NAME}
     - !reference [.common-deployment, post_deployment_common]
@@ -486,14 +487,6 @@ deploy-rke2-capm3:
     expose_as: rke2-capm3
   resource_group: vbmh-1-2-3
 
-deploy-rke2-capm3-oci:
-  extends: deploy-rke2-capm3
-  variables:
-    ENV_NAME: "rke2-capm3"
-    OCI_TAG: $OCI_TAG_FORMAT
-  artifacts:
-    expose_as: rke2-capm3-oci
-
 deploy-kubeadm-capm3:
   timeout: 75min
   extends: .deploy-capm3
@@ -502,14 +495,6 @@ deploy-kubeadm-capm3:
   artifacts:
     expose_as: kubeadm-capm3
   resource_group: vbmh-4-5-6
-
-deploy-kubeadm-capm3-oci:
-  extends: deploy-kubeadm-capm3
-  variables:
-    ENV_NAME: "kubeadm-capm3"
-    OCI_TAG: $OCI_TAG_FORMAT
-  artifacts:
-    expose_as: kubeadm-capm3-oci
 
 scheduled-cleanup-capo:
   stage: delete
