@@ -161,23 +161,12 @@ check-docs-markdown:
 .common-deployment:
   script_common:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_common[collapsed=true]\r\e[0KRunning common deployment steps\e[0m"
-    - |
-      if [[ "$CI_RUNNER_TAGS" =~ .*"oro-libvirt".* ]]; then
-        sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
-        sudo chmod +x /usr/local/bin/yq
-        echo "We install docker 23.0.6 in Libvirt VM env of the job"
-        curl https://releases.rancher.com/install-docker/23.0.6.sh | sudo sh
-        sudo docker network create --attachable kind
-      fi
+    - export DOCKER_IP=$(getent ahostsv4 docker | awk '{print $1}' | sort -u)
     - export ENV_PATH=environment-values/${ENV_NAME}
     - values_file=environment-values/${ENV_NAME}/values.yaml
-    - |
-      if [[ ! $CI_RUNNER_TAGS =~ .*"oro-libvirt".* ]]; then
-        docker network create --attachable kind
-        export DOCKER_IP=$(getent ahostsv4 docker | awk '{print $1}' | sort -u)
-        KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
-        ip route add $KIND_PREFIX via $DOCKER_IP
-      fi
+    - docker network create --attachable kind
+    - KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
+    - ip route add $KIND_PREFIX via $DOCKER_IP
     - export KIND_CLUSTER_NAME=bootstrap-${CI_PIPELINE_ID}-${ENV_NAME}
     - export MANAGEMENT_CLUSTER_NAME="management-cluster-${CI_PIPELINE_ID}-${ENV_NAME}"
     - export TEST_WORKLOAD_CLUSTER_NAME="first-workload-cluster-${CI_PIPELINE_ID}-${ENV_NAME}"
@@ -237,7 +226,6 @@ check-docs-markdown:
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capo\r\e[0K"
   script_capm3_vmh:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capm3_vbmh[collapsed=true]\r\e[0KApplying specific capm3-vbmh configuration\e[0m"
-    # - export DIND_HOST_IP=$(getent hosts $(uname -n) | awk '{print $1}' | sort -u)
     - export LIBVIRT_VM_HOST_IP=$(ip route get 8.8.8.8 | head -1 | cut -d' ' -f7)
     # for now we just merge test-values in values file, since remote kustomize target is not available for runner atm
     - yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file ${ENV_PATH}/test-values/values.yaml
@@ -491,6 +479,7 @@ deploy-rke2-capm3:
     ENV_NAME: "rke2-capm3"
   artifacts:
     expose_as: rke2-capm3
+  resource_group: vbmh-1-2-3
 
 deploy-rke2-capm3-oci:
   extends: deploy-rke2-capm3
@@ -507,6 +496,7 @@ deploy-kubeadm-capm3:
     ENV_NAME: "kubeadm-capm3"
   artifacts:
     expose_as: kubeadm-capm3
+  resource_group: vbmh-4-5-6
 
 deploy-kubeadm-capm3-oci:
   extends: deploy-kubeadm-capm3
