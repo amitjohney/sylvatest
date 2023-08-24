@@ -27,7 +27,11 @@
   {{- if (get $repo_def "existing_source") }}
     {{/* no need to generate a source */}}
   {{- else }}
+    {{- if ($repo_def.kind | eq "GitRepository") }}
+apiVersion: source.toolkit.fluxcd.io/v1
+    {{- else }}
 apiVersion: source.toolkit.fluxcd.io/v1beta2
+    {{- end }}
 kind: {{ $repo_def.kind }}
 metadata:
   name: {{ $repo_name }}
