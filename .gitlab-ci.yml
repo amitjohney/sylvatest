@@ -159,6 +159,10 @@ check-docs-markdown:
       optional: true
 
 .common-deployment:
+  script_prereq_capm3_vbmh:
+    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_prereq_capm3_vbmh[collapsed=true]\r\e[0KApplying specific capm3-vbmh Docker configuration\e[0m"
+    - export DOCKER_HOST=unix:///var/run/docker.sock
+    - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_prereq_capm3_vbmh\r\e[0K"
   script_common:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_common[collapsed=true]\r\e[0KRunning common deployment steps\e[0m"
     - export DOCKER_IP=$(getent ahostsv4 docker | awk '{print $1}' | sort -u)
@@ -224,7 +228,7 @@ check-docs-markdown:
     - yq -e '.registry_mirrors' $(basename ${CI_COMPONENT_REPO} .git)/${CI_COMPONENT_REPO_PATH}-base/values.yaml > registry_mirrors.yml
     - yq -i eval-all 'select(fileIndex==0).registry_mirrors = select(fileIndex==1) | select(fileIndex==0)' $values_file registry_mirrors.yml
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capo\r\e[0K"
-  script_capm3_vmh:
+  script_capm3_vbmh:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capm3_vbmh[collapsed=true]\r\e[0KApplying specific capm3-vbmh configuration\e[0m"
     - export LIBVIRT_VM_HOST_IP=$(ip route get 8.8.8.8 | head -1 | cut -d' ' -f7)
     # for now we just merge test-values in values file, since remote kustomize target is not available for runner atm
@@ -460,8 +464,9 @@ cleanup-m3-units-in-capo:
 .deploy-capm3:
   extends: .deploy-base
   script:
+    - !reference [.common-deployment, script_prereq_capm3_vbmh]
     - !reference [.common-deployment, script_common]
-    - !reference [.common-deployment, script_capm3_vmh]
+    - !reference [.common-deployment, script_capm3_vbmh]
     - sudo ./bootstrap.sh environment-values/${ENV_NAME}
     - !reference [.common-deployment, post_deployment_common]
   rules:
