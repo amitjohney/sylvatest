@@ -227,6 +227,8 @@ check-docs-markdown:
   script_capm3_vbmh:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capm3_vbmh[collapsed=true]\r\e[0KApplying specific capm3-vbmh configuration\e[0m"
     - export DOCKER_HOST=unix:///var/run/docker.sock
+    - export ENV_PATH=environment-values/${ENV_NAME}
+    - values_file=environment-values/${ENV_NAME}/values.yaml
     - export KIND_CLUSTER_NAME=bootstrap-${CI_PIPELINE_ID}-${ENV_NAME}
     - export MANAGEMENT_CLUSTER_NAME="management-cluster-${CI_PIPELINE_ID}-${ENV_NAME}"
     - export TEST_WORKLOAD_CLUSTER_NAME="first-workload-cluster-${CI_PIPELINE_ID}-${ENV_NAME}"
