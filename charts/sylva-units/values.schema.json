@@ -660,6 +660,17 @@
             }
           ]
         },
+        "default_cni": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "calico",
+                "cilium"
+              ]
+            }
+          ]
+        },
         "air_gapped": {
           "type": "boolean"
         },

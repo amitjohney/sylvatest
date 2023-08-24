@@ -860,6 +860,7 @@ units:
         name: '{{ .Values.cluster.name }}'
         air_gapped: '{{ .Values.cluster.air_gapped  | include "preserve-type" }}'
         cis_profile: '{{ .Values.cluster.cis_profile }}'
+        default_cni: '{{ .Values.cluster.default_cni }}'
         capi_providers: '{{ .Values.cluster.capi_providers | include "preserve-type" }}'
         image: '{{ .Values.cluster.image }}'
         worker_machine_image: '{{ .Values.cluster.worker_machine_image | default .Values.cluster.image }}'
@@ -1905,6 +1906,7 @@ units:
             bootstrap_provider: '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
           k8s_version: '{{ .Values.cluster.k8s_version }}'
           cis_profile: '{{ .Values.cluster.cis_profile }}'
+          default_cni: '{{ .Values.cluster.default_cni }}'
           capo:
             ssh_key_name: '{{ .Values.cluster.capo.ssh_key_name }}'
             resources_tag: '{{ tuple . (.Values.cluster | dig "capo" "resources_tag" "") | include "interpret-as-string" }}'
@@ -2030,6 +2032,9 @@ cluster:
 
   # cis profile to be used. Curently supported only for rke2 clusters. "cis-1.6" for k8s prior to 1.25, "cis-1.23" for 1.25+
   cis_profile: cis-1.6
+
+  # cni used for the cluster. Can be calico or cilium
+  default_cni: calico
 
   # Admin password that will be configured by default on various units
   admin_password: '{{ .Values._internal.default_password }}'
