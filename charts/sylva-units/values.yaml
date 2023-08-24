@@ -1805,8 +1805,6 @@ units:
       values:
         configuration:
           backupStorageLocation:
-            objectStorage:
-              bucket: velero-backups
             provider: OpenStack
       targetNamespace: velero
       install:
