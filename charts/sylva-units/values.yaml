@@ -1447,6 +1447,66 @@ units:
       chart:
         spec:
           chart: .
+      values:
+        name: '{{ .Values.cluster.name }}'
+        air_gapped: '{{ .Values.cluster.air_gapped  | include "preserve-type" }}'
+        cis_profile: '{{ .Values.cluster.cis_profile }}'
+        cluster_cni: '{{ .Values.cluster.cluster_cni }}'
+        capi_providers: '{{ .Values.cluster.capi_providers | include "preserve-type" }}'
+        image: '{{ .Values.cluster.image }}'
+        worker_machine_image: '{{ .Values.cluster.worker_machine_image | default .Values.cluster.image }}'
+        k8s_version: '{{ .Values.cluster.k8s_version }}'
+        control_plane_replicas: '{{ .Values.cluster.control_plane_replicas | include "preserve-type" }}'
+        cluster_external_ip: '{{ tuple .Values.cluster.cluster_external_ip (not (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
+        cluster_public_ip: '{{ tuple (.Values.cluster.capo.floating_ip) (not (eq .Values.cluster.capo.floating_ip "")) | include "set-only-if" }}'
+        cluster_services_cidrs:
+          - 10.43.0.0/16
+        cluster_pods_cidrs:
+          - 10.42.0.0/16
+        capo:
+          flavor_name: '{{ .Values.cluster.capo.flavor_name }}'
+          worker_flavor_name: '{{ .Values.cluster.capo.worker_flavor_name }}'
+          ssh_key_name: '{{ .Values.cluster.capo.ssh_key_name }}'
+          network_id: '{{ .Values.cluster.capo.network_id }}'
+          rootVolume: '{{ .Values.cluster.capo.rootVolume | include "preserve-type" }}'
+          control_plane_security_group_name: "capo-{{ .Values.cluster.name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}"
+          worker_security_group_name: "capo-{{ .Values.cluster.name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}"
+          control_plane_az: '{{ tuple (.Values.cluster | dig "capo" "control_plane_az" list | include "preserve-type") (.Values.cluster | dig "capo" "control_plane_az" nil) | include "set-only-if" }}'
+          #cacert: # cert used to validate CA of OpenStack APIs
+          resources_tag: '{{ .Values.cluster.capo.resources_tag }}'
+        capv:
+          dataCenter: '{{ .Values.cluster.capv.dataCenter }}'
+          networks:
+            default:
+              networkName: '{{ .Values.cluster.capv.network }}'
+          server: '{{ .Values.cluster.capv.server }}'
+          dataStore: '{{ .Values.cluster.capv.dataStore }}'
+          tlsThumbprint: '{{ .Values.cluster.capv.tlsThumbprint }}'
+          ssh_key: '{{ .Values.cluster.capv.ssh_key }}'
+          folder: '{{ .Values.cluster.capv.folder }}'
+          resourcePool: '{{ .Values.cluster.capv.resourcePool }}'
+          storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
+          control_plane_profile:
+            numCPUs: 2
+            memoryMiB: 8192
+            diskGiB: 25
+          storageClass:
+            storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
+            fsType: ext4
+        machine_deployment_default:
+          metadata:
+            labels:
+              created-by/authors: Project-Sylva
+            annotations:
+              repo: "https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster"
+          network_interfaces: {}
+        dns_resolver: false
+        ntp: '{{ .Values.ntp | include "preserve-type" }}'
+        proxies: '{{ .Values.proxies | include "preserve-type" }}'
+        registry_mirrors: '{{ .Values.registry_mirrors | include "preserve-type" }}'
+        metallb_helm_oci_url: '{{ .Values.metallb_helm_oci_url | include "preserve-type" }}'
+        metallb_helm_version: '{{ .Values.units.metallb.helmrelease_spec.chart.spec.version }}'
+        enable_longhorn: '{{ tuple . "longhorn" | include "unit-enabled" | include "as-bool" }}'
       valuesFrom:
         - kind: ConfigMap
           name: capo-cluster-resources
@@ -2608,6 +2668,17 @@ cluster:
 
   # cis profile to be used. Curently supported only for rke2 clusters. "cis-1.6" for k8s prior to 1.25, "cis-1.23" for 1.25+
   cis_profile: cis-1.23
+
+  # cni used for the cluster. Can be calico or cilium
+  cluster_cni: calico
+
+  # Admin password that will be configured by default on various units
+  admin_password: '{{ .Values._internal.default_password }}'
+
+  # image reference depends provider, used for control plane nodes
+  image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/rke2-in-docker:v1-24-12-rke2r1
+
+  # worker_machine_image: "Ubuntu 20.04 Pack"         # Openstack image for worker nodes
 
   # for now, the choice below needs to be made
   # consistently with the choice of a matching kustomization path
