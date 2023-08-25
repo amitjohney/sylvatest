@@ -20,7 +20,7 @@ echo -e "\U0001F5D1 Start cleanup for tag '${CAPO_TAG}' at $(date)"
 SERVERS="$(openstack ${OS_ARGS} server list --tags ${CAPO_TAG} -f value -c Name)"
 
 if [ -n "$SERVERS" ] ; then
-  echo -e "The following servers match the ${CAPO_TAG}:\n${SERVERS}\n"
+  echo -e "The following servers match the '${CAPO_TAG}' tag:\n${SERVERS}\n"
   
   echo -e "\U0001F5D1 Pausing servers: ${SERVERS//$'\n'/ }"
   openstack ${OS_ARGS} server pause ${SERVERS//$'\n'/ }
