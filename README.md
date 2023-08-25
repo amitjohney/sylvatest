@@ -339,7 +339,7 @@ of your environment values the admin password that will be used for accessing th
 If you don't do this, a random password will be set, which you can retrieve from Vault (path secret/sso-account) or with the command:
 
 ```shell
-kubectl get secrets sylva-units-values-debug -o yaml | yq .data.values | base64 -d | yq .cluster.admin_password
+kubectl get secrets sylva-units-values -o yaml | yq .data.values | base64 -d | yq .cluster.admin_password
 ```
 
 **Note well** that this reflects the current state of Sylva, but does not match the target, which is to rely on Vault to
@@ -448,13 +448,13 @@ clusterctl describe cluster management-cluster --show-conditions all
 If you need to check the values set to the sylva-units HelmRelease(s) deployed, possibly for debug purposes, you could get them with:
 
 ```shell
-kubectl get secret sylva-units-values-debug -o template='{{ .data.values }}' | base64 -d
+kubectl get secret sylva-units-values -o template='{{ .data.values }}' | base64 -d
 ```
 
 For example, if you want to get the final values passed to a specific unit, such as ones set to the cluster unit (instantiation of sylva-capi-cluster Helm chart),you could use:
 
 ```shell
-kubectl get secret sylva-units-values-debug -o template='{{ .data.values }}' | base64 -d | yq .units.cluster.helmrelease_spec.values
+kubectl get secret sylva-units-values -o template='{{ .data.values }}' | base64 -d | yq .units.cluster.helmrelease_spec.values
 ```
 
 ### Knowing the state of a deployment
@@ -519,11 +519,11 @@ By using this command, we can inspect the rendered Kubernetes manifests before d
 ```terminal
 $ helm template sylva-units charts/sylva-units
 
-# Source: sylva-units/templates/sylva-units-values-debug.yaml
+# Source: sylva-units/templates/sylva-units-values.yaml
 apiVersion: v1
 kind: Secret
 metadata:
-  name: sylva-units-values-debug
+  name: sylva-units-values
   labels:
     helm.sh/chart: sylva-units-0.0.0-git
     app.kubernetes.io/name: sylva-units
@@ -533,12 +533,12 @@ metadata:
 ...
 ```
 
-In this helm output, the `sylva-units-values-debug` Secret contains the result of templating interpretation of the values, which can be helful in debugging the sylva-units chart.
+In this helm output, the `sylva-units-values` Secret contains the result of templating interpretation of the values, which can be helful in debugging the sylva-units chart.
 
 We can see the template rendered specifically to check the values for all the units in your dev environment by using:
 
 ```terminal
- helm template charts/sylva-units --values charts/sylva-units/management.values.yaml --values my-env/secrets.yaml --values my-env/values.yaml -s templates/sylva-units-values-debug.yaml | yq 'select(.kind == "Secret") | .stringData.values' | yq
+ helm template charts/sylva-units --values charts/sylva-units/management.values.yaml --values my-env/secrets.yaml --values my-env/values.yaml -s templates/sylva-units-values.yaml | yq 'select(.kind == "Secret") | .stringData.values' | yq
 ```
 
 We can see the template rendered specifically for the `bootstrap-cluster` by using:
