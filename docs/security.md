@@ -72,7 +72,7 @@ The following command will generate a password compliant with the password polic
 If you don't set a password here, helm shall pick a random one. You can retrieve it in **vault** (secret/sso-account) by using the vault root token to authenticate against Vault (see next section) or by using the following command:
 
 ```shell
- kubectl get secrets sylva-units-values-debug -o template="{{ .data.values }}" | base64 -d | grep admin_password
+ kubectl get secrets sylva-units-values -o template="{{ .data.values }}" | base64 -d | grep admin_password
 ```
 
 ## Hashicorp Vault
