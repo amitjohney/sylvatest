@@ -972,9 +972,6 @@ units:
         substituteFrom: # for CAPO_NETWORK_ID and *_SECURITY_GROUP_NAME
           - kind: ConfigMap
             name: cluster-vars
-      _components:
-        - '{{ tuple "components/capo-vip-floating-ip"
-            (and .Values.cluster.capo.external_network_id (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
 
   pause-cluster-reconciliation:
     enabled_conditions:
