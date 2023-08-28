@@ -965,14 +965,14 @@ units:
         substitute:
           STACK_NAME_PREFIX: 'management-cluster-{{ tuple . .Values.cluster.capo.resources_tag | include "interpret-as-string" | replace "." "-" }}'
           CAPO_TAG: '{{ .Values.cluster.capo.resources_tag }}'
+          CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
           CONTROL_PLANE_AFFINITY_POLICY: '{{ .Values.cluster.capo.control_plane_affinity_policy }}'
           WORKER_AFFINITY_POLICY: '{{ .Values.cluster.capo.worker_affinity_policy }}'
           CAPO_EXTERNAL_NETWORK_ID: '{{ tuple .Values.cluster.capo.external_network_id
             (and .Values.cluster.capo.external_network_id (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
+          CONTROL_PLANE_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}'
+          WORKER_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}'
           CAPO_CREATE_IRONIC_SECURITY_GROUP: '{{ tuple . (and (.Values.units.metal3.enabled | default false) (.Values.cluster.capi_providers.infra_provider | eq "capo")) "true" "false" | include "interpret-ternary" }}'
-        substituteFrom: # for CAPO_NETWORK_ID and *_SECURITY_GROUP_NAME
-          - kind: ConfigMap
-            name: cluster-vars
 
   pause-cluster-reconciliation:
     enabled_conditions:
