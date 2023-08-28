@@ -322,7 +322,7 @@ units:
               echo "-- All done"
 
 cluster:
-  display_external_ip: '{{ .Values.cluster | dig "capm3" "external_bootstrap_ip" (.Values.cluster | dig "capm3" "bootstrap_ip" "127.0.0.1") }}'
+  display_external_ip: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" | ternary (.Values.cluster | dig "capm3" "external_bootstrap_ip" (.Values.cluster | dig "capm3" "bootstrap_ip" "127.0.0.1")) (.Values.cluster.capo.floating_ip | eq "" | ternary .Values.cluster.cluster_external_ip .Values.cluster.capo.floating_ip) }}'
 
 # only those components will be enabled on bootstrap cluster (this overrides 'units.<component>.enabled')
 # note that this list does *not* override enabled_conditions set on the units, those are still applied
