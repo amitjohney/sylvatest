@@ -91,20 +91,6 @@
     },
     {
       "datasourceTemplate": "docker",
-      "fileMatch": ["management-cluster-capv-values.yaml"],
-      "matchStrings": [
-        "#\\s?renovate: registryUrl=(?<registryUrl>.*?) image=(?<depName>.*?)\\s?\\s*kubeVipVersion:\\s?(?<currentValue>[\\w\\.\\-]*)"
-      ]
-    },
-    {
-      "datasourceTemplate": "docker",
-      "fileMatch": ["kubeadm-capo-cluster.yaml", "kubeadm-capv-cluster.yaml"],
-      "matchStrings": [
-        "#\\s?renovate: registryUrl=(?<registryUrl>.*?) image=(?<depName>.*?)\\s?\\s*image:.*:(?<currentValue>[\\w+\\.\\-]*)"
-      ]
-    },
-    {
-      "datasourceTemplate": "docker",
       "fileMatch": ["kustomize-units/keycloak-legacy-operator/kustomization.yaml"],
       "matchStrings": [
         "#\\s?renovate: registryUrl=(?<registryUrl>.*?) image=(?<depName>.*?)\\n[\\w\\W]*?newTag: (?<currentValue>[\\w+.-]*)"
