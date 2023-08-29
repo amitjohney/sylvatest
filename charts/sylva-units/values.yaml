@@ -69,7 +69,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.0.14
+        tag: 0.0.16
 
   local-path-provisioner:
     kind: GitRepository
@@ -912,7 +912,7 @@ units:
             replicas: '{{ .Values.cluster.worker_replicas | include "preserve-type" }}'
             failure_domain: ""
             network_interfaces: {}
-        capi_rancher_import: false
+        dns_resolver: false
         ntp: '{{ .Values.ntp | include "preserve-type" }}'
         proxies: '{{ .Values.proxies | include "preserve-type" }}'
         registry_mirrors: '{{ .Values.registry_mirrors | include "preserve-type" }}'
@@ -1935,7 +1935,7 @@ units:
                   worker_security_group_name: "capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}"
                 mgmt_cluster_external_domain: '{{ .Values.cluster.cluster_external_domain }}'
                 mgmt_cluster_external_ip: '{{ .Values.cluster.cluster_external_ip }}'
-                capi_rancher_import: true
+                dns_resolver: true
 
           #multus:   ## can be overriden via environment values
           #  enabled: true

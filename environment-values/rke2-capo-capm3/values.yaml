@@ -78,35 +78,35 @@ units:
                   dns_server: 1.2.3.4
 
                 control_plane:   # tweak network configuration as needed ...
-                  infra:
-                    provisioning_pool_interface: bond0
-                    public_pool_interface: bond0.13
-                    network_interfaces:
-                      # for CAPM3 folowing are used and mapped to Metal3Data.spec.template.spec.networkData.links
-                      bond0:
-                        # bond_mode can be one of balance-rr, active-backup, balance-xor, broadcast, balance-tlb, balance-alb, 802.3ad
-                        # https://github.com/metal3-io/cluster-api-provider-metal3/blob/main/api/v1alpha5/metal3datatemplate_types.go#L201-L202
-                        bond_mode: 802.3ad
-                        interfaces:
-                          - ens1f0
-                          - ens1f1
-                        vlans:
-                          - id: 13
-                      ens1f0:
-                        type: phy
-                      ens1f1:
-                        type: phy
+                  provisioning_pool_interface: bond0
+                  public_pool_interface: bond0.13
+                  network_interfaces:
+                    # for CAPM3 folowing are used and mapped to Metal3Data.spec.template.spec.networkData.links
+                    bond0:
+                      # bond_mode can be one of balance-rr, active-backup, balance-xor, broadcast, balance-tlb, balance-alb, 802.3ad
+                      # https://github.com/metal3-io/cluster-api-provider-metal3/blob/main/api/v1alpha5/metal3datatemplate_types.go#L201-L202
+                      bond_mode: 802.3ad
+                      interfaces:
+                        - ens1f0
+                        - ens1f1
+                      vlans:
+                        - id: 13
+                    ens1f0:
+                      type: phy
+                    ens1f1:
+                      type: phy
                   rke2:
-                    additionalUserData:  # sylva-capi-cluster pushes this under the .config key (we have to fix that)
-                      users:
-                        - name: ubuntu
-                          groups: users
-                          sudo: ALL=(ALL) NOPASSWD:ALL
-                          shell: /bin/bash
-                          lock_passwd: false
-                          passwd: "put your password hash here" # (copy pasted from /etc/shadow or created with "mkpasswd" --method=SHA-512 --stdin")
-                          ssh_authorized_keys:
-                            - ssh-rsa AAAA...... YOUR KEY HERE ....UqnQ==
+                    additionalUserData:
+                      config: | # String to allows users to specify additional cloud-init configuration
+                        users:
+                          - name: ubuntu
+                            groups: users
+                            sudo: ALL=(ALL) NOPASSWD:ALL
+                            shell: /bin/bash
+                            lock_passwd: false
+                            passwd: "put your password hash here" # (copy pasted from /etc/shadow or created with "mkpasswd" --method=SHA-512 --stdin")
+                            ssh_authorized_keys:
+                              - ssh-rsa AAAA...... YOUR KEY HERE ....UqnQ==
 
                 machine_deployment_default: # tweak as needed ...
                   provisioning_pool_interface: bond0
@@ -135,13 +135,16 @@ units:
                         type: phy
                     rke2:
                       additionalUserData:
-                        users:
-                          - name: ubuntu
-                            groups: users
-                            sudo: ALL=(ALL) NOPASSWD:ALL
-                            shell: /bin/bash
-                            ssh_authorized_keys:
-                              - ssh-rsa AAAA...... YOUR KEY HERE ....UqnQ==
+                        config: | # String to allows users to specify additional cloud-init configuration
+                          users:
+                            - name: ubuntu
+                              groups: users
+                              sudo: ALL=(ALL) NOPASSWD:ALL
+                              shell: /bin/bash
+                              lock_passwd: false
+                              passwd: "put your password hash here" # (copy pasted from /etc/shadow or created with "mkpasswd" --method=SHA-512 --stdin")
+                              ssh_authorized_keys:
+                                - ssh-rsa AAAA...... YOUR KEY HERE ....UqnQ==
 
                 baremetal_hosts:
                   # this example is based on what worked on an HP Proliant DL360 Gen10
