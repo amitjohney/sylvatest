@@ -245,13 +245,17 @@ check-docs-markdown:
           region_name: '${OS_REGION_NAME}'
           verify: false
       EOF
+  variables:
+    # if a deploy job sets this to "even" (resp. "odd"), the job will automatically trigger
+    # for any MR having an even MR number and the run-e2e-tests label
+    E2E_JOB_MR_PARITY: any
   rules:
     - if: '$CI_COMMIT_TAG && $OCI_TAG'
       variables:
         OCI_TAG: $CI_COMMIT_TAG
     - if: $CI_PIPELINE_SOURCE == 'web'
     - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_DEPLOYMENTS'
-    - if: $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
+    - if: $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/ && ($E2E_JOB_MR_PARITY == "any" || ($E2E_JOB_MR_PARITY == "even" && $CI_OPEN_MERGE_REQUESTS =~ /[02468]$/) || ($E2E_JOB_MR_PARITY == "odd" && $CI_OPEN_MERGE_REQUESTS =~ /[13579]$/))
       allow_failure: true
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
       allow_failure: true
@@ -296,6 +300,7 @@ deploy-kubeadm-capd:
     - !reference [.common-deployment, rules]
   variables:
     ENV_NAME: kubeadm-capd
+    E2E_JOB_MR_PARITY: even
   artifacts:
     expose_as: kubeadm-capd
 
@@ -304,6 +309,7 @@ deploy-kubeadm-capd-oci:
   variables:
     ENV_NAME: kubeadm-capd
     OCI_TAG: $OCI_TAG_FORMAT
+    E2E_JOB_MR_PARITY: odd
   artifacts:
     expose_as: kubeadm-capd-oci
 
@@ -329,6 +335,7 @@ deploy-rke2-capo:
   variables:
     ENV_NAME: "rke2-capo"
     CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}"
+    E2E_JOB_MR_PARITY: odd
   artifacts:
     expose_as: rke2-capo
 
@@ -338,6 +345,7 @@ deploy-rke2-capo-oci:
     ENV_NAME: "rke2-capo"
     CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-OCI"
     OCI_TAG: $OCI_TAG_FORMAT
+    E2E_JOB_MR_PARITY: even
   artifacts:
     expose_as: rke2-capo-oci
 
@@ -347,6 +355,7 @@ deploy-kubeadm-capo:
   variables:
     ENV_NAME: "kubeadm-capo"
     CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}"
+    E2E_JOB_MR_PARITY: even
   artifacts:
     expose_as: kubeadm-capo
 
@@ -356,6 +365,7 @@ deploy-kubeadm-capo-oci:
     ENV_NAME: "kubeadm-capo"
     CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-OCI"
     OCI_TAG: $OCI_TAG_FORMAT
+    E2E_JOB_MR_PARITY: odd
   artifacts:
     expose_as: kubeadm-capo-oci
 
