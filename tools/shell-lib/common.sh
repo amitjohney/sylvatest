@@ -139,12 +139,6 @@ function force_reconcile() {
   local name_or_selector=$2
   local namespace=${3:-default}
   echo "force reconciliation of $1 $2"
-  # Wait for resource to be created
-  until kubectl get -n $namespace $kinds $name_or_selector >/dev/null 2>&1
-  do
-    echo "Waiting for $kinds $name_or_selector in $namespace"
-    sleep 1
-  done
   kubectl annotate -n $namespace --overwrite $kinds $name_or_selector reconcile.fluxcd.io/requestedAt=$(date -uIs) | sed -e 's/^/  /'
 }
 
