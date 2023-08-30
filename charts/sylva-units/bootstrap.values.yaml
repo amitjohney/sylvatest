@@ -54,10 +54,6 @@ units:
         controller:
           service:
             externalIPs: '{{ .Values._internal.bootstrap_node_ip | include "preserve-type" }}'
-          updateStrategy:
-            rollingUpdate:
-              maxUnavailable: 0
-              maxSurge: 1
 
   os-image-server:
     helmrelease_spec:
