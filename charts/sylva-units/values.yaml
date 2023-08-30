@@ -1020,7 +1020,17 @@ units:
             path: /data/kube-job.sh
             value: |
               #!/bin/bash
-              kubectl wait --for condition=Ready --timeout 600s --all machine
+
+              kubectl wait {{ (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") | ternary "KubeadmControlPlane" "RKE2ControlPlane" }} \
+                {{ .Values.cluster.name }}-control-plane --for condition=Available --timeout 600s
+              kubectl wait {{ (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") | ternary "KubeadmControlPlane" "RKE2ControlPlane" }} \
+                {{ .Values.cluster.name }}-control-plane --for condition=Resized   --timeout 600s
+
+              kubectl wait MachineDeployment -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }} --for condition=Available --timeout 600s
+
+              kubectl wait machine -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }} --for condition=Ready --timeout 600s
+              kubectl wait machine -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }} --for condition=NodeHealthy --timeout 600s
+
               kubectl patch cluster.cluster.x-k8s.io  {{ .Values.cluster.name }} --type merge -p '{"spec":{"paused": true}}'
 
   resume-cluster-reconciliation:
