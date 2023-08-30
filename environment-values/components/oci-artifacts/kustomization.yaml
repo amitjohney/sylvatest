@@ -4,9 +4,6 @@ kind: Component
 resources:
 - helm-repo.yaml
 
-commonLabels:
-  copy-from-bootstrap-to-management: ""
-
 patches:
 - target:
     kind: HelmRelease
