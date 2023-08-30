@@ -64,7 +64,12 @@ function process_chart_in_helm_repo {
       helm push $tgz_file $OCI_REGISTRY
       rm -f $tgz_file
     else
-      error $chart_name "The $tgz_file is not present after the 'helm pull' operation, check that the chart version is correct"
+      if ls $chart_name*tgz >/dev/null 2>&1; then
+        actual_chart=$(ls $chart_name*tgz)
+        error $chart_name "The $tgz_file was expected but in fact $actual_chart was downloaded"
+      else      
+        error $chart_name "A $tgz_file file was expected, but no $chart_name*tgz file was produced by 'helm pull'."
+      fi
     fi
   else
     error $chart_name "The chart $chart_name:$chart_version from $helm_repo cant be pull locally"
