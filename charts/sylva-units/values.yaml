@@ -83,7 +83,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sriov-resources.git
       ref:
-        tag: 0.0.2
+        tag: 0.0.3
 
   os-image-server:
     kind: GitRepository
@@ -2154,6 +2154,7 @@ cluster:
 #       nodeSelector: {}  # <<< lets you further limit the SR-IOV capable nodes on which the VFs have to be created in a certain config; if not set it applies to all SR-IOV nodes
 #       resourceName: ""
 #       numVfs: ""
+#       deviceType: ""
 #       nicSelector:
 #         deviceID: ""
 #         vendor: ""
