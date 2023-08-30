@@ -1451,7 +1451,7 @@ units:
         name: '{{ .Values.cluster.name }}'
         air_gapped: '{{ .Values.cluster.air_gapped  | include "preserve-type" }}'
         cis_profile: '{{ .Values.cluster.cis_profile }}'
-        cluster_cni: '{{ .Values.cluster.cluster_cni }}'
+        default_cni: '{{ .Values.cluster.default_cni }}'
         capi_providers: '{{ .Values.cluster.capi_providers | include "preserve-type" }}'
         image: '{{ .Values.cluster.image }}'
         worker_machine_image: '{{ .Values.cluster.worker_machine_image | default .Values.cluster.image }}'
@@ -2670,7 +2670,7 @@ cluster:
   cis_profile: cis-1.23
 
   # cni used for the cluster. Can be calico or cilium
-  cluster_cni: calico
+  default_cni: calico
 
   # Admin password that will be configured by default on various units
   admin_password: '{{ .Values._internal.default_password }}'
