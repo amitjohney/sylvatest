@@ -1105,6 +1105,18 @@ units:
           calicoNetwork:
             bgp: Enabled
 
+  cilium:
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
+    helm_repo_url: https://rke2-charts.rancher.io
+    helmrelease_spec:
+      releaseName: rke2-cilium
+      targetNamespace: kube-system
+      chart:
+        spec:
+          chart: rke2-cilium
+          version: v1.13.2
+
   cinder-csi-psp:
     enabled_conditions:
     - '{{ .Values.cluster.cis_profile | eq "cis-1.6" }}'
