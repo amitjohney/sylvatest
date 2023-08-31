@@ -239,15 +239,10 @@ check-docs-markdown:
     # the CI_COMPONENT_* & VBMH_CI_COMPONENT_* & VBMH_USERNAME & VBMH_PASSWORD variables below
     # are set in the gitlab runner configuration and allow to enable extra kustomize components
     # needed in the context of the platform on which this test actually runs
-    # - git config --global credential.helper cache
-    # - git config --global http.proxy ${https_proxy}
-    # - export CI_COMPONENT="https://${CI_COMPONENT_REPO}//${VBMH_CI_COMPONENT_REPO_PATH}/${ENV_NAME}-base?ref=capm3-vbmh-ci"
     - git clone --depth=1 --branch capm3-vbmh-ci --single-branch https://foo:${CI_COMPONENT_REPO_PAT}@${CI_COMPONENT_REPO}
     - export CI_COMPONENT="../../${VBMH_CI_COMPONENT_LOCAL_PATH}/${ENV_NAME}-base"
     - if [ $(yq '.components | length' environment-values/$ENV_NAME/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' environment-values/$ENV_NAME/kustomization.yaml; fi
     - yq -i '.components += strenv(CI_COMPONENT)' environment-values/$ENV_NAME/kustomization.yaml
-    - cat environment-values/$ENV_NAME/kustomization.yaml
-    - curl -kI https://gitlab.tech.orange/oln/otc-caas/falcon.git//sylva-core-vbmh-ci/kubeadm-capm3-base?ref=capm3-vbmh-ci -v
     - yq -i '.cluster.capm3.bootstrap_ip = strenv(LIBVIRT_VM_HOST_IP)' $values_file
     - yq -i '.units.cluster.helmrelease_spec.values.baremetal_hosts.server1.credentials.username = strenv(VBMH_USERNAME)' environment-values/$ENV_NAME/secrets.yaml
     - yq -i '.units.cluster.helmrelease_spec.values.baremetal_hosts.server1.credentials.password = strenv(VBMH_PASSWORD)' environment-values/$ENV_NAME/secrets.yaml
