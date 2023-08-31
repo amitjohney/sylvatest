@@ -237,6 +237,7 @@ check-docs-markdown:
     - yq -i '.env_type = "ci"' $values_file
     - export LIBVIRT_VM_HOST_IP=$(ip route get 8.8.8.8 | head -1 | cut -d' ' -f7)
     - git config --global credential.helper cache
+    - git config --global http.proxy ${https_proxy}
     # the CI_COMPONENT_* & VBMH_CI_COMPONENT_REPO_PATH variables below are set in the gitlab runner configuration
     # and allow to enable extra kustomize components needed in the context of the platform
     # on which this test actually runs
