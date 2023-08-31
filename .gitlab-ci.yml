@@ -236,13 +236,14 @@ check-docs-markdown:
     - yq -i '.cluster.test_workload_cluster_name = strenv(TEST_WORKLOAD_CLUSTER_NAME)' $values_file
     - yq -i '.env_type = "ci"' $values_file
     - export LIBVIRT_VM_HOST_IP=$(ip route get 8.8.8.8 | head -1 | cut -d' ' -f7)
-    - git config --global credential.helper cache
-    - git config --global http.proxy ${https_proxy}
-    # the CI_COMPONENT_* & VBMH_CI_COMPONENT_REPO_PATH & VBMH_USERNAME & VBMH_PASSWORD variables below
+    # the CI_COMPONENT_* & VBMH_CI_COMPONENT_* & VBMH_USERNAME & VBMH_PASSWORD variables below
     # are set in the gitlab runner configuration and allow to enable extra kustomize components
     # needed in the context of the platform on which this test actually runs
-    - git clone --depth=1 https://foo:${CI_COMPONENT_REPO_PAT}@${CI_COMPONENT_REPO}
-    - export CI_COMPONENT="https://${CI_COMPONENT_REPO}//${VBMH_CI_COMPONENT_REPO_PATH}/${ENV_NAME}-base?ref=capm3-vbmh-ci"
+    # - git config --global credential.helper cache
+    # - git config --global http.proxy ${https_proxy}
+    # - export CI_COMPONENT="https://${CI_COMPONENT_REPO}//${VBMH_CI_COMPONENT_REPO_PATH}/${ENV_NAME}-base?ref=capm3-vbmh-ci"
+    - git clone --depth=1 --branch capm3-vbmh-ci --single-branch https://foo:${CI_COMPONENT_REPO_PAT}@${CI_COMPONENT_REPO}
+    - export CI_COMPONENT="../../${VBMH_CI_COMPONENT_LOCAL_PATH}/${ENV_NAME}-base"
     - if [ $(yq '.components | length' environment-values/$ENV_NAME/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' environment-values/$ENV_NAME/kustomization.yaml; fi
     - yq -i '.components += strenv(CI_COMPONENT)' environment-values/$ENV_NAME/kustomization.yaml
     - cat environment-values/$ENV_NAME/kustomization.yaml
