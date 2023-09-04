@@ -1925,13 +1925,6 @@ units:
             folder: '{{ .Values.cluster.capv.folder }}'
             resourcePool: '{{ .Values.cluster.capv.resourcePool }}'
             storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
-            control_plane_profile:
-              numCPUs: 2
-              memoryMiB: 8192
-              diskGiB: 25
-            storageClass:
-              storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
-              fsType: ext4
           cluster_external_domain: '{{ .Values.cluster.cluster_external_domain }}'
           air_gapped: '{{ .Values.cluster.air_gapped | include "preserve-type" }}'
 
