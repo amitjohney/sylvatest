@@ -1,53 +1,42 @@
-apiVersion: kubevirt.io/v1alpha3
+apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-  name: test-vm
-  namespace: default
+  name: centos
 spec:
-  running: true
+  running: false
   template:
     metadata:
       labels:
-        kubevirt.io/name: test-vm
+        kubevirt.io/size: small
+        kubevirt.io/domain: testvm
     spec:
       domain:
-        cpu:
-          threads: 1
-          cores: 1
-          sockets: 1
-        memory:
-          guest: "1G"
         devices:
-          autoattachPodInterface: true # true by default, explicitly setting for clarity
           disks:
-          - name: bootdisk
-            disk:
-              bus: virtio
-          - name: cloud-init
-            disk:
-              bus: virtio
+            - name: containerdisk
+              disk:
+                bus: virtio
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
           interfaces:
           - name: default
             masquerade: {}
-      terminationGracePeriodSeconds: 0
+          - bridge: {}
+            name: second
+        resources:
+          requests:
+            memory: 64M
       networks:
       - name: default
         pod: {}
+      - multus:
+          networkName: my-bridge
+        name: second
       volumes:
-      - name: bootdisk
-        containerDisk:
-          image: camelcasenotation/ubuntu1604-containerdisk:latest
-      - name: cloud-init
-        cloudInitNoCloud:
-          userData: |-
-            #cloud-config
-            users:
-              - name: root
-                ssh-authorized-keys:
-                  - $YOUR_KEY_HERE
-            ssh_pwauth: True
-            password: $YOUR_PASSWORD_HERE
-            chpasswd:
-              expire: False
-              list: |-
-                 root:$YOUR_PASSWORD_HERE
+        - name: containerdisk
+          containerDisk:
+            image: quay.io/kubevirt/centos8-container-disk-images:8.4.2105
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            userDataBase64: SGkuXG4=

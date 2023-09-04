@@ -872,7 +872,7 @@ units:
           - 10.42.0.0/16
 
         capo:
-          worker_az: 'dev-az'
+          worker_az: 'dev-az' #temp added as workaround(issue related to scehma error)
           flavor_name: '{{ .Values.cluster.capo.flavor_name }}'
           worker_flavor_name: '{{ .Values.cluster.capo.worker_flavor_name }}'
           ssh_key_name: '{{ .Values.cluster.capo.ssh_key_name }}'
@@ -1566,8 +1566,6 @@ units:
         createNamespace: true
 
   kubevirt:
-#    depends_on:
-#      sylva-ca-certs: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kubevirt
