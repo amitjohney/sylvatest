@@ -10,6 +10,7 @@ stages:
   - test
   - build
   - deploy
+  - deployment-test
   - delete
 
 default:
@@ -146,6 +147,7 @@ check-docs-markdown:
       - management-cluster-units-report.xml
       - bootstrap-timeline.html
       - management-cluster-timeline.html
+      - management-cluster-kubeconfig
     reports:
       junit:
       - bootstrap-cluster-units-report.xml
@@ -225,7 +227,8 @@ check-docs-markdown:
     - yq -i eval-all 'select(fileIndex==0).registry_mirrors = select(fileIndex==1) | select(fileIndex==0)' $values_file registry_mirrors.yml
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capo\r\e[0K"
   post_deployment_common:
-    - kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}' | xargs --no-run-if-empty -n1 kubectl --kubeconfig management-cluster-kubeconfig logs || true
+    - export CHECK_RANCHER_JOB_POD=`kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}'`
+    - kubectl --kubeconfig management-cluster-kubeconfig logs $CHECK_RANCHER_JOB_POD || echo "No workload clusters here"
   os_cloud:
     # the OS_* variables below are set in the gitlab runner configuration
     # and contain information to connect to the OpenStack instance used
@@ -381,6 +384,66 @@ deploy-m3-units-in-capo:
   artifacts:
     expose_as: m3-units-in-capo
 
+.script-test-workload-cluster: |
+  set -e
+  set -o pipefail
+  echo "-- Get secret workoad-cluster-rancher-kubeconfig and save it locally in a workload-cluster-rancher-kubeconfig file"
+  kubectl --kubeconfig management-cluster-kubeconfig get secret workload-cluster-rancher-kubeconfig -o jsonpath='{.data.kubeconfig}' | base64 -d | yq -P > workload-cluster-rancher-kubeconfig
+  echo "-- Get ingress saved into /etc/hosts"
+  kubectl --kubeconfig management-cluster-kubeconfig get ingress -A -o custom-columns=:.status.loadBalancer.ingress[].ip,:.spec.tls[].hosts[] | grep -v '<none>' >> /etc/hosts
+  export no_proxy=$no_proxy,.sylva
+  attempts=0
+  max_attempts=5
+  until kubectl run test --image=busybox --kubeconfig workload-cluster-rancher-kubeconfig -- sleep 10; do
+    sleep 3
+    ((attempts++)) && ((attempts==max_attempts)) && exit -1
+  done
+  echo "-- Wait for test pod to be created"
+  kubectl wait --for=condition=Ready pod/test --kubeconfig workload-cluster-rancher-kubeconfig --timeout=60s
+  echo "-- All done"
+
+.testing-workload-cluster:
+  stage: deployment-test
+  rules:
+    - if: '$CI_COMMIT_TAG && $OCI_TAG'
+    - if: $CI_PIPELINE_SOURCE == 'web'
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_DEPLOYMENTS'
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  allow_failure: true
+  script:
+    - echo "Testing workload cluster. Job started at '$CI_JOB_STARTED_AT'."
+    - !reference [.script-test-workload-cluster]
+  tags:
+    - $CAPO_PLATFORM_TAG
+
+testing-workload-cluster-rke2-capo:
+  extends: .testing-workload-cluster
+  variables:
+    ENV_DEPLOY_JOB: "deploy-rke2-capo"
+  needs:
+    - deploy-rke2-capo
+
+testing-workload-cluster-rke2-capo-oci:
+  extends: .testing-workload-cluster
+  variables:
+    ENV_DEPLOY_JOB: "deploy-rke2-capo-oci"
+  needs:
+    - deploy-rke2-capo-oci
+
+testing-workload-cluster-kubeadm-capo:
+  extends: .testing-workload-cluster
+  variables:
+    ENV_DEPLOY_JOB: "deploy-kubeadm-capo"
+  needs:
+    - deploy-kubeadm-capo
+
+testing-workload-cluster-kubeadm-capo-oci:
+  extends: .testing-workload-cluster
+  variables:
+    ENV_DEPLOY_JOB: "deploy-kubeadm-capo-oci"
+  needs:
+    - deploy-kubeadm-capo-oci
+
 .cleanup-capo:
   stage: delete
   image:
@@ -403,7 +466,7 @@ cleanup-rke2-capo:
     ENV_NAME: "rke2-capo"
     CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}"
   needs:
-    - deploy-rke2-capo
+    - testing-workload-cluster-rke2-capo
 
 cleanup-kubeadm-capo:
   extends: .cleanup-capo
@@ -411,7 +474,7 @@ cleanup-kubeadm-capo:
     ENV_NAME: "kubeadm-capo"
     CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}"
   needs:
-    - deploy-kubeadm-capo
+    - testing-workload-cluster-kubeadm-capo
 
 cleanup-rke2-capo-oci:
   extends: .cleanup-capo
@@ -420,7 +483,7 @@ cleanup-rke2-capo-oci:
     CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-OCI"
     OCI_TAG: $OCI_TAG_FORMAT # required to match the same rules as OCI based deployments
   needs:
-    - deploy-rke2-capo-oci
+    - testing-workload-cluster-rke2-capo-oci
 
 cleanup-kubeadm-capo-oci:
   extends: .cleanup-capo
@@ -429,7 +492,7 @@ cleanup-kubeadm-capo-oci:
     CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-OCI"
     OCI_TAG: $OCI_TAG_FORMAT # required to match the same rules as OCI based deployments
   needs:
-    - deploy-kubeadm-capo-oci
+    - testing-workload-cluster-kubeadm-capo-oci
 
 cleanup-m3-units-in-capo:
   extends: .cleanup-capo
