@@ -191,7 +191,7 @@ units:
       chart:
         spec:
           chart: cert-manager
-          version: v1.12.3
+          version: v1.12.4
       targetNamespace: cert-manager
       install:
         createNamespace: true
