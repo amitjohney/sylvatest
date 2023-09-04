@@ -54,11 +54,11 @@ spec:
             remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
         create_ironic_security_group:
           type: boolean
-          description: "Whenever security-group-worker-ironicmust be created"
+          description: "Whenever control plane and worker VMs security groups need to include Ironic flows"
           default: false
-        worker_rules_ironic:
+        ironic_rules:
           type: json
-          description: "Security group rules associated with worker VMs for Ironic"
+          description: "Security group rules associated with control plane and worker VMs for Ironic"
           default:
             direction: [ingress, ingress, ingress, ingress]
             port: ['5050', '6180', '6385', '9999']
@@ -101,10 +101,10 @@ spec:
             rules:
               repeat:
                 for_each:
-                  <%direction%>: { get_param: [control_plane_rules, direction] }
-                  <%port%>: { get_param: [control_plane_rules, port] }
-                  <%protocol%>: { get_param: [control_plane_rules, protocol] }
-                  <%remote_ip_prefix%>: { get_param: [control_plane_rules, remote_ip_prefix] }
+                  <%direction%>: {if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [control_plane_rules, direction]}, { get_param: [ironic_rules, direction] }]}, { get_param: [control_plane_rules, direction] }]}
+                  <%port%>: { if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [control_plane_rules, port]}, { get_param: [ironic_rules, port]}]}, { get_param: [control_plane_rules, port] }]}
+                  <%protocol%>: { if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [control_plane_rules, protocol]}, { get_param: [ironic_rules, protocol]}]}, { get_param: [control_plane_rules, protocol] }]}
+                  <%remote_ip_prefix%>: { if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [control_plane_rules, remote_ip_prefix]}, { get_param: [ironic_rules, remote_ip_prefix]}]}, { get_param: [control_plane_rules, remote_ip_prefix] }]}
                 template:
                   protocol: <%protocol%>
                   port_range_min: <%port%>
@@ -120,31 +120,10 @@ spec:
             rules:
               repeat:
                 for_each:
-                  <%direction%>: { get_param: [worker_rules, direction] }
-                  <%port%>: { get_param: [worker_rules, port] }
-                  <%protocol%>: { get_param: [worker_rules, protocol] }
-                  <%remote_ip_prefix%>: { get_param: [worker_rules, remote_ip_prefix] }
-                template:
-                  protocol: <%protocol%>
-                  port_range_min: <%port%>
-                  port_range_max: <%port%>
-                  remote_ip_prefix: <%remote_ip_prefix%>
-                  direction: <%direction%>
-                permutations: false
-        security-group-worker-ironic:
-          type: OS::Neutron::SecurityGroup
-          condition: { get_param: create_ironic_security_group }
-          properties:
-            description: "Heat Stack managed security group for worker VMs allowing Ironic access"
-            name:
-              list_join: ['-', [ {get_param: worker_security_group_name}, 'ironic']]
-            rules:
-              repeat:
-                for_each:
-                  <%direction%>: { get_param: [worker_rules_ironic, direction] }
-                  <%port%>: { get_param: [worker_rules_ironic, port] }
-                  <%protocol%>: { get_param: [worker_rules_ironic, protocol] }
-                  <%remote_ip_prefix%>: { get_param: [worker_rules_ironic, remote_ip_prefix] }
+                  <%direction%>: {if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [control_plane_rules, direction]}, { get_param: [ironic_rules, direction] }]}, { get_param: [control_plane_rules, direction] }]}
+                  <%port%>: { if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [control_plane_rules, port]}, { get_param: [ironic_rules, port]}]}, { get_param: [control_plane_rules, port] }]}
+                  <%protocol%>: { if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [control_plane_rules, protocol]}, { get_param: [ironic_rules, protocol]}]}, { get_param: [control_plane_rules, protocol] }]}
+                  <%remote_ip_prefix%>: { if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [control_plane_rules, remote_ip_prefix]}, { get_param: [ironic_rules, remote_ip_prefix]}]}, { get_param: [control_plane_rules, remote_ip_prefix] }]}
                 template:
                   protocol: <%protocol%>
                   port_range_min: <%port%>
