@@ -139,7 +139,7 @@
       "datasourceTemplate": "helm",
       "fileMatch": ["charts/sylva-units/values.yaml"],
       "matchStrings": [
-        "(?<depName>metallb)_helm_version: (?<currentValue>.*)\\s*#\\s*renovate: registryUrl=(?<registryUrl>.*?)"
+        "(?<depName>metallb)_helm_version: (?<currentValue>.*)\\s*#\\s*renovate: registryUrl=(?<registryUrl>.*)"
       ]
     }
   ]
