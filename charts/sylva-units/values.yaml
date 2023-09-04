@@ -69,7 +69,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.0.16
+        tag: 0.0.17
 
   local-path-provisioner:
     kind: GitRepository
@@ -866,6 +866,7 @@ units:
         k8s_version: '{{ .Values.cluster.k8s_version }}'
         control_plane_replicas: '{{ .Values.cluster.control_plane_replicas | include "preserve-type" }}'
         cluster_external_ip: '{{ tuple .Values.cluster.cluster_external_ip (not (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
+        cluster_public_ip: '{{ tuple (.Values.cluster.capo.floating_ip) (not (eq .Values.cluster.capo.floating_ip "")) | include "set-only-if" }}'
         cluster_services_cidrs:
           - 10.43.0.0/16
         cluster_pods_cidrs:
