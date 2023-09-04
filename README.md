@@ -113,7 +113,13 @@ Deploying clusters in Docker using CAPD (click to expand)
 
 Even if it is not representative of any real-life deployment use-case, running clusters in Docker is useful to enable the testing of lifecycle management of clusters without any infrastructure requirement.
 
-It can be used to test that stack on a laptop or in [GitLab-ci](.gitlab-ci.yml). You just have to [install Docker](https://docs.docker.com/engine/install/) as a prerequisite, and then clone this [project](https://gitlab.com/sylva-projects/sylva-core). The recommended Docker version is 23.0.6 which is proven to work by [GitLab-ci](.gitlab-ci.yml). There is a known issue described in [issue #273](https://gitlab.com/sylva-projects/sylva-core/-/issues/273) when using Docker 24.0.0.
+It can be used to test that stack on a laptop or in [GitLab-ci](.gitlab-ci.yml). You just have to
+[install Docker](https://docs.docker.com/engine/install/) as a prerequisite, and then clone this
+[project](https://gitlab.com/sylva-projects/sylva-core). The recommended Docker version is 23.0.6 which is proven
+to work by [GitLab-ci](.gitlab-ci.yml). There is a known issue described in [issue #273](https://gitlab.com/sylva-projects/sylva-core/-/issues/273) when
+using Docker 24.0.0 and [issue #368](https://gitlab.com/sylva-projects/sylva-core/-/issues/368) when using Docker between 19.03.1 to 19.03.4.
+
+> **_NOTICE:_** When deploying on SUSE OS, please check whether DNS server is installed and enabled [SUSE Domain Name System](https://documentation.suse.com/sles/15-SP5/html/SLES-all/cha-dns.html).
 
 The `bootstrap.sh` script which you'll use below, will create for you a kind cluster that will be used as the bootstrap cluster. If available in the Linux environment variables, the following vars will be used to customize this kind cluster:
 
