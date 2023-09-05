@@ -1,0 +1,25 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha7
+kind: OpenStackMachineTemplate
+metadata:
+  name: capo-management-cluster-control-plane-security-group
+spec:
+  template:
+    spec:
+      securityGroups:
+      - filter: {}
+        name: capo-management-cluster-control-plane-security-group
+      - filter: {}
+        name: capo-management-cluster-security-group-common
+
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha7
+kind: OpenStackMachineTemplate
+metadata:
+  name: capo-management-cluster-worker-security-group
+spec:
+  template:
+    spec:
+      securityGroups:
+      - filter: {}
+        name: capo-management-worker-security-security-group
+      - filter: {}
+        name: capo-management-cluster-security-group-common
