@@ -15,6 +15,18 @@
   "packageRules": [
     {
       "matchPackageNames": [
+        "rke2-calico",
+        "rke2-calico-crd"
+      ],
+      "versioning": "regex:^v(?<major>\\d+)(\\.(?<minor>\\d+))?(\\.(?<patch>\\d+))$",
+      "groupName": "rke2-calico"
+    },
+    {
+      "matchPackageNames": ["rke2-ingress-nginx"],
+      "versioning": "regex:^(?<major>\\d+)(\\.(?<minor>\\d+))?(\\.(?<patch>\\d+))$"
+    },
+    {
+      "matchPackageNames": [
         "rancher-cis-benchmark",
         "rancher-cis-benchmark-crd"
       ],
