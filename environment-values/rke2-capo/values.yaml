@@ -8,6 +8,8 @@ units:
           md0:
             infra_provider: capo
             failure_domain: '{{ .Values.cluster.capo.worker_az }}'
+            replicas: 1
+
   workload-cluster:
     helmrelease_spec:
       values:
@@ -32,7 +34,6 @@ cluster:
     storageClass:
       name: "cinder-ceph-ssd"
       type: "ceph_ssd"
-  worker_replicas: 1
 
 proxies:
   # put your own proxy settings here if you need

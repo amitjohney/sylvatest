@@ -7,6 +7,7 @@ units:
         machine_deployments:
           md0:
             infra_provider: capv
+            replicas: 3
             # network_interfaces:
             #   additional:
             #     networkName:
@@ -37,7 +38,6 @@ units:
 
 cluster:
   control_plane_replicas: 1
-  worker_replicas: 3
 
   # image reference depends provider
   image: "tpl-ubuntu-2204-rke2-v1.24.12+rke2r1"
