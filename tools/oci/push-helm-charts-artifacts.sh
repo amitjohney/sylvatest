@@ -151,7 +151,4 @@ for unit in "${units[@]}"; do
   fi
 done
 
-### special case for chart deployed by RKE2 (see sylva-capi-cluster Helm chart)
-process_chart_in_helm_repo "https://metallb.github.io/metallb/" metallb 0.13.9
-
 show_status

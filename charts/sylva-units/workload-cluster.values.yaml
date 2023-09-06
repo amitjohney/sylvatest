@@ -119,6 +119,11 @@ units:
       namespace-defs: true
       cluster: true
 
+  ingress-nginx:
+    enabled: true
+    depends_on:
+      cluster: true
+
   monitoring-crd:
     enabled: true
     unit_template: base-deps

@@ -917,7 +917,7 @@ units:
         proxies: '{{ .Values.proxies | include "preserve-type" }}'
         registry_mirrors: '{{ .Values.registry_mirrors | include "preserve-type" }}'
         metallb_helm_oci_url: '{{ .Values.metallb_helm_oci_url | include "preserve-type" }}'
-        metallb_helm_version: 0.13.9 # needs to match tools/oci/push-helm-charts-artifacts.sh special case for chart deployed by rke2
+        metallb_helm_version: '{{ .Values.units.metallb.helmrelease_spec.chart.spec.version }}'
       valuesFrom:
         - kind: ConfigMap
           name: capo-cluster-resources
@@ -1083,18 +1083,20 @@ units:
     - '{{ tuple . "calico" | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io
     helmrelease_spec:
+      releaseName: rke2-calico-crd
+      targetNamespace: kube-system
       chart:
         spec:
           chart: rke2-calico-crd
           version: v3.25.001
 
   calico:
-    enabled_conditions:
-    - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'  # installed by RKE2 when RKE2 is used
     depends_on:
       calico-crd: true
     helm_repo_url: https://rke2-charts.rancher.io
     helmrelease_spec:
+      releaseName: rke2-calico
+      targetNamespace: kube-system
       chart:
         spec:
           chart: rke2-calico
@@ -1103,6 +1105,46 @@ units:
         installation:
           calicoNetwork:
             bgp: Enabled
+
+  metallb:
+    enabled_conditions:
+      - '{{ or (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.capi_providers.infra_provider | eq "capd") }}'
+    depends_on:
+      calico: true
+    helm_repo_url: https://metallb.github.io/metallb
+    helmrelease_spec:
+      targetNamespace: metallb-system
+      chart:
+        spec:
+          chart: metallb
+          version: 0.13.9
+      values:
+        controller:
+          nodeSelector:
+            node-role.kubernetes.io/control-plane: '{{ (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") | ternary "true" "" }}'
+          tolerations:
+          - key: node.cloudprovider.kubernetes.io/uninitialized
+            value: "true"
+            effect: NoSchedule
+          - effect: NoExecute
+            key: node-role.kubernetes.io/etcd
+          - effect: NoSchedule
+            key: node-role.kubernetes.io/master
+          - effect: NoSchedule
+            key: node-role.kubernetes.io/control-plane
+        speaker:
+          nodeSelector:
+            node-role.kubernetes.io/control-plane: '{{ (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") | ternary "true" "" }}'
+          tolerations:
+          - key: node.cloudprovider.kubernetes.io/uninitialized
+            value: "true"
+            effect: NoSchedule
+          - effect: NoExecute
+            key: node-role.kubernetes.io/etcd
+          - effect: NoSchedule
+            key: node-role.kubernetes.io/master
+          - effect: NoSchedule
+            key: node-role.kubernetes.io/control-plane
 
   cinder-csi-psp:
     enabled_conditions:
@@ -1320,7 +1362,7 @@ units:
 
   k8s-gateway:
     depends_on:
-      metallb-config: '{{ tuple . "metallb" | include "unit-enabled" }}'
+      capd-metallb-config: '{{ tuple . "capd-metallb-config" | include "unit-enabled" }}'
     helm_repo_url: https://ori-edge.github.io/k8s_gateway/
     helmrelease_spec:
       chart:
@@ -1339,19 +1381,10 @@ units:
           annotations:
             metallb.universe.tf/allow-shared-ip: '{{ tuple (.Values.cluster.cluster_external_ip) (or (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.capi_providers.infra_provider | eq "capd")) | include "set-only-if" }}'
 
-  metallb:
-    enabled_conditions:
-    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" }}'
-    repo: sylva-core
-    depends_on:
-      cert-manager: true
-    kustomization_spec:
-      path: ./kustomize-units/metallb
-      wait: true
-
-  metallb-config:
+  capd-metallb-config:
     enabled_conditions:
     - '{{ tuple . "metallb" | include "unit-enabled" }}'
+    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" }}'
     repo: sylva-core
     depends_on:
       metallb: true
@@ -1393,12 +1426,11 @@ units:
           cattle_agent_kustomize_path: ./cattle-kustomize
 
   ingress-nginx:
-    enabled_conditions:
-    - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'  # installed by RKE2 when RKE2 is used
     depends_on:
-      metallb-config: '{{ tuple . "metallb" | include "unit-enabled" }}'
+      capd-metallb-config: '{{ tuple . "capd-metallb-config" | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io
     helmrelease_spec:
+      releaseName: rke2-ingress-nginx
       targetNamespace: kube-system
       chart:
         spec:
