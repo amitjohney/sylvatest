@@ -745,6 +745,12 @@ units:
         httpsProxy: '{{ .Values.proxies.https_proxy }}'
         noProxy: '{{ include "sylva-units.no_proxy" . }}'
         images:
+          baremetalOperator:
+            repository: quay.io/metal3-io/baremetal-operator
+            tag: "v0.1.1"
+          ironic:
+            repository: quay.io/metal3-io/ironic
+            tag: "capm3-v1.2.0"
           ironicIPADownloader:
             repository: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ironic-ipa-downloader/ipa
             tag: "0.2.0"
