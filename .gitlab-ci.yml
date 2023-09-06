@@ -379,10 +379,34 @@ deploy-m3-units-in-capo:
     ENV_NAME: "kubeadm-capo"
     CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-M3-OCI"
     OCI_TAG: $OCI_TAG_FORMAT
-    CUSTOM_VALUES_FILE: tools/gci-templates/configuration/m3-units-in-capo.yml
+    CUSTOM_VALUES_FILE: environment-values/ci/m3-units-in-capo.yml
     MGMT_WATCH_TIMEOUT_MIN: 20
   artifacts:
     expose_as: m3-units-in-capo
+
+deploy-capo-fip:
+  timeout: 35min
+  extends: deploy-kubeadm-capo
+  variables:
+    ENV_NAME: "kubeadm-capo"
+    CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-FIP"
+    OCI_TAG: $OCI_TAG_FORMAT
+    CUSTOM_VALUES_FILE: environment-values/ci/capo-fip.yml
+    MGMT_WATCH_TIMEOUT_MIN: 20
+  artifacts:
+    expose_as: capo-fip
+  rules:
+    - if: $CI_MERGE_REQUEST_LABELS =~ /renovate/
+      allow_failure: true
+      when: manual
+    - if: '$CI_COMMIT_TAG && $OCI_TAG'
+      variables:
+        OCI_TAG: $CI_COMMIT_TAG
+    - if: $CI_PIPELINE_SOURCE == 'web'
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_DEPLOYMENTS'
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      allow_failure: true
+      when: manual
 
 .script-test-workload-cluster: |
   set -e
@@ -502,6 +526,15 @@ cleanup-m3-units-in-capo:
     OCI_TAG: $OCI_TAG_FORMAT # required to match the same rules as OCI based deployments
   needs:
     - deploy-m3-units-in-capo
+
+cleanup-capo-fip:
+  extends: .cleanup-capo
+  variables:
+    ENV_NAME: "kubeadm-capo"
+    CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-FIP"
+    OCI_TAG: $OCI_TAG_FORMAT # required to match the same rules as OCI based deployments
+  needs:
+    - deploy-capo-fip
 
 scheduled-cleanup-capo:
   stage: delete
