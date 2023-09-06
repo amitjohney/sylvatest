@@ -26,6 +26,10 @@
       "versioning": "regex:^(?<major>\\d+)(\\.(?<minor>\\d+))?(\\.(?<patch>\\d+))$"
     },
     {
+      "matchPackageNames": ["rke2-multus"],
+      "versioning": "regex:^v(?<major>\\d+)(\\.(?<minor>\\d+))?(\\.(?<patch>).*)$"
+    },
+    {
       "matchPackageNames": [
         "rancher-cis-benchmark",
         "rancher-cis-benchmark-crd"

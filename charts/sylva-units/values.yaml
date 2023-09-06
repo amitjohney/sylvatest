@@ -1689,8 +1689,8 @@ units:
     helmrelease_spec:
       chart:
         spec:
-          chart: "rke2-multus"
-          version: "v3.9.3-build2023010901"
+          chart: rke2-multus
+          version: v3.9.3-build2023010901
       targetNamespace: kube-system
       install:
         createNamespace: false
