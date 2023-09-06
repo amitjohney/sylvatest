@@ -2038,6 +2038,7 @@ units:
       targetNamespace: os-images
       install:
         createNamespace: true
+      timeout: 168h  # leave plenty of time to download OS images in initContainers
       values:
         downloader:
           proxy: '{{ get .Values.proxies "https_proxy" }}'
