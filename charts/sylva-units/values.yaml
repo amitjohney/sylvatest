@@ -925,6 +925,7 @@ units:
         registry_mirrors: '{{ .Values.registry_mirrors | include "preserve-type" }}'
         metallb_helm_oci_url: '{{ .Values.metallb_helm_oci_url | include "preserve-type" }}'
         metallb_helm_version: '{{ .Values.units.metallb.helmrelease_spec.chart.spec.version }}'
+        enable_longhorn: '{{ tuple . "longhorn" | include "unit-enabled" | include "as-bool" }}'
       valuesFrom:
         - kind: ConfigMap
           name: capo-cluster-resources
@@ -1978,7 +1979,6 @@ units:
             helmrelease_spec:
               values:
                 control_plane_replicas: 1
-                enable_longhorn: '{{ .Values.units | dig "workload-cluster" "helmrelease_spec" "values" "units" "longhorn" "enabled" false | include "preserve-type" }}'
                 capo:
                   control_plane_security_group_name: "capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}"
                   worker_security_group_name: "capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}"
