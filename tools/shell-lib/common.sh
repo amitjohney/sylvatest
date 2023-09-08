@@ -176,6 +176,8 @@ function inject_bootstrap_values() {
 
 function validate_sylva_units() {
   # Create & install sylva-units preview Helm release
+  # If a Kustomization with the label:  previewNamespace=sylva-units-preview
+  # exists, we define a targetNamespace to target sylva-units-preview
   PREVIEW_DIR=${BASE_DIR}/sylva-units-preview
   mkdir -p ${PREVIEW_DIR}
   cat <<-EOF > ${PREVIEW_DIR}/kustomization.yaml
@@ -185,6 +187,14 @@ function validate_sylva_units() {
         - $(realpath --relative-to=${PREVIEW_DIR} ${ENV_PATH})
         components:
         - $(realpath --relative-to=${PREVIEW_DIR} ./environment-values/preview)
+        patches:
+          - target:
+              kind: Kustomization
+              labelSelector: previewNamespace=sylva-units-preview
+            patch: |
+              - op: add
+                path: /spec/targetNamespace
+                value: sylva-units-preview
 EOF
 
   # for bootstrap cluster, we need to inject bootstrap values
