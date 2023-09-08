@@ -60,7 +60,7 @@ cat <<EOF
         - tools/gci-templates/**/*
         - charts/${f##*/}/values.schema.json
         - charts/${f##*/}/values.schema.yaml
-        - tools/yaml2json.py
+        - tools/generate_json_schema.py
 EOF
 
 done

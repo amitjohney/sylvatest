@@ -9,13 +9,13 @@
 # The values.schema.json file is the file actually used by the Helm chart
 # and MUST BE RECREATED after each modification of this file:
 #
-#   ./tools/yaml2json.py < charts/sylva-units/values.schema.yaml > charts/sylva-units/values.schema.json
+#   ./tools/generate_json_schema.py
 #
 # (a CI job is here to check that)
 #
 # You can test that this file is a valid JSONSchema with:
 #
-#   tools/yaml2json.py < charts/sylva-units/values.schema.yaml > charts/sylva-units/values.schema.json && python -m jsonschema -o pretty /usr/lib/python3/dist-packages/jsonschema/schemas/draft2020-12.json -i charts/sylva-units/values.schema.json
+#   tools/generate_json_schema.py && python -m jsonschema -o pretty /usr/lib/python3/dist-packages/jsonschema/schemas/draft2020-12.json -i charts/sylva-units/values.schema.json
 #
 # (a CI job is here to check the same thing)
 #
@@ -23,18 +23,18 @@
 #
 # Helm template will do this validation:
 #
-#   tools/yaml2json.py < charts/sylva-units/values.schema.yaml > charts/sylva-units/values.schema.json && helm template charts/sylva-units --values foo.yaml
+#   tools/generate_json_schema.py && helm template charts/sylva-units --values foo.yaml
 #
 # You can also use another JSONSchema validation tool (it's useful to have more detailed answers than what Helm produces):
 #
 #   To test the chart default values.yaml:
 #
-#      tools/yaml2json.py < charts/sylva-units/values.schema.yaml > charts/sylva-units/values.schema.json && \
+#      tools/generate_json_schema.py && \
 #        tools/yaml2json.py < charts/sylva-units/values.yaml | python -m jsonschema -o pretty charts/sylva-units/values.schema.json -i /dev/stdin
 #
 #   To test the combination of the default values.yaml combined with other values files:
 #
-#      tools/yaml2json.py < charts/sylva-units/values.schema.yaml > charts/sylva-units/values.schema.json && \
+#      tools/generate_json_schema.py && \
 #        tools/yaml-merge.py -o json charts/sylva-units/values.yaml foo.yaml | python -m jsonschema -o pretty charts/sylva-units/values.schema.json -i /dev/stdin
 #
 
@@ -79,13 +79,17 @@ $defs:
     type: string
     pattern: ".*{{ .* }}.*"
 
-  ipv4-cidr:
+  ipv4-cidr-full:
     type: string
     pattern: ^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?:\/([1-9]|[12]\d|3[012]))$
 
   ipv4-range:
     type: string
     pattern: ^(?:(?:[01]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])\.){3}(?:[01]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])-(?:(?:[01]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])\.){3}(?:[01]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])$
+
+  sylva-capi-cluster-values:
+    # this sub-schema will be completed with actual sylva-capi-cluster-values with json schema generation
+    type: object
 
 # lines with '# -------------------------------' correspond to keys in values.yaml
 # (the rest being the JSONSchema language itself)
@@ -478,6 +482,16 @@ properties:
                             required:
                               - path
 
+      "^cluster$":
+        type: object
+        additionalProperties: true
+        properties:
+          helmrelease_spec:
+            type: object
+            properties:
+              values:
+                $ref: "#/$defs/sylva-capi-cluster-values"
+
   cluster:  # -------------------------------
     type: object
     additionalProperties: false
@@ -642,7 +656,7 @@ properties:
                   type: array
                   items:
                     anyOf:
-                      - $ref: "#/$defs/ipv4-cidr"
+                      - $ref: "#/$defs/ipv4-cidr-full"
                       - $ref: "#/$defs/ipv4-range"
           l3_options: # -------------------------------
             type: object

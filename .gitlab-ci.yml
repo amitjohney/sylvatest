@@ -39,7 +39,7 @@ include:
         - kustomize-units/**/*
         - environment-values/**/*
         - tools/gci-templates/**/*
-        - tools/yaml2json.py
+        - tools/generate_json_schema.py
 
 chart-generator:
   extends: .generator-base
