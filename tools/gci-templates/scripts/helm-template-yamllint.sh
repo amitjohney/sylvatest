@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+set -e
 set -o pipefail
 
 HELM_NAME=${HELM_NAME:-$1}
@@ -8,7 +9,7 @@ if [[ -z ${HELM_NAME} ]]; then
   echo "Missing parameter.
 
   This script expect to find either:
-  
+
   HELM_NAME environment variable defined with the name of the chart to validate
 
   or the name of the chart to validate pass as a parameter.
@@ -119,6 +120,6 @@ if [[ $HELM_NAME == "sylva-units" ]]; then
       exit -1
     fi
 
-    echo -e "\e[0Ksection_end:`date +%s`:additional_check_$value_file\r\e[0K"    
+    echo -e "\e[0Ksection_end:`date +%s`:additional_check_$value_file\r\e[0K"
   done
 fi
