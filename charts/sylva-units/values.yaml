@@ -361,7 +361,7 @@ units:
       chart:
         spec:
           chart: vault-config-operator
-          version: v0.8.21
+          version: v0.8.23
       targetNamespace: vault
       values:
         enableCertManager: true
