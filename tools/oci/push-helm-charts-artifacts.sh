@@ -14,6 +14,8 @@
 set -eu
 set -o pipefail
 
+SECONDS=0
+
 BASE_DIR="$(realpath $(dirname $0)/../..)"
 OCI_REGISTRY="${1:-oci://registry.gitlab.com/sylva-projects/sylva-core/}"
 LOG_ERROR_FILE=$(mktemp)
@@ -30,6 +32,35 @@ function error {
   echo $2 >> $LOG_ERROR_FILE
 }
 
+function check_invalid_semver_tag {
+
+  local version="$1"
+  local rewrite_chart="${2:-}"
+  if [[ "$version" =~ \.0[0-9] ]]; then
+    # Implement a workaround for issue: https://gitlab.com/sylva-projects/sylva-core/-/issues/253 
+    # If we find a version with a 0 prefix
+    # rewrite the version by (a) prepeding a number before the z in x.y.z (for instance 9) 
+    # and (b) keeping the original version in the free-form + field
+    # 3.25.001 would become 3.25.9001+v3.25.001
+    if [[ $version =~ (.?[0-9]+)\.([0-9]+)\.([0-9]+)([\+\-].*)? ]]; then
+      major=${BASH_REMATCH[1]}
+      medium=${BASH_REMATCH[2]}
+      minor=${BASH_REMATCH[3]}
+      others=${BASH_REMATCH[4]}
+      new_version=$major.$medium.9$minor$others+$version    
+      if [[ -n "$rewrite_chart" ]]; then
+        tar -xzvf $tgz_file
+        yq -i '.version = "'$new_version'"' $chart_name/Chart.yaml
+        tar -czvf $chart_name-$new_version.tgz $chart_name/
+        rm -rf $chart_name $tgz_file
+        tgz_file="$chart_name-$new_version.tgz"
+      fi
+    fi
+  fi
+
+  echo "${new_version:-$version}"
+}
+
 function process_chart_in_helm_repo {
   local helm_repo=$1
   local chart_name=$2
@@ -39,27 +70,7 @@ function process_chart_in_helm_repo {
   # Pull Helm chart locally
   if (helm pull --repo $helm_repo --version $chart_version $chart_name); then
     if [[ -e $tgz_file ]]; then
-      if [[ "$version" =~ \.0[0-9] ]]; then
-        # Implement a workaround for issue: https://gitlab.com/sylva-projects/sylva-core/-/issues/253 
-        # If we find a version with a 0 prefix
-        # rewrite the version by (a) prepeding a number before the z in x.y.z (for instance 9) 
-        # and (b) keeping the original version in the free-form + field
-        # 3.25.001 would become 3.25.9001+v3.25.001
-        echo "Chart version contain a 0 prefix which is not allowed in semver"
-        if [[ $version =~ (.?[0-9]+)\.([0-9]+)\.([0-9]+)([\+\-].*)? ]]; then
-          major=${BASH_REMATCH[1]}
-          medium=${BASH_REMATCH[2]}
-          minor=${BASH_REMATCH[3]}
-          others=${BASH_REMATCH[4]}
-        export new_version=$major.$medium.9$minor$others+$version
-        echo "New version: $new_version"
-        tar -xzvf $tgz_file
-        yq -i '.version = strenv(new_version)' $chart_name/Chart.yaml
-        tar -czvf $chart_name-$new_version.tgz $chart_name/
-        rm -rf $chart_name $tgz_file
-        tgz_file="$chart_name-$new_version.tgz"
-        fi
-      fi
+      check_invalid_semver_tag $version true
       # Push Helm chart to OCI
       helm push $tgz_file $OCI_REGISTRY
       rm -f $tgz_file
@@ -136,6 +147,17 @@ for unit in "${units[@]}"; do
     if [[ -n "$helm_repo_url" && $helm_repo_url != "null" ]]; then
       ## Helm charts in helm repository ##
       version=$(echo "$helmchart_spec" | yq '.version' -)
+
+      ## no processing is needed if the OCI artifact already exist in the OCI repository
+      ## looking for invalid semver tag
+      ## if an invalid tag is found we used a rewrited version of it for the check
+      version_to_check=$(check_invalid_semver_tag $version)
+      echo "Version to check: $version_to_check"
+      if (flux pull artifact $OCI_REGISTRY/$chart:${version_to_check/+/_} -o /tmp 2>&1 || true) | grep -q created; then
+        echo "Skipping $chart processing, $chart:$version_to_check already exists in $OCI_REGISTRY"
+        continue
+      fi
+
       process_chart_in_helm_repo $helm_repo_url $chart $version
     else
       ## Helm charts in git repository ##
@@ -146,9 +168,19 @@ for unit in "${units[@]}"; do
       repo=$(echo "$unit" | yq '.repo')
       git_repo_url=$(echo "${source_templates[@]}" | yq ".$repo.spec.url" )
       git_revision=$(echo "${source_templates[@]}" | yq ".$repo.spec.ref.tag" )
+
+      ## no processing is needed if the OCI artifact already exist in the OCI repository
+      if (flux pull artifact $OCI_REGISTRY/$chart_name:${git_revision/+/_} -o /tmp 2>&1 || true) | grep -q created; then     
+        echo "Skipping $chart_name processing, $chart_name:$git_revision already exists in $OCI_REGISTRY"
+        continue
+      fi
+
       process_chart_in_git $git_repo_url $chart $git_revision $chart_name
     fi
   fi
 done
 
 show_status
+
+duration=$SECONDS
+echo "$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed."

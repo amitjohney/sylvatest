@@ -590,6 +590,7 @@ scheduled-cleanup-capo:
 
 .build-base:
   stage: build
+  dependencies: []
   variables:
     OCI_REGISTRY: oci://${CI_REGISTRY_IMAGE}
     OCI_TAG: $OCI_TAG_FORMAT
