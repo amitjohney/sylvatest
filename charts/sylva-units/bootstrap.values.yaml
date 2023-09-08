@@ -151,6 +151,17 @@ units:
         secretRef:
           name: '{{ .Values.cluster.name }}-kubeconfig'
 
+  cilium:
+    # overload cilium definition in bootstrap context to deploy in the management cluster
+    depends_on:
+      cluster: true
+    helmrelease_spec:
+      kubeConfig:
+        secretRef:
+          name: '{{ .Values.cluster.name }}-kubeconfig'
+    labels:
+      suspend-on-pivot: "yes"  # this unit must be suspended before pivot
+
   namespace-defs:
     depends_on:
       cluster: true

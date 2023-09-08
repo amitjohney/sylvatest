@@ -1710,6 +1710,7 @@ units:
   calico:
     enabled_conditions:
     - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'  # installed by RKE2 when RKE2 is used
+    - '{{ .Values.cluster.default_cni | eq "calico" | include "preserve-type" }}'
     depends_on:
       calico-crd: true
     helm_repo_url: https://rke2-charts.rancher.io
@@ -1726,6 +1727,18 @@ units:
           calicoNetwork:
             bgp: Enabled
           registry: UseDefault
+
+  cilium:
+    enabled_conditions:
+    - '{{ .Values.cluster.default_cni | eq "cilium" | include "preserve-type" }}'
+    helm_repo_url: https://rke2-charts.rancher.io
+    helmrelease_spec:
+      releaseName: rke2-cilium
+      targetNamespace: kube-system
+      chart:
+        spec:
+          chart: rke2-cilium
+          version: v1.13.2
 
   metallb:
     enabled_conditions:

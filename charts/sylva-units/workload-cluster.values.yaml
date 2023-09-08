@@ -149,6 +149,12 @@ units:
       namespace-defs: true
       cluster: true
 
+  cilium:
+    enabled: true
+    depends_on:
+      namespace-defs: true
+      cluster: true
+
   metallb:
     enabled: true
     depends_on:
