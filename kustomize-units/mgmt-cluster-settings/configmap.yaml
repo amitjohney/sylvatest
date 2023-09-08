@@ -7,6 +7,5 @@ data:
   clouds_yaml: ${CLOUDS_YAML}
   image: ${IMAGE}
   worker_machine_image: ${WORKER_MACHINE_IMAGE}
-  capo:
-    network_id: ${CAPO_NETWORK_ID}
+  capo_network_id: ${CAPO_NETWORK_ID}
 
