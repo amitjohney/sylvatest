@@ -1,6 +1,6 @@
 # This example environment values files will let you build
 # a Sylva CAPO mgmt cluster (inheriting from ../rke2-capo)
-# plus a single-node Metal3 workload cluster
+# plus a Metal3 workload cluster with 1 control node and 1 worker node
 
 cluster:
   image: "Ubuntu 22.04 Pack" # image name used to create mgmt cluster on OpenStack
@@ -34,6 +34,7 @@ units:
     enabled: true
   workload-capo-cluster-resources:
     enabled: false
+
   workload-cluster:
     enabled: true
     helmrelease_spec:
