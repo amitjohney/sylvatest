@@ -1738,7 +1738,7 @@ units:
       chart:
         spec:
           chart: rke2-cilium
-          version: v1.13.2
+          version: 1.13.200
 
   metallb:
     enabled_conditions:
