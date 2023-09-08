@@ -1988,7 +1988,7 @@
                             "type": "string"
                           },
                           "branch": {
-                            "type": "null"
+                            "const": "{{ tuple \"(unused)\" false | include \"set-only-if\" }}"
                           }
                         }
                       }

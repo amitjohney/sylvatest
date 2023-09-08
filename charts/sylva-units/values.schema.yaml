@@ -252,7 +252,7 @@ properties:
                       '(digest|semver|tag)':  # -------------------------------
                         type: string
                       branch:  # -------------------------------
-                        type: "null"  # we need to allow key deletion during Helm value merge
+                        const: '{{ tuple "(unused)" false | include "set-only-if" }}'  # particular case to allow key deletion (see use-oci-artifacts.values.yaml)
 
   helm_repo_spec_default:  # -------------------------------
     type: object
