@@ -1145,6 +1145,19 @@ units:
               #!/bin/bash
               kubectl -n $TARGET_NAMESPACE patch cluster.cluster.x-k8s.io {{ .Values.cluster.name }} --type merge -p '{"spec":{"paused": false}}'
 
+  mgmt-cluster-settings:
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/mgmt-cluster-settings
+      wait: true
+      targetNamespace: default
+      postBuild:
+        substitute:
+          CLOUDS_YAML: '{{ .Values.cluster | dig "capo" "clouds_yaml" dict | include "preserve-type" }}'
+          IMAGE: '{{ .Values.cluster.image }}'
+          WORKER_MACHINE_IMAGE: '{{ .Values.cluster.worker_machine_image }}'
+          CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id | default "" }}'
+
   calico-crd:
     enabled_conditions:
     - '{{ tuple . "calico" | include "unit-enabled" }}'
@@ -1952,7 +1965,6 @@ units:
           defaultDataPath: /var/lib/longhorn
           deletingConfirmationFlag: true
           autoCleanupSystemGeneratedSnapshot: true
-
 
   # this unit is an example of how to use sylva-units to deploy a workload-cluster
   workload-cluster:
