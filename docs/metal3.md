@@ -182,20 +182,6 @@ The `metal3` unit configuration can be provided through the [metal3 helm chart](
 
 By default the `metal3` unit deploys Ironic service and automatically configures it. However you may have to need to customize ironic IP if management cluster IP is not directly accessible from workload clusters.  
 
-For example if the management cluster is on OpenStack and you need to access ironic IP through the cluster floating IP, you may have to use such a configuration:
-
-```yaml
-units:
-    #[...]
-  metal3:
-    helmrelease_spec:
-      values:
-        services:
-          ironic:
-            ironicIP: '{{ .Values.cluster.display_external_ip }}'
-    #[...]
-```
-
 ### Networking requirements
 
 ### Provisioning with Virtual Media
@@ -220,7 +206,7 @@ In order for the baremetal servers to be consumed by cluster-api and used as wor
 
 Such image can be in raw or qcow2 format.
 
-[Airship's image-builder](https://opendev.org/airship/image-builder) can be a valuable tool to build an OS image for metal3.
+We rely on tooling in [Sylva diskimage-builder](https://gitlab.com/sylva-projects/sylva-elements/diskimage-builder) to build OS images for metal3 in Sylva.
 
 ## Known issues
 
