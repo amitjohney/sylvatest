@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
+    "config:recommended"
   ],
   "labels": [
     "run-e2e-tests",
@@ -67,12 +67,14 @@
   ],
   "regexManagers": [
     {
+      "customType": "regex",
       "fileMatch": "kustomization.yaml",
       "matchStrings": ["https:\/\/github\.com\/(?<depName>.*\/.*?)\/releases\/download\/(?<currentValue>.*?)\/"
       ],
       "datasourceTemplate": "github-releases"
     },
     {
+      "customType": "regex",
       "fileMatch": "kustomization.yaml",
       "matchStrings": [
         "https:\/\/raw.githubusercontent.com\/(?<depName>[^\/]*\/[^\/]*)\/(?<currentValue>.*?)\/"
@@ -80,6 +82,7 @@
       "datasourceTemplate": "github-tags"
     },
     {
+      "customType": "regex",
       "fileMatch": "values.yaml",
       "matchStringsStrategy": "recursive",
       "matchStrings": [
@@ -89,6 +92,7 @@
       "datasourceTemplate": "helm"
     },
     {
+      "customType": "regex",
       "fileMatch": "values.yaml",
       "matchStringsStrategy": "recursive",
       "matchStrings": [
@@ -98,6 +102,7 @@
       "datasourceTemplate": "git-tags"
     },
     {
+      "customType": "regex",
       "fileMatch": "values.yaml",
       "matchStrings": [
         "\\s+repository:\\s+(?<registryUrl>.*)\/(?<depName>.*)\\n\\s+tag:\\s+\"(?<currentValue>.*)\"\\n"
@@ -106,6 +111,7 @@
       "datasourceTemplate": "docker"
     },
     {
+      "customType": "regex",
       "datasourceTemplate": "docker",
       "fileMatch": ["kustomize-units/keycloak-legacy-operator/kustomization.yaml"],
       "matchStrings": [
@@ -113,6 +119,7 @@
       ]
     },
     {
+      "customType": "regex",
       "datasourceTemplate": "docker",
       "fileMatch": ["vault.yaml"],
       "matchStrings": [
@@ -120,6 +127,7 @@
       ]
     },
     {
+      "customType": "regex",
       "fileMatch": "tools/shell-lib/common.sh",
       "matchStringsStrategy": "combination",
       "matchStrings": [
@@ -131,6 +139,7 @@
       "datasourceTemplate": "docker"
     },
     {
+      "customType": "regex",
       "datasourceTemplate": "helm",
       "fileMatch": ["tools/oci/push-helm-charts-artifacts.sh"],
       "matchStrings": [
