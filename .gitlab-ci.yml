@@ -16,7 +16,7 @@ stages:
 default:
   tags:
     - gitlab-org-docker
-  image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image:v1.0.8
+  image: $CI_IMAGE
 
 variables:
   DOCKER_TLS_CERTDIR: ""
@@ -24,6 +24,10 @@ variables:
   DOCKER_HOST: tcp://docker:2375/
   CAPO_PLATFORM_TAG: capo-ci
   OCI_TAG_FORMAT: "0.0.0-git-$CI_COMMIT_SHORT_SHA"
+  # renovate: datasource=docker
+  CI_IMAGE: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image:v1.0.8
+  # renovate: datasource=docker
+  OPENSTACK_CLIENT_IMAGE: registry.gitlab.com/sylva-projects/sylva-elements/container-images/openstack-client:v0.0.5
 
 include:
   - project: "to-be-continuous/gitleaks"
@@ -486,7 +490,7 @@ testing-workload-cluster-kubeadm-capo-oci:
 .cleanup-capo:
   stage: delete
   image:
-    name: registry.gitlab.com/sylva-projects/sylva-elements/container-images/openstack-client:v0.0.5
+    name: $OPENSTACK_CLIENT_IMAGE
   script:
     - !reference [.common-deployment, os_cloud]
     - ./tools/openstack-cleanup.sh capo_cloud "${CAPO_TAG}"
@@ -554,7 +558,7 @@ cleanup-capo-fip:
 scheduled-cleanup-capo:
   stage: delete
   image:
-    name: registry.gitlab.com/sylva-projects/sylva-elements/container-images/openstack-client:v0.0.5
+    name: $OPENSTACK_CLIENT_IMAGE
   script:
     - !reference [.common-deployment, os_cloud]
     - touch tags.txt exclude-tags.txt
