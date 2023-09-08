@@ -29,6 +29,21 @@ include:
   - project: "to-be-continuous/gitleaks"
     ref: 2.2.2
     file: "templates/gitlab-ci-gitleaks.yml"
+  - project: 'renovate-bot/renovate-runner'
+    ref: v15.47.0
+    file: '/templates/renovate-config-validator.gitlab-ci.yml'
+    rules:
+      - changes:
+          paths:
+            - .gitlab-ci.yml
+            - renovate.json
+  - project: 'sylva-projects/sylva-elements/renovate'
+    ref: 1.0.0
+    file: '/templates/renovate-dry-run.gitlab-ci.yml'
+    rules:
+      - changes:
+          paths:
+            - renovate.json
 
 .generator-base:
   stage: test
