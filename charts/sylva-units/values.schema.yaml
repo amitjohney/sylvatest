@@ -775,17 +775,11 @@ properties:
                 external_network_id:  # -------------------------------
                   type: string
 
-                control_plane_servergroup_id:  # -------------------------------
-                  type: string
-
                 control_plane_affinity_policy:  # -------------------------------
                   type: string
                   enum:
                     - anti-affinity
                     - soft-anti-affinity
-
-                worker_servergroup_id:  # -------------------------------
-                  type: string
 
                 worker_affinity_policy:  # -------------------------------
                   type: string
