@@ -731,6 +731,7 @@ units:
     repo: metal3
     helm_chart_artifact_name: metal3
     helmrelease_spec:
+      timeout: 10m
       chart:
         spec:
           chart: .
