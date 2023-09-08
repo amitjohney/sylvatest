@@ -68,6 +68,14 @@
   "regexManagers": [
     {
       "customType": "regex",
+      "fileMatch": [".gitlab-ci.yml"],
+      "matchStrings": [
+        "\\s+# renovate: datasource=(?<datasource>.*?)\\s+.*?_IMAGE: (?<registryUrl>.*?)\/(?<depName>.*?):(?<currentValue>.*)"
+      ],
+      "registryUrlTemplate": "https://{{{ registryUrl }}}"
+    },
+    {
+      "customType": "regex",
       "fileMatch": "kustomization.yaml",
       "matchStrings": ["https:\/\/github\.com\/(?<depName>.*\/.*?)\/releases\/download\/(?<currentValue>.*?)\/"
       ],
