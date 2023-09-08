@@ -4,7 +4,6 @@ set -o pipefail
 export BASE_DIR="$(realpath $(dirname $0))"
 export PATH=${BASE_DIR}/bin:${PATH}
 
-SYLVACTL_VERSION="v0.2.0"
 SYLVA_TOOLBOX_VERSION="v0.2.1"
 SYLVA_TOOLBOX_IMAGE=${SYLVA_TOOLBOX_IMAGE:-container-images/sylva-toolbox}
 SYLVA_TOOLBOX_REGISTRY=${SYLVA_TOOLBOX_REGISTRY:-registry.gitlab.com/sylva-projects/sylva-elements}
@@ -82,14 +81,12 @@ function ensure_sylva_toolbox {
 ensure_sylva_toolbox
 
 function ensure_sylvactl {
-    if [[ ! -f ${BASE_DIR}/bin/sylvactl || $(sylvactl version) != $SYLVACTL_VERSION ]]; then
+    if [[ -n ${SYLVACTL_VERSION:-} ]]; then
         echo_b "\U0001F4E5 Downloading sylvactl"
         mkdir -p ${BASE_DIR}/bin
         curl -q --progress-bar -f https://gitlab.com/api/v4/projects/43501695/packages/generic/releases/$SYLVACTL_VERSION/sylvactl -o ${BASE_DIR}/bin/sylvactl
         chmod +x ${BASE_DIR}/bin/sylvactl
     fi
-    # Remove sylvactl that was previously installed in root directory
-    rm -f ${BASE_DIR}/sylvactl
 }
 ensure_sylvactl
 
