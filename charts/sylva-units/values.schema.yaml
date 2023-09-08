@@ -802,15 +802,6 @@ properties:
                     - anti-affinity
                     - soft-anti-affinity
 
-                additional_networks:  # -------------------------------
-                  type: object
-                  additionalProperties: false
-                  properties:
-                    virtio_network_id:
-                      type: string
-                    direct_network_id:
-                      type: string
-
                 rootVolume:  # -------------------------------
                   type: object
                   additionalProperties: false

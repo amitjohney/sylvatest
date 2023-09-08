@@ -2115,10 +2115,6 @@ cluster:
     network_id:  # OpenStack network used for nodes and VIP port
     #external_network_id # Can be provided if a FIP is needed in order to reach the management cluster VIP
     floating_ip: ""
-    additional_networks:
-    # Leave these parameters empty or specify additional networks to be used. Only one network of each type can be added and supported types are virtio or direct
-      virtio_network_id: ""
-      direct_network_id: ""
     rootVolume: {} # Let this parameter empty if you don't intent to use root volume
     # otherwise, provide following values
     # diskSize: 20 # Size of the VMs root disk
