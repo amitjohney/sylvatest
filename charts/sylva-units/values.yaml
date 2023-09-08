@@ -916,7 +916,6 @@ units:
           network_interfaces: {}
         machine_deployments:
           md0:
-            replicas: '{{ .Values.cluster.worker_replicas | include "preserve-type" }}'
             failure_domain: ""
             network_interfaces: {}
         dns_resolver: false
@@ -2105,12 +2104,11 @@ cluster:
 
   # Nodes number for controlplane and workers
   control_plane_replicas: 3
-  worker_replicas: 0
 
   capo:
     flavor_name: m1.large # Openstack flavor name
     worker_flavor_name: m1.large
-    # worker_az only required to be provided when .Values.cluster.worker_replicas > 0
+    # worker_az only required to be provided when workers are used
     ssh_key_name: # OpenStack VM SSH key
     network_id:  # OpenStack network used for nodes and VIP port
     #external_network_id # Can be provided if a FIP is needed in order to reach the management cluster VIP

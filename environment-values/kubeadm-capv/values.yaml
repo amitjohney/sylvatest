@@ -7,6 +7,7 @@ units:
         machine_deployments:
           md0:
             infra_provider: capv
+            replicas: 3
             # network_interfaces:
             #   additional:
             #     networkName:
@@ -37,7 +38,6 @@ units:
 
 cluster:
   control_plane_replicas: 1
-  worker_replicas: 3
 
   image: "ubuntu-2004-kube-v1.24.10"
 

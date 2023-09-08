@@ -2427,9 +2427,6 @@
         "control_plane_replicas": {
           "type": "integer"
         },
-        "worker_replicas": {
-          "type": "integer"
-        },
         "k8s_version": {
           "type": "string"
         },
@@ -2695,38 +2692,6 @@
         }
       },
       "allOf": [
-        {
-          "if": {
-            "properties": {
-              "capi_providers": {
-                "properties": {
-                  "infra_provider": {
-                    "const": "capo"
-                  }
-                }
-              },
-              "worker_replicas": {
-                "type": "integer",
-                "minimum": 1
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "capo": {
-                "type": "object",
-                "properties": {
-                  "worker_az": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "worker_az"
-                ]
-              }
-            }
-          }
-        },
         {
           "if": {
             "properties": {
