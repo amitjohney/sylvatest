@@ -1968,6 +1968,7 @@ units:
           deletingConfirmationFlag: true
           autoCleanupSystemGeneratedSnapshot: true
 
+
   # this unit is an example of how to use sylva-units to deploy a workload-cluster
   workload-cluster:
     depends_on:
