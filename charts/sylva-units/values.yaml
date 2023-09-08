@@ -177,6 +177,8 @@ units:
       path: ./kustomize-units/flux-system/base
       targetNamespace: flux-system
       wait: true
+      # prevent Flux from uninstalling itself
+      prune: false
       postBuild:
         substitute:
           var_substitution_enabled: "true" # To force substitution when configmap does not exist
