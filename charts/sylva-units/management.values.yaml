@@ -32,3 +32,6 @@ units:
 
   os-image-server:
     enabled: '{{ tuple . "metal3" | include "unit-enabled" }}'
+
+  kata-deploy:
+    enabled: false
