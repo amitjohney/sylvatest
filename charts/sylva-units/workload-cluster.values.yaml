@@ -170,6 +170,10 @@ units:
     enabled: true
     unit_template: base-deps
 
+  cert-manager:
+    enabled: false
+    unit_template: base-deps
+
   cluster-import:
     enabled: false  # overriden depending on whether Rancher is enabled or not
     unit_template: base-deps
@@ -186,3 +190,5 @@ units:
         substitute:
           CLUSTER_FLAVOR: '{{ upper .Values.cluster.capi_providers.bootstrap_provider }} {{ upper .Values.cluster.capi_providers.infra_provider }}'
           CLUSTER_NAME: '{{ .Values.cluster.name }}'
+
+

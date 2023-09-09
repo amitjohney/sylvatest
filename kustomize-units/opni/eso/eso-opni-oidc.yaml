@@ -1,0 +1,30 @@
+# External Secret responsible for creating a secret that holds the clientID and clientSecret
+# of the Keycloak client that will be used for Opni's monitoring authentication.
+# Secret is then consumed by the 'opni' unit.
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: eso-opni-oidc
+  namespace: default
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: eso-store-k8s-keycloak
+  target:
+    name: opni-oidc-auth # name of the k8s Secret to be created in the same namespace as ExternalSecret
+    template:
+      engineVersion: v2
+      data:
+        clientSecret: "{{ .clientSecret }}"
+        clientID: "{{ .clientID }}"
+  data:
+    - secretKey: clientSecret
+      remoteRef:
+        key: keycloak-client-secret-opni-monitoring-client  # this secret is a byproduct of the opni-monitoring-client KeycloakClient resource
+        property: CLIENT_SECRET
+    - secretKey: clientID
+      remoteRef:
+        key: keycloak-client-secret-opni-monitoring-client
+        property: CLIENT_ID
+

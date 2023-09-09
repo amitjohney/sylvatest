@@ -1,0 +1,25 @@
+# Default user that will be used for Opni's Monitoring authentication using Keycloak.
+apiVersion: legacy.k8s.keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: opni-monitoring-admin
+  labels:
+    realm1: sylva # must match the external-keycloak label
+spec:
+  realmSelector:
+    matchLabels:
+      realm1: sylva
+  user:
+    username: opni-monitoring-admin
+    enabled: true
+    email: opni-monitoring-admin@example.com
+    emailVerified: true
+    firstName: opni
+    lastName: monitoring
+    clientRoles:
+      opni-monitoring:
+        - "admin"
+    credentials:
+      - type: password
+        value: "${SSO_PASSWORD}"
+        temporary: false

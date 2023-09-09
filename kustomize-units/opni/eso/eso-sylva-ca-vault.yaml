@@ -1,0 +1,19 @@
+# External Secret responsible for creating a secret that
+# holds Sylva's CA certificate. It is consumed by the 'opni' unit.
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: eso-sylva-ca
+  namespace: opni
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: eso-store-k8s-cert-manager
+  target:
+    name: sylva-ca.crt # name of the k8s Secret to be created in the same namespace as ExternalSecret
+  data:
+  - secretKey: ca.crt
+    remoteRef:
+      key: ca-key-pair
+      property: ca.crt
