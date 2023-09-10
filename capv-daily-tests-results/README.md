@@ -28,5 +28,4 @@ The results are summarized by the following table:
 |2023-08-11 02:32|kubeadm-capv|3f847ffa1e806df0a27456b790d23e6fbe41c147|:white_check_mark: success||
 |2023-08-10 02:18|kubeadm-capv|5519a794cedf21a0fb237665388dc9040d85fe63|:white_check_mark: success||
 |2023-08-09 02:27|kubeadm-capv|63a0799a1da09bba5e7590a0b932f97c7a908676|:white_check_mark: success||
-|2023-08-08 02:21|kubeadm-capv|e7c4ca61005bb3694eb9778bf7141a42f7ba2ad6|:white_check_mark: success||
 
