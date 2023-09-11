@@ -28,6 +28,9 @@ variables:
   CI_IMAGE: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image:v1.0.8
   # renovate: datasource=docker
   OPENSTACK_CLIENT_IMAGE: registry.gitlab.com/sylva-projects/sylva-elements/container-images/openstack-client:v0.0.5
+  # if a deploy job sets this to "even" (resp. "odd"), the job will automatically trigger
+  # for any MR having an even MR number and the run-e2e-tests label
+  E2E_JOB_MR_PARITY: any
 
 include:
   - project: "to-be-continuous/gitleaks"
@@ -267,10 +270,6 @@ check-docs-markdown:
           region_name: '${OS_REGION_NAME}'
           verify: false
       EOF
-  variables:
-    # if a deploy job sets this to "even" (resp. "odd"), the job will automatically trigger
-    # for any MR having an even MR number and the run-e2e-tests label
-    E2E_JOB_MR_PARITY: any
   rules:
     - if: '$CI_COMMIT_TAG && $OCI_TAG'
       variables:
