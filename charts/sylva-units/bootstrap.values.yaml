@@ -118,21 +118,18 @@ units:
       path: ./kustomize-units/kube-job
       wait: true
       force: true
+      postBuild:
+        substitute:
+          JOB_NAME: copy-configs-job
+          JOB_CHECKSUM: '{{ .Values | toJson | sha256sum }}'
+          JOB_TARGET_NAMESPACE: default
       _patches:
       - target:
-          kind: Job
-          name: kube-job
+          kind: ConfigMap
         patch: |
           - op: replace
             path: /metadata/name
-            value: copy-configs-job
-          - op: replace
-            path: /spec/template/metadata/annotations/checksum
-            value: '{{ .Values | toJson | sha256sum }}'
-      - target:
-          kind: ConfigMap
-          name: job-scripts
-        patch: |
+            value: copy-configs-job-cm
           - op: replace
             path: /data/kube-job.sh
             value: |
@@ -140,10 +137,9 @@ units:
               set -e
 
               echo "-- Retrieve target cluster kubeconfig"
-              kubectl get secret {{ .Values.cluster.name }}-kubeconfig -o jsonpath='{.data.value}' | base64 -d > management-cluster-kubeconfig
-
+              kubectl -n $TARGET_NAMESPACE get secret {{ .Values.cluster.name }}-kubeconfig -o jsonpath='{.data.value}' | base64 -d > management-cluster-kubeconfig
               echo "-- Copy secrets and configmaps from bootstrap to management cluster"
-              kubectl get configmaps,secrets,gitrepository,helmrepository \
+              kubectl -n $TARGET_NAMESPACE get configmaps,secrets,gitrepository,helmrepository \
                 -l copy-from-bootstrap-to-management= \
                 -o json \
                   | jq '.items[] | del(.metadata.labels."helm.toolkit.fluxcd.io/name")
@@ -216,18 +212,17 @@ units:
       path: ./kustomize-units/kube-job
       wait: true
       force: true
+      postBuild:
+        substitute:
+          JOB_NAME: reconcile-sylva-units-job
+          JOB_TARGET_NAMESPACE: default
       _patches:
       - target:
-          kind: Job
-          name: kube-job
+          kind: ConfigMap
         patch: |
           - op: replace
             path: /metadata/name
-            value: reconcile-sylva-units-job
-      - target:
-          kind: ConfigMap
-          name: job-scripts
-        patch: |
+            value: reconcile-sylva-units-job-cm
           - op: replace
             path: /data/kube-job.sh
             value: |
@@ -238,13 +233,13 @@ units:
               reconcileAt=$(date -uIs)
 
               echo "-- Forcefully reconcile of the sylva-units HelmRelease"
-              kubectl annotate --overwrite helmrelease/sylva-units reconcile.fluxcd.io/requestedAt="$reconcileAt"
+              kubectl -n $TARGET_NAMESPACE annotate --overwrite helmrelease/sylva-units reconcile.fluxcd.io/requestedAt="$reconcileAt"
 
               echo "-- Wait until the last release revision of the sylva-units HelmRelease has been incremented"
-              kubectl wait --for=jsonpath='{.status.lastHandledReconcileAt}'=${reconcileAt} --timeout 180s helmrelease/sylva-units
+              kubectl -n $TARGET_NAMESPACE wait --for=jsonpath='{.status.lastHandledReconcileAt}'=${reconcileAt} --timeout 180s helmrelease/sylva-units
 
               echo "-- Wait until the sylva-units HelmRelease is ready"
-              kubectl wait --for=condition=ready --timeout 180s helmrelease/sylva-units
+              kubectl -n $TARGET_NAMESPACE wait --for=condition=ready --timeout 180s helmrelease/sylva-units
 
   pivot:
     enabled: yes
@@ -255,51 +250,87 @@ units:
       path: ./kustomize-units/kube-job
       wait: true
       force: true
+      postBuild:
+        substitute:
+          JOB_NAME: pivot-job
+          JOB_TARGET_NAMESPACE: default
+       # change to ClusterRole because the `pivot` unit's pivot-job-sa SA is required to access
+       # the cluster-wide CRD resources in order to move CAPI objects to management cluster
       _patches:
       - target:
-          kind: Job
-          name: kube-job
+          kind: Role
+        patch: |
+          - op: replace
+            path: /kind
+            value: ClusterRole
+      - target:
+          kind: RoleBinding
+        patch: |
+          - op: replace
+            path: /kind
+            value: ClusterRoleBinding
+          - op: replace
+            path: /roleRef/kind
+            value: ClusterRole
+      - target:
+          kind: ConfigMap
         patch: |
           - op: replace
             path: /metadata/name
-            value: pivot-job
-      - target:
-          kind: ConfigMap
-          name: job-scripts
-        patch: |
+            value: pivot-job-cm
           - op: replace
             path: /data/kube-job.sh
             value: |
               #!/bin/bash
 
               set -e
-
               echo "-- Signal that the pivot job has started. This is used in bootstrap.sh to prevent accidental re-runs"
-              kubectl annotate --overwrite kustomizations.kustomize.toolkit.fluxcd.io cluster pivot/started=true
+              kubectl -n $TARGET_NAMESPACE  annotate --overwrite kustomizations.kustomize.toolkit.fluxcd.io cluster pivot/started=true
 
               echo "-- Retrieve target cluster kubeconfig"
-              kubectl get secret {{ .Values.cluster.name }}-kubeconfig -o jsonpath='{.data.value}' | base64 -d > management-cluster-kubeconfig
+              kubectl -n $TARGET_NAMESPACE get secret {{ .Values.cluster.name }}-kubeconfig -o jsonpath='{.data.value}' | base64 -d > management-cluster-kubeconfig
 
               echo "-- Wait for cluster and machines to be ready as it is a required condition to move"
-              kubectl wait --for condition=ControlPlaneReady --timeout 600s --all cluster
-              kubectl wait --for condition=NodeHealthy --timeout 600s --all machine
-
+              kubectl -n $TARGET_NAMESPACE wait --for condition=ControlPlaneReady --timeout 600s --all cluster
+              kubectl -n $TARGET_NAMESPACE wait --for condition=NodeHealthy --timeout 600s --all machine
               echo "-- Wait for all Kustomizations related to Cluster API to be ready in management cluster"
-              kubectl --kubeconfig management-cluster-kubeconfig wait --for=condition=Ready --timeout=20m kustomization capi-providers-pivot-ready
+              kubectl -n $TARGET_NAMESPACE --kubeconfig management-cluster-kubeconfig wait --for=condition=Ready --timeout=20m kustomization capi-providers-pivot-ready
 
               echo "-- Suspend Kustomizations and HelmReleases in bootstrap cluster that relate to the management cluster"
-              kubectl patch $(kubectl get helmreleases.helm.toolkit.fluxcd.io,kustomizations.kustomize.toolkit.fluxcd.io \
+              kubectl -n $TARGET_NAMESPACE patch $(kubectl -n $TARGET_NAMESPACE get helmreleases.helm.toolkit.fluxcd.io,kustomizations.kustomize.toolkit.fluxcd.io \
                 -l suspend-on-pivot=yes -o name) --type=json --patch '[{"op": "replace", "path": "/spec/suspend", "value": true}]'
 
-              kubectl patch helmreleases.helm.toolkit.fluxcd.io sylva-units --type=json \
+              kubectl -n $TARGET_NAMESPACE patch helmreleases.helm.toolkit.fluxcd.io sylva-units --type=json \
                 --patch '[{"op": "replace", "path": "/spec/suspend", "value": true}]'
 
               echo "-- Move cluster definitions from source to target cluster"
               export CLUSTERCTL_DISABLE_VERSIONCHECK=true
-              clusterctl move --kubeconfig $KUBECONFIG --to-kubeconfig management-cluster-kubeconfig -v 3
+              SA_PATH=/var/run/secrets/kubernetes.io/serviceaccount/
+              cat <<EOF > $(pwd)/source-kubeconfig
+              apiVersion: v1
+              kind: Config
+              clusters:
+              - name: default-cluster
+                cluster:
+                  certificate-authority-data: $(cat $SA_PATH/ca.crt | base64 -w 0)
+                  server: https://kubernetes.default.svc.cluster.local
+              contexts:
+              - name: default-context
+                context:
+                  cluster: default-cluster
+                  namespace: $TARGET_NAMESPACE
+                  user: default-user
+              current-context: default-context
+              users:
+              - name: default-user
+                user:
+                  token: $(cat $SA_PATH/token)
+              EOF
+              bootstrap_cluster_kubeconfig="$(pwd)/source-kubeconfig"
+              clusterctl move --kubeconfig $bootstrap_cluster_kubeconfig --to-kubeconfig management-cluster-kubeconfig -v 3
 
               echo "-- Patch the mgmt cluster sylva-units HelmRelease to enable 'cluster' unit in the management cluster"
-              kubectl --kubeconfig management-cluster-kubeconfig \
+              kubectl -n $TARGET_NAMESPACE --kubeconfig management-cluster-kubeconfig \
                   patch helmrelease sylva-units --type=json --patch='[{"op":"remove","path":"/spec/values/units/cluster/enabled"}]'
 
               # NOTE: here we could add a reference to another valueFile that would deploy units specific to the management cluster
@@ -307,14 +338,14 @@ units:
               # and/or create a kustomization on management-cluster to manage sylva-units helmRelease from git
 
               echo "-- Freeze reconciliation of current job Kustomization in source cluster as we're done"
-              kubectl annotate kustomizations pivot kustomize.toolkit.fluxcd.io/reconcile=disabled --overwrite
+              kubectl -n $TARGET_NAMESPACE annotate kustomizations pivot kustomize.toolkit.fluxcd.io/reconcile=disabled --overwrite
 
               echo "-- Accelerate reconciliation of the sylva-units HelmRelease"
-              kubectl --kubeconfig management-cluster-kubeconfig \
+              kubectl -n $TARGET_NAMESPACE --kubeconfig management-cluster-kubeconfig \
                   annotate --overwrite helmrelease/sylva-units reconcile.fluxcd.io/requestedAt="$(date -uIs)"
 
               echo "-- Signal to bootstrap.sh that the pivot job has ended"
-              kubectl annotate --overwrite kustomizations.kustomize.toolkit.fluxcd.io cluster pivot/started-
+              kubectl -n $TARGET_NAMESPACE annotate --overwrite kustomizations.kustomize.toolkit.fluxcd.io cluster pivot/started-
 
               echo "-- All done"
 

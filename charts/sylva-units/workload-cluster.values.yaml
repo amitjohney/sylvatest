@@ -183,9 +183,22 @@ units:
       # because this resource lives in the mgmt cluster:
       kubeConfig: null  # cancel what is inherited from unit_kustomization_spec_default
       targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
-      wait: true
+      wait: false
       path: ./kustomize-units/cluster-import
       postBuild:
         substitute:
           CLUSTER_FLAVOR: '{{ upper .Values.cluster.capi_providers.bootstrap_provider }} {{ upper .Values.cluster.capi_providers.infra_provider }}'
           CLUSTER_NAME: '{{ .Values.cluster.name }}'
+      healthChecks:
+        # this resource is created by capi-rancher-import based on the existence of
+        # the Cluster.provisioning.cattle.io produced by the kustomization
+        - apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+          kind: Kustomization
+          name: "cattle-agent-{{ .Values.cluster.name }}"
+          namespace: '{{ .Release.Namespace }}'
+        # this resource would be checked by "wait: true" but we have
+        # to check it explicitly because we use `healthChecks` which implies `wait: false`
+        - apiVersion: provisioning.cattle.io/v1
+          kind: Cluster
+          name: "{{ .Values.cluster.name }}-capi"
+          namespace: '{{ .Release.Namespace }}'

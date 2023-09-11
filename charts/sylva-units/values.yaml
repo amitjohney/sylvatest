@@ -571,21 +571,31 @@ units:
       path: ./kustomize-units/kube-job
       wait: true
       force: true
+      postBuild:
+        substitute:
+          JOB_NAME: keycloak-add-client-scope-job
+          JOB_TARGET_NAMESPACE: keycloak
       _patches:
       - target:
           kind: Job
-          name: kube-job
+        patch: |
+          - op: add
+            path: /spec/template/spec/securityContext
+            value:
+              runAsUser: 1000
+              runAsGroup: 3000
+      - target:
+          kind: Job
+        patch: |
+          - op: replace
+            path: /spec/backoffLimit
+            value: 15
+      - target:
+          kind: ConfigMap
         patch: |
           - op: replace
             path: /metadata/name
-            value: keycloak-add-client-scope
-          - op: replace
-            path: /spec/backoffLimit
-            value: 10
-      - target:
-          kind: ConfigMap
-          name: job-scripts
-        patch: |
+            value: keycloak-add-client-scope-job-cm
           - op: replace
             path: /data/kube-job.sh
             value: |
@@ -1013,51 +1023,41 @@ units:
       path: ./kustomize-units/kube-job
       wait: true
       force: true
+      postBuild:
+        substitute:
+          JOB_NAME: pause-cluster-reconciliation-job
+          JOB_TARGET_NAMESPACE: '{{ .Release.Namespace }}'
+          JOB_CHECKSUM: '{{ .Values | toJson | sha256sum }}'
       _patches:
       - target:
           kind: Job
-          name: kube-job
         patch: |
-          - op: replace
-            path: /metadata/name
-            value: pause-cluster-reconciliation-job
-          - op: replace
-            path: /spec/template/metadata/annotations/checksum
-            value: '{{ .Values | toJson | sha256sum }}'
-      # We need to create at least one RoleBinding per namespace as they are referring to namespaced serviceAccounts
-      - target:
-          kind: ClusterRoleBinding
-          name: kube-job
-        patch: |
-          - op: replace
-            path: /metadata/name
-            value: 'kube-job-{{ .Release.Namespace }}'
+          - op: add
+            path: /spec/template/spec/securityContext
+            value:
+              runAsUser: 1000
+              runAsGroup: 3000
       - target:
           kind: ConfigMap
-          name: job-scripts
         patch: |
           - op: replace
-            path: /data/entrypoint.sh
-            value: |
-              #!/bin/bash
-              $(dirname $0)/kube-job.sh
-              echo "All done"
+            path: /metadata/name
+            value: pause-cluster-reconciliation-job-cm
           - op: replace
             path: /data/kube-job.sh
             value: |
               #!/bin/bash
-
-              kubectl wait {{ (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") | ternary "KubeadmControlPlane" "RKE2ControlPlane" }} \
+              kubectl -n $TARGET_NAMESPACE wait {{ (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") | ternary "KubeadmControlPlane" "RKE2ControlPlane" }} \
                 {{ .Values.cluster.name }}-control-plane --for condition=Available --timeout 600s
-              kubectl wait {{ (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") | ternary "KubeadmControlPlane" "RKE2ControlPlane" }} \
+              kubectl -n $TARGET_NAMESPACE wait {{ (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") | ternary "KubeadmControlPlane" "RKE2ControlPlane" }} \
                 {{ .Values.cluster.name }}-control-plane --for condition=Resized   --timeout 600s
 
-              kubectl wait MachineDeployment -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }} --for condition=Available --timeout 600s
+              kubectl -n $TARGET_NAMESPACE wait MachineDeployment -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }} --for condition=Available --timeout 600s
 
-              kubectl wait machine -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }} --for condition=Ready --timeout 600s
-              kubectl wait machine -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }} --for condition=NodeHealthy --timeout 600s
+              kubectl -n $TARGET_NAMESPACE wait machine -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }} --for condition=Ready --timeout 600s
+              kubectl -n $TARGET_NAMESPACE wait machine -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }} --for condition=NodeHealthy --timeout 600s
 
-              kubectl patch cluster.cluster.x-k8s.io  {{ .Values.cluster.name }} --type merge -p '{"spec":{"paused": true}}'
+              kubectl -n $TARGET_NAMESPACE patch cluster.cluster.x-k8s.io  {{ .Values.cluster.name }} --type merge -p '{"spec":{"paused": true}}'
 
   resume-cluster-reconciliation:
     enabled_conditions:
@@ -1069,40 +1069,31 @@ units:
       path: ./kustomize-units/kube-job
       wait: true
       force: true
+      postBuild:
+        substitute:
+          JOB_NAME: resume-cluster-reconciliation-job
+          JOB_TARGET_NAMESPACE: '{{ .Release.Namespace }}'
+          JOB_CHECKSUM: '{{ .Values | toJson | sha256sum }}'
       _patches:
       - target:
           kind: Job
-          name: kube-job
         patch: |
-          - op: replace
-            path: /metadata/name
-            value: resume-cluster-reconciliation-job
-          - op: replace
-            path: /spec/template/metadata/annotations/checksum
-            value: '{{ .Values | toJson | sha256sum }}'
-      # We need to create at least one RoleBinding per namespace as they are referring to namespaced serviceAccounts
-      - target:
-          kind: ClusterRoleBinding
-          name: kube-job
-        patch: |
-          - op: replace
-            path: /metadata/name
-            value: 'kube-job-{{ .Release.Namespace }}'
+          - op: add
+            path: /spec/template/spec/securityContext
+            value:
+              runAsUser: 1000
+              runAsGroup: 3000
       - target:
           kind: ConfigMap
-          name: job-scripts
         patch: |
           - op: replace
-            path: /data/entrypoint.sh
-            value: |
-              #!/bin/bash
-              $(dirname $0)/kube-job.sh
-              echo "All done"
+            path: /metadata/name
+            value: resume-cluster-reconciliation-job-cm
           - op: replace
             path: /data/kube-job.sh
             value: |
               #!/bin/bash
-              kubectl patch cluster.cluster.x-k8s.io  {{ .Values.cluster.name }} --type merge -p '{"spec":{"paused": false}}'
+              kubectl -n $TARGET_NAMESPACE patch cluster.cluster.x-k8s.io {{ .Values.cluster.name }} --type merge -p '{"spec":{"paused": false}}'
 
   calico-crd:
     enabled_conditions:
@@ -1651,28 +1642,37 @@ units:
       path: ./kustomize-units/kube-job
       wait: true
       force: true
+      postBuild:
+        substitute:
+          JOB_NAME: check-rancher-clusters-job
+          JOB_TARGET_NAMESPACE: cattle-system
       _patches:
       - target:
           kind: Job
-          name: kube-job
+        patch: |
+          - op: add
+            path: /spec/template/spec/securityContext
+            value:
+              runAsUser: 1000
+              runAsGroup: 3000
+      - target:
+          kind: Job
+        patch: |
+          - op: replace
+            path: /spec/backoffLimit
+            value: 15
+      - target:
+          kind: ConfigMap
         patch: |
           - op: replace
             path: /metadata/name
-            value: check-rancher-clusters-job
-          - op: replace
-            path: /spec/backoffLimit
-            value: 10
-      - target:
-          kind: ConfigMap
-          name: job-scripts
-        patch: |
+            value: check-rancher-clusters-job-cm
           - op: replace
             path: /data/kube-job.sh
             value: |
           {{ .Files.Get "scripts/check-rancher-clusters.sh" | indent 4 }}
       - target:
           kind: Job
-          name: kube-job
         patch: |
           apiVersion: batch/v1
           kind: Job

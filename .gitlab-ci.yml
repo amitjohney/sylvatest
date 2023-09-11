@@ -246,8 +246,8 @@ check-docs-markdown:
     - yq -i eval-all 'select(fileIndex==0).registry_mirrors = select(fileIndex==1) | select(fileIndex==0)' $values_file registry_mirrors.yml
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capo\r\e[0K"
   post_deployment_common:
-    - export CHECK_RANCHER_JOB_POD=`kubectl --kubeconfig management-cluster-kubeconfig get pod --selector job-name=check-rancher-clusters-job -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}'`
-    - kubectl --kubeconfig management-cluster-kubeconfig logs $CHECK_RANCHER_JOB_POD || echo "No workload clusters here"
+    - export CHECK_RANCHER_JOB_POD=`kubectl --kubeconfig management-cluster-kubeconfig -n kube-job get pod --selector job-name=check-rancher-clusters-job-cattle-system -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}'`
+    - kubectl --kubeconfig management-cluster-kubeconfig -n kube-jobs logs $CHECK_RANCHER_JOB_POD || echo "No workload clusters here"
   os_cloud:
     # the OS_* variables below are set in the gitlab runner configuration
     # and contain information to connect to the OpenStack instance used
@@ -431,7 +431,7 @@ deploy-capo-fip:
   set -e
   set -o pipefail
   echo "-- Get secret workoad-cluster-rancher-kubeconfig and save it locally in a workload-cluster-rancher-kubeconfig file"
-  kubectl --kubeconfig management-cluster-kubeconfig get secret workload-cluster-rancher-kubeconfig -o jsonpath='{.data.kubeconfig}' | base64 -d | yq -P > workload-cluster-rancher-kubeconfig
+  kubectl --kubeconfig management-cluster-kubeconfig -n cattle-system get secret workload-cluster-rancher-kubeconfig -o jsonpath='{.data.kubeconfig}' | base64 -d | yq -P > workload-cluster-rancher-kubeconfig
   echo "-- Get ingress saved into /etc/hosts"
   kubectl --kubeconfig management-cluster-kubeconfig get ingress -A -o custom-columns=:.status.loadBalancer.ingress[].ip,:.spec.tls[].hosts[] | grep -v '<none>' >> /etc/hosts
   export no_proxy=$no_proxy,.sylva
