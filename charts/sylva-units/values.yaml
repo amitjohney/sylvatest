@@ -1513,7 +1513,7 @@ units:
   ingress-nginx:
     depends_on:
       capd-metallb-config: '{{ tuple . "capd-metallb-config" | include "unit-enabled" }}'
-      calico: '{{ tuple . "calico" | include "unit-enabled" }}'
+      calico: '{{ and (tuple . "calico" | include "unit-enabled") (not (tuple . "metal3" | include "unit-enabled")) }}'
     helm_repo_url: https://rke2-charts.rancher.io
     helmrelease_spec:
       releaseName: rke2-ingress-nginx
