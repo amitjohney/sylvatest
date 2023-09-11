@@ -32,3 +32,10 @@ units:
 
   os-image-server:
     enabled: '{{ tuple . "metal3" | include "unit-enabled" }}'
+
+  monitoring:
+    helmrelease_spec:
+      values:
+        global:
+          cattle:
+            clusterId: local
