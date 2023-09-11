@@ -91,7 +91,7 @@
     },
     {
       "customType": "regex",
-      "fileMatch": "values.yaml",
+      "fileMatch": "^values.yaml",
       "matchStringsStrategy": "recursive",
       "matchStrings": [
         "units:[\\w\\W]*[ ]+",
@@ -101,7 +101,7 @@
     },
     {
       "customType": "regex",
-      "fileMatch": "values.yaml",
+      "fileMatch": "^values.yaml",
       "matchStringsStrategy": "recursive",
       "matchStrings": [
         "source_templates:[\\w\\W]*[ ]+",
@@ -111,7 +111,7 @@
     },
     {
       "customType": "regex",
-      "fileMatch": "values.yaml",
+      "fileMatch": "^values.yaml",
       "matchStrings": [
         "\\s+repository:\\s+(?<registryUrl>.*)\/(?<depName>.*)\\n\\s+tag:\\s+\"(?<currentValue>.*)\"\\n"
       ],
