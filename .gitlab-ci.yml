@@ -37,7 +37,8 @@ include:
     ref: v15.47.0
     file: '/templates/renovate-config-validator.gitlab-ci.yml'
     rules:
-      - changes:
+      - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+        changes:
           paths:
             - .gitlab-ci.yml
             - renovate.json
@@ -45,7 +46,8 @@ include:
     ref: 1.0.0
     file: '/templates/renovate-dry-run.gitlab-ci.yml'
     rules:
-      - changes:
+      - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+        changes:
           paths:
             - renovate.json
 
