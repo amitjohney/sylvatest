@@ -130,6 +130,9 @@ units:
 
   monitoring:
     enabled: true
+    depends_on:
+      default/rancher-monitoring-clusterid-inject: '{{ tuple . "default/rancher-monitoring-clusterid-inject" | include "unit-enabled" }}'
+      cluster-import: '{{ tuple . "cluster-import" | include "unit-enabled" }}'
     unit_template: base-deps
 
   longhorn-crd:

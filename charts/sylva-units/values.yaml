@@ -645,6 +645,13 @@ units:
           securityContext:
             seccompProfile: null
         backgroundController:
+          rbac:
+            clusterRole:
+              extraResources:
+              - apiGroups: ["helm.toolkit.fluxcd.io"]
+                resources:
+                  - "helmreleases"
+                verbs: ["get", "patch", "list", "update", "watch"]
           securityContext:
             seccompProfile: null
         reportsController:
@@ -659,6 +666,16 @@ units:
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kyverno-policies
+      wait: true
+
+  rancher-monitoring-clusterid-inject:
+    enabled_conditions:
+    - '{{ tuple . "kyverno" | include "unit-enabled" }}'
+    depends_on:
+      kyverno: '{{ tuple . "kyverno" | include "unit-enabled" }}'
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/rancher-monitoring-clusterid-inject
       wait: true
 
   capi:
@@ -1593,9 +1610,14 @@ units:
       chart:
         spec:
           chart: rancher-monitoring-crd
-          version: 101.0.0+up19.0.3
+          version: 102.0.1+up40.1.2
       install:
         createNamespace: true
+      values:
+        global:
+          cattle:
+            psp:
+              enabled: '{{ .Values.cluster.cis_profile | eq "cis-1.6" | include "as-bool" }}'
 
   monitoring:
     depends_on:
@@ -1607,9 +1629,14 @@ units:
       chart:
         spec:
           chart: rancher-monitoring
-          version: 101.0.0+up19.0.3
+          version: 102.0.1+up40.1.2
       install:
         createNamespace: true
+      values:
+        global:
+          cattle:
+            psp:
+              enabled: '{{ .Values.cluster.cis_profile | eq "cis-1.6" | include "as-bool" }}'
 
   # this is a Job attempt to check successful import of a CAPI workload clusters in Rancher, still incomplete
   # it would be used along with a definition of a 'workload-cluster' unit
