@@ -96,6 +96,24 @@
             }
           ]
         },
+        "cni_option": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "",
+                "calico",
+                "cilium"
+              ]
+            },
+            {
+              "$ref": "#/$defs/gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "cis_profile": {
           "anyOf": [
             {

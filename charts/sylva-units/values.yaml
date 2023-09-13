@@ -907,6 +907,7 @@ units:
           - 10.43.0.0/16
         cluster_pods_cidrs:
           - 10.42.0.0/16
+        cni_option: '{{ .Values.cluster.cni_option }}'
         capo:
           flavor_name: '{{ .Values.cluster.capo.flavor_name }}'
           worker_flavor_name: '{{ .Values.cluster.capo.worker_flavor_name }}'
@@ -1107,7 +1108,21 @@ units:
           chart: rke2-calico-crd
           version: v3.25.001
 
+  cilium:
+    enabled_conditions:
+    - '{{ .Values.cluster.cni_option | eq "cilium" }}'
+    helm_repo_url: https://rke2-charts.rancher.io
+    helmrelease_spec:
+      releaseName: rke2-cilium
+      targetNamespace: kube-system
+      chart:
+        spec:
+          chart: rke2-cilium
+          version: 1.14.0
+
   calico:
+    enabled_conditions:
+    - '{{ .Values.cluster.cni_option | eq "calico" }}'
     depends_on:
       calico-crd: true
     helm_repo_url: https://rke2-charts.rancher.io
@@ -2086,6 +2101,10 @@ cluster:
 
   # can be set to true to do an RKE2 deployment disconnected from the Internet:
   air_gapped: false
+  
+  # Default cni
+  # Setting it to calico for now, other option is cilium for which WIP
+  cni_option: calico
 
   # cis profile to be used. Curently supported only for rke2 clusters. "cis-1.6" for k8s prior to 1.25, "cis-1.23" for 1.25+
   cis_profile: cis-1.6

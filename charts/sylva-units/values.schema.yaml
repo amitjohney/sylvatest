@@ -507,6 +507,13 @@ properties:
         type: string
       worker_machine_image:  # -------------------------------
         type: string
+      cni_option:  # -------------------------------
+        anyOf:
+          - type: string
+            enum:
+            - ""
+            - "calico"
+            - "cilium"
       cis_profile:  # -------------------------------
         anyOf:
           - type: string
