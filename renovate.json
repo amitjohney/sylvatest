@@ -150,7 +150,7 @@
       "fileMatch": "tools/shell-lib/common.sh",
       "matchStringsStrategy": "combination",
       "matchStrings": [
-        "SYLVA_TOOLBOX_VERSION=.(?<currentValue>.*).",
+        "SYLVA_TOOLBOX_VERSION:-\"(?<currentValue>.*)\".",
         "SYLVA_TOOLBOX_IMAGE:-(?<depName>.*).",
         "SYLVA_TOOLBOX_REGISTRY:-(?<registryUrl>.*)."
       ],
