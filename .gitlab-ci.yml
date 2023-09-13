@@ -34,7 +34,7 @@ include:
     ref: 2.2.2
     file: "templates/gitlab-ci-gitleaks.yml"
   - project: 'renovate-bot/renovate-runner'
-    ref: v15.47.0
+    ref: v15.57.3
     file: '/templates/renovate-config-validator.gitlab-ci.yml'
     rules:
       - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
