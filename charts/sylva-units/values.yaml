@@ -602,38 +602,38 @@ units:
           JOB_NAME: keycloak-add-client-scope-job
           JOB_TARGET_NAMESPACE: keycloak
       _patches:
-      - target:
-          kind: Job
-        patch: |
-          - op: add
-            path: /spec/template/spec/securityContext
-            value:
-              runAsUser: 1000
-              runAsGroup: 3000
-              allowPrivilegeEscalation: false
-              capabilities:
-                drop:
-                  - ALL
-              privileged: false
-              runAsNonRoot: true
-              seccompProfile:
-                type: RuntimeDefault
-     - target:
-          kind: Job
-        patch: |
-          - op: replace
-            path: /spec/backoffLimit
-            value: 15
-      - target:
-          kind: ConfigMap
-        patch: |
-          - op: replace
-            path: /metadata/name
-            value: keycloak-add-client-scope-job-cm
-          - op: replace
-            path: /data/kube-job.sh
-            value: |
-          {{ .Files.Get "scripts/keycloak-add-client-scope.sh" | indent 4 }}
+        - target:
+            kind: Job
+          patch: |
+            - op: add
+              path: /spec/template/spec/securityContext
+              value:
+                runAsUser: 1000
+                runAsGroup: 3000
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                privileged: false
+                runAsNonRoot: true
+                seccompProfile:
+                  type: RuntimeDefault
+        - target:
+            kind: Job
+          patch: |
+            - op: replace
+              path: /spec/backoffLimit
+              value: 15
+        - target:
+            kind: ConfigMap
+          patch: |
+            - op: replace
+              path: /metadata/name
+              value: keycloak-add-client-scope-job-cm
+            - op: replace
+              path: /data/kube-job.sh
+              value: |
+            {{ .Files.Get "scripts/keycloak-add-client-scope.sh" | indent 4 }}
 
   keycloak-oidc-external-secrets:
     enabled_conditions:
