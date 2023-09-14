@@ -618,7 +618,15 @@ units:
             value:
               runAsUser: 1000
               runAsGroup: 3000
-      - target:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              privileged: false
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
+     - target:
           kind: Job
         patch: |
           - op: replace
@@ -1747,6 +1755,14 @@ units:
             value:
               runAsUser: 1000
               runAsGroup: 3000
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              privileged: false
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
       - target:
           kind: Job
         patch: |
@@ -1927,7 +1943,7 @@ units:
       releaseName: longhorn-crd
       targetNamespace: longhorn-system
       install:
-        createNamespace: true
+        createNamespace: false
       chart:
         spec:
           chart: longhorn-crd
@@ -1946,7 +1962,7 @@ units:
           chart: longhorn
           version: 102.2.0+up1.4.1
       values:
-        enablePSP: true
+        enablePSP: '{{ .Values.cluster.cis_profile | eq "cis-1.6" | include "preserve-type" }}'
         defaultSettings:
           createDefaultDiskLabeledNodes: true
           defaultDataPath: /var/lib/longhorn
