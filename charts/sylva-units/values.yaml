@@ -944,10 +944,6 @@ units:
             annotations:
               repo: "https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster"
           network_interfaces: {}
-        machine_deployments:
-          md0:
-            failure_domain: ""
-            network_interfaces: {}
         dns_resolver: false
         ntp: '{{ .Values.ntp | include "preserve-type" }}'
         proxies: '{{ .Values.proxies | include "preserve-type" }}'

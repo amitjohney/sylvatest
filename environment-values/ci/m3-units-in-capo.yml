@@ -25,9 +25,6 @@ units:
     enabled: true
   cluster:
     enabled: true
-    helmrelease_spec:
-      values:
-        machine_deployments: null
   workload-cluster:
     enabled: false # explicitly disabled, since env_type_ci is set in .gitlab-ci.yml
 cluster:
