@@ -9,6 +9,10 @@ units:
     enabled: true
   capm3:
     enabled: true
+  metal3-init:
+    enabled: true
+  metal3-sync-secrets:
+    enabled: true
   metal3:
     enabled: true
   capi-providers-pivot-ready:
@@ -22,6 +26,22 @@ units:
   heat-operator:
     enabled: true
   capo-cluster-resources:
+    enabled: true
+  eso-secret-stores:
+    enabled: true
+  vault-secrets:
+    enabled: true
+  vault:
+    enabled: true
+  vault-operator:
+    enabled: true
+  vault-config-operator:
+    enabled: true
+  sylva-ca-certs:
+    enabled: true
+  sylva-ca:
+    enabled: true
+  external-secrets-operator:
     enabled: true
   cluster:
     enabled: true

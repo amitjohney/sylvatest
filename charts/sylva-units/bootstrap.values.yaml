@@ -26,6 +26,8 @@ units:
   metal3:
     enabled_conditions:
       - '{{ tuple . "capm3" | include "unit-enabled" }}'
+    depends_on:
+      metal3-sync-secrets: false ## override default set in values.yaml
     helmrelease_spec:
       values:
         # ironicIPADownloaderBaseURI:
@@ -35,6 +37,16 @@ units:
             ironicIP: '{{ dig "capm3" "external_bootstrap_ip" (dig "capm3" "bootstrap_ip" "127.0.0.1" .Values.cluster) .Values.cluster }}'
             # Address of kind container/node, that will be used to bind ironic service
             externalIPs: '{{ .Values._internal.bootstrap_node_ip | include "preserve-type" }}'
+      valuesFrom: []  # override the valuesFrom from default values.yaml which is based on Vault/ExternalSecret
+    helm_secret_values:  # on bootstrap we don't have Vault/ExternalSecret, so we rely on Helm-generated random passwords
+      mariadb:
+        auth:
+          rootPassword: '{{ .Values._internal.default_password | trunc 32 }}'
+          replicationPassword: '{{ .Values._internal.default_password | trunc -32 }}'
+          ironicPassword: '{{ .Values._internal.default_password }}'
+      auth:
+        ironicPassword: '{{ .Values._internal.default_password }}'
+        ironicInspectorPassword: '{{ .Values._internal.default_password }}'
     labels:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
 
