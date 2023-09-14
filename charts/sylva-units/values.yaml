@@ -1943,7 +1943,7 @@ units:
       releaseName: longhorn-crd
       targetNamespace: longhorn-system
       install:
-        createNamespace: false
+        createNamespace: true
       chart:
         spec:
           chart: longhorn-crd
