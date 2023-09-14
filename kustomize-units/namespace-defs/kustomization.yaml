@@ -8,4 +8,5 @@ resources:
   - rancher-global-data-namespace.yaml
   - cattle-monitoring-system.yaml
   - cinder-csi.yaml
+  - longhorn.yaml
   - workload-cluster.yaml
