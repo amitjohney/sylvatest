@@ -753,10 +753,33 @@ units:
       path: ./kustomize-units/cabpr
       wait: true
 
+  metal3-init:
+    enabled_conditions:
+    - '{{ tuple . "metal3" | include "unit-enabled" }}'
+    depends_on:
+      vault: true
+      vault-config-operator: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/metal3-init
+      wait: true
+
+  metal3-sync-secrets:
+    enabled_conditions:
+    - '{{ tuple . "metal3" | include "unit-enabled" }}'
+    depends_on:
+      metal3-init: true
+      eso-secret-stores: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/metal3-sync-secrets
+      wait: true
+
   metal3:
     depends_on:
       cert-manager: true
       '{{ .Values._internal.default_storage_class_unit }}': true
+      metal3-sync-secrets: true # make sure that the password secrets are ready to be consumed
     repo: metal3
     helm_chart_artifact_name: metal3
     helmrelease_spec:
@@ -804,16 +827,32 @@ units:
         securityContext:
           runAsNonRoot: true
           runAsUser: 1000
-    helm_secret_values:
-      mariadb:
-        auth:
-          # if rootPassword or replicationPassword are left empty, we use a randomly generated password
-          rootPassword: '{{ .Values._internal.default_password | trunc 32 }}'
-          replicationPassword: '{{ .Values._internal.default_password | trunc -32 }}'
-          ironicPassword: '{{ .Values._internal.default_password }}'
-      auth:
-        ironicPassword: '{{ .Values._internal.default_password }}'
-        ironicInspectorPassword: '{{ .Values._internal.default_password }}'
+      valuesFrom:
+        - kind: Secret
+          name: metal3-secrets
+          valuesKey: metal3-mariadb-root-secret
+          targetPath: mariadb.auth.rootPassword
+          optional: false
+        - kind: Secret
+          name: metal3-secrets
+          valuesKey: metal3-mariadb-replication-secret
+          targetPath: mariadb.auth.replicationPassword
+          optional: false
+        - kind: Secret
+          name: metal3-secrets
+          valuesKey: metal3-ironic-secret
+          targetPath: mariadb.auth.ironicPassword
+          optional: false
+        - kind: Secret
+          name: metal3-secrets
+          valuesKey: metal3-ironic-secret
+          targetPath: auth.ironicPassword
+          optional: false
+        - kind: Secret
+          name: metal3-secrets
+          valuesKey: metal3-ironic-inspector-secret
+          targetPath: auth.ironicInspectorPassword
+          optional: false
 
   # this unit is here only to have a single thing to look at to determine
   # if everything is ready for pivot (see bootstrap.values.yaml pivot unit)
