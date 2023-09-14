@@ -192,13 +192,13 @@ check-docs-markdown:
     - ip route add $KIND_PREFIX via $DOCKER_IP
     - export KIND_CLUSTER_NAME=bootstrap-${CI_PIPELINE_ID}-${ENV_NAME}
     - export MANAGEMENT_CLUSTER_NAME="management-cluster-${CI_PIPELINE_ID}-${ENV_NAME}"
-    - export TEST_WORKLOAD_CLUSTER_NAME="first-workload-cluster-${CI_PIPELINE_ID}-${ENV_NAME}"
+    - export TEST_WORKLOAD_CLUSTER_NAME="test-workload-cluster-${CI_PIPELINE_ID}-${ENV_NAME}"
     - |
       if [ ${OCI_TAG} ]; then
         echo -e "Applying OCI configuration for tag: ${OCI_TAG}"
-        export KIND_CLUSTER_NAME="bootstrap-${CI_PIPELINE_ID}-${ENV_NAME}-oci"
-        export MANAGEMENT_CLUSTER_NAME="management-cluster-${CI_PIPELINE_ID}-${ENV_NAME}-oci"
-        export TEST_WORKLOAD_CLUSTER_NAME="first-workload-cluster-${CI_PIPELINE_ID}-${ENV_NAME}-oci"
+        export KIND_CLUSTER_NAME="${KIND_CLUSTER_NAME}-oci"
+        export MANAGEMENT_CLUSTER_NAME="${MANAGEMENT_CLUSTER_NAME}-oci"
+        export TEST_WORKLOAD_CLUSTER_NAME="${TEST_WORKLOAD_CLUSTER_NAME}-oci"
         if [ $(yq '.components | length' environment-values/$ENV_NAME/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' environment-values/$ENV_NAME/kustomization.yaml; fi
         yq -i '.components += "../components/oci-artifacts"' $ENV_PATH/kustomization.yaml
       cat <<EOF>> $ENV_PATH/kustomization.yaml
