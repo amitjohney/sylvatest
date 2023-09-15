@@ -158,5 +158,5 @@ spec:
     name: capo-cluster-resources
     labels:
       copy-from-bootstrap-to-management: ""
-  identityRef: management-cluster-cloud-config
+  identityRef: cluster-cloud-config
   cloudName: capo_cloud
