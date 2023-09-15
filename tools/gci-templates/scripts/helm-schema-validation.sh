@@ -34,7 +34,7 @@ echo -e "\e[0Ksection_end:`date +%s`:lint_schema\r\e[0K"
 echo -e "\e[0Ksection_start:`date +%s`:check_generation\r\e[0K--------------- Check that ${HELM_NAME}/values.schema.json was regenerated from values.schema.yaml ..."
 ${BASE_DIR}/tools/generate_json_schema.py -o /tmp/values.schema.json
 if ! cmp -s /tmp/values.schema.json $chart_dir/values.schema.json ; then
-  echo "${RED}$chart_dir/values.schema.json wasn't generated with $chart_dir/values.schema.yaml${NC}"
+  echo -e "${RED}$chart_dir/values.schema.json wasn't generated with $chart_dir/values.schema.yaml${NC}"
   exit 1
 fi
 echo "   DONE"
