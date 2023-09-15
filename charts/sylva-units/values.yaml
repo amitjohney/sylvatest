@@ -1751,7 +1751,7 @@ units:
           kind: Job
         patch: |
           - op: add
-            path: /spec/template/spec/securityContext
+            path: /spec/template/spec/containers/0/securityContext
             value:
               runAsUser: 1000
               runAsGroup: 3000
