@@ -73,10 +73,6 @@ units:
         service:
           type: NodePort
 
-  cluster:
-    depends_on:
-      reconcile-sylva-units: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
-
   calico-crd:
     # overload calico-crd definition in bootstrap context to deploy in the management cluster
     depends_on:
@@ -214,45 +210,6 @@ units:
         {{- mergeOverwrite $chartValues $disableCluster | include "preserve-type" -}}
       valuesFrom: '{{ lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units" | dig "spec" "valuesFrom" list | include "preserve-type" }}'
 
-  reconcile-sylva-units:
-    enabled_conditions:
-    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
-    depends_on:
-      capo-cluster-resources: true
-    repo: sylva-core
-    kustomization_spec:
-      path: ./kustomize-units/kube-job
-      wait: true
-      force: true
-      postBuild:
-        substitute:
-          JOB_NAME: reconcile-sylva-units-job
-          JOB_TARGET_NAMESPACE: default
-      _patches:
-      - target:
-          kind: ConfigMap
-        patch: |
-          - op: replace
-            path: /metadata/name
-            value: reconcile-sylva-units-job-cm
-          - op: replace
-            path: /data/kube-job.sh
-            value: |
-              #!/bin/bash
-
-              set -e
-
-              reconcileAt=$(date -uIs)
-
-              echo "-- Forcefully reconcile of the sylva-units HelmRelease"
-              kubectl -n $TARGET_NAMESPACE annotate --overwrite helmrelease/sylva-units reconcile.fluxcd.io/requestedAt="$reconcileAt"
-
-              echo "-- Wait until the last release revision of the sylva-units HelmRelease has been incremented"
-              kubectl -n $TARGET_NAMESPACE wait --for=jsonpath='{.status.lastHandledReconcileAt}'=${reconcileAt} --timeout 180s helmrelease/sylva-units
-
-              echo "-- Wait until the sylva-units HelmRelease is ready"
-              kubectl -n $TARGET_NAMESPACE wait --for=condition=ready --timeout 180s helmrelease/sylva-units
-
   pivot:
     enabled: yes
     depends_on:
@@ -384,4 +341,3 @@ units_override_enabled:
   - pivot
   - heat-operator
   - capo-cluster-resources
-  - reconcile-sylva-units
