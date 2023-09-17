@@ -112,8 +112,6 @@ export SYLVA_CORE_REPO=${SYLVA_CORE_REPO:-$(git remote get-url origin | sed 's|^
 function exit_trap() {
     EXIT_CODE=$?
 
-    end_section
-
     # Call debug script if needed
     if [[ $EXIT_CODE -ne 0 && ${DEBUG_ON_EXIT:-"0"} -eq 1 ]] || [[ $IN_CI -eq 1 ]]; then
         echo_b "gathering debugging logs in debug-on-exit.log file"
@@ -122,6 +120,7 @@ function exit_trap() {
           tools/gci-templates/scripts/units-reports.py --env-type=${CI_JOB_NAME_SLUG}:bootstrap --input ${CI_PROJECT_DIR}/bootstrap-cluster-dump/flux-kustomizations.yaml --output bootstrap-cluster-units-report.xml
           tools/gci-templates/scripts/units-reports.py --env-type=${CI_JOB_NAME_SLUG}:management --input ${CI_PROJECT_DIR}/management-cluster-dump/flux-kustomizations.yaml --output management-cluster-units-report.xml
         fi
+        end_section
     fi
 
     # Kill all child processes (kubectl watches) on exit
