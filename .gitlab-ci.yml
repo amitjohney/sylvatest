@@ -249,7 +249,12 @@ check-docs-markdown:
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capo\r\e[0K"
   post_deployment_common:
     - export CHECK_RANCHER_JOB_POD=`kubectl --kubeconfig management-cluster-kubeconfig -n kube-job get pod --selector job-name=check-rancher-clusters-job-cattle-system -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}'`
-    - kubectl --kubeconfig management-cluster-kubeconfig -n kube-jobs logs $CHECK_RANCHER_JOB_POD || echo "No workload clusters here"
+    - |
+      if [ -n $CHECK_RANCHER_JOB_POD ]; then
+        kubectl --kubeconfig management-cluster-kubeconfig -n kube-job logs $CHECK_RANCHER_JOB_POD
+      else
+        echo "No workload clusters here"
+      fi
   os_cloud:
     # the OS_* variables below are set in the gitlab runner configuration
     # and contain information to connect to the OpenStack instance used
