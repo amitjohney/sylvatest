@@ -855,7 +855,7 @@ units:
         services:
           ironic:
             # Specify the IP address used by Ironic service
-            ironicIP: '{{ .Values.cluster_external_ip }}'
+            ironicIP: '{{ .Values.display_external_ip }}'
             # We allow shared IPs because we are exposing (by design) a single cluster external IP
             annotations:
               metallb.universe.tf/allow-shared-ip: cluster-external-ip
@@ -1940,7 +1940,7 @@ units:
           air_gapped: '{{ .Values.cluster.air_gapped | include "preserve-type" }}'
 
           mgmt_cluster_external_domain: '{{ .Values.cluster_external_domain }}'
-          mgmt_cluster_external_ip: '{{ .Values.cluster_external_ip }}'
+          mgmt_cluster_external_ip: '{{ .Values.display_external_ip }}'
           dns_resolver: true
 
           metallb_helm_oci_url: '{{ .Values.cluster.metallb_helm_oci_url }}'
