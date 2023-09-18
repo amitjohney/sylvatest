@@ -46,6 +46,7 @@ unit_helmrelease_spec_default:
     secretRef:
       name: '{{ .Values.cluster.name }}-kubeconfig'
   targetNamespace: default  # (in workload-cluster)
+  storageNamespace: default
 
 
 unit_templates:
@@ -72,10 +73,6 @@ units:
       '{{ .Values.cluster.capi_providers.infra_provider }}': false
       '{{ .Values.cluster.capi_providers.bootstrap_provider }}': false
       metal3: false
-      # we don't depend on capo-cluster-resources either, because, as of today
-      # we define those resources outside of the workload-cluster sylva-units
-      # Helm release
-      capo-cluster-resources: false
 
       # However, we need to wait for the CAPI-related units from the main sylva-units release
       default/capi: true
@@ -87,6 +84,43 @@ units:
       # because this resource lives in the mgmt cluster:
       kubeConfig: null  # cancel what is inherited from unit_kustomization_spec_default
       targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
+      storageNamespace: '{{ .Release.Namespace }}'
+
+  capo-cluster-resources:
+    enabled: on
+    depends_on:
+      # the heat-operator that we depend on is not in the per-cluster namespace
+      heat-operator: false
+      default/heat-operator: true
+    kustomization_spec:
+      # because this resource lives in the mgmt cluster:
+      kubeConfig: null
+      targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
+      # heatstack parameters specific to workload clusters:
+      _patches:
+        - target:
+            kind: HeatStack
+          patch: |
+            - op: replace
+              path: /spec/heatStack/template/parameters/control_plane_rules
+              value:
+                type: json
+                description: "Security group rules associated with the control plane VMs"
+                default:
+                  direction: [ingress, ingress, ingress, egress]
+                  port: ['80', '443', '22', '53']
+                  protocol: [tcp, tcp, tcp, udp]
+                  remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
+            - op: replace
+              path: /spec/heatStack/template/parameters/worker_rules
+              value:
+                type: json
+                description: "Security group rules associated with the worker VMs"
+                default:
+                  direction: [ingress, ingress, ingress, egress]
+                  port: ['80', '443', '22', '53']
+                  protocol: [tcp, tcp, tcp, udp]
+                  remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
 
   resume-cluster-reconciliation:
     enabled: true

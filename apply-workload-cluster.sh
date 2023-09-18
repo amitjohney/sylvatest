@@ -3,7 +3,7 @@
 # This script (apply-workload.sh?) can be used to:
 # * install the workload-clusters defined at path environment-values/workload-clusters/x using Kustomize
 #
-# This script will act on the kubectl context of a Sylva management cluster, 
+# This script will act on the kubectl context of a Sylva management cluster,
 # if the 'management-cluster-kubeconfig' file is found, in which case it will use it, otherwise exit.
 
 source $(dirname $0)/tools/shell-lib/common.sh
@@ -25,7 +25,7 @@ echo_b "\U0001F5D1 Delete preview chart and namespace"
 cleanup_preview
 
 echo_b "\U0001F4DC Install a sylva-units Helm release for workload cluster $(basename ${ENV_PATH})"
-kubectl kustomize ${ENV_PATH} | define_source | define_namespace $(basename ${ENV_PATH}) | kubectl apply -f -
+kubectl kustomize ${ENV_PATH} | define_source | set_wc_namespace | kubectl apply -f -
 
 echo_b "\U000023F3 Wait for Flux units becoming ready"
 

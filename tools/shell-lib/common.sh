@@ -143,9 +143,9 @@ function define_source() {
   sed "s/CURRENT_COMMIT/${CURRENT_COMMIT}/" "$@" | sed "s,SYLVA_CORE_REPO,${SYLVA_CORE_REPO},g" "$@"
 }
 
-function define_namespace() {
-  local TARGET_NAMESPACE=$1
-  sed "s/TARGET_NAMESPACE/${TARGET_NAMESPACE}/g"
+function set_wc_namespace() {
+  local WORKLOAD_CLUSTER_NAMESPACE=$(basename ${ENV_PATH})
+  sed "s/WORKLOAD_CLUSTER_NAMESPACE/${WORKLOAD_CLUSTER_NAMESPACE}/g"
 }
 
 function inject_bootstrap_values() {

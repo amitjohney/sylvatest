@@ -928,6 +928,9 @@ properties:
                   type: string
                   format: ipv4
 
+  workload_cluster_shared_values:
+    type: object
+    additionalProperties: true    
 
   proxies:  # -------------------------------
     type: object

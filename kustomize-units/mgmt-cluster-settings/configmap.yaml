@@ -4,7 +4,6 @@ metadata:
   name: mgmt-cluster-settings
   namespace: default
 data:
-  clouds_yaml: ${CLOUDS_YAML}
-  image: ${IMAGE}
-  worker_machine_image: ${WORKER_MACHINE_IMAGE}
-  capo_network_id: ${CAPO_NETWORK_ID}
+  values: |
+    cluster:
+      control_plane_replicas: 1

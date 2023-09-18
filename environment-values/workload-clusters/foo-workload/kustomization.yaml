@@ -5,27 +5,17 @@ kind: Kustomization
 resources:
   - ../base
 
-namespace: TARGET_NAMESPACE
-
 configMapGenerator:
   - name: workload-cluster-values
     behavior: merge
-    options:
-      disableNameSuffixHash: true
     files:
       - values=values.yaml
-
-patches:
-  - target:
-      kind: HelmRelease
-      name: sylva-units
-    patch: |
-      - op: replace
-        path: /metadata/name
-        value: test-workload-cluster
-      - op: add
-        path: /spec/valuesFrom/0
-        value:
-          kind: ConfigMap
-          name: workload-cluster-values
-          valuesKey: values
+    options:
+      disableNameSuffixHash: true
+secretGenerator:
+  - name: workload-cluster-secrets
+    behavior: merge
+    files:
+      - secrets=secrets.yaml
+    options:
+      disableNameSuffixHash: true

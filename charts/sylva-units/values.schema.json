@@ -2951,6 +2951,10 @@
         }
       ]
     },
+    "workload_cluster_shared_values": {
+      "type": "object",
+      "additionalProperties": true
+    },
     "proxies": {
       "type": "object",
       "additionalProperties": false,

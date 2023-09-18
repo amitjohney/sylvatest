@@ -3,12 +3,8 @@
 # Helper script used to clean management and test workload clusters OpenStack resources. USE WITH CARE, AT YOU OWN RISK
 
 OS_ARGS=""
-PLATFORM=$1
-if [ ! -z $PLATFORM ]; then
-  OS_ARGS="--os-cloud $PLATFORM"
-fi
 OS_ARGS="$OS_ARGS --insecure --os-compute-api-version 2.26"
-CAPO_TAG=${2:-sylva-$(openstack ${OS_ARGS} configuration show -f json | jq -r '."auth.username"')}
+CAPO_TAG=${1:-sylva-$(openstack ${OS_ARGS} configuration show -f json | jq -r '."auth.username"')}
 
 if openstack ${OS_ARGS} endpoint list &> /dev/null; then
     echo "This script should not be run with admin role, otherwise it may impact other tenants"

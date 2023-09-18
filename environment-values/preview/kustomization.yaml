@@ -10,3 +10,14 @@ patches:
 - path: helm-release.yaml
   target:
     kind: HelmRelease
+  - path: helm-release.yaml
+    target:
+      kind: HelmRelease
+  - target:
+      kind: Namespace
+      name: WORKLOAD_CLUSTER_NAMESPACE
+    patch: |
+      kind: Namespace
+      metadata:
+        name: _unused_
+      $patch: delete
