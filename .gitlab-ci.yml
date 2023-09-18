@@ -1,6 +1,7 @@
 
 workflow:
   rules:
+    - if: $CI_PIPELINE_SOURCE == 'pipeline'  #  this is required to prevent that default workflow blocks the pipeline creation
     # prevent branch pipeline when an MR is open (prefer MR pipeline)
     - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
       when: never
@@ -33,6 +34,9 @@ include:
   - project: "to-be-continuous/gitleaks"
     ref: 2.2.2
     file: "templates/gitlab-ci-gitleaks.yml"
+    rules:
+      - if: '$CI_PIPELINE_SOURCE == "pipeline"'
+        when: never
   - project: 'renovate-bot/renovate-runner'
     ref: v15.57.3
     file: '/templates/renovate-config-validator.gitlab-ci.yml'
@@ -222,6 +226,15 @@ check-docs-markdown:
       if [ ${CUSTOM_VALUES_FILE} ]; then
         yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file $CUSTOM_VALUES_FILE
       fi
+    - |
+      if [[ ${CI_PIPELINE_SOURCE} == 'pipeline' && ${REMOTE_VALUES} ]]; then
+        echo -e "This pipeline is a cross project pipeline."
+        echo -e "Applying custome remote values to $values_file."
+        echo "${REMOTE_VALUES}" > /tmp/remote_values.yaml
+        cat /tmp/remote_values.yaml
+        yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file /tmp/remote_values.yaml
+        cat $values_file
+      fi
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_common\r\e[0K"
   script_capd:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capd[collapsed=true]\r\e[0KApplying specific capd configuration\e[0m"
@@ -277,6 +290,9 @@ check-docs-markdown:
     - if: '$CI_COMMIT_TAG && $OCI_TAG'
       variables:
         OCI_TAG: $CI_COMMIT_TAG
+    - if: $CI_PIPELINE_SOURCE == 'pipeline' && $OCI_TAG == null
+      allow_failure: true
+      when: manual
     - if: $CI_PIPELINE_SOURCE == 'web'
     - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_DEPLOYMENTS'
     - if: $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/ && ($E2E_JOB_MR_PARITY == "any" || ($E2E_JOB_MR_PARITY == "even" && $CI_OPEN_MERGE_REQUESTS =~ /[02468]$/) || ($E2E_JOB_MR_PARITY == "odd" && $CI_OPEN_MERGE_REQUESTS =~ /[13579]$/))
@@ -420,14 +436,10 @@ deploy-capo-fip:
     - if: $CI_MERGE_REQUEST_LABELS =~ /renovate/
       allow_failure: true
       when: manual
-    - if: '$CI_COMMIT_TAG && $OCI_TAG'
-      variables:
-        OCI_TAG: $CI_COMMIT_TAG
-    - if: $CI_PIPELINE_SOURCE == 'web'
-    - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_DEPLOYMENTS'
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
       allow_failure: true
       when: manual
+    - !reference [.common-deployment, rules]
 
 .script-test-workload-cluster: |
   set -e
@@ -451,6 +463,7 @@ deploy-capo-fip:
   stage: deployment-test
   rules:
     - if: '$CI_COMMIT_TAG && $OCI_TAG'
+    - if: $CI_PIPELINE_SOURCE == 'pipeline' && $OCI_TAG == null
     - if: $CI_PIPELINE_SOURCE == 'web'
     - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_DEPLOYMENTS'
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
@@ -472,6 +485,7 @@ testing-workload-cluster-rke2-capo-oci:
   extends: .testing-workload-cluster
   variables:
     ENV_DEPLOY_JOB: "deploy-rke2-capo-oci"
+    OCI_TAG: $OCI_TAG_FORMAT
   needs:
     - deploy-rke2-capo-oci
 
@@ -486,6 +500,7 @@ testing-workload-cluster-kubeadm-capo-oci:
   extends: .testing-workload-cluster
   variables:
     ENV_DEPLOY_JOB: "deploy-kubeadm-capo-oci"
+    OCI_TAG: $OCI_TAG_FORMAT
   needs:
     - deploy-kubeadm-capo-oci
 
@@ -498,6 +513,7 @@ testing-workload-cluster-kubeadm-capo-oci:
     - ./tools/openstack-cleanup.sh capo_cloud "${CAPO_TAG}"
   rules:
     - if: '$CI_COMMIT_TAG && $OCI_TAG'
+    - if: $CI_PIPELINE_SOURCE == 'pipeline' && $OCI_TAG == null
     - if: $CI_PIPELINE_SOURCE == 'web'
     - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_DEPLOYMENTS'
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
