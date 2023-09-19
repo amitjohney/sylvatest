@@ -69,7 +69,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.0.18
+        tag: 0.0.19
 
   local-path-provisioner:
     kind: GitRepository
@@ -819,7 +819,7 @@ units:
             ironicIP: '{{ .Values.cluster.cluster_external_ip }}'
             # We allow shared IPs because we are exposing (by design) a single cluster external IP
             annotations:
-              metallb.universe.tf/allow-shared-ip: '{{ .Values.cluster.cluster_external_ip }}'
+              metallb.universe.tf/allow-shared-ip: cluster-external-ip
         mariadb:
           persistence:
             storageClass: '{{ .Values._internal.default_storage_class }}'
@@ -1444,7 +1444,7 @@ units:
         service:
           loadBalancerIP: '{{ .Values.cluster.cluster_external_ip }}'
           annotations:
-            metallb.universe.tf/allow-shared-ip: '{{ tuple (.Values.cluster.cluster_external_ip) (or (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.capi_providers.infra_provider | eq "capd")) | include "set-only-if" }}'
+            metallb.universe.tf/allow-shared-ip: cluster-external-ip
 
   capd-metallb-config:
     enabled_conditions:
@@ -1517,7 +1517,7 @@ units:
             externalIPs:
             - '{{ .Values.cluster.cluster_external_ip }}'
             annotations:
-              metallb.universe.tf/allow-shared-ip: '{{ tuple (.Values.cluster.cluster_external_ip) (eq .Values.cluster.capi_providers.infra_provider "capd") | include "set-only-if" }}'
+              metallb.universe.tf/allow-shared-ip: cluster-external-ip
           publishService:
             enabled: true
     kustomization_spec:
