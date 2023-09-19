@@ -263,7 +263,7 @@ check-docs-markdown:
   post_deployment_common:
     - export CHECK_RANCHER_JOB_POD=`kubectl --kubeconfig management-cluster-kubeconfig -n kube-job get pod --selector job-name=check-rancher-clusters-job-cattle-system -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}'`
     - |
-      if [ -n $CHECK_RANCHER_JOB_POD ]; then
+      if [ -n "$CHECK_RANCHER_JOB_POD" ]; then
         kubectl --kubeconfig management-cluster-kubeconfig -n kube-job logs $CHECK_RANCHER_JOB_POD
       else
         echo "No workload clusters here"
