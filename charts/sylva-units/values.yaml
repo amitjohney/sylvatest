@@ -1000,6 +1000,11 @@ units:
           optional: true
         - kind: ConfigMap
           name: capo-cluster-resources
+          valuesKey: allocated_fip
+          targetPath: cluster_public_ip
+          optional: true
+        - kind: ConfigMap
+          name: capo-cluster-resources
           valuesKey: control_plane_servergroup_id
           targetPath: capo.control_plane_servergroup_id
           optional: true
