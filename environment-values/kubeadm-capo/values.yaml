@@ -7,7 +7,7 @@ units:
         machine_deployments:
           md0:
             infra_provider: capo
-            failure_domain: '{{ .Values.cluster.capo.worker_az }}'
+            failure_domain: region0
             replicas: 1
 
   workload-cluster:
@@ -20,7 +20,7 @@ units:
                 machine_deployments:
                   md0:
                     infra_provider: capo
-                    failure_domain: '{{ .Values.cluster.capo.worker_az }}'
+                    failure_domain: region0
 
 cluster:
   image: capo-ubuntu-2004-kube-v1.23.6-calico-3.23.1
