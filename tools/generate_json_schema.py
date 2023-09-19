@@ -22,11 +22,12 @@ SYLVA_UNITS_JSON_SCHEMA = f"{CHART_DIR}/values.schema.json"
 def get_sylva_capi_cluster_schema(values_file):
     """
     Get sylva-capi-cluster helm chart schema from Gitlab repository
-    Helm chart url and tag is read from values.yaml
+    Helm chart url and tag (or branch, or commit) is read from values.yaml
     """
     with open(values_file) as f:
         data = yaml.load(f, Loader=yaml.loader.SafeLoader)
-    ref = data['source_templates']['sylva-capi-cluster']['spec']['ref']['tag']
+    spec_ref = data['source_templates']['sylva-capi-cluster']['spec']['ref']
+    ref = spec_ref.get('commit') or spec_ref.get('tag') or spec_ref['branch']
     base_url = data['source_templates']['sylva-capi-cluster']['spec']['url']
     if base_url.endswith(".git"):
         base_url = base_url[:-4]
