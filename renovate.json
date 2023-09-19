@@ -74,6 +74,10 @@
         "cluster-api-provider-metal3"
       ],
       "groupName": "metal3"
+    },
+    {
+      "matchPackageNames": ["hashicorp/vault"],
+      "allowedVersions": "<1.14"
     }
   ],
   "regexManagers": [
