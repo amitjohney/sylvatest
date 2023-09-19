@@ -4,7 +4,7 @@ metadata:
   name: vault
 spec:
   size: ${VAULT_REPLICAS}
-  image: vault:1.13.3
+  image: hashicorp/vault:1.13.7
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
