@@ -61,6 +61,8 @@ units:
   ingress-nginx:
     enabled_conditions:  # this purposefully cancels the condition set in values.yaml
       - '{{ tuple . "os-image-server" | include "unit-enabled" }}'
+    depends_on:
+      calico: false
     helmrelease_spec:
       values:
         controller:
