@@ -2021,7 +2021,6 @@ units:
             flavor_name: '{{ .Values.cluster.capo.flavor_name | default "" }}'
             worker_flavor_name: '{{ .Values.cluster.capo.worker_flavor_name | default "" }}'
             control_plane_az: '{{ tuple (.Values.cluster | dig "capo" "control_plane_az" list | include "preserve-type") (.Values.cluster | dig "capo" "control_plane_az" nil) | include "set-only-if" }}'
-            worker_az: '{{ .Values.cluster.capo.worker_az }}'
             rootVolume: '{{ .Values.cluster.capo.rootVolume | include "preserve-type" }}'
           capv:
             dataCenter: '{{ .Values.cluster.capv.dataCenter }}'
@@ -2177,7 +2176,6 @@ cluster:
   capo:
     flavor_name: m1.large # Openstack flavor name
     worker_flavor_name: m1.large
-    # worker_az only required to be provided when workers are used
     ssh_key_name: # OpenStack VM SSH key
     network_id:  # OpenStack network used for nodes and VIP port
     #external_network_id # Can be provided if a FIP is needed in order to reach the management cluster VIP

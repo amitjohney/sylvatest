@@ -756,9 +756,6 @@ properties:
                   items:
                     type: string
 
-                worker_az:  # -------------------------------
-                  type: string
-
                 ssh_key_name:  # -------------------------------
                   type: string
 

@@ -1,3 +1,1 @@
-cluster:
-  capo:
-    worker_az: nova-worker-az
+# empty, no need for this test in test-values anymore ?
