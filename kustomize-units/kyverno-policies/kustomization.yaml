@@ -5,3 +5,4 @@ resources:
 - tag.yaml
 - default-namespace.yaml
 - disable-automount-sa.yaml
+- check-image.yaml
