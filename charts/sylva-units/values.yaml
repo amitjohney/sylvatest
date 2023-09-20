@@ -1744,7 +1744,7 @@ units:
     enabled_conditions:
       - '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" }}'
     depends_on:
-      calico: true
+      '{{ .Values.cluster.default_cni }}': '{{ tuple . .Values.cluster.default_cni | include "unit-enabled" }}'
     helm_repo_url: https://metallb.github.io/metallb
     helmrelease_spec:
       targetNamespace: metallb-system
@@ -2092,7 +2092,7 @@ units:
   ingress-nginx:
     depends_on:
       capd-metallb-config: '{{ tuple . "capd-metallb-config" | include "unit-enabled" }}'
-      calico: '{{ tuple . "calico" | include "unit-enabled" }}'
+      '{{ .Values.cluster.default_cni }}': '{{ tuple . .Values.cluster.default_cni | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io
     helm_chart_versions:
       4.5.202: '{{ not .Values._internal.k8s_post_1_26_6  }}'
@@ -2292,7 +2292,7 @@ units:
   multus:
     enabled: false
     depends_on:
-      calico: '{{ tuple . "calico" | include "unit-enabled" }}'
+      '{{ .Values.cluster.default_cni }}': '{{ tuple . .Values.cluster.default_cni | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io/
     helmrelease_spec:
       chart:
