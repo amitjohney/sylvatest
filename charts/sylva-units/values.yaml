@@ -686,7 +686,6 @@ units:
       path: ./kustomize-units/kyverno-policies
       wait: true
 
-<<<<<<< HEAD
   rancher-monitoring-clusterid-inject:
     enabled_conditions:
     - '{{ tuple . "kyverno" | include "unit-enabled" }}'
@@ -698,20 +697,17 @@ units:
     kustomization_spec:
       path: ./kustomize-units/rancher-monitoring-clusterid-inject
       wait: true
-=======
-  mgmt-cluster-settings:
+
+  shared-workload-cluster-settings:
     repo: sylva-core
     kustomization_spec:
-      path: ./kustomize-units/mgmt-cluster-settings
+      path: ./kustomize-units/shared-workload-cluster-settings
       wait: true
       targetNamespace: default
       postBuild:
         substitute:
-          CLOUDS_YAML: '{{ .Values.cluster.capo.clouds_yaml | toYaml | b64enc }}'
-          IMAGE: '{{ .Values.cluster.image }}'
-          WORKER_MACHINE_IMAGE: '{{ .Values.cluster.worker_machine_image }}'
-          CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id | default "" }}'
->>>>>>> cc86e49c (change unit allignment)
+          CM_VALUES: '{{ .Values.workload_cluster_shared_values_cm | toYaml | indent 4 }}'
+          SECRET_VALUES: '{{ .Values.workload_cluster_shared_values_secret | toYaml | indent 4 }}'
 
   capi:
     repo: sylva-core

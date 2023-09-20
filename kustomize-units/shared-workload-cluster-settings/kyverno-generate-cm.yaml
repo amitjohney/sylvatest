@@ -1,10 +1,10 @@
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: generate-cm
+  name: kyverno-generate-cm
 spec:
   rules:
-  - name: mgmt-cluster-settings
+  - name: shared-workload-cluster-settings
     match:
       any:
       - resources:
@@ -12,13 +12,13 @@ spec:
           - Namespace
           selector:
             matchLabels:
-              app.kubernetes.io/name: workload-cluster
+              app.kubernetes.io/name: shared-workload-cluster
     generate:
       kind: ConfigMap
       apiVersion: v1
-      name: mgmt-cluster-settings
+      name: shared-workload-cluster-settings
       namespace: "{{request.object.metadata.name}}"
       synchronize: true
       clone:
-        name: mgmt-cluster-settings
+        name: shared-workload-cluster-settings
         namespace: default
