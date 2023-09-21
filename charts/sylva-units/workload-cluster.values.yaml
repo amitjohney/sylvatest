@@ -123,6 +123,17 @@ units:
     enabled: true
     depends_on:
       cluster: true
+    helmrelease_spec:
+      values:
+        controller:
+          service:
+            externalIPs: '{{ tuple (list .Values.cluster.cluster_external_ip) (not (.Values.cluster.capi_providers.infra_provider | eq "capo")) | include "set-only-if" }}'
+      valuesFrom:
+        - kind: ConfigMap
+          name: capo-cluster-resources
+          valuesKey: allocated_ip
+          targetPath: controller.service.externalIPs[0]
+          optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
 
   monitoring-crd:
     enabled: true
