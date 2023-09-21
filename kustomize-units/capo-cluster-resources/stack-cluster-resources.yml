@@ -96,10 +96,10 @@ spec:
             rules:
               repeat:
                 for_each:
-                  <%direction%>: {if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [common_sg_rules, direction]}, { get_param: [common_sg_rules, direction] }]}, { get_param: [common_sg_rules, direction] }]}
-                  <%port%>: { if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [common_sg_rules, port]}, { get_param: [common_sg_rules, port]}]}, { get_param: [common_sg_rules, port] }]}
-                  <%protocol%>: { if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [common_sg_rules, protocol]}, { get_param: [common_sg_rules, protocol]}]}, { get_param: [common_sg_rules, protocol] }]}
-                  <%remote_ip_prefix%>: { if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [common_sg_rules, remote_ip_prefix]}, { get_param: [common_sg_rules, remote_ip_prefix]}]}, { get_param: [common_sg_rules, remote_ip_prefix] }]}
+                  <%direction%>: {if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [common_sg_rules, direction]}, { get_param: [ironic_rules, direction] }]}, { get_param: [common_sg_rules, direction] }]}
+                  <%port%>: { if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [common_sg_rules, port]}, { get_param: [ironic_rules, port]}]}, { get_param: [common_sg_rules, port] }]}
+                  <%protocol%>: { if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [common_sg_rules, protocol]}, { get_param: [ironic_rules, protocol]}]}, { get_param: [common_sg_rules, protocol] }]}
+                  <%remote_ip_prefix%>: { if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [common_sg_rules, remote_ip_prefix]}, { get_param: [ironic_rules, remote_ip_prefix]}]}, { get_param: [common_sg_rules, remote_ip_prefix] }]}
                 template:
                   protocol: <%protocol%>
                   port_range_min: <%port%>
