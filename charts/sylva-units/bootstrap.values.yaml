@@ -107,7 +107,7 @@ units:
     enabled_conditions:  # this purposefully cancels the condition set in values.yaml
       - '{{ tuple . "os-image-server" | include "unit-enabled" }}'
     depends_on:
-      calico: false
+      '{{ .Values.cluster.default_cni }}': false
     helmrelease_spec:
       values:
         controller:
@@ -179,7 +179,7 @@ units:
       # FIXME; Flux wait/healthcheck on management cluster does not work as expected, it becomes ready as soon as manifests are applied
       # cluster readyness will actually be ensured by the retries on installations of this kustomization for now.
       # maybe cluster CRD is not compatible with kstatus? (see https://fluxcd.io/flux/units/kustomize/kustomization/#health-assessment)
-      calico: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
+      '{{ .Values.cluster.default_cni }}': '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/flux-system/base
@@ -456,6 +456,7 @@ units_override_enabled:
   - calico-crd
   - calico
   - tigera-clusterrole
+  - cilium
   - management-cluster-flux
   - management-cluster-configs
   - management-sylva-units
