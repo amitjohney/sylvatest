@@ -17,7 +17,7 @@ units:
   cluster:
     helmrelease_spec:
       values:
-        cis_profile: "" # Workaround until a solution is being worked upon in https://gitlab.com/sylva-projects/sylva-core/-/issues/506
+        cis_profile: "" # Workaround for https://gitlab.com/sylva-projects/sylva-core/-/issues/506 until a solution is being worked upon
         control_plane_replicas: 1
 
         metal3:
