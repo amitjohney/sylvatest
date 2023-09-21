@@ -1,4 +1,4 @@
-
+---
 workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == 'pipeline'  #  this is required to prevent that default workflow blocks the pipeline creation
@@ -33,6 +33,10 @@ variables:
   # for any MR having an even MR number and the run-e2e-tests label
   E2E_JOB_MR_PARITY: any
 
+# ==========================================
+# External include
+# ==========================================
+
 include:
   - project: "to-be-continuous/gitleaks"
     ref: 2.2.2
@@ -57,6 +61,10 @@ include:
         changes:
           paths:
             - renovate.json
+
+# ==========================================
+# Test stage
+# ==========================================
 
 .generator-base:
   stage: test
@@ -94,6 +102,7 @@ chart-jobs:
   needs: []
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: '$CI_PIPELINE_SOURCE == "pipeline"'
 
 yamllint:
   extends: .lint-base
@@ -172,34 +181,9 @@ check-docs-markdown:
       changes:
         - "**/*.md"
 
-.deploy-base:
-  stage: deploy
-  services:
-    - name: docker:23.0.6-dind
-      alias: docker
-  artifacts:
-    expire_in: 6 hour
-    when: always
-    paths:
-      - debug-on-exit.log
-      - bootstrap-cluster-dump/
-      - management-cluster-dump/
-      - bootstrap-cluster-units-report.xml
-      - management-cluster-units-report.xml
-      - bootstrap-timeline.html
-      - management-cluster-timeline.html
-      - management-cluster-kubeconfig
-    reports:
-      junit:
-      - bootstrap-cluster-units-report.xml
-      - management-cluster-units-report.xml
-  needs:
-    - job: push-helm-artifacts
-      optional: true
-    - job: publish-kustomize-units-artifact
-      optional: true
-    - job: publish-sylva-units-artifact
-      optional: true
+# ==========================================
+# Templates
+# ==========================================
 
 .common-deployment:
   script_common:
@@ -303,7 +287,9 @@ check-docs-markdown:
           region_name: '${OS_REGION_NAME}'
           verify: false
       EOF
-  rules:
+
+.rules:
+  deployment-rules:
     - if: '$CI_COMMIT_TAG && $OCI_TAG'
       variables:
         OCI_TAG: $CI_COMMIT_TAG
@@ -317,6 +303,81 @@ check-docs-markdown:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
       allow_failure: true
       when: manual
+  post-deployment-rules:
+    - if: '$CI_COMMIT_TAG && $OCI_TAG'
+    - if: $CI_PIPELINE_SOURCE == 'pipeline' && $OCI_TAG == null
+    - if: $CI_PIPELINE_SOURCE == 'web'
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_DEPLOYMENTS'
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  publish-rules:
+    - if: $CI_COMMIT_TAG
+      variables:
+        OCI_TAG: $CI_COMMIT_TAG
+    - if: $CI_PIPELINE_SOURCE == 'web'
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_DEPLOYMENTS'
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+.needs:
+  needs-publish-jobs:
+    - job: push-helm-artifacts
+    - job: publish-kustomize-units-artifact
+    - job: publish-sylva-units-artifact
+
+# ==========================================
+# Build stage
+# ==========================================
+
+.build-base:
+  stage: build
+  dependencies: []
+  variables:
+    OCI_REGISTRY: oci://${CI_REGISTRY_IMAGE}
+    OCI_TAG: $OCI_TAG_FORMAT
+  rules:
+    !reference [.rules, publish-rules]
+
+publish-kustomize-units-artifact:
+  extends: .build-base
+  script:
+    - tools/oci/build-kustomize-units-artifact.sh ${OCI_TAG}
+
+push-helm-artifacts:
+  extends: .build-base
+  script:
+    - tools/oci/push-helm-charts-artifacts.sh "oci://${CI_REGISTRY_IMAGE}"
+
+publish-sylva-units-artifact:
+  extends: .build-base
+  script:
+    - tools/oci/build-sylva-units-artifact.sh ${OCI_TAG}
+
+# ==========================================
+# Deploy stage
+# ==========================================
+
+.deploy-base:
+  timeout: 60min
+  stage: deploy
+  services:
+    - name: docker:23.0.6-dind
+      alias: docker
+  artifacts:
+    expire_in: 6 hour
+    when: always
+    paths:
+      - debug-on-exit.log
+      - bootstrap-cluster-dump/
+      - management-cluster-dump/
+      - bootstrap-cluster-units-report.xml
+      - management-cluster-units-report.xml
+      - bootstrap-timeline.html
+      - management-cluster-timeline.html
+      - management-cluster-kubeconfig
+    reports:
+      junit:
+      - bootstrap-cluster-units-report.xml
+      - management-cluster-units-report.xml
 
 deploy-preview-capd:
   extends: .deploy-base
@@ -344,9 +405,10 @@ deploy-preview-capd-oci:
   variables:
     ENV_NAME: kubeadm-capd
     OCI_TAG: $OCI_TAG_FORMAT
+  needs:
+    !reference [.needs, needs-publish-jobs]
 
 deploy-kubeadm-capd:
-  timeout: 60min
   extends: .deploy-base
   script:
     - !reference [.common-deployment, script_common]
@@ -354,7 +416,7 @@ deploy-kubeadm-capd:
     - ./bootstrap.sh environment-values/${ENV_NAME}
     - !reference [.common-deployment, post_deployment_common]
   rules:
-    - !reference [.common-deployment, rules]
+    - !reference [.rules, deployment-rules]
   variables:
     ENV_NAME: kubeadm-capd
     E2E_JOB_MR_PARITY: even
@@ -369,6 +431,8 @@ deploy-kubeadm-capd-oci:
     E2E_JOB_MR_PARITY: odd
   artifacts:
     expose_as: kubeadm-capd-oci
+  needs:
+    !reference [.needs, needs-publish-jobs]
 
 .deploy-capo:
   extends: .deploy-base
@@ -382,57 +446,58 @@ deploy-kubeadm-capd-oci:
     - if: $CI_MERGE_REQUEST_LABELS =~ /renovate/
       allow_failure: true
       when: manual
-    - !reference [.common-deployment, rules]
+    - !reference [.rules, deployment-rules]
+  variables:
+    CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}"
   tags:
     - $CAPO_PLATFORM_TAG
 
+.deploy-capo-oci:
+  extends: .deploy-capo
+  needs:
+    !reference [.needs, needs-publish-jobs]
+  variables:
+    CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-OCI"
+    OCI_TAG: $OCI_TAG_FORMAT
+
 deploy-rke2-capo:
-  timeout: 60min
   extends: .deploy-capo
   variables:
     ENV_NAME: "rke2-capo"
-    CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}"
     E2E_JOB_MR_PARITY: odd
   artifacts:
     expose_as: rke2-capo
 
 deploy-rke2-capo-oci:
-  extends: deploy-rke2-capo
+  extends: .deploy-capo-oci
   variables:
     ENV_NAME: "rke2-capo"
-    CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-OCI"
-    OCI_TAG: $OCI_TAG_FORMAT
     E2E_JOB_MR_PARITY: even
   artifacts:
     expose_as: rke2-capo-oci
 
 deploy-kubeadm-capo:
-  timeout: 55min
   extends: .deploy-capo
   variables:
     ENV_NAME: "kubeadm-capo"
-    CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}"
     E2E_JOB_MR_PARITY: even
   artifacts:
     expose_as: kubeadm-capo
 
 deploy-kubeadm-capo-oci:
-  extends: deploy-kubeadm-capo
+  extends: .deploy-capo-oci
   variables:
     ENV_NAME: "kubeadm-capo"
-    CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-OCI"
-    OCI_TAG: $OCI_TAG_FORMAT
     E2E_JOB_MR_PARITY: odd
   artifacts:
     expose_as: kubeadm-capo-oci
 
 deploy-m3-units-in-capo:
   timeout: 35min
-  extends: deploy-kubeadm-capo
+  extends: .deploy-capo-oci
   variables:
     ENV_NAME: "kubeadm-capo"
     CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-M3-OCI"
-    OCI_TAG: $OCI_TAG_FORMAT
     CUSTOM_VALUES_FILE: environment-values/ci/m3-units-in-capo.yml
     MGMT_WATCH_TIMEOUT_MIN: 20
   artifacts:
@@ -440,11 +505,10 @@ deploy-m3-units-in-capo:
 
 deploy-capo-fip:
   timeout: 35min
-  extends: deploy-kubeadm-capo
+  extends: .deploy-capo-oci
   variables:
     ENV_NAME: "kubeadm-capo"
     CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-FIP"
-    OCI_TAG: $OCI_TAG_FORMAT
     CUSTOM_VALUES_FILE: environment-values/ci/capo-fip.yml
     MGMT_WATCH_TIMEOUT_MIN: 20
   artifacts:
@@ -456,11 +520,14 @@ deploy-capo-fip:
     - if: $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
       allow_failure: true
       when: manual
-    - !reference [.common-deployment, rules]
+    - !reference [.rules, deployment-rules]
+
+# ==========================================
+# Deployment-test stage
+# ==========================================
 
 .script-test-workload-cluster: |
-  set -e
-  set -o pipefail
+  set -eo pipefail
   echo "-- Get secret workoad-cluster-rancher-kubeconfig and save it locally in a workload-cluster-rancher-kubeconfig file"
   kubectl --kubeconfig management-cluster-kubeconfig -n cattle-system get secret workload-cluster-rancher-kubeconfig -o jsonpath='{.data.kubeconfig}' | base64 -d | yq -P > workload-cluster-rancher-kubeconfig
   echo "-- Get ingress saved into /etc/hosts"
@@ -478,48 +545,42 @@ deploy-capo-fip:
 
 .testing-workload-cluster:
   stage: deployment-test
-  rules:
-    - if: '$CI_COMMIT_TAG && $OCI_TAG'
-    - if: $CI_PIPELINE_SOURCE == 'pipeline' && $OCI_TAG == null
-    - if: $CI_PIPELINE_SOURCE == 'web'
-    - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_DEPLOYMENTS'
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-  allow_failure: true
   script:
     - echo "Testing workload cluster. Job started at '$CI_JOB_STARTED_AT'."
     - !reference [.script-test-workload-cluster]
+  rules:
+    !reference [.rules, post-deployment-rules]
+  allow_failure: true
   tags:
     - $CAPO_PLATFORM_TAG
 
 testing-workload-cluster-rke2-capo:
   extends: .testing-workload-cluster
-  variables:
-    ENV_DEPLOY_JOB: "deploy-rke2-capo"
   needs:
     - deploy-rke2-capo
 
 testing-workload-cluster-rke2-capo-oci:
   extends: .testing-workload-cluster
   variables:
-    ENV_DEPLOY_JOB: "deploy-rke2-capo-oci"
     OCI_TAG: $OCI_TAG_FORMAT
   needs:
     - deploy-rke2-capo-oci
 
 testing-workload-cluster-kubeadm-capo:
   extends: .testing-workload-cluster
-  variables:
-    ENV_DEPLOY_JOB: "deploy-kubeadm-capo"
   needs:
     - deploy-kubeadm-capo
 
 testing-workload-cluster-kubeadm-capo-oci:
   extends: .testing-workload-cluster
   variables:
-    ENV_DEPLOY_JOB: "deploy-kubeadm-capo-oci"
     OCI_TAG: $OCI_TAG_FORMAT
   needs:
     - deploy-kubeadm-capo-oci
+
+# ==========================================
+# Delete stage
+# ==========================================
 
 .cleanup-capo:
   stage: delete
@@ -529,20 +590,23 @@ testing-workload-cluster-kubeadm-capo-oci:
     - !reference [.common-deployment, os_cloud]
     - ./tools/openstack-cleanup.sh capo_cloud "${CAPO_TAG}"
   rules:
-    - if: '$CI_COMMIT_TAG && $OCI_TAG'
-    - if: $CI_PIPELINE_SOURCE == 'pipeline' && $OCI_TAG == null
-    - if: $CI_PIPELINE_SOURCE == 'web'
-    - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_DEPLOYMENTS'
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    !reference [.rules, post-deployment-rules]
+  variables:
+    CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}"
   allow_failure: true
   tags:
     - $CAPO_PLATFORM_TAG
+
+.cleanup-capo-oci:
+  extends: .cleanup-capo
+  variables:
+    CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-OCI"
+    OCI_TAG: $OCI_TAG_FORMAT # required to match the same rules as OCI based deployments
 
 cleanup-rke2-capo:
   extends: .cleanup-capo
   variables:
     ENV_NAME: "rke2-capo"
-    CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}"
   needs:
     - testing-workload-cluster-rke2-capo
 
@@ -550,45 +614,42 @@ cleanup-kubeadm-capo:
   extends: .cleanup-capo
   variables:
     ENV_NAME: "kubeadm-capo"
-    CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}"
   needs:
     - testing-workload-cluster-kubeadm-capo
 
 cleanup-rke2-capo-oci:
-  extends: .cleanup-capo
+  extends: .cleanup-capo-oci
   variables:
     ENV_NAME: "rke2-capo"
-    CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-OCI"
-    OCI_TAG: $OCI_TAG_FORMAT # required to match the same rules as OCI based deployments
   needs:
     - testing-workload-cluster-rke2-capo-oci
 
 cleanup-kubeadm-capo-oci:
-  extends: .cleanup-capo
+  extends: .cleanup-capo-oci
   variables:
     ENV_NAME: "kubeadm-capo"
-    CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-OCI"
-    OCI_TAG: $OCI_TAG_FORMAT # required to match the same rules as OCI based deployments
   needs:
     - testing-workload-cluster-kubeadm-capo-oci
 
 cleanup-m3-units-in-capo:
-  extends: .cleanup-capo
+  extends: .cleanup-capo-oci
   variables:
     ENV_NAME: "kubeadm-capo"
     CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-M3-OCI"
-    OCI_TAG: $OCI_TAG_FORMAT # required to match the same rules as OCI based deployments
   needs:
     - deploy-m3-units-in-capo
 
 cleanup-capo-fip:
-  extends: .cleanup-capo
+  extends: .cleanup-capo-oci
   variables:
     ENV_NAME: "kubeadm-capo"
     CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-FIP"
-    OCI_TAG: $OCI_TAG_FORMAT # required to match the same rules as OCI based deployments
   needs:
     - deploy-capo-fip
+
+# ==========================================
+# Scheduled cleanup
+# ==========================================
 
 scheduled-cleanup-capo:
   stage: delete
@@ -641,35 +702,3 @@ scheduled-cleanup-capo:
       when: always
   tags:
     - $CAPO_PLATFORM_TAG
-
-.build-base:
-  stage: build
-  dependencies: []
-  variables:
-    OCI_REGISTRY: oci://${CI_REGISTRY_IMAGE}
-    OCI_TAG: $OCI_TAG_FORMAT
-  rules:
-    - if: $CI_COMMIT_TAG
-      variables:
-        OCI_TAG: $CI_COMMIT_TAG
-    - if: $CI_PIPELINE_SOURCE == 'web'
-    - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_DEPLOYMENTS'
-    - if: $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
-      allow_failure: true
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-
-publish-kustomize-units-artifact:
-  extends: .build-base
-  script:
-    - tools/oci/build-kustomize-units-artifact.sh ${OCI_TAG}
-
-push-helm-artifacts:
-  extends: .build-base
-  script:
-    - tools/oci/push-helm-charts-artifacts.sh "oci://${CI_REGISTRY_IMAGE}"
-
-publish-sylva-units-artifact:
-  extends: .build-base
-  script:
-    - tools/oci/build-sylva-units-artifact.sh ${OCI_TAG}
