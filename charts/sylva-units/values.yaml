@@ -964,6 +964,7 @@ units:
           rootVolume: '{{ .Values.cluster.capo.rootVolume | include "preserve-type" }}'
           control_plane_security_group_name: "capo-{{ .Values.cluster.name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}"
           worker_security_group_name: "capo-{{ .Values.cluster.name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}"
+          common_security_group_name: "capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}"
           control_plane_az: '{{ tuple (.Values.cluster | dig "capo" "control_plane_az" list | include "preserve-type") (.Values.cluster | dig "capo" "control_plane_az" nil) | include "set-only-if" }}'
           #cacert: # cert used to validate CA of OpenStack APIs
           resources_tag: '{{ .Values.cluster.capo.resources_tag }}'
@@ -1059,6 +1060,7 @@ units:
           CONTROL_PLANE_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}'
           WORKER_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}'
           CAPO_CREATE_IRONIC_SECURITY_GROUP: '{{ tuple . (and (.Values.units.metal3.enabled | default false) (.Values.cluster.capi_providers.infra_provider | eq "capo")) "true" "false" | include "interpret-ternary" }}'
+          COMMON_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}'
 
   pause-cluster-reconciliation:
     enabled_conditions:
@@ -1728,6 +1730,69 @@ units:
                   - name: CLUSTER_NAME
                     value: '{{ .Values.cluster.test_workload_cluster_name }}'
 
+  workload-cluster-cloud-config:
+    enabled_conditions:
+      - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+      - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
+    repo: sylva-core
+    depends_on:
+      namespace-defs: true
+      external-secrets-operator: true
+    kustomization_spec:
+      path: ./kustomize-units/workload-cluster-cloud-config
+      wait: true
+
+  workload-capo-cluster-resources:
+    enabled_conditions:
+    - '{{ tuple . (.Values.units | dig "workload-cluster" "helmrelease_spec" "values" "cluster" "capi_providers" "infra_provider" "") | include "interpret-as-string" | eq "capo"  }}'
+    - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
+    repo: sylva-core
+    depends_on:
+      namespace-defs: true
+      heat-operator: true
+      workload-cluster-cloud-config: true
+    kustomization_spec:
+      targetNamespace: workload-cluster
+      path: ./kustomize-units/capo-cluster-resources
+      wait: true
+      _patches:
+        - target:
+            kind: HeatStack
+          patch: |
+            - op: replace
+              path: /spec/identityRef
+              value: cloud-config  #  cloud-config Secret is produced by workload-cluster-cloud-config unit (ExternalSecret to copy cloud config from default ns to workload-cluster ns)
+            - op: replace
+              path: /spec/heatStack/template/parameters/control_plane_rules
+              value:
+                type: json
+                description: "Security group rules associated with the control plane VMs"
+                default:
+                  direction: [ingress, ingress, ingress, egress]
+                  port: ['80', '443', '22', '53']
+                  protocol: [tcp, tcp, tcp, udp]
+                  remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
+            - op: replace
+              path: /spec/heatStack/template/parameters/worker_rules
+              value:
+                type: json
+                description: "Security group rules associated with the worker VMs"
+                default:
+                  direction: [ingress, ingress, ingress, egress]
+                  port: ['80', '443', '22', '53']
+                  protocol: [tcp, tcp, tcp, udp]
+                  remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
+      postBuild:
+        substitute:
+          STACK_NAME_PREFIX: 'workload-cluster-{{ tuple . .Values.cluster.capo.resources_tag | include "interpret-as-string" | replace "." "-" }}'
+          CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
+          CAPO_EXTERNAL_NETWORK_ID: '{{ tuple .Values.cluster.capo.external_network_id .Values.cluster.capo.external_network_id | include "set-only-if" }}'
+          CAPO_TAG: '{{ .Values.cluster.capo.resources_tag }}'
+          CONTROL_PLANE_AFFINITY_POLICY: '{{ .Values.cluster.capo.control_plane_affinity_policy }}'
+          WORKER_AFFINITY_POLICY: '{{ .Values.cluster.capo.worker_affinity_policy }}'
+          CONTROL_PLANE_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}'
+          WORKER_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}'
+          COMMON_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}'
 
   multus:
     enabled: false
