@@ -55,7 +55,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://github.com/weaveworks/weave-gitops.git
       ref:
-        tag: v0.31.2
+        tag: v0.32.0
 
   metal3:
     kind: GitRepository
