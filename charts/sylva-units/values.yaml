@@ -2340,3 +2340,14 @@ _internal:
       uri: "{{ .Values.sylva_base_oci_registry }}/sylva-elements/diskimage-builder/diskimage-builder-plain:0.0.7"
       filename: ubuntu-22.04-plain.qcow2
       checksum: 56a6363f25a5491aa955e4dda6fae17faa10c5e0850d01fe2a10c996c7830971
+
+workload_cluster_shared_values_cm:
+  cluster:
+    capo:
+      image: '{{ .Values.cluster.image }}'
+      network_id: '{{ .Values.cluster.capo.network_id | default "" }}'
+
+workload_cluster_shared_values_secret:
+  cluster:
+    capo:
+      clouds_yaml: '{{ .Values.cluster.capo.clouds_yaml | toYaml | b64enc }}'

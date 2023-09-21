@@ -3084,6 +3084,12 @@
     },
     "_internal": {
       "type": "object"
+    },
+    "workload_cluster_shared_values_cm": {
+      "type": "object"
+    },
+    "workload_cluster_shared_values_secret": {
+      "type": "object"
     }
   }
 }
