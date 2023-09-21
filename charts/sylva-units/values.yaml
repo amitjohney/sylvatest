@@ -1763,7 +1763,7 @@ units:
               path: /spec/identityRef
               value: cloud-config  #  cloud-config Secret is produced by workload-cluster-cloud-config unit (ExternalSecret to copy cloud config from default ns to workload-cluster ns)
             - op: replace
-              path: /spec/heatStack/template/parameters/control_plane_rules
+              path: /spec/heatStack/template/parameters/common_sg_rules
               value:
                 type: json
                 description: "Security group rules associated with the control plane VMs"
@@ -1773,7 +1773,7 @@ units:
                   protocol: [tcp, tcp, tcp, udp]
                   remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
             - op: replace
-              path: /spec/heatStack/template/parameters/worker_rules
+              path: /spec/heatStack/template/parameters/common_sg_rules
               value:
                 type: json
                 description: "Security group rules associated with the worker VMs"
