@@ -135,6 +135,10 @@ units:
       cluster-import: '{{ tuple . "cluster-import" | include "unit-enabled" }}'
     unit_template: base-deps
 
+  kubevirt:
+    enabled: false
+    unit_template: base-deps
+
   longhorn-crd:
     enabled: true
     unit_template: base-deps

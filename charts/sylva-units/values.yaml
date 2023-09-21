@@ -292,6 +292,14 @@ units:
           containerSecurityContext:
             seccompProfile: null
 
+  kubevirt:
+    helm_repo_url: https://suse-edge.github.io/charts
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: kubevirt
+          version: 0.1.0
+
   vault-operator:
     helm_repo_url: https://kubernetes-charts.banzaicloud.com
     helmrelease_spec:
