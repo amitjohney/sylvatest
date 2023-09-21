@@ -17,7 +17,7 @@ units:
   cluster:
     helmrelease_spec:
       values:
-
+        cis_profile: "" # Workaround until a solution is being worked upon in https://gitlab.com/sylva-projects/sylva-core/-/issues/506
         control_plane_replicas: 1
 
         metal3:
