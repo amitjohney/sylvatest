@@ -1739,6 +1739,9 @@ units:
         spec:
           chart: rke2-cilium
           version: 1.13.200
+      values:
+        global:
+          clusterCIDRv4: '{{ .Values.units.cluster.helmrelease_spec.values.cluster_pods_cidrs }}'
 
   metallb:
     enabled_conditions:
@@ -2292,7 +2295,7 @@ units:
   multus:
     enabled: false
     depends_on:
-      '{{ .Values.cluster.default_cni }}': '{{ tuple . .Values.cluster.default_cni | include "unit-enabled" }}'
+      '{{ .Values.cluster.default_cni }}': true 
     helm_repo_url: https://rke2-charts.rancher.io/
     helmrelease_spec:
       chart:
