@@ -1288,15 +1288,6 @@ units:
             [BlockStorage]
             ignore-volume-az = true
 
-  imageswap-webhook:
-    enabled: no
-    repo: sylva-core
-    depends_on:
-      cert-manager: true
-    kustomization_spec:
-      path: ./kustomize-units/imageswap-webhook
-      wait: true
-
   sylva-ca-certs:
     depends_on:
       namespace-defs: true

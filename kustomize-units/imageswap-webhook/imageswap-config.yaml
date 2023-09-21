@@ -1,7 +1,0 @@
-apiVersion: v1
-data:
-  maps: ""
-kind: ConfigMap
-metadata:
-  name: imageswap-maps
-  namespace: imageswap-system
