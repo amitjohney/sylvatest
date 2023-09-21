@@ -3085,10 +3085,10 @@
     "_internal": {
       "type": "object"
     },
-    "workload_cluster_shared_values_cm": {
+    "shared_workload_clusters_values": {
       "type": "object"
     },
-    "workload_cluster_shared_values_secret": {
+    "shared_workload_clusters_secret_values": {
       "type": "object"
     }
   }
