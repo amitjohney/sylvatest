@@ -32,8 +32,6 @@ units:
     enabled: true
   metal3:
     enabled: true
-  workload-capo-cluster-resources:
-    enabled: false
 
   workload-cluster:
     enabled: true
