@@ -26,7 +26,7 @@ units:
   cluster:
     helmrelease_spec:
       values:
-        cis_profile: ""
+        cis_profile: "" # Workaround for https://gitlab.com/sylva-projects/sylva-core/-/issues/506 until a solution is being worked upon
 
   capm3:
     enabled: true
@@ -53,7 +53,7 @@ units:
           cluster:
             helmrelease_spec:
               values:
-                cis_profile: ""  # until https://gitlab.com/sylva-projects/sylva-core/-/issues/391 is fully solved (item (C))
+                cis_profile: "" # WA for https://gitlab.com/sylva-projects/sylva-core/-/issues/506 until a solution is being worked upon
 
                 metal3:
                   machine_image_url: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2
