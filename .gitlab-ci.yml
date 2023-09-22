@@ -142,6 +142,28 @@ flux-check-versions:
         echo
       fi
 
+clusterctl-check-versions:
+   # this job checks that the versions of clusterctl and capi that we use are aligned:
+   # - capi kustomization (kustomize-units/capi)
+   # - clusterctl version in kube-job image
+
+  extends: .lint-base
+  services:
+    - name: docker:23.0.6-dind
+      alias: docker
+  script:
+    - capi_version=$(yq '.resources[0] | capture("/(?P<version>v[^/]+)/") | .version' kustomize-units/capi/kustomization.yaml)
+    - clusterctl_kubejob_version=$(docker run --rm $(yq eval 'select(documentIndex==1).spec.template.spec.containers[0].image' kustomize-units/kube-job/job.yaml) sh -c 'clusterctl version | grep -o "GitVersion:\"[^\"]*" | cut -d"\"" -f2')
+    - |
+      if [[ $capi_version != $clusterctl_kubejob_version ]]; then
+        echo
+        echo "Version mismatch between the 'capi' version used in kustomize-units/capi and the 'clusterctl' version used in kube-job image"
+        echo "- capi kustomization has version $capi_version"
+        echo "- clustertctl version in kube-job image has version  $clusterctl_kubejob_version"
+        exit -1
+        echo
+      fi
+
 check-docs-markdown:
   extends: .lint-base
   image: registry.gitlab.com/gitlab-org/gitlab-docs/lint-markdown:alpine-3.16-vale-2.20.2-markdownlint-0.32.2-markdownlint2-0.5.1
