@@ -53,6 +53,20 @@ units:
               values:
                 cis_profile: ""  # until https://gitlab.com/sylva-projects/sylva-core/-/issues/391 is fully solved (item (C))
 
+                default:
+                  rke2:
+                    additionalUserData:
+                      config: # allows to specify additional cloud-init configuration
+                        users:
+                          - name: ubuntu
+                            groups: users
+                            sudo: ALL=(ALL) NOPASSWD:ALL
+                            shell: /bin/bash
+                            lock_passwd: false
+                            passwd: "put your password hash here" # (copy pasted from /etc/shadow or created with "mkpasswd" --method=SHA-512 --stdin")
+                            ssh_authorized_keys:
+                              - ssh-rsa AAAA...... YOUR KEY HERE ....UqnQ==
+
                 metal3:
                   machine_image_url: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2
                   machine_image_format: qcow2
@@ -94,18 +108,6 @@ units:
                       type: phy
                     ens1f1:
                       type: phy
-                  rke2:
-                    additionalUserData:
-                      config: | # String to allows users to specify additional cloud-init configuration
-                        users:
-                          - name: ubuntu
-                            groups: users
-                            sudo: ALL=(ALL) NOPASSWD:ALL
-                            shell: /bin/bash
-                            lock_passwd: false
-                            passwd: "put your password hash here" # (copy pasted from /etc/shadow or created with "mkpasswd" --method=SHA-512 --stdin")
-                            ssh_authorized_keys:
-                              - ssh-rsa AAAA...... YOUR KEY HERE ....UqnQ==
 
                 machine_deployment_default: # tweak as needed ...
                   provisioning_pool_interface: bond0
@@ -132,18 +134,9 @@ units:
                         type: phy
                       ens1f1:
                         type: phy
-                    rke2:
-                      additionalUserData:
-                        config: | # String to allows users to specify additional cloud-init configuration
-                          users:
-                            - name: ubuntu
-                              groups: users
-                              sudo: ALL=(ALL) NOPASSWD:ALL
-                              shell: /bin/bash
-                              lock_passwd: false
-                              passwd: "put your password hash here" # (copy pasted from /etc/shadow or created with "mkpasswd" --method=SHA-512 --stdin")
-                              ssh_authorized_keys:
-                                - ssh-rsa AAAA...... YOUR KEY HERE ....UqnQ==
+                    # rke2:
+                    #   additionalUserData:
+                    #     config: # allows to specify additional cloud-init configuration
 
                 baremetal_hosts:
                   # this example is based on what worked on an HP Proliant DL360 Gen10

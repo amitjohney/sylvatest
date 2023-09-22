@@ -20,6 +20,21 @@ units:
 
         control_plane_replicas: 1
 
+        default:
+          rke2:
+            additionalUserData:
+              config:
+                #cloud-config
+                users:
+                  - name: sylva-user
+                    groups: users
+                    sudo: ALL=(ALL) NOPASSWD:ALL
+                    shell: /bin/bash
+                    lock_passwd: false
+                    passwd: "put your password hash here"  # (copy pasted from /etc/shadow or created with "mkpasswd --method=SHA-512 --stdin")
+                    ssh_authorized_keys:
+                      - ssh-rsa AAAA...... YOUR KEY HERE ....UqnQ==
+
         metal3:
           machine_image_url: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2
           machine_image_format: qcow2
@@ -68,20 +83,6 @@ units:
             ens1f1:
               type: phy
 
-          rke2:
-            additionalUserData:
-              config: |
-                #cloud-config
-                users:
-                  - name: sylva-user
-                    groups: users
-                    sudo: ALL=(ALL) NOPASSWD:ALL
-                    shell: /bin/bash
-                    lock_passwd: false
-                    passwd: "put your password hash here"  # (copy pasted from /etc/shadow or created with "mkpasswd --method=SHA-512 --stdin")
-                    ssh_authorized_keys:
-                      - ssh-rsa AAAA...... YOUR KEY HERE ....UqnQ==
-
         machine_deployment_default:  # tweak as needed
           infra_provider: capm3
 
@@ -92,19 +93,6 @@ units:
 
           provisioning_pool_interface: bond0
           public_pool_interface: bond0.13
-          rke2:
-            additionalUserData:
-              config: |
-                #cloud-config
-                users:
-                  - name: sylva-user
-                    groups: users
-                    sudo: ALL=(ALL) NOPASSWD:ALL
-                    shell: /bin/bash
-                    lock_passwd: false
-                    passwd: "put your password hash here"  # (copy pasted from /etc/shadow or created with "mkpasswd --method=SHA-512 --stdin")
-                    ssh_authorized_keys:
-                      - ssh-rsa AAAA...... YOUR KEY HERE ....UqnQ==
 
         machine_deployments:
           md0:
@@ -121,6 +109,9 @@ units:
                 type: phy
               ens2f1:
                 type: phy
+            # rke2:
+            #   additionalUserData:
+            #     config: # allows to specify additional cloud-init configuration
 
         baremetal_host_default:
           bmh_spec:
