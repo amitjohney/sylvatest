@@ -330,6 +330,7 @@ units_override_enabled:
   - capi
   - '{{ .Values.cluster.capi_providers.infra_provider }}'
   - '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
+  - shared-workload-clusters-settings
   - metal3
   - bootstrap-local-path
   - ingress-nginx
