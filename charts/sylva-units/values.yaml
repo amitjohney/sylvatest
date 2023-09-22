@@ -1005,22 +1005,22 @@ units:
           name: capo-cluster-resources
           valuesKey: allocated_ip
           targetPath: cluster_external_ip
-          optional: true
+          optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
         - kind: ConfigMap
           name: capo-cluster-resources
           valuesKey: allocated_fip
           targetPath: cluster_public_ip
-          optional: true
+          optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
         - kind: ConfigMap
           name: capo-cluster-resources
           valuesKey: control_plane_servergroup_id
           targetPath: capo.control_plane_servergroup_id
-          optional: true
+          optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
         - kind: ConfigMap
           name: capo-cluster-resources
           valuesKey: worker_servergroup_id
           targetPath: capo.worker_servergroup_id
-          optional: true
+          optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
     helm_secret_values:
       capo:
         clouds_yaml: '{{ .Values.cluster | dig "capo" "clouds_yaml" dict | include "preserve-type" }}'  # for CAPO and cinder-csi
