@@ -758,4 +758,3 @@ publish-sylva-units-artifact:
   extends: .build-base
   script:
     - tools/oci/build-sylva-units-artifact.sh ${OCI_TAG}
-
