@@ -3,6 +3,7 @@ apiVersion: external-secrets.io/v1beta1
 kind: ExternalSecret
 metadata:
    name: neuvector-init
+   namespace: neuvector
 spec:
    secretStoreRef:
       name: vault
@@ -43,4 +44,4 @@ spec:
    - secretKey: password
      remoteRef:
         key: secret/data/neuvector
-        property: password.hcl
+        property: password

@@ -2,6 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
+  - neuvector-secret.yaml
   - neuvector-namespace.yaml
   - neuvector-tls.yaml
-  - neuvector-secret.yaml
+  - neuvector-config.yaml
