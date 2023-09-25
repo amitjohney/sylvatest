@@ -6,3 +6,4 @@ resources:
   - neuvector-namespace.yaml
   - neuvector-tls.yaml
   - neuvector-config.yaml
+  - kyverno-exception.yaml

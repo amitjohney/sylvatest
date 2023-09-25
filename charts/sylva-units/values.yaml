@@ -494,7 +494,6 @@ units:
     enabled: no
     depends_on:
       neuvector-init: true
-      neuvector-sync-secret: true
       ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
     annotations:
       sylvactl/readyMessage: "Neuvector UI can be reached at https://{{ .Values.cluster.neuvector.external_hostname }} ({{ .Values.cluster.neuvector.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
@@ -509,18 +508,15 @@ units:
         controller:
           image:
             repository: neuvector/controller
-            tag: 5.0.7-s2
-          pvc:
-            enabled: true
-            storageClass: '{{ .Values._internal.default_storage_class }}'
+          #pvc:
+          #  enabled: true
+          #  storageClass: '{{ .Values._internal.default_storage_class }}'
         enforcer:
           image:
             repository: neuvector/enforcer
-            tag: 5.0.7-s2
         manager:
           image:
             repository: neuvector/manager
-            tag: 5.0.7-s2
           ingress:
             enabled: true
             host: '{{ .Values.cluster.neuvector.external_hostname }}'
@@ -534,11 +530,11 @@ units:
           updater:
             image:
               repository: neuvector/updater
-              tag: 5
+   #           tag: 5
           scanner:
             image:
               repository: neuvector/scanner
-              tag: 3.121
+    #          tag: 3.121
               env:
                 - name: https_proxy
                   value: '{{ .Values.proxies.https_proxy }}'
@@ -722,6 +718,9 @@ units:
       install:
         createNamespace: true
       values:
+        features:
+          policyExceptions:
+            enabled: true
         admissionController:
           container:
             securityContext:
