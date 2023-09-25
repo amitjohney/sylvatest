@@ -151,6 +151,11 @@ units:
       namespace-defs: true
       cluster: true
 
+  metallb:
+    enabled: true
+    depends_on:
+      calico: true
+
   ingress-nginx:
     enabled: true
     depends_on:
