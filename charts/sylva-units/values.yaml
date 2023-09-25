@@ -708,7 +708,7 @@ units:
         substitute:
           CM_VALUES: '{{ .Values.shared_workload_clusters_values | toYaml }}'
     kustomization_substitute_secrets:
-      SECRET_VALUES: '{{ .Values.shared_workload_clusters_secret_values | toYaml | b64enc }}'
+      SECRET_VALUES: '{{ .Values.cluster.capo.clouds_yaml | toYaml | b64enc }}'
 
   capi:
     repo: sylva-core
@@ -927,6 +927,7 @@ units:
       capo-cluster-resources: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
       metal3: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
       default/os-image-server: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+      shared-workload-clusters-settings: true
     labels:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
     kustomization_spec:
@@ -2351,4 +2352,4 @@ shared_workload_clusters_values:
 shared_workload_clusters_secret_values:
   cluster:
     capo:
-      clouds_yaml: '{{ .Values.cluster | dig "capo" "clouds_yaml" dict | include "preserve-type" }}'
+      clouds_yaml: {{ .Values.cluster.capo.clouds_yaml | toYaml | b64enc }}
