@@ -199,6 +199,18 @@ units:
         createNamespace: true
       values:
         installCRDs: true
+        securityContext:
+          seccompProfile: '{{ tuple "null" (eq .Values.cluster.cis_profile "cis-1.6") | include "set-only-if" }}'
+        webhook:
+          securityContext:
+            seccompProfile: '{{ tuple "null" (eq .Values.cluster.cis_profile "cis-1.6") | include "set-only-if" }}'
+        cainjector:
+          securityContext:
+            seccompProfile: '{{ tuple "null" (eq .Values.cluster.cis_profile "cis-1.6") | include "set-only-if" }}'
+        startupapicheck:
+          securityContext:
+            seccompProfile: '{{ tuple "null" (eq .Values.cluster.cis_profile "cis-1.6") | include "set-only-if" }}'
+
 
   trivy-operator:
     enabled: no
@@ -807,7 +819,7 @@ units:
         spec:
           chart: .
       install:
-        createNamespace: false
+        createNamespace: true
       targetNamespace: metal3-system
       values:  # see https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3/-/blob/main/values.yaml
         global:
