@@ -510,6 +510,9 @@ units:
           image:
             repository: neuvector/controller
             tag: 5.0.7-s2
+          pvc:
+            enabled: true
+            storageClass: '{{ .Values._internal.default_storage_class }}'
         enforcer:
           image:
             repository: neuvector/enforcer
