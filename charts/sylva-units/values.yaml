@@ -200,16 +200,16 @@ units:
       values:
         installCRDs: true
         securityContext:
-          seccompProfile: '{{ tuple "null" (eq .Values.cluster.cis_profile "cis-1.6") | include "set-only-if" }}'
+          seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
         webhook:
           securityContext:
-            seccompProfile: '{{ tuple "null" (eq .Values.cluster.cis_profile "cis-1.6") | include "set-only-if" }}'
+            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
         cainjector:
           securityContext:
-            seccompProfile: '{{ tuple "null" (eq .Values.cluster.cis_profile "cis-1.6") | include "set-only-if" }}'
+            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
         startupapicheck:
           securityContext:
-            seccompProfile: '{{ tuple "null" (eq .Values.cluster.cis_profile "cis-1.6") | include "set-only-if" }}'
+            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
 
 
   trivy-operator:
@@ -289,6 +289,9 @@ units:
           auth:
             username: postgres
         nameOverride: postgres
+        primary:
+          containerSecurityContext:
+            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
 
   kubevirt:
     helm_repo_url: https://suse-edge.github.io/charts
@@ -377,8 +380,7 @@ units:
         securityContext:
           runAsNonRoot: true
           allowPrivilegeEscalation: false
-          seccompProfile:
-            type: RuntimeDefault
+          seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
           capabilities:
             drop:
               - ALL
@@ -421,6 +423,14 @@ units:
         createNamespace: true
       values:
         installCRDs: true
+        securityContext:
+          seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
+        webhook:
+          securityContext:
+            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
+        certController:
+          securityContext:
+            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
 
   eso-secret-stores:
     depends_on:
@@ -519,8 +529,7 @@ units:
                 runAsNonRoot: true
                 runAsGroup: 1000
                 runAsUser: 1000
-                seccompProfile:
-                  type: RuntimeDefault
+                seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
           target:
             kind: Deployment
             name: keycloak-operator
@@ -536,8 +545,7 @@ units:
                 runAsNonRoot: true
                 runAsGroup: 1000
                 runAsUser: 1000
-                seccompProfile:
-                  type: RuntimeDefault
+                seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
           target:
             kind: Keycloak
             name: keycloak
@@ -566,8 +574,7 @@ units:
                 runAsNonRoot: true
                 runAsGroup: 1000
                 runAsUser: 1000
-                seccompProfile:
-                  type: RuntimeDefault
+                seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
           target:
             kind: Deployment
             name: keycloak-realm-operator
@@ -636,8 +643,7 @@ units:
                     - ALL
                 privileged: false
                 runAsNonRoot: true
-                seccompProfile:
-                  type: RuntimeDefault
+                seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
         - target:
             kind: Job
           patch: |
@@ -688,6 +694,26 @@ units:
       install:
         createNamespace: true
       values:
+        admissionController:
+          container:
+            securityContext:
+              seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
+          initContainer:
+            securityContext:
+              seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
+        test:
+          securityContext:
+            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
+        cleanupController:
+          securityContext:
+            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
+        cleanupJobs:
+          admissionReports:
+            securityContext:
+              seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
+        clusterAdmissionReports:
+          securityContext:
+            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
         backgroundController:
           rbac:
             clusterRole:
@@ -696,6 +722,12 @@ units:
                 resources:
                   - "helmreleases"
                 verbs: ["get", "patch", "list", "update", "watch"]
+          securityContext:
+            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
+        reportsController:
+          securityContext:
+            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
+
 
   kyverno-policies:
     enabled_conditions:
@@ -859,8 +891,7 @@ units:
           capabilities:
             drop:
             - ALL
-          seccompProfile:
-            type: RuntimeDefault
+          seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
         securityContext:
           runAsNonRoot: true
           runAsUser: 1000
@@ -868,8 +899,7 @@ units:
           capabilities:
             drop:
             - ALL
-          seccompProfile:
-            type: RuntimeDefault
+          seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
       valuesFrom:
         - kind: Secret
           name: metal3-secrets
@@ -1126,8 +1156,7 @@ units:
                   - ALL
               privileged: false
               runAsNonRoot: true
-              seccompProfile:
-                type: RuntimeDefault
+              seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
       - target:
           kind: ConfigMap
         patch: |
@@ -1180,8 +1209,7 @@ units:
                   - ALL
               privileged: false
               runAsNonRoot: true
-              seccompProfile:
-                type: RuntimeDefault
+              seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
       - target:
           kind: ConfigMap
         patch: |
@@ -1515,8 +1543,7 @@ units:
                           runAsNonRoot: true
                           runAsGroup: 1000
                           runAsUser: 1000
-                          seccompProfile:
-                            type: RuntimeDefault
+                          seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
 
   capd-metallb-config:
     enabled_conditions:
@@ -1557,8 +1584,7 @@ units:
           runAsNonRoot: true
           runAsGroup: 1
           runAsUser: 1
-          seccompProfile:
-            type: RuntimeDefault
+          seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
         conf:
           env:
             - name: URL_REMAP
@@ -1773,8 +1799,7 @@ units:
                   - ALL
               privileged: false
               runAsNonRoot: true
-              seccompProfile:
-                type: RuntimeDefault
+              seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
       - target:
           kind: Job
         patch: |
@@ -1815,8 +1840,7 @@ units:
                     runAsNonRoot: true
                     runAsGroup: 1000
                     runAsUser: 1000
-                    seccompProfile:
-                      type: RuntimeDefault
+                    seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
 
 
   multus:
@@ -2128,8 +2152,7 @@ units:
             runAsUser: 10000
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
-            seccompProfile:
-              type: RuntimeDefault
+            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
         nginx:
           securityContext:
             capabilities:
@@ -2139,8 +2162,7 @@ units:
             runAsUser: 10000
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
-            seccompProfile:
-              type: RuntimeDefault
+            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") }}'
         ingress:
           className: nginx
           hosts:
