@@ -1,4 +1,4 @@
-# Sylva-core project
+# sylva-core
 
 This project provides the tools and configurations to set up a Sylva management cluster in a declarative way. It relies on [Cluster API](https://cluster-api.sigs.k8s.io/) to manage cluster lifecycle, and uses [Flux](https://fluxcd.io/flux/) to keep clusters and infrastructure components in sync with their definitions in Git.
 
@@ -18,7 +18,7 @@ In following readme, we assume that the reader is familiar with [cluster-api](ht
 
 ## Repository structure
 
-- [kustomize-units](kustomize-units) contains the manifests used to deploy various cluster-api & infrastructure units, they will be deployed as flux Kustomizations, and must contain some Kustomizations.yaml for that purpose. Note that such units could also live in external Git repositories.
+- [kustomize-units](kustomize-units) contains the manifests used to deploy various cluster-api & infrastructure units, they will be deployed as flux Kustomizations, and must contain some `kustomization.yaml` for that purpose. Note that such units could also live in external Git repositories.
 - [charts/sylva-units](charts/sylva-units/README.md) is the main helm chart that controls the installation of selected/relevant flux Kustomizations in the cluster, as well as HelmReleases, depending on the context (bootstrap, management, workload cluster) and the type of cluster-api infrastructure/bootstrap providers that are used.
 - [environment-values](environment-values) contains user-provided values to control the deployment of the cluster. They attempt to provide default parameters for various deployment scenarios, but may be modified to adapt  to deployment scenarios. They will be rendered locally using kustomize tool to generate values (and secrets for security-sensitive data) that will control the behavior of the helm chart.
 - [tools](tools) contains some helper scripts for the bootstrap script, as well as some other utilities
@@ -33,7 +33,7 @@ In following readme, we assume that the reader is familiar with [cluster-api](ht
 
 ### Defining your environment values
 
-Management cluster configuration is done through the `sylva-units` chart values, as overrides over the chart [default values](./charts/sylva-units/values.yaml). In order properly configure the cluster, it is important to understand how this configuration will be generated. The values are made of two sections:
+Management cluster configuration is done through the `sylva-units` chart values, as overrides over the chart [default values](./charts/sylva-units/values.yaml). In order to properly configure the cluster, it is important to understand how this configuration will be generated. The values are made up of two sections:
 
 - The first one contains a list of sources and units that will be installed by Flux in the cluster. For example, following repo & unit definition will install the OpenStack infrastructure provider for cluster api (aka. capo) using a kustomization [./kustomize-units/capo](./kustomize-units/capo) hosted in the current repository.
 
@@ -58,7 +58,7 @@ units: # defines Flux Kustomizations & HelmReleases
       wait: true
 ```
 
-- The second section contains "high level" values that are meant to be used in [goTpl expressions](https://helm.sh/docs/chart_template_guide/function_list/). For example, the capo controller unit defined above will occur if the user also provides following values to the chart (as `.Values.cluster.capi_providers.infra_provider` will be equal to `capo` ):
+- The second section contains "high level" values that are meant to be used in [goTpl expressions](https://helm.sh/docs/chart_template_guide/function_list/). For example, the capo controller unit defined above will occur if the user also provides following values to the chart (i.e.  `.Values.cluster.capi_providers.infra_provider` will be equal to `capo` ):
 
 ```yaml
 ### User values ###
@@ -69,9 +69,9 @@ cluster:
   image: ...
 ```
 
-As these values can be shared among multiple units, they'll allow us to define some global values like `proxies` that will be configured in multiple places
+As these values can be shared among multiple units, they'll allow us to define some global values, like `proxies`, that need to be configured at multiple places.
 
-As user-provided parameters are merged over default chart values, we can also easily override anything in units definitions. For example, even if you choose kubeadm infra provider for you management cluster using `bootstrap_provider: cabpk` as in example above, you may also want to install rke2 infrastructure provider unit:
+As user-provided parameters are merged over default chart values, we can also easily override anything in units definitions. For example, even if you choose kubeadm infra provider for your management cluster using `bootstrap_provider: cabpk`, as in the example above, you may also want to install rke2 infrastructure provider unit:
 
 ```yaml
 ### Chart values ###
@@ -101,7 +101,7 @@ cluster:
   image: ...
 ```
 
-This mechanism is quite powerful, as it enables to adapt values to various contexts. In this project, we intent to maintain several configuration references that are provided as references in the [environment-values](environment-values) directory.
+This mechanism is quite powerful, as it enables to adapt values to various contexts. In this project, we intend to maintain several configuration references that are provided as references in the [environment-values](environment-values) directory.
 
 ### Process to be followed for various infrastructure provider
 
@@ -119,7 +119,7 @@ It can be used to test that stack on a laptop or in [GitLab-ci](.gitlab-ci.yml).
 to work by [GitLab-ci](.gitlab-ci.yml). There is a known issue described in [issue #273](https://gitlab.com/sylva-projects/sylva-core/-/issues/273) when
 using Docker 24.0.0 and [issue #368](https://gitlab.com/sylva-projects/sylva-core/-/issues/368) when using Docker between 19.03.1 to 19.03.4.
 
-> **_NOTICE:_** When deploying on SUSE OS, please check whether DNS server is installed and enabled [SUSE Domain Name System](https://documentation.suse.com/sles/15-SP5/html/SLES-all/cha-dns.html).
+> **_NOTICE:_** When deploying on SUSE OS, please check whether DNS server is installed and enabled, see [SUSE Domain Name System](https://documentation.suse.com/sles/15-SP5/html/SLES-all/cha-dns.html).
 
 The `bootstrap.sh` script which you'll use below, will create for you a kind cluster that will be used as the bootstrap cluster. If available in the Linux environment variables, the following vars will be used to customize this kind cluster:
 
@@ -135,7 +135,7 @@ echo "fs.inotify.max_user_instances = 512" | sudo tee -a /etc/sysctl.conf
 sudo sysctl -p /etc/sysctl.conf
 ```
 
-You should also add your user to Docker group, it'll allow you to run the rest of the stack without privileges:
+You should also add your user to `docker` group, it'll allow you to run the rest of the stack without privileges:
 
 ```shell
 sudo usermod -aG docker $USER
@@ -171,7 +171,7 @@ If you want to deploy a cluster using cluster-api-rke2 bootstrap provider, you j
 
 For more details on environment-values generation you can have a look at the [dedicated README](environment-values/README.md).
 
-> **_NOTE:_** If you intent to contribute back to this project (we would be happy to welcome you!), you should probably create your own copy of environment-values prior to edit them. This way you won't be editing files that are tracked by Git, and will not commit them by inadvertence:
+> **_NOTE:_** If you intend to contribute back to this project (we would be happy to welcome you!), you should probably create your own copy of environment-values prior to editing them. This way you won't be editing files that are tracked by Git, and will not commit them by inadvertence:
 >
 > ```shell
 > cp -a environment-values/rke2-capd environment-values/my-rke2-capd
@@ -181,11 +181,11 @@ For more details on environment-values generation you can have a look at the [de
 
 <details><summary>Deploying clusters in OpenStack using CAPO</summary>
 
-The workflow is quite similar to previous one with Docker, you'll only have to provide different variables
+The workflow is quite similar to the previous one with Docker, you'll only have to provide different variables
 
 Before triggering bootstrap.sh, certain prerequisites need to be done/followed
 
-- Create a **bootstrap vm** using OpenStack or use any exiting linux environment
+- Create a **bootstrap vm** using OpenStack or use any existing Linux environment
 - Set the **proxies** environment variables (http_proxy, https_proxy, no_proxy) if using corporate proxy
 - Install **Docker** and add your user to the `docker` group
 - Clone **sylva-core** project on the **bootstrap vm**
@@ -213,7 +213,7 @@ Before triggering bootstrap.sh, certain prerequisites need to be done/followed
             verify: false
   ```
 
-> **_NOTE:_** obviously, the `secrets.yaml` file is sensitive and meant to be ignored by Git (see `.gitignore`). However, for the sake of security, it can be good idea to [secure these files with SOPS](./sops-howto.md) to mitigate the risk of leakage.
+> **_NOTE:_** Obviously, the `secrets.yaml` file is sensitive and meant to be ignored by Git (see `.gitignore`). However, for the sake of security, it can be a good idea to [secure these files with SOPS](./sops-howto.md) to mitigate the risk of leakage.
 
 - Adapt `environment-values/my-capo-env/values.yaml` by changing the values:
 
@@ -225,7 +225,7 @@ Before triggering bootstrap.sh, certain prerequisites need to be done/followed
       infra_provider: capo
       bootstrap_provider: cabpk
     capo:
-      ssh_key_name: my_key_name # put the name of your nova SSH keypair here, you'll need it if you intent to ssh to cluster nodes
+      ssh_key_name: my_key_name # put the name of your nova SSH keypair here, you'll need it if you intend to SSH to cluster nodes
       network_id: my_network_id # The id of the network in which cluster nodes will be created
 
   proxies:
@@ -398,7 +398,7 @@ Please refer to [Sylva Security](./docs/security.md).
 
 ## Tips and Troubleshooting
 
-As the stack is highly relying on flux, it is the main entry point to start with when something goes wrong. As all units are managed by kustomizations, this is the fist thing to look at:
+As the stack is highly relying on flux, it is the main entry point to start with when something goes wrong. As all units are managed by kustomizations, this is the first thing to look at:
 
 ```shell
 kubectl get kustomizations
@@ -416,7 +416,7 @@ source bin/env
 # alternative: export FLUX_SYSTEM_NAMESPACE=default
 ```
 
-After setting this environment variable, you'll be able to issue flux commands without having to provide the namespace at each time.
+After setting this environment variable, you'll be able to issue flux commands without having to provide the namespace each time.
 With flux cli, the equivalent of previous command would be:
 
 ```shell
@@ -501,7 +501,7 @@ was successfully deployed (including the `sylva-core` Git commit id, `61e2cc0f64
 The configmap also includes a checksum of the values.
 
 The information in this ConfigMap can be compared with the annotations of the `sylva-units-status` Kustomization;
-these annotations contains the target values of any in progress deployment.
+these annotations contain the target values of any in progress deployment.
 
 ```terminal
 $ kubectl get kustomizations.kustomize.toolkit.fluxcd.io/sylva-units-status -o jsonpath='{.metadata.annotations}' | jq
@@ -539,7 +539,7 @@ metadata:
 ...
 ```
 
-In this helm output, the `sylva-units-values` Secret contains the result of templating interpretation of the values, which can be helful in debugging the sylva-units chart.
+In this helm output, the `sylva-units-values` Secret contains the result of templating interpretation of the values, which can be helpful in debugging the sylva-units chart.
 
 We can see the template rendered specifically to check the values for all the units in your dev environment by using:
 
@@ -605,7 +605,7 @@ The documentation at the top of charts/sylva-units/values.schema.yaml explains h
 
 Once the bootstrap phase is done, and the pivot is done, the management cluster can be updated with:
 
-```
+```shell
 ./apply.sh <your-environment-name>
 ```
 
