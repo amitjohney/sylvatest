@@ -23,11 +23,6 @@ cluster:
 
 units:
 
-  cluster:
-    helmrelease_spec:
-      values:
-        cis_profile: ""
-
   capm3:
     enabled: true
   metal3:
@@ -51,7 +46,6 @@ units:
           cluster:
             helmrelease_spec:
               values:
-                cis_profile: ""  # until https://gitlab.com/sylva-projects/sylva-core/-/issues/391 is fully solved (item (C))
 
                 metal3:
                   machine_image_url: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2
