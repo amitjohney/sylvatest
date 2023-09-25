@@ -708,7 +708,7 @@ units:
         substitute:
           CM_VALUES: '{{ .Values.shared_workload_clusters_values | toYaml }}'
     kustomization_substitute_secrets:
-      SECRET_VALUES: '{{ .Values.cluster.capo.clouds_yaml | toYaml }}'
+      SECRET_VALUES: '{{ .Values.cluster.capo.clouds_yaml }}'
 
   capi:
     repo: sylva-core
