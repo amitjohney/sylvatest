@@ -171,7 +171,7 @@ clusterctl-check-versions:
 
   extends: .lint-base
   services:
-    - name: docker:23.0.6-dind
+    - name: docker:24.0.6-dind
       alias: docker
   script:
     - capi_version=$(yq '.resources[0] | capture("/(?P<version>v[^/]+)/") | .version' kustomize-units/capi/kustomization.yaml)
