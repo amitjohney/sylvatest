@@ -2034,6 +2034,7 @@ units:
                 capo:
                   control_plane_security_group_name: "capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}"
                   worker_security_group_name: "capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}"
+                  common_security_group_name: "capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}"
                 mgmt_cluster_external_domain: '{{ .Values.cluster.cluster_external_domain }}'
                 mgmt_cluster_external_ip: '{{ .Values.cluster.cluster_external_ip }}'
                 dns_resolver: true
