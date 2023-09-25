@@ -479,8 +479,8 @@ units:
           SCAN_PROFILE: '{{ .Values.cluster.cis_benchmark_scan_profile }}'
 
   neuvector-init:
-#    enabled_conditions:
-#    - '{{ tuple . "neuvector" | include "unit-enabled" }}'
+    enabled_conditions:
+    - '{{ tuple . "neuvector" | include "unit-enabled" }}'
     depends_on:
       sylva-ca: true
       vault: true
@@ -490,22 +490,11 @@ units:
       path: ./kustomize-units/neuvector-init
       wait: true
 
-#  neuvector-sync-secret:
-#    enabled_conditions:
-#    - '{{ tuple . "neuvector" | include "unit-enabled" }}'
-#    depends_on:
-#      neuvector-init: true
-#      eso-secret-stores: true
-#    repo: sylva-core
-#    kustomization_spec:
-#      path: ./kustomize-units/neuvector-sync-secret
-#      wait: true
-
   neuvector:
     enabled: no
     depends_on:
       neuvector-init: true
-#      neuvector-sync-secret: true
+      neuvector-sync-secret: true
       ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
     annotations:
       sylvactl/readyMessage: "Neuvector UI can be reached at https://{{ .Values.cluster.neuvector.external_hostname }} ({{ .Values.cluster.neuvector.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
