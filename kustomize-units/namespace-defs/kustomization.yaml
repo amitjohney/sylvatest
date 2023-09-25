@@ -9,4 +9,5 @@ resources:
   - cattle-monitoring-system.yaml
   - cinder-csi.yaml
   - longhorn.yaml
+  - metal3-system.yaml
   - workload-cluster.yaml
