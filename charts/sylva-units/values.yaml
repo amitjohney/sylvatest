@@ -706,9 +706,9 @@ units:
       targetNamespace: default
       postBuild:
         substitute:
-          CM_VALUES: '{{ .Values.shared_workload_clusters_values | toYaml }}'
+          CM_VALUES: '{{ index (tuple . .Values.shared_workload_clusters_values | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | b64enc }}'
     kustomization_substitute_secrets:
-      SECRET_VALUES: '{{ .Values.shared_workload_clusters_secret_values | nindent 4 | b64enc }}'
+      SECRET_VALUES: '{{ tuple . .Values.shared_workload_clusters_secret_values | include "interpret-as-string" | toYaml | b64enc }}'
 
   capi:
     repo: sylva-core
@@ -2351,4 +2351,4 @@ shared_workload_clusters_values:
 shared_workload_clusters_secret_values:
   cluster:
     capo:
-      clouds_yaml: '{{ .Values.cluster.capo.clouds_yaml | toYaml | nindent 4 | trim }}'
+      clouds_yaml: '{{ .Values.cluster.capo.clouds_yaml }}'
