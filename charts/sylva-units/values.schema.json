@@ -15,6 +15,446 @@
       "type": "string",
       "pattern": "^(?:(?:[01]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[01]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])-(?:(?:[01]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[01]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])$"
     },
+    "ipv4-prefix": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 32
+        },
+        {
+          "type": "string",
+          "pattern": "^([0-9]|[12]\\d|3[012])$"
+        }
+      ]
+    },
+    "capm3-NetworkDataRoutev4": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "network",
+          "prefix",
+          "gateway"
+        ],
+        "properties": {
+          "network": {
+            "type": "string",
+            "format": "ipv4"
+          },
+          "prefix": {
+            "$ref": "#/$defs/ipv4-prefix"
+          },
+          "gateway": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "string": {
+                "type": "string",
+                "format": "ipv4"
+              },
+              "fromIPPool": {
+                "type": "string"
+              }
+            }
+          },
+          "services": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "dns": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "ipv4"
+                    },
+                    {
+                      "type": "string",
+                      "format": "hostname"
+                    }
+                  ]
+                }
+              },
+              "dnsFromIPPool": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "capo-machine-rootVolume": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "diskSize": {
+          "type": "integer"
+        },
+        "volumeType": {
+          "type": "string"
+        }
+      }
+    },
+    "capv-machine": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "image_name": {
+          "type": "string"
+        },
+        "diskGiB": {
+          "type": "integer"
+        },
+        "memoryMiB": {
+          "type": "integer"
+        },
+        "numCPUs": {
+          "type": "integer"
+        }
+      }
+    },
+    "capm3-machine": {
+      "type": "object",
+      "properties": {
+        "machine_image_url": {
+          "type": "string",
+          "pattern": "^(https?://.*|)$"
+        },
+        "machine_image_format": {
+          "type": "string"
+        },
+        "machine_image_checksum": {
+          "type": "string",
+          "pattern": "^(https?://.*|)$"
+        },
+        "machine_image_checksum_type": {
+          "type": "string"
+        },
+        "provisioning_pool_interface": {
+          "type": "string"
+        },
+        "public_pool_interface": {
+          "type": "string"
+        },
+        "networkData": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "provisioning_pool_interface": {
+              "type": "object",
+              "properties": {
+                "routes": {
+                  "$ref": "#/$defs/capm3-NetworkDataRoutev4"
+                }
+              }
+            },
+            "public_pool_interface": {
+              "type": "object",
+              "properties": {
+                "routes": {
+                  "$ref": "#/$defs/capm3-NetworkDataRoutev4"
+                }
+              }
+            }
+          }
+        },
+        "hostSelector": {
+          "type": "object"
+        }
+      }
+    },
+    "rke2-additionalUserData": {
+      "type": "object",
+      "properties": {
+        "additionalUserData": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "strict": {
+              "type": "boolean"
+            },
+            "config": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "kubeadm-users": {
+      "type": "object",
+      "properties": {
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "groups",
+              "sudo",
+              "shell",
+              "sshAuthorizedKeys"
+            ]
+          }
+        }
+      }
+    },
+    "bootstrap-additional-commands": {
+      "type": "object",
+      "properties": {
+        "pre_bootstrap_commands": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "post_bootstrap_commands": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "container-image": {
+      "type": "object",
+      "properties": {
+        "repository": {
+          "type": "string"
+        },
+        "tag": {
+          "type": "string"
+        }
+      }
+    },
+    "baremetal-host": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "credentials": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            }
+          }
+        },
+        "bmh_metadata": {
+          "type": "object",
+          "properties": {
+            "labels": {
+              "type": "object"
+            },
+            "annotations": {
+              "type": "object"
+            }
+          }
+        },
+        "bmh_spec": {
+          "type": "object",
+          "properties": {
+            "automatedCleaningMode": {
+              "type": "string"
+            },
+            "bmc": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "address": {
+                  "type": "string"
+                },
+                "credentialsName": {
+                  "type": "string"
+                },
+                "disableCertificateVerification": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "bootMACAddress": {
+              "type": "string"
+            },
+            "bootMode": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "externallyProvisioned": {
+              "type": "boolean"
+            },
+            "rootDeviceHints": {
+              "type": "object",
+              "anyOf": [
+                {
+                  "required": [
+                    "hctl"
+                  ]
+                },
+                {
+                  "required": [
+                    "deviceName"
+                  ]
+                }
+              ],
+              "properties": {
+                "hctl": {
+                  "type": "string"
+                },
+                "deviceName": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "machine-deployment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "infra_provider": {
+          "type": "string"
+        },
+        "replicas": {
+          "type": "integer"
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "labels": {
+              "type": "object"
+            },
+            "annotations": {
+              "type": "object"
+            }
+          }
+        },
+        "kubelet_extra_args": {
+          "type": "object"
+        },
+        "rke2": {
+          "$ref": "#/$defs/rke2-additionalUserData"
+        },
+        "kubeadm": {
+          "$ref": "#/$defs/kubeadm-users"
+        },
+        "additional_commands": {
+          "$ref": "#/$defs/bootstrap-additional-commands"
+        },
+        "capo": {
+          "type": "object",
+          "properties": {
+            "image_name": {
+              "type": "string"
+            },
+            "flavor_name": {
+              "type": "string"
+            },
+            "rootVolume": {
+              "$ref": "#/$defs/capo-machine-rootVolume"
+            },
+            "network_id": {
+              "type": "string"
+            },
+            "identity_ref_secret": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "clouds_yaml": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "clouds": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "capo_cloud"
+                      ],
+                      "patternProperties": {
+                        "(capo_cloud|.*)": {
+                          "type": "object",
+                          "additionalProperties": true,
+                          "required": [
+                            "auth"
+                          ],
+                          "properties": {
+                            "auth": {
+                              "type": "object",
+                              "additionalProperties": true,
+                              "required": [
+                                "auth_url",
+                                "username",
+                                "password",
+                                "project_name",
+                                "project_domain_name",
+                                "user_domain_name"
+                              ],
+                              "properties": {
+                                "auth_url": {
+                                  "type": "string",
+                                  "format": "uri"
+                                },
+                                "user_domain_name": {
+                                  "type": "string"
+                                },
+                                "project_domain_name": {
+                                  "type": "string"
+                                },
+                                "project_name": {
+                                  "type": "string"
+                                },
+                                "username": {
+                                  "type": "string"
+                                },
+                                "password": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "region_name": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "verify": {
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "capv": {
+          "$ref": "#/$defs/capv-machine"
+        },
+        "capm3": {
+          "$ref": "#/$defs/capm3-machine"
+        },
+        "network_interfaces": {
+          "type": "object"
+        }
+      }
+    },
     "gotpl": {
       "type": "string",
       "pattern": "^{{ .* }}$"
@@ -122,32 +562,6 @@
                 "calico",
                 "cilium"
               ]
-            },
-            {
-              "$ref": "#/$defs/gotpl"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "image": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/gotpl"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "worker_machine_image": {
-          "anyOf": [
-            {
-              "type": "string"
             },
             {
               "$ref": "#/$defs/gotpl"
@@ -278,7 +692,19 @@
                 "docker_host_socket": {
                   "anyOf": [
                     {
-                      "type": "string"
+                      "type": "string",
+                      "not": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^file://.*"
+                          },
+                          {
+                            "type": "string",
+                            "pattern": "^unix://.*"
+                          }
+                        ]
+                      }
                     },
                     {
                       "$ref": "#/$defs/gotpl"
@@ -373,10 +799,13 @@
           ]
         },
         "metallb_helm_oci_url": {
+          "type": "string",
           "anyOf": [
             {
-              "type": "string",
               "pattern": "^oci://.*"
+            },
+            {
+              "const": ""
             },
             {
               "$ref": "#/$defs/gotpl"
@@ -869,10 +1298,191 @@
             }
           ]
         },
-        "metal3": {
+        "capm3": {
           "anyOf": [
             {
-              "type": "object"
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "public_pool_name": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "public_pool_network": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "ipv4"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "public_pool_gateway": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "ipv4"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "public_pool_end": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "ipv4"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "public_pool_start": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "ipv4"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "public_pool_prefix": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/ipv4-prefix"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "provisioning_pool_name": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "provisioning_pool_network": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "ipv4"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "provisioning_pool_gateway": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "ipv4"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "provisioning_pool_end": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "ipv4"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "provisioning_pool_start": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "ipv4"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "provisioning_pool_prefix": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/ipv4-prefix"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "dns_server": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "ipv4"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
             },
             {
               "$ref": "#/$defs/gotpl"
@@ -885,7 +1495,170 @@
         "images": {
           "anyOf": [
             {
-              "type": "object"
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "vsphere_csi_node": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "node_driver_registrar": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/$defs/container-image"
+                            },
+                            {
+                              "$ref": "#/$defs/gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "vsphere_csi_node": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/$defs/container-image"
+                            },
+                            {
+                              "$ref": "#/$defs/gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "liveness_probe": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/$defs/container-image"
+                            },
+                            {
+                              "$ref": "#/$defs/gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "vsphere_csi_controller": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "csi_attacher": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/$defs/container-image"
+                            },
+                            {
+                              "$ref": "#/$defs/gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "vsphere_csi_controller": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/$defs/container-image"
+                            },
+                            {
+                              "$ref": "#/$defs/gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "liveness_probe": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/$defs/container-image"
+                            },
+                            {
+                              "$ref": "#/$defs/gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "vsphere_syncer": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/$defs/container-image"
+                            },
+                            {
+                              "$ref": "#/$defs/gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "csi_provisioner": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/$defs/container-image"
+                            },
+                            {
+                              "$ref": "#/$defs/gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "vsphere_cloud_controller_manager": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/container-image"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "kube_vip": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/container-image"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
             },
             {
               "$ref": "#/$defs/gotpl"
@@ -898,7 +1671,170 @@
         "default": {
           "anyOf": [
             {
-              "type": "object"
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kubelet_extra_args": {
+                  "anyOf": [
+                    {
+                      "type": "object"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "rke2": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/rke2-additionalUserData"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "kubeadm": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/kubeadm-users"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "capd": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "image_name": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "$ref": "#/$defs/gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "capo": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "image_name": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "$ref": "#/$defs/gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "flavor_name": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "$ref": "#/$defs/gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "rootVolume": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/$defs/capo-machine-rootVolume"
+                            },
+                            {
+                              "$ref": "#/$defs/gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "capv": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/capv-machine"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "capm3": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/capm3-machine"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "network_interfaces": {
+                  "anyOf": [
+                    {
+                      "type": "object"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
             },
             {
               "$ref": "#/$defs/gotpl"
@@ -911,20 +1847,155 @@
         "control_plane": {
           "anyOf": [
             {
-              "type": "object"
-            },
-            {
-              "$ref": "#/$defs/gotpl"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "machine_deployments": {
-          "anyOf": [
-            {
-              "type": "object"
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kubelet_extra_args": {
+                  "anyOf": [
+                    {
+                      "type": "object"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "rke2": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/rke2-additionalUserData"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "kubeadm": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/kubeadm-users"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "additional_commands": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/bootstrap-additional-commands"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "capo": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "image_name": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "$ref": "#/$defs/gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "flavor_name": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "$ref": "#/$defs/gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "rootVolume": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/$defs/capo-machine-rootVolume"
+                            },
+                            {
+                              "$ref": "#/$defs/gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "capv": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/capv-machine"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "capm3": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/capm3-machine"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "network_interfaces": {
+                  "anyOf": [
+                    {
+                      "type": "object"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
             },
             {
               "$ref": "#/$defs/gotpl"
@@ -937,7 +2008,7 @@
         "machine_deployment_default": {
           "anyOf": [
             {
-              "type": "object"
+              "$ref": "#/$defs/machine-deployment"
             },
             {
               "$ref": "#/$defs/gotpl"
@@ -947,10 +2018,25 @@
             }
           ]
         },
-        "baremetal_hosts": {
+        "machine_deployments": {
           "anyOf": [
             {
-              "type": "object"
+              "type": "object",
+              "patternProperties": {
+                "^[a-z0-9][a-z0-9-]*[a-z0-9]$": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/machine-deployment"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
             },
             {
               "$ref": "#/$defs/gotpl"
@@ -963,7 +2049,64 @@
         "baremetal_host_default": {
           "anyOf": [
             {
-              "type": "object"
+              "$ref": "#/$defs/baremetal-host"
+            },
+            {
+              "$ref": "#/$defs/gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "baremetal_hosts": {
+          "anyOf": [
+            {
+              "type": "object",
+              "patternProperties": {
+                "^[a-z0-9][a-z0-9-]*[a-z0-9]$": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/baremetal-host"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "apiVersions": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "patternProperties": {
+                "^[A-Za-z0-9]+$": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "$ref": "#/$defs/gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
             },
             {
               "$ref": "#/$defs/gotpl"
@@ -998,32 +2141,6 @@
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
-                      "flavor_name": {
-                        "anyOf": [
-                          {
-                            "type": "string"
-                          },
-                          {
-                            "$ref": "#/$defs/gotpl"
-                          },
-                          {
-                            "type": "null"
-                          }
-                        ]
-                      },
-                      "worker_flavor_name": {
-                        "anyOf": [
-                          {
-                            "type": "string"
-                          },
-                          {
-                            "$ref": "#/$defs/gotpl"
-                          },
-                          {
-                            "type": "null"
-                          }
-                        ]
-                      },
                       "control_plane_az": {
                         "anyOf": [
                           {
@@ -1057,61 +2174,6 @@
                         "anyOf": [
                           {
                             "type": "string"
-                          },
-                          {
-                            "$ref": "#/$defs/gotpl"
-                          },
-                          {
-                            "type": "null"
-                          }
-                        ]
-                      },
-                      "external_network_id": {
-                        "anyOf": [
-                          {
-                            "type": "string"
-                          },
-                          {
-                            "$ref": "#/$defs/gotpl"
-                          },
-                          {
-                            "type": "null"
-                          }
-                        ]
-                      },
-                      "rootVolume": {
-                        "anyOf": [
-                          {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                              "diskSize": {
-                                "anyOf": [
-                                  {
-                                    "type": "integer"
-                                  },
-                                  {
-                                    "$ref": "#/$defs/gotpl"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              },
-                              "volumeType": {
-                                "anyOf": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "$ref": "#/$defs/gotpl"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            }
                           },
                           {
                             "$ref": "#/$defs/gotpl"
@@ -1617,60 +2679,6 @@
                               "linkedClone",
                               "fullClone"
                             ]
-                          },
-                          {
-                            "$ref": "#/$defs/gotpl"
-                          },
-                          {
-                            "type": "null"
-                          }
-                        ]
-                      },
-                      "control_plane_profile": {
-                        "anyOf": [
-                          {
-                            "type": "object",
-                            "properties": {
-                              "diskGiB": {
-                                "anyOf": [
-                                  {
-                                    "type": "integer"
-                                  },
-                                  {
-                                    "$ref": "#/$defs/gotpl"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              },
-                              "memoryMiB": {
-                                "anyOf": [
-                                  {
-                                    "type": "integer"
-                                  },
-                                  {
-                                    "$ref": "#/$defs/gotpl"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              },
-                              "numCPUs": {
-                                "anyOf": [
-                                  {
-                                    "type": "integer"
-                                  },
-                                  {
-                                    "$ref": "#/$defs/gotpl"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            }
                           },
                           {
                             "$ref": "#/$defs/gotpl"

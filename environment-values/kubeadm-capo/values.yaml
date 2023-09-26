@@ -7,9 +7,9 @@ units:
         machine_deployments:
           md0:
             infra_provider: capo
-            failure_domain: region0
             replicas: 1
-
+            capo:
+              failure_domain: region0
   workload-cluster:
     helmrelease_spec:
       values:
@@ -20,7 +20,8 @@ units:
                 machine_deployments:
                   md0:
                     infra_provider: capo
-                    failure_domain: region0
+                    capo:
+                      failure_domain: region0
 
 cluster:
   image: capo-ubuntu-2004-kube-v1.23.6-calico-3.23.1
