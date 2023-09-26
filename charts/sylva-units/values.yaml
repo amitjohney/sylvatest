@@ -708,7 +708,7 @@ units:
         substitute:
           CM_VALUES: '{{ .Values.shared_workload_clusters_values | toYaml }}'
     kustomization_substitute_secrets:
-      SECRET_VALUES: '{{ .Values.shared_workload_clusters_secret_values | nindent 4 }}'
+      SECRET_VALUES: '{{ .Values.shared_workload_clusters_secret_values | nindent 4 | b64enc }}'
 
   capi:
     repo: sylva-core
