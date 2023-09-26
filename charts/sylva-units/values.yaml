@@ -708,7 +708,7 @@ units:
         substitute:
           CM_VALUES: '{{ .Values.shared_workload_clusters_values | toYaml }}'
     kustomization_substitute_secrets:
-      SECRET_VALUES: '{{ .Values.cluster.image | b64enc}}'
+      SECRET_VALUES: '{{ .Values.shared_workload_clusters_secret_values }}'
 
   capi:
     repo: sylva-core
