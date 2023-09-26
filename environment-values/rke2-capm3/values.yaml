@@ -20,15 +20,7 @@ units:
 
         control_plane_replicas: 1
 
-        metal3:
-          machine_image_url: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2
-          machine_image_format: qcow2
-          machine_image_checksum: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2.sha256sum
-          machine_image_checksum_type: sha256
-          worker_machine_image_url: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2
-          worker_machine_image_format: qcow2
-          worker_machine_image_checksum: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2.sha256sum
-          worker_machine_image_checksum_type: sha256
+        capm3:
           public_pool_name: "public-pool"
           public_pool_network: 10.188.36.128
           public_pool_gateway: 10.188.36.129
@@ -43,15 +35,21 @@ units:
           provisioning_pool_prefix: "27"
           dns_server: 1.2.3.4
 
-        control_plane:  # tweak network configuration as needed
+        default:
+          capm3:
+            machine_image_url: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2
+            machine_image_format: qcow2
+            machine_image_checksum: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2.sha256sum
+            machine_image_checksum_type: sha256
 
+        control_plane:  # tweak network configuration as needed
           capm3:
             hostSelector:  # criteria for matching labels on BareMetalHost objects defined by baremetal_hosts value
               matchLabels:
                 cluster-role: control-plane
+            provisioning_pool_interface: bond0
+            public_pool_interface: bond0.13
 
-          provisioning_pool_interface: bond0
-          public_pool_interface: bond0.13
           network_interfaces:
             # for CAPM3 folowing are used and mapped to Metal3Data.spec.template.spec.networkData.links
             bond0:
@@ -70,8 +68,7 @@ units:
 
           rke2:
             additionalUserData:
-              config: |
-                #cloud-config
+              config: # allows to specify additional cloud-init configuration
                 users:
                   - name: sylva-user
                     groups: users
@@ -89,13 +86,12 @@ units:
             hostSelector:
               matchLabels:
                 cluster-role: worker
+            provisioning_pool_interface: bond0
+            public_pool_interface: bond0.13
 
-          provisioning_pool_interface: bond0
-          public_pool_interface: bond0.13
           rke2:
             additionalUserData:
-              config: |
-                #cloud-config
+              config: # allows to specify additional cloud-init configuration
                 users:
                   - name: sylva-user
                     groups: users
@@ -143,7 +139,7 @@ units:
             bmh_spec:
               description: my control plane node
               bmc:
-                address: redfish-virtualmedia://66.66.66.66/redfish/v1/Systems/1   # put the real BMC address here ()
+                address: redfish-virtualmedia://66.66.66.66/redfish/v1/Systems/1   # put the real BMC address here!
                 disableCertificateVerification: true
               bootMACAddress: ba:ad:00:c0:ff:ee    # put the real address here!
               # rootDeviceHints:
@@ -158,7 +154,7 @@ units:
               description: my worker node
               bmc:
                 address: idrac-virtualmedia://77.77.77.77/redfish/v1/Systems/System.Embedded.1  # put the real BMC address here!
-              bootMACAddress: ba:ad:00:c0:ff:ee    # put the real address here!
+              bootMACAddress: b4:96:91:c0:ff:ee    # put the real address here!
 
   workload-cluster:
     enabled: false  # (no workload cluster is described in this example)
