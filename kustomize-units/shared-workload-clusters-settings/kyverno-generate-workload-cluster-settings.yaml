@@ -22,3 +22,21 @@ spec:
       clone:
         name: shared-workload-clusters-settings
         namespace: default
+  - name: generate-secret
+    match:
+      any:
+      - resources:
+          kinds:
+          - Namespace
+          selector:
+            matchLabels:
+              app.kubernetes.io/name: shared-workload-cluster
+    generate:
+      kind: Secret
+      apiVersion: v1
+      name: shared-workload-clusters-settings
+      namespace: "{{request.object.metadata.name}}"
+      synchronize: true
+      clone:
+        name: shared-workload-clusters-settings
+        namespace: default
