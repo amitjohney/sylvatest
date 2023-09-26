@@ -200,16 +200,16 @@ units:
       values:
         installCRDs: true
         securityContext:
-          seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault" ) | include "preserve-type" }}'
+          seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         webhook:
           securityContext:
-            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault" ) | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         cainjector:
           securityContext:
-            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault" ) | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         startupapicheck:
           securityContext:
-            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault" ) | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
 
 
   trivy-operator:
@@ -291,7 +291,7 @@ units:
         nameOverride: postgres
         primary:
           containerSecurityContext:
-            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
 
   kubevirt:
     helm_repo_url: https://suse-edge.github.io/charts
@@ -380,7 +380,7 @@ units:
         securityContext:
           runAsNonRoot: true
           allowPrivilegeEscalation: false
-          seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+          seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
           capabilities:
             drop:
               - ALL
@@ -424,13 +424,13 @@ units:
       values:
         installCRDs: true
         securityContext:
-          seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+          seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         webhook:
           securityContext:
-            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         certController:
           securityContext:
-            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
 
   eso-secret-stores:
     depends_on:
@@ -529,7 +529,7 @@ units:
                 runAsNonRoot: true
                 runAsGroup: 1000
                 runAsUser: 1000
-                seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+                seccompProfile: {{ .Values._internal.conditional_seccomp | toYaml | nindent 6}}
           target:
             kind: Deployment
             name: keycloak-operator
@@ -545,7 +545,7 @@ units:
                 runAsNonRoot: true
                 runAsGroup: 1000
                 runAsUser: 1000
-                seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+                seccompProfile: {{ .Values._internal.conditional_seccomp | toYaml | nindent 6 }}
           target:
             kind: Keycloak
             name: keycloak
@@ -574,7 +574,7 @@ units:
                 runAsNonRoot: true
                 runAsGroup: 1000
                 runAsUser: 1000
-                seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+                seccompProfile: {{ .Values._internal.conditional_seccomp | toYaml | nindent 6 }}
           target:
             kind: Deployment
             name: keycloak-realm-operator
@@ -643,7 +643,7 @@ units:
                     - ALL
                 privileged: false
                 runAsNonRoot: true
-                seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+                seccompProfile: {{ .Values._internal.conditional_seccomp | toYaml | nindent 6 }}
         - target:
             kind: Job
           patch: |
@@ -697,23 +697,23 @@ units:
         admissionController:
           container:
             securityContext:
-              seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+              seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
           initContainer:
             securityContext:
-              seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+              seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         test:
           securityContext:
-            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         cleanupController:
           securityContext:
-            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         cleanupJobs:
           admissionReports:
             securityContext:
-              seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+              seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         clusterAdmissionReports:
           securityContext:
-            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         backgroundController:
           rbac:
             clusterRole:
@@ -723,10 +723,10 @@ units:
                   - "helmreleases"
                 verbs: ["get", "patch", "list", "update", "watch"]
           securityContext:
-            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         reportsController:
           securityContext:
-            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
 
 
   kyverno-policies:
@@ -891,7 +891,7 @@ units:
           capabilities:
             drop:
             - ALL
-          seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+          seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         securityContext:
           runAsNonRoot: true
           runAsUser: 1000
@@ -899,7 +899,7 @@ units:
           capabilities:
             drop:
             - ALL
-          seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+          seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
       valuesFrom:
         - kind: Secret
           name: metal3-secrets
@@ -1156,7 +1156,7 @@ units:
                   - ALL
               privileged: false
               runAsNonRoot: true
-              seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+              seccompProfile: {{ .Values._internal.conditional_seccomp | toYaml | nindent 6 }}
       - target:
           kind: ConfigMap
         patch: |
@@ -1197,7 +1197,7 @@ units:
       _patches:
       - target:
           kind: Job
-        patch: |
+        patch: | 
           - op: add
             path: /spec/template/spec/securityContext
             value:
@@ -1209,7 +1209,7 @@ units:
                   - ALL
               privileged: false
               runAsNonRoot: true
-              seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+              seccompProfile: {{ .Values._internal.conditional_seccomp | toYaml | nindent 6 }} 
       - target:
           kind: ConfigMap
         patch: |
@@ -1543,7 +1543,7 @@ units:
                           runAsNonRoot: true
                           runAsGroup: 1000
                           runAsUser: 1000
-                          seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+                          seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
 
   capd-metallb-config:
     enabled_conditions:
@@ -1584,7 +1584,7 @@ units:
           runAsNonRoot: true
           runAsGroup: 1
           runAsUser: 1
-          seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+          seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         conf:
           env:
             - name: URL_REMAP
@@ -1799,7 +1799,7 @@ units:
                   - ALL
               privileged: false
               runAsNonRoot: true
-              seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+              seccompProfile: {{ .Values._internal.conditional_seccomp |toYaml | nindent 6 }}
       - target:
           kind: Job
         patch: |
@@ -1840,7 +1840,7 @@ units:
                     runAsNonRoot: true
                     runAsGroup: 1000
                     runAsUser: 1000
-                    seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+                    seccompProfile: {{ .Values._internal.conditional_seccomp | toYaml | nindent 14 }}
 
 
   multus:
@@ -2152,7 +2152,7 @@ units:
             runAsUser: 10000
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
-            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         nginx:
           securityContext:
             capabilities:
@@ -2162,7 +2162,7 @@ units:
             runAsUser: 10000
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
-            seccompProfile: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         ingress:
           className: nginx
           hosts:
@@ -2383,3 +2383,5 @@ _internal:
       uri: "{{ .Values.sylva_base_oci_registry }}/sylva-elements/diskimage-builder/diskimage-builder-plain:0.0.7"
       filename: ubuntu-22.04-plain.qcow2
       checksum: 56a6363f25a5491aa955e4dda6fae17faa10c5e0850d01fe2a10c996c7830971
+
+  conditional_seccomp: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
