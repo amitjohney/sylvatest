@@ -2384,4 +2384,4 @@ _internal:
       filename: ubuntu-22.04-plain.qcow2
       checksum: 56a6363f25a5491aa955e4dda6fae17faa10c5e0850d01fe2a10c996c7830971
 
-  conditional_seccomp: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "null" (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+  conditional_seccomp: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary nil (dict "type" "RuntimeDefault") | include "preserve-type" }}'
