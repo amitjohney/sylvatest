@@ -551,7 +551,7 @@ units:
         - '{{ tuple "components/keycloak-operator-proxies" (.Values.proxies.https_proxy) | include "set-only-if" }}'
       _patches:
         - patch: |
-            - op: add
+            - op: replace
               path: /spec/template/spec/containers/0/securityContext
               value:
                 allowPrivilegeEscalation: false
@@ -567,7 +567,7 @@ units:
             kind: Deployment
             name: keycloak-operator
         - patch: |
-            - op: add
+            - op: replace
               path: /spec/unsupported/podTemplate/spec/containers/0/securityContext
               value:
                 allowPrivilegeEscalation: false
@@ -887,7 +887,7 @@ units:
             template:
               spec:
                 containers:
-                  manager:
+                  - name: manager
                     securityContext:
                       seccompProfile:
                         {{ eq .Values.cluster.cis_profile "cis-1.6" | ternary "$patch: delete"  "type: RuntimeDefault" }}
