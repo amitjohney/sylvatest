@@ -877,6 +877,22 @@ units:
     kustomization_spec:
       path: ./kustomize-units/cabpr
       wait: true
+      patches:
+      - patch: |
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: all
+          spec:
+            template:
+              spec:
+                containers:
+                  manager:
+                    securityContext:
+                      seccompProfile:
+                        {{ eq .Values.cluster.cis_profile "cis-1.6" | ternary "$patch: delete"  "type: RuntimeDefault" }}
+        target:
+          kind: Deployment
 
   metal3-init:
     enabled_conditions:
