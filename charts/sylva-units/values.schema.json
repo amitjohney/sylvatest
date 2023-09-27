@@ -4225,283 +4225,6 @@
                       "type": "null"
                     }
                   ]
-                },
-                "additional_files": {
-                  "anyOf": [
-                    {
-                      "$ref": "#/$defs/bootstrap-additional-files"
-                    },
-                    {
-                      "$ref": "#/$defs/string-with-gotpl"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "capo": {
-                  "anyOf": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "image_name": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "$ref": "#/$defs/string-with-gotpl"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                        },
-                        "flavor_name": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "$ref": "#/$defs/string-with-gotpl"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                        },
-                        "rootVolume": {
-                          "anyOf": [
-                            {
-                              "type": "object",
-                              "additionalProperties": false,
-                              "properties": {
-                                "diskSize": {
-                                  "anyOf": [
-                                    {
-                                      "type": "integer",
-                                      "minimum": 1
-                                    },
-                                    {
-                                      "$ref": "#/$defs/string-with-gotpl"
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ]
-                                },
-                                "volumeType": {
-                                  "anyOf": [
-                                    {
-                                      "type": "string"
-                                    },
-                                    {
-                                      "$ref": "#/$defs/string-with-gotpl"
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ]
-                                }
-                              }
-                            },
-                            {
-                              "$ref": "#/$defs/string-with-gotpl"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                        },
-                        "server_group_id": {
-                          "anyOf": [
-                            {
-                              "$ref": "#/$defs/openstack-uuid"
-                            },
-                            {
-                              "$ref": "#/$defs/string-with-gotpl"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                        },
-                        "security_group_name": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "$ref": "#/$defs/string-with-gotpl"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                        }
-                      }
-                    },
-                    {
-                      "$ref": "#/$defs/string-with-gotpl"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "capv": {
-                  "anyOf": [
-                    {
-                      "$ref": "#/$defs/capv-common"
-                    },
-                    {
-                      "$ref": "#/$defs/string-with-gotpl"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "capm3": {
-                  "anyOf": [
-                    {
-                      "$ref": "#/$defs/capm3-machine"
-                    },
-                    {
-                      "$ref": "#/$defs/string-with-gotpl"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "network_interfaces": {
-                  "anyOf": [
-                    {
-                      "type": "object"
-                    },
-                    {
-                      "$ref": "#/$defs/string-with-gotpl"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "$ref": "#/$defs/string-with-gotpl"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "machine_deployment_default": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/machine-deployment"
-            },
-            {
-              "$ref": "#/$defs/string-with-gotpl"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "machine_deployments": {
-          "anyOf": [
-            {
-              "type": "object",
-              "patternProperties": {
-                "^[a-z0-9][a-z0-9-]*[a-z0-9]$": {
-                  "anyOf": [
-                    {
-                      "allOf": [
-                        {
-                          "$ref": "#/$defs/machine-deployment"
-                        },
-                        {
-                          "required": [
-                            "replicas"
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "$ref": "#/$defs/string-with-gotpl"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "$ref": "#/$defs/string-with-gotpl"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "baremetal_host_default": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/baremetal-host"
-            },
-            {
-              "$ref": "#/$defs/string-with-gotpl"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "baremetal_hosts": {
-          "anyOf": [
-            {
-              "type": "object",
-              "patternProperties": {
-                "^[a-z0-9][a-z0-9-]*[a-z0-9]$": {
-                  "anyOf": [
-                    {
-                      "allOf": [
-                        {
-                          "$ref": "#/$defs/baremetal-host"
-                        },
-                        {
-                          "required": [
-                            "bmh_spec"
-                          ],
-                          "properties": {
-                            "bmh_spec": {
-                              "required": [
-                                "bmc"
-                              ],
-                              "properties": {
-                                "bmc": {
-                                  "required": [
-                                    "address"
-                                  ]
-                                }
-                              }
-                            }
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "$ref": "#/$defs/string-with-gotpl"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
                 }
               }
             },
@@ -4541,37 +4264,9 @@
               "type": "null"
             }
           ]
-        },
-        "additional_files": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/bootstrap-additional-files"
-            },
-            {
-              "$ref": "#/$defs/string-with-gotpl"
-            },
-            {
-              "type": "null"
-            }
-          ]
         }
       },
       "allOf": [
-        {
-          "if": {
-            "properties": {
-              "dns_resolver": {
-                "const": true
-              }
-            }
-          },
-          "then": {
-            "required": [
-              "mgmt_cluster_external_ip",
-              "mgmt_cluster_external_domain"
-            ]
-          }
-        },
         {
           "if": {
             "properties": {
@@ -4589,14 +4284,309 @@
               "capo"
             ],
             "properties": {
-              "control_plane": {
+              "capo": {
                 "anyOf": [
                   {
+                    "type": "object",
+                    "additionalProperties": false,
                     "properties": {
-                      "network_interfaces": {
+                      "image_name": {
                         "anyOf": [
                           {
-                            "$ref": "#/$defs/capo-network-interfaces"
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "#/$defs/string-with-gotpl"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "flavor_name": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "#/$defs/string-with-gotpl"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "rootVolume": {
+                        "anyOf": [
+                          {
+                            "$ref": "#/$defs/capo-machine-rootVolume"
+                          },
+                          {
+                            "$ref": "#/$defs/string-with-gotpl"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "control_plane_az": {
+                        "anyOf": [
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          {
+                            "$ref": "#/$defs/string-with-gotpl"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "ssh_key_name": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "#/$defs/string-with-gotpl"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "network_id": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "#/$defs/string-with-gotpl"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "common_security_group_name": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "#/$defs/gotpl"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "clouds_yaml": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "clouds": {
+                                "anyOf": [
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "required": [
+                                      "capo_cloud"
+                                    ],
+                                    "patternProperties": {
+                                      "(capo_cloud|.*)": {
+                                        "anyOf": [
+                                          {
+                                            "type": "object",
+                                            "additionalProperties": true,
+                                            "required": [
+                                              "auth"
+                                            ],
+                                            "properties": {
+                                              "auth": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "object",
+                                                    "additionalProperties": true,
+                                                    "required": [
+                                                      "auth_url",
+                                                      "username",
+                                                      "password",
+                                                      "project_name",
+                                                      "project_domain_name",
+                                                      "user_domain_name"
+                                                    ],
+                                                    "properties": {
+                                                      "auth_url": {
+                                                        "anyOf": [
+                                                          {
+                                                            "type": "string",
+                                                            "format": "uri"
+                                                          },
+                                                          {
+                                                            "$ref": "#/$defs/string-with-gotpl"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
+                                                      },
+                                                      "user_domain_name": {
+                                                        "anyOf": [
+                                                          {
+                                                            "type": "string"
+                                                          },
+                                                          {
+                                                            "$ref": "#/$defs/string-with-gotpl"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
+                                                      },
+                                                      "project_domain_name": {
+                                                        "anyOf": [
+                                                          {
+                                                            "type": "string"
+                                                          },
+                                                          {
+                                                            "$ref": "#/$defs/string-with-gotpl"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
+                                                      },
+                                                      "project_name": {
+                                                        "anyOf": [
+                                                          {
+                                                            "type": "string"
+                                                          },
+                                                          {
+                                                            "$ref": "#/$defs/string-with-gotpl"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
+                                                      },
+                                                      "username": {
+                                                        "anyOf": [
+                                                          {
+                                                            "type": "string"
+                                                          },
+                                                          {
+                                                            "$ref": "#/$defs/string-with-gotpl"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
+                                                      },
+                                                      "password": {
+                                                        "anyOf": [
+                                                          {
+                                                            "type": "string"
+                                                          },
+                                                          {
+                                                            "$ref": "#/$defs/string-with-gotpl"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "$ref": "#/$defs/string-with-gotpl"
+                                                  },
+                                                  {
+                                                    "type": "null"
+                                                  }
+                                                ]
+                                              },
+                                              "region_name": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "string"
+                                                  },
+                                                  {
+                                                    "type": "null"
+                                                  },
+                                                  {
+                                                    "$ref": "#/$defs/string-with-gotpl"
+                                                  },
+                                                  {
+                                                    "type": "null"
+                                                  }
+                                                ]
+                                              },
+                                              "verify": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "boolean"
+                                                  },
+                                                  {
+                                                    "$ref": "#/$defs/string-with-gotpl"
+                                                  },
+                                                  {
+                                                    "type": "null"
+                                                  }
+                                                ]
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "$ref": "#/$defs/string-with-gotpl"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "$ref": "#/$defs/string-with-gotpl"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          {
+                            "$ref": "#/$defs/string-with-gotpl"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "cacert": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "$ref": "#/$defs/string-with-gotpl"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "resources_tag": {
+                        "anyOf": [
+                          {
+                            "type": "string"
                           },
                           {
                             "$ref": "#/$defs/string-with-gotpl"
