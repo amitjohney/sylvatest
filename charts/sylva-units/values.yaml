@@ -199,7 +199,7 @@ units:
                 runAsNonRoot: true
                 runAsGroup: 1000
                 runAsUser: 1000
-                {{ .Values._internal.conditional_seccomp | toYaml | indent 4 }}
+                seccompProfile: {{ .Values._internal.conditional_seccomp | toYaml | nindent 6}}
           target:
             kind: Deployment
             name: notification-controller
@@ -215,7 +215,7 @@ units:
                 runAsNonRoot: true
                 runAsGroup: 1000
                 runAsUser: 1000
-                {{ .Values._internal.conditional_seccomp | toYaml | indent 4 }}
+                seccompProfile: {{ .Values._internal.conditional_seccomp | toYaml | nindent 6}}
           target:
             kind: Deployment
             name: source-controller
@@ -233,16 +233,16 @@ units:
       values:
         installCRDs: true
         securityContext:
-          '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
+          seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         webhook:
           securityContext:
-            '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         cainjector:
           securityContext:
-            '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         startupapicheck:
           securityContext:
-            '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
 
 
   trivy-operator:
@@ -324,7 +324,7 @@ units:
         nameOverride: postgres
         primary:
           containerSecurityContext:
-            '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
 
   kubevirt:
     helm_repo_url: https://suse-edge.github.io/charts
@@ -413,7 +413,7 @@ units:
         securityContext:
           runAsNonRoot: true
           allowPrivilegeEscalation: false
-          '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'  
+          seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
           capabilities:
             drop:
               - ALL
@@ -457,13 +457,13 @@ units:
       values:
         installCRDs: true
         securityContext:
-          '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
+          seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         webhook:
           securityContext:
-            '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         certController:
           securityContext:
-            '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
 
   eso-secret-stores:
     depends_on:
@@ -562,7 +562,7 @@ units:
                 runAsNonRoot: true
                 runAsGroup: 1000
                 runAsUser: 1000
-                {{ .Values._internal.conditional_seccomp | toYaml | indent 4 }}
+                seccompProfile: {{ .Values._internal.conditional_seccomp | toYaml | nindent 6}}
           target:
             kind: Deployment
             name: keycloak-operator
@@ -578,7 +578,7 @@ units:
                 runAsNonRoot: true
                 runAsGroup: 1000
                 runAsUser: 1000
-                {{ .Values._internal.conditional_seccomp | toYaml | indent 4 }}
+                seccompProfile: {{ .Values._internal.conditional_seccomp | toYaml | nindent 6 }}
           target:
             kind: Keycloak
             name: keycloak
@@ -607,7 +607,7 @@ units:
                 runAsNonRoot: true
                 runAsGroup: 1000
                 runAsUser: 1000
-                {{ .Values._internal.conditional_seccomp | toYaml | indent 4 }}
+                seccompProfile: {{ .Values._internal.conditional_seccomp | toYaml | nindent 6 }}
           target:
             kind: Deployment
             name: keycloak-realm-operator
@@ -676,7 +676,7 @@ units:
                     - ALL
                 privileged: false
                 runAsNonRoot: true
-                {{ .Values._internal.conditional_seccomp | toYaml | indent 4 }}
+                seccompProfile: {{ .Values._internal.conditional_seccomp | toYaml | nindent 6 }}
         - target:
             kind: Job
           patch: |
@@ -730,23 +730,23 @@ units:
         admissionController:
           container:
             securityContext:
-              '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
+              seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
           initContainer:
             securityContext:
-              '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
+              seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         test:
           securityContext:
-            '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         cleanupController:
           securityContext:
-            '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         cleanupJobs:
           admissionReports:
             securityContext:
-              '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
+              seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         clusterAdmissionReports:
           securityContext:
-            '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         backgroundController:
           rbac:
             clusterRole:
@@ -756,10 +756,10 @@ units:
                   - "helmreleases"
                 verbs: ["get", "patch", "list", "update", "watch"]
           securityContext:
-            '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         reportsController:
           securityContext:
-            '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
 
 
   kyverno-policies:
@@ -848,21 +848,6 @@ units:
     kustomization_spec:
       path: ./kustomize-units/cabpr
       wait: true
-      _patches:
-        - patch: |
-            - op: add
-              path: /spec/template/spec/containers/0/securityContext
-              value: {{ .Values._internal.conditional_seccomp | toYaml | nindent 4}}
-          target:
-            kind: Deployment
-            name: rke2-bootstrap-controller-manager
-        - patch: |
-            - op: replace
-              path: /spec/template/spec/containers/0/securityContext
-              value: {{ .Values._internal.conditional_seccomp | toYaml | nindent 4}}
-          target:
-            kind: Deployment
-            name: rke2-control-plane-controller-manager
 
   metal3-init:
     enabled_conditions:
@@ -939,7 +924,7 @@ units:
           capabilities:
             drop:
             - ALL
-          '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
+          seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         securityContext:
           runAsNonRoot: true
           runAsUser: 1000
@@ -947,7 +932,7 @@ units:
           capabilities:
             drop:
             - ALL
-          '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
+          seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
       valuesFrom:
         - kind: Secret
           name: metal3-secrets
@@ -1204,7 +1189,7 @@ units:
                   - ALL
               privileged: false
               runAsNonRoot: true
-              {{ .Values._internal.conditional_seccomp | toYaml | indent 4 }}
+              seccompProfile: {{ .Values._internal.conditional_seccomp | toYaml | nindent 6 }}
       - target:
           kind: ConfigMap
         patch: |
@@ -1257,7 +1242,7 @@ units:
                   - ALL
               privileged: false
               runAsNonRoot: true
-              {{ .Values._internal.conditional_seccomp | toYaml | indent 4 }} 
+              seccompProfile: {{ .Values._internal.conditional_seccomp | toYaml | nindent 6 }} 
       - target:
           kind: ConfigMap
         patch: |
@@ -1591,7 +1576,7 @@ units:
                           runAsNonRoot: true
                           runAsGroup: 1000
                           runAsUser: 1000
-                          '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
+                          seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
 
   capd-metallb-config:
     enabled_conditions:
@@ -1632,7 +1617,7 @@ units:
           runAsNonRoot: true
           runAsGroup: 1
           runAsUser: 1
-          '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
+          seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         conf:
           env:
             - name: URL_REMAP
@@ -1847,7 +1832,7 @@ units:
                   - ALL
               privileged: false
               runAsNonRoot: true
-              {{ .Values._internal.conditional_seccomp | toYaml | indent 4 }}
+              seccompProfile: {{ .Values._internal.conditional_seccomp |toYaml | nindent 6 }}
       - target:
           kind: Job
         patch: |
@@ -1888,7 +1873,7 @@ units:
                     runAsNonRoot: true
                     runAsGroup: 1000
                     runAsUser: 1000
-                    {{ .Values._internal.conditional_seccomp | toYaml | indent 4 }}
+                    seccompProfile: {{ .Values._internal.conditional_seccomp | toYaml | nindent 14 }}
 
 
   multus:
@@ -2200,7 +2185,7 @@ units:
             runAsUser: 10000
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
-            '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         nginx:
           securityContext:
             capabilities:
@@ -2210,7 +2195,7 @@ units:
             runAsUser: 10000
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
-            '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
+            seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
         ingress:
           className: nginx
           hosts:
@@ -2432,4 +2417,4 @@ _internal:
       filename: ubuntu-22.04-plain.qcow2
       checksum: 56a6363f25a5491aa955e4dda6fae17faa10c5e0850d01fe2a10c996c7830971
 
-  conditional_seccomp: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary "" (dict "seccompProfile" (dict "type" "RuntimeDefalt")) | include "preserve-type" }}'
+  conditional_seccomp: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary nil (dict "type" "RuntimeDefault") | include "preserve-type" }}'
