@@ -8,7 +8,7 @@ commonLabels:
   copy-from-bootstrap-to-management: ""
 
 configMapGenerator:
-- name: management-cluster-values
+- name: sylva-units-values
   behavior: merge
   options:
     disableNameSuffixHash: true
@@ -16,7 +16,7 @@ configMapGenerator:
   - values=values.yaml
 
 secretGenerator:
-- name: management-cluster-secrets
+- name: sylva-units-secrets
   behavior: merge
   options:
     disableNameSuffixHash: true
