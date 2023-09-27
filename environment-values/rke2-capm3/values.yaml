@@ -34,13 +34,10 @@ units:
           provisioning_pool_end: 10.199.39.219
           provisioning_pool_prefix: "27"
           dns_server: 1.2.3.4
-
-        default:
-          capm3:
-            machine_image_url: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2
-            machine_image_format: qcow2
-            machine_image_checksum: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2.sha256sum
-            machine_image_checksum_type: sha256
+          machine_image_url: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2
+          machine_image_format: qcow2
+          machine_image_checksum: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2.sha256sum
+          machine_image_checksum_type: sha256
 
         control_plane:  # tweak network configuration as needed
           capm3:
