@@ -69,7 +69,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.0.22
+        tag: 0.1.1
 
   local-path-provisioner:
     kind: GitRepository
@@ -954,19 +954,12 @@ units:
           - 10.43.0.0/16
         cluster_pods_cidrs:
           - 10.42.0.0/16
-        default:
-          capd:
-            image_name: '{{ .Values.cluster.image }}'
-          capo:
-            image_name: '{{ .Values.cluster.image }}'
-            flavor_name: '{{ .Values.cluster.capo.flavor_name }}'
-            rootVolume: '{{ .Values.cluster.capo.rootVolume | include "preserve-type" }}'
-          capv:
-            image_name: '{{ .Values.cluster.image }}'
-            numCPUs: 2
-            memoryMiB: 8192
-            diskGiB: 25
+        capd:
+          image_name: '{{ .Values.cluster.image }}'
         capo:
+          image_name: '{{ .Values.cluster.image }}'
+          flavor_name: '{{ .Values.cluster.capo.flavor_name }}'
+          rootVolume: '{{ .Values.cluster.capo.rootVolume | include "preserve-type" }}'
           ssh_key_name: '{{ .Values.cluster.capo.ssh_key_name }}'
           network_id: '{{ .Values.cluster.capo.network_id }}'
           control_plane_security_group_name: "capo-{{ .Values.cluster.name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}"
@@ -976,6 +969,10 @@ units:
           resources_tag: '{{ .Values.cluster.capo.resources_tag }}'
         capv:
           dataCenter: '{{ .Values.cluster.capv.dataCenter }}'
+          image_name: '{{ .Values.cluster.image }}'
+          numCPUs: 2
+          memoryMiB: 8192
+          diskGiB: 25
           networks:
             default:
               networkName: '{{ .Values.cluster.capv.network }}'
