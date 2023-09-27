@@ -836,6 +836,22 @@ units:
         substitute:
           force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
       wait: true
+      patches:
+      - target:
+          kind: Deployment
+          name: rke2-control-plane-controller-manager
+        patch: |-
+          kind: Deployment
+          apiVersion: apps/v1
+          metadata:
+            name: all
+          spec:
+            template:
+              spec:
+                securityContext:
+                  seccompProfile:
+                    {{ eq .Values.cluster.cis_profile "cis-1.6" | ternary "$patch: delete"  "type: RuntimeDefault" }}
+
 
   capv:
     repo: sylva-core
