@@ -708,7 +708,7 @@ units:
         substitute:
           CM_VALUES: '{{ index (tuple . .Values.shared_workload_clusters_values | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | b64enc }}'
     kustomization_substitute_secrets:
-      SECRET_VALUES: '{{ index (tuple . .Values.shared_workload_clusters_secret_values | include "interpret-inner-gotpl" | fromJson) "result" | include "preserve-type" | b64enc }}'
+      SECRET_VALUES: '{{ .Values.shared_workload_clusters_secret_values | toYaml | include "preserve-type" }}'
 
   capi:
     repo: sylva-core
