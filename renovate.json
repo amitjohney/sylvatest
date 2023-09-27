@@ -80,7 +80,7 @@
       "allowedVersions": "<1.14"
     }
   ],
-  "regexManagers": [
+  "customManagers": [
     {
       "customType": "regex",
       "fileMatch": [".gitlab-ci.yml"],
