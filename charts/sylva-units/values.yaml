@@ -791,6 +791,21 @@ units:
     kustomization_spec:
       path: ./kustomize-units/capi
       wait: true
+      patches:
+      - target:
+          kind: Deployment
+          name: capi-controller-manager
+        patch: |-
+          kind: Deployment
+          apiVersion: apps/v1
+          metadata:
+            name: all
+          spec:
+            template:
+              spec:
+                securityContext:
+                  seccompProfile:
+                    {{ eq .Values.cluster.cis_profile "cis-1.6" | ternary "$patch: delete"  "type: RuntimeDefault" }}
 
   capd:
     repo: sylva-core
