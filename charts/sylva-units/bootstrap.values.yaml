@@ -118,6 +118,39 @@ units:
         substituteFrom:
         - kind: ConfigMap
           name: proxy-env-vars
+      _patches:
+        - patch: |
+            - op: replace
+              path: /spec/template/spec/containers/0/securityContext
+              value:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                privileged: false
+                runAsNonRoot: true
+                runAsGroup: 1000
+                runAsUser: 1000
+                seccompProfile: {{ .Values._internal.conditional_seccomp | toYaml | nindent 6}}
+          target:
+            kind: Deployment
+            name: notification-controller
+        - patch: |
+            - op: replace
+              path: /spec/template/spec/containers/0/securityContext
+              value:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                privileged: false
+                runAsNonRoot: true
+                runAsGroup: 1000
+                runAsUser: 1000
+                seccompProfile: {{ .Values._internal.conditional_seccomp | toYaml | nindent 6}}
+          target:
+            kind: Deployment
+            name: source-controller
     labels:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
 
