@@ -26,7 +26,7 @@ variables:
   CAPO_PLATFORM_TAG: capo-ci
   OCI_TAG_FORMAT: "0.0.0-git-$CI_COMMIT_SHORT_SHA"
   # renovate: datasource=docker
-  CI_IMAGE: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image:v1.0.9
+  CI_IMAGE: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image:v1.0.10
   # renovate: datasource=docker
   OPENSTACK_CLIENT_IMAGE: registry.gitlab.com/sylva-projects/sylva-elements/container-images/openstack-client:v0.0.5
   # if a deploy job sets this to "even" (resp. "odd"), the job will automatically trigger
@@ -569,7 +569,7 @@ deploy-capo-fip:
   kubectl wait --for=condition=Ready pod/test --kubeconfig workload-cluster-rancher-kubeconfig --timeout=60s
   echo "-- All done"
 
-.testing-workload-cluster:
+.test-workload-cluster:
   stage: deployment-test
   script:
     - echo "Testing workload cluster. Job started at '$CI_JOB_STARTED_AT'."
@@ -580,29 +580,95 @@ deploy-capo-fip:
   tags:
     - $CAPO_PLATFORM_TAG
 
-testing-workload-cluster-rke2-capo:
-  extends: .testing-workload-cluster
+test-workload-cluster-rke2-capo:
+  extends: .test-workload-cluster
   needs:
     - deploy-rke2-capo
 
-testing-workload-cluster-rke2-capo-oci:
-  extends: .testing-workload-cluster
+test-workload-cluster-rke2-capo-oci:
+  extends: .test-workload-cluster
   variables:
     OCI_TAG: $OCI_TAG_FORMAT
   needs:
     - deploy-rke2-capo-oci
 
-testing-workload-cluster-kubeadm-capo:
-  extends: .testing-workload-cluster
+test-workload-cluster-kubeadm-capo:
+  extends: .test-workload-cluster
   needs:
     - deploy-kubeadm-capo
 
-testing-workload-cluster-kubeadm-capo-oci:
-  extends: .testing-workload-cluster
+test-workload-cluster-kubeadm-capo-oci:
+  extends: .test-workload-cluster
   variables:
     OCI_TAG: $OCI_TAG_FORMAT
   needs:
     - deploy-kubeadm-capo-oci
+
+.test-login:
+  stage: deployment-test
+  rules:
+    !reference [.rules, post-deployment-rules]
+  allow_failure: true
+  variables:
+    HURL_JUNIT_REPORT: login_junit_report.xml
+  artifacts:
+    expire_in: 6 hour
+    when: always
+    paths:
+      - $HURL_JUNIT_REPORT
+      - index.html
+      - store/
+    reports:
+      junit:
+      - $HURL_JUNIT_REPORT
+  tags:
+    - $CAPO_PLATFORM_TAG
+
+.hurl-report:
+  script_capo:
+    - kubectl --kubeconfig management-cluster-kubeconfig get ingress -A -o custom-columns=:.status.loadBalancer.ingress[].ip,:.spec.tls[].hosts[] >> /etc/hosts
+    - export HURL_token=$(kubectl --kubeconfig management-cluster-kubeconfig -n vault get secrets/vault-unseal-keys -o jsonpath='{.data.vault-root}' | base64 -d)
+    - export HURL_flux_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n flux-system flux-webui-weave-gitops -o jsonpath='{ .spec.tls[].hosts[] }')
+    - export HURL_vault_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n vault vault -o jsonpath='{ .spec.tls[].hosts[] }')
+    - export HURL_rancher_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n cattle-system rancher -o jsonpath='{ .spec.tls[].hosts[] }'); export domain=$(echo $HURL_rancher_url | cut -f2 -d .)
+    - export HURL_keycloak_url=$(kubectl --kubeconfig management-cluster-kubeconfig  get ingress -n keycloak keycloak-ingress -o jsonpath='{ .spec.tls[].hosts[] }')
+    - hurl -k ./tools/login-test/*.hurl --test --color --noproxy=".$domain"  --report-junit $HURL_JUNIT_REPORT --report-html .
+
+test-login-rke2-capo:
+  extends: .test-login
+  script:
+    - !reference [.hurl-report, script_capo ]
+  needs:
+    - deploy-rke2-capo
+  artifacts:
+    expose_as: login-rke2-capo
+
+test-login-rke2-capo-oci:
+  extends: .test-login
+  script:
+    - !reference [.hurl-report, script_capo ]
+  needs:
+    - deploy-rke2-capo-oci
+  artifacts:
+    expose_as: login-rke2-capo-oci
+
+test-login-kubeadm-capo:
+  extends: .test-login
+  script:
+    - !reference [.hurl-report, script_capo ]
+  needs:
+    - deploy-kubeadm-capo
+  artifacts:
+    expose_as: login-kubeadm-capo
+
+test-login-kubeadm-capo-oci:
+  extends: .test-login
+  script:
+    - !reference [.hurl-report, script_capo ]
+  needs:
+    - deploy-kubeadm-capo-oci
+  artifacts:
+    expose_as: login-kubeadm-capo-oci
 
 # ==========================================
 # Delete stage
@@ -634,28 +700,32 @@ cleanup-rke2-capo:
   variables:
     ENV_NAME: "rke2-capo"
   needs:
-    - testing-workload-cluster-rke2-capo
+    - test-workload-cluster-rke2-capo
+    - test-login-rke2-capo
 
 cleanup-kubeadm-capo:
   extends: .cleanup-capo
   variables:
     ENV_NAME: "kubeadm-capo"
   needs:
-    - testing-workload-cluster-kubeadm-capo
+    - test-workload-cluster-kubeadm-capo
+    - test-login-kubeadm-capo
 
 cleanup-rke2-capo-oci:
   extends: .cleanup-capo-oci
   variables:
     ENV_NAME: "rke2-capo"
   needs:
-    - testing-workload-cluster-rke2-capo-oci
+    - test-workload-cluster-rke2-capo-oci
+    - test-login-rke2-capo-oci
 
 cleanup-kubeadm-capo-oci:
   extends: .cleanup-capo-oci
   variables:
     ENV_NAME: "kubeadm-capo"
   needs:
-    - testing-workload-cluster-kubeadm-capo-oci
+    - test-workload-cluster-kubeadm-capo-oci
+    - test-login-kubeadm-capo-oci
 
 cleanup-m3-units-in-capo:
   extends: .cleanup-capo-oci
