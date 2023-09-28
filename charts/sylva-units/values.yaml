@@ -1795,6 +1795,26 @@ units:
                   - apiGroup: rbac.authorization.k8s.io
                     kind: User
                     name: sylva-admin@example.com  # add same RBAC for the SSO user, so that when flux-webui SA impersonates it has privileges; cannot use "infra-admins" group here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/427
+              - kind: Deployment
+                apiVersion: apps/v1
+                metadata:
+                  name: flux-webui-weave-gitops
+                spec:
+                  template:
+                    spec:
+                      containers:
+                      - name: weave-gitops
+                        securityContext:
+                          allowPrivilegeEscalation: false
+                          capabilities:
+                            drop:
+                            - ALL
+                          privileged: false
+                          readOnlyRootFilesystem: true
+                          runAsNonRoot: true
+                          runAsGroup: 1000
+                          runAsUser: 1000
+                          seccompProfile: '{{ .Values._internal.conditional_seccomp | include "preserve-type" }}'
 
   monitoring-crd:
     depends_on:
