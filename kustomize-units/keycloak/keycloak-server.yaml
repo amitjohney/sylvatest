@@ -25,4 +25,12 @@ spec:
     podTemplate:
       spec:
         containers:
-          - securityContext: {}
+          - securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - ALL
+              privileged: false
+              runAsGroup: 1000
+              runAsNonRoot: true
+              runAsUser: 1000
