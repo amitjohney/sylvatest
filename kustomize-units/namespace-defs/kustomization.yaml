@@ -4,7 +4,10 @@ kind: Kustomization
 resources:
   - keycloak-namespace.yaml
   - vault-namespace.yaml
-  - rancher-namespace.yaml
+  - rancher-namespaces.yaml
   - rancher-global-data-namespace.yaml
-  - cinder-csi.yaml
+  - cattle-monitoring-namespace.yaml
+  - cinder-csi-namespace.yaml
+  - longhorn-namespace.yaml
+  - metal3-namespace.yaml
   - workload-cluster.yaml

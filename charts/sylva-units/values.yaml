@@ -48,7 +48,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/capi-rancher-import.git
       ref:
-        tag: 0.1.3
+        tag: 0.1.4
 
   weave-gitops:
     kind: GitRepository
@@ -296,9 +296,6 @@ units:
       targetNamespace: vault
       install:
         createNamespace: true
-      values:
-        psp:
-          enabled: true
 
 # Vault assumes that the certificate vault-tls has been issued
   vault:
@@ -345,7 +342,6 @@ units:
           kind: Deployment
           name: vault-configurer
           namespace: vault
-
 
   vault-config-operator:
     depends_on:
@@ -439,7 +435,7 @@ units:
         global:
           cattle:
             psp:
-              enabled: true
+              enabled: '{{ .Values.cluster.cis_profile | eq "cis-1.6" | include "preserve-type" }}'
 
   # this allows for running a CIS scan for management cluster
   # generates a report which can be viewed and downloaded in CSV from the Rancher UI, at https://rancher.sylva/dashboard/c/local/cis/cis.cattle.io.clusterscan
@@ -484,7 +480,26 @@ units:
           name: keycloak
           namespace: keycloak
       _components:
+        - "components/keycloak-operator-security"
         - '{{ tuple "components/keycloak-operator-proxies" (.Values.proxies.https_proxy) | include "set-only-if" }}'
+      _patches:
+        - patch: |
+            - op: replace
+              path: /spec/template/spec/containers/0/securityContext
+              value:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                privileged: false
+                runAsNonRoot: true
+                runAsGroup: 1000
+                runAsUser: 1000
+                seccompProfile:
+                  type: RuntimeDefault
+          target:
+            kind: Deployment
+            name: keycloak-operator
 
   keycloak-legacy-operator:
     enabled_conditions:
@@ -506,8 +521,17 @@ units:
             spec:
               template:
                 spec:
-                  securityContext:
-                    runAsUser: 10000
+                  containers:
+                    - name: keycloak-realm-operator
+                      securityContext:
+                        runAsUser: 10000
+                        allowPrivilegeEscalation: false
+                        capabilities:
+                          drop:
+                            - ALL
+                        runAsNonRoot: true
+                        seccompProfile:
+                          type: RuntimeDefault
           target:
             kind: Deployment
             name: keycloak-realm-operator
@@ -566,10 +590,17 @@ units:
           kind: Job
         patch: |
           - op: add
-            path: /spec/template/spec/securityContext
+            path: /spec/template/spec/containers/0/securityContext
             value:
               runAsUser: 1000
               runAsGroup: 3000
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - ALL
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
       - target:
           kind: Job
         patch: |
@@ -689,6 +720,24 @@ units:
     kustomization_spec:
       path: ./kustomize-units/capo
       wait: true
+      _patches:
+        - target:
+            group: apps
+            version: v1
+            kind: Deployment
+            name: capo-controller-manager
+            namespace: capo-system
+          patch: |-
+            - op: add
+              path: /spec/template/spec/containers/0/securityContext
+              value:
+                runAsNonRoot: true
+                seccompProfile:
+                  type: RuntimeDefault
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
 
   capm3:
     repo: sylva-core
@@ -727,6 +776,41 @@ units:
     kustomization_spec:
       path: ./kustomize-units/cabpr
       wait: true
+      _patches:
+        - target:
+            group: apps
+            version: v1
+            kind: Deployment
+            name: rke2-bootstrap-controller-manager
+            namespace: rke2-bootstrap-system
+          patch: |-
+            - op: add
+              path: /spec/template/spec/containers/0/securityContext
+              value:
+                runAsNonRoot: true
+                seccompProfile:
+                  type: RuntimeDefault
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+        - target:
+            group: apps
+            version: v1
+            kind: Deployment
+            name: rke2-control-plane-controller-manager
+            namespace: rke2-control-plane-system
+          patch: |-
+            - op: add
+              path: /spec/template/spec/containers/0/securityContext
+              value:
+                runAsNonRoot: true
+                seccompProfile:
+                  type: RuntimeDefault
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
 
   metal3-init:
     enabled_conditions:
@@ -763,7 +847,7 @@ units:
         spec:
           chart: .
       install:
-        createNamespace: true
+        createNamespace: false
       targetNamespace: metal3-system
       values:  # see https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3/-/blob/main/values.yaml
         global:
@@ -1006,6 +1090,29 @@ units:
     kustomization_spec:
       path: ./kustomize-units/heat-operator
       wait: true
+      _patches:
+        - target:
+            group: apps
+            version: v1
+            kind: Deployment
+            name: heat-operator-controller-manager
+            namespace: heat-operator-system
+          patch: |-
+            - op: add
+              path: /spec/template/spec/containers/0/securityContext/seccompProfile
+              value:
+                type: RuntimeDefault
+        - target:
+            group: apps
+            version: v1
+            kind: Deployment
+            name: heat-operator-controller-manager
+            namespace: heat-operator-system
+          patch: |-
+            - op: add
+              path: /spec/template/spec/containers/1/securityContext/seccompProfile
+              value:
+                type: RuntimeDefault
 
   capo-cluster-resources:
     enabled_conditions:
@@ -1056,6 +1163,26 @@ units:
             value:
               runAsUser: 1000
               runAsGroup: 3000
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
+      - target:
+          kind: Job
+        patch: |
+          - op: add
+            path: /spec/template/spec/containers/0/securityContext
+            value:
+              runAsUser: 1000
+              runAsGroup: 3000
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              privileged: false
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
+
       - target:
           kind: ConfigMap
         patch: |
@@ -1102,6 +1229,25 @@ units:
             value:
               runAsUser: 1000
               runAsGroup: 3000
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
+      - target:
+          kind: Job
+        patch: |
+          - op: add
+            path: /spec/template/spec/containers/0/securityContext
+            value:
+              runAsUser: 1000
+              runAsGroup: 3000
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              privileged: false
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
       - target:
           kind: ConfigMap
         patch: |
@@ -1299,7 +1445,7 @@ units:
       chart:
         spec:
           chart: rancher
-          version: 2.7.4
+          version: 2.7.6    # Reintroduces the monitoring url bug, but required for k8s > 1.26.0. Closest working version 2.7.4 - 1.26.0
       targetNamespace: cattle-system
       interval: 10m0s
       upgrade:
@@ -1413,6 +1559,28 @@ units:
           loadBalancerIP: '{{ .Values.cluster.cluster_external_ip }}'
           annotations:
             metallb.universe.tf/allow-shared-ip: cluster-external-ip
+      _postRenderers:
+        - kustomize:
+            patchesStrategicMerge:
+              - kind: Deployment
+                apiVersion: apps/v1
+                metadata:
+                  name: k8s-gateway
+                spec:
+                  template:
+                    spec:
+                      containers:
+                      - name: k8s-gateway
+                        securityContext:
+                          allowPrivilegeEscalation: false
+                          capabilities:
+                            drop:
+                            - ALL
+                          runAsNonRoot: true
+                          runAsGroup: 1000
+                          runAsUser: 1000
+                          seccompProfile:
+                            type: RuntimeDefault
 
   capd-metallb-config:
     enabled_conditions:
@@ -1445,7 +1613,16 @@ units:
       interval: 1m0s
       values:
         securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          privileged: false
+          runAsNonRoot: true
+          runAsGroup: 1
           runAsUser: 1
+          seccompProfile:
+            type: RuntimeDefault
         conf:
           env:
             - name: URL_REMAP
@@ -1587,6 +1764,27 @@ units:
                   - apiGroup: rbac.authorization.k8s.io
                     kind: User
                     name: sylva-admin@example.com  # add same RBAC for the SSO user, so that when flux-webui SA impersonates it has privileges; cannot use "infra-admins" group here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/427
+              - kind: Deployment
+                apiVersion: apps/v1
+                metadata:
+                  name: flux-webui-weave-gitops
+                spec:
+                  template:
+                    spec:
+                      containers:
+                      - name: weave-gitops
+                        securityContext:
+                          allowPrivilegeEscalation: false
+                          capabilities:
+                            drop:
+                            - ALL
+                          privileged: false
+                          readOnlyRootFilesystem: true
+                          runAsNonRoot: true
+                          runAsGroup: 1000
+                          runAsUser: 1000
+                          seccompProfile:
+                            type: RuntimeDefault
 
   monitoring-crd:
     enabled_conditions:
@@ -1648,10 +1846,18 @@ units:
           kind: Job
         patch: |
           - op: add
-            path: /spec/template/spec/securityContext
+            path: /spec/template/spec/containers/0/securityContext
             value:
               runAsUser: 1000
               runAsGroup: 3000
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              privileged: false
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
       - target:
           kind: Job
         patch: |
@@ -1683,7 +1889,6 @@ units:
                   env:
                   - name: CLUSTER_NAME
                     value: '{{ .Values.cluster.test_workload_cluster_name }}'
-
 
   multus:
     enabled: false
@@ -1835,12 +2040,14 @@ units:
     helmrelease_spec:
       releaseName: longhorn
       targetNamespace: longhorn-system
+      install:
+        createNamespace: false
       chart:
         spec:
           chart: longhorn
           version: 102.2.0+up1.4.1
       values:
-        enablePSP: true
+        enablePSP: '{{ .Values.cluster.cis_profile | eq "cis-1.6" | include "preserve-type" }}'
         defaultSettings:
           createDefaultDiskLabeledNodes: true
           defaultDataPath: /var/lib/longhorn
@@ -1986,6 +2193,27 @@ units:
         downloader:
           proxy: '{{ get .Values.proxies "https_proxy" }}'
           no_proxy: '{{ include "sylva-units.no_proxy" . }}'
+          securityContext:
+            capabilities:
+              drop:
+              - ALL
+            runAsNonRoot: true
+            runAsUser: 10000
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
+        nginx:
+          securityContext:
+            capabilities:
+              drop:
+              - ALL
+            runAsNonRoot: true
+            runAsUser: 10000
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
         ingress:
           className: nginx
           hosts:
@@ -2005,7 +2233,7 @@ cluster:
   air_gapped: false
 
   # cis profile to be used. Curently supported only for rke2 clusters. "cis-1.6" for k8s prior to 1.25, "cis-1.23" for 1.25+
-  cis_profile: cis-1.6
+  cis_profile: cis-1.23
 
   # Admin password that will be configured by default on various units
   admin_password: '{{ .Values._internal.default_password }}'
@@ -2027,7 +2255,7 @@ cluster:
   cis_benchmark_scan_profile: '{{ eq .Values.cluster.capi_providers.bootstrap_provider "cabpr" | ternary "rke2-cis-1.23-profile-hardened" "no-scan-profile-defined-for-kubeadm-cluster" }}'
 
   # kubernetes version to be used
-  k8s_version: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.24.12+rke2r1" "v1.24.12" }}'
+  k8s_version: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.26.8+rke2r1" "v1.26.8" }}'
 
   # Additional IP addresses to be used by metallb and L3 configuration if needed
   # metallb_additional_options:

@@ -6,14 +6,9 @@ patches:
     kind: Keycloak
   patch: |
     - op: add
-      path: /spec/unsupported
+      path: /spec/unsupported/podTemplate/spec/containers/0/env
       value:
-        podTemplate:
-          spec:
-            containers:
-              - name: keycloak
-                env:
-                  - name: https_proxy
-                    value: ${https_proxy}
-                  - name: no_proxy
-                    value: ${no_proxy}
+        - name: https_proxy
+          value: ${https_proxy}
+        - name: no_proxy
+          value: ${no_proxy}
