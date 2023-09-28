@@ -59,7 +59,7 @@ def check_sub_schemas(schema1, schema2):
 def allow_additional_format_for_all_schema_properties(schema, format):
     """
     Brutally recursively parse all properties and patternProperties from a schema
-    to add "#/$defs/gotpl" option
+    to add "#/$defs/string-with-gotpl" option
     """
     if "properties" in schema:
         for property, property_definition in schema['properties'].items():
@@ -98,7 +98,7 @@ def merge_schemas(schema1, schema2, target_sub_schema):
     check_sub_schemas(schema1, schema2)
     # since sylva-units may use GoTPL for any value then passed to sylva-capi-cluster,
     # we need all values of sylva-capi-cluster to be GoTPL
-    schema2 = allow_additional_format_for_all_schema_properties(schema2, {"$ref": "#/$defs/gotpl"})
+    schema2 = allow_additional_format_for_all_schema_properties(schema2, {"$ref": "#/$defs/string-with-gotpl"})
     # we also need to be able to set some value to null
     schema2 = allow_additional_format_for_all_schema_properties(schema2, {"type": "null"})
     schema1['$defs'] = {**schema2['$defs'], **schema1['$defs']}

@@ -14,15 +14,17 @@ units:
     enabled: false
 
 cluster:
-  image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/rke2-in-docker:v1-24-12-rke2r1
+  capd:
+    image_name: registry.gitlab.com/sylva-projects/sylva-elements/container-images/rke2-in-docker:v1-24-12-rke2r1
   capi_providers:
     infra_provider: capd
     bootstrap_provider: cabpr
-  capd:
-    docker_host: unix:///var/run/docker.sock  # dynamically replaced in CI
 
-  cluster_external_ip: # use the .100 (or any other that wouldn't be assigned by Docker) IP from the local kind subnet, returned by: docker network inspect -f '{{json .}}' kind | jq -r .IPAM.Config[0].Subnet
   control_plane_replicas: 1
+
+capd_docker_host: unix:///var/run/docker.sock  # dynamically replaced in CI
+
+cluster_external_ip: # use the .100 (or any other that wouldn't be assigned by Docker) IP from the local kind subnet, returned by: docker network inspect -f '{{json .}}' kind | jq -r .IPAM.Config[0].Subnet
 
 proxies:
   # put your own proxy settings here if you need

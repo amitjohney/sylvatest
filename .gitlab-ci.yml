@@ -239,10 +239,10 @@ check-docs-markdown:
       EOF
         cat $ENV_PATH/kustomization.yaml
         export METALLB_HELM_OCI_URL='{{ lookup "source.toolkit.fluxcd.io/v1beta2" "HelmRepository" "default" "sylva-core" | dig "spec" "url" "oci://registry.gitlab.com/sylva-projects/sylva-core" | dir | replace "oci:/" "oci://" }}/sylva-core/metallb'
-        yq -i '.metallb_helm_oci_url = strenv(METALLB_HELM_OCI_URL)' $values_file
+        yq -i '.cluster.metallb_helm_oci_url = strenv(METALLB_HELM_OCI_URL)' $values_file
       fi
     - yq -i '.cluster.name = strenv(MANAGEMENT_CLUSTER_NAME)' $values_file
-    - yq -i '.cluster.test_workload_cluster_name = strenv(TEST_WORKLOAD_CLUSTER_NAME)' $values_file
+    - yq -i '.test_workload_cluster_name = strenv(TEST_WORKLOAD_CLUSTER_NAME)' $values_file
     - yq -i '.env_type = "ci"' $values_file
     - |
       if [ ${CUSTOM_VALUES_FILE} ]; then
@@ -261,9 +261,9 @@ check-docs-markdown:
   script_capd:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capd[collapsed=true]\r\e[0KApplying specific capd configuration\e[0m"
     - export DOCKER_HOST=tcp://$DOCKER_IP:2375
-    - yq -i '.cluster.capd.docker_host = strenv(DOCKER_HOST)' $values_file
+    - yq -i '.capd_docker_host = strenv(DOCKER_HOST)' $values_file
     - export CLUSTER_EXTERNAL_IP=$(echo $KIND_PREFIX | awk -F"." '{print $1"."$2"."$3".100"}')
-    - yq -i '.cluster.cluster_external_ip = strenv(CLUSTER_EXTERNAL_IP)' $values_file
+    - yq -i '.cluster_external_ip = strenv(CLUSTER_EXTERNAL_IP)' $values_file
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capd\r\e[0K"
   script_capo:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capo[collapsed=true]\r\e[0KApplying specific capo configuration\e[0m"
@@ -276,7 +276,7 @@ check-docs-markdown:
     # and allow to enable extra kustomize components needed in the context of the platform
     # on which this test actually runs
     - git clone --depth=1 https://foo:${CI_COMPONENT_REPO_PAT}@${CI_COMPONENT_REPO}
-    - export CI_COMPONENT="https://${CI_COMPONENT_REPO}//${CI_COMPONENT_REPO_PATH}-${ENV_NAME}?ref=2023-09-26"
+    - export CI_COMPONENT="https://${CI_COMPONENT_REPO}//${CI_COMPONENT_REPO_PATH}-${ENV_NAME}?ref=2023-09-28"
     - if [ $(yq '.components | length' environment-values/$ENV_NAME/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' environment-values/$ENV_NAME/kustomization.yaml; fi
     - yq -i '.components += strenv(CI_COMPONENT)' environment-values/$ENV_NAME/kustomization.yaml
     - yq -e '.registry_mirrors' $(basename ${CI_COMPONENT_REPO} .git)/${CI_COMPONENT_REPO_PATH}-base/values.yaml > registry_mirrors.yml

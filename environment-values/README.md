@@ -35,11 +35,11 @@ patches:
         valuesKey: values
 ```
 
-where `values.yaml` is a plain yaml file that will be merged over charts defaults, for example, it could override the default image:
+where `values.yaml` is a plain yaml file that will be merged over charts defaults, for example, it could override the number of control plane nodes:
 
 ```
 cluster:
-  image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/kind-with-cni:v1-24-4
+  control_plane_replicas: 5
 ```
 
 # Sharing configurations

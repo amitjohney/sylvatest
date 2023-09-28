@@ -39,4 +39,4 @@ When deploying management cluster in OpenStack, you can specify to which network
 
 In some cases, this virtual network (VN) will not be accessible to the bootstrap cluster (like when deploying the VMs on an isolated network behind an OpenStack router with Source NAT enabled and using a remote bootstrap machine without direct connectivity inside `cluster.capo.network_id` defined VN), so bootstrap cluster is not able to reach the Kubernetes API to confirm that node is ready.
 
-You can specify `cluster.capo.external_network_id` to create a floating IP. This floating IP will be used by default to access to cluster API and allows the bootstrap cluster to access management cluster API as well.
+You can specify `openstack.external_network_id` to create a floating IP. This floating IP will be used by default to access to cluster API and allows the bootstrap cluster to access management cluster API as well.

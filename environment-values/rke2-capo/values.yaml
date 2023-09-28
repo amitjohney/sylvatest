@@ -1,15 +1,6 @@
 ---
 
 units:
-  cluster:
-    helmrelease_spec:
-      values:
-        machine_deployments:
-          md0:
-            infra_provider: capo
-            replicas: 1
-            capo:
-              failure_domain: region0
   workload-cluster:
     helmrelease_spec:
       values:
@@ -19,22 +10,32 @@ units:
               values:
                 machine_deployments:
                   md0:
-                    infra_provider: capo
+                    replicas: 1
                     capo:
                       failure_domain: region0
 
 cluster:
-  image: "Ubuntu 20.04 Pack" # image name provided by falcon-rke2 remote target unit, but can be overwritten
+
   capi_providers:
     infra_provider: capo
     bootstrap_provider: cabpr
+
   capo:
+    image_name: "Ubuntu 20.04 Pack" # image name provided by falcon-rke2 remote target unit, but can be overwritten
     ssh_key_name: # put the name of your nova SSH keypair here
     network_id: # network id is provided by falcon-rke2 remote target unit if Kustomize remote target is used, but can be overwritten
     ## If cinder CSI is used, provide a name for the storage class and the storage type from OpenStack
-    storageClass:
-      name: "cinder-ceph-ssd"
-      type: "ceph_ssd"
+
+  machine_deployments:
+    md0:
+      replicas: 1
+      capo:
+        failure_domain: region0
+
+openstack:
+  storageClass:
+    name: "cinder-ceph-ssd"
+    type: "ceph_ssd"
 
 proxies:
   # put your own proxy settings here if you need

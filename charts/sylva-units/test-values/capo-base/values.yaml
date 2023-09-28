@@ -18,6 +18,8 @@ cluster:
             user_domain_name: foo
             project_domain_name: foo
           region_name: RegionOne
-    storageClass:
-      type: my-cinder-volume-type
+
+openstack:
+  storageClass:
+    type: my-cinder-volume-type
 
