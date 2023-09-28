@@ -1219,11 +1219,6 @@ units:
             value:
               runAsUser: 1000
               runAsGroup: 3000
-              allowPrivilegeEscalation: false
-              capabilities:
-                drop:
-                  - ALL
-              privileged: false
               runAsNonRoot: true
               seccompProfile: {{ .Values._internal.conditional_seccomp | toYaml | nindent 6 }}
       - target:
@@ -1272,11 +1267,6 @@ units:
             value:
               runAsUser: 1000
               runAsGroup: 3000
-              allowPrivilegeEscalation: false
-              capabilities:
-                drop:
-                  - ALL
-              privileged: false
               runAsNonRoot: true
               seccompProfile: {{ .Values._internal.conditional_seccomp | toYaml | nindent 6 }} 
       - target:
