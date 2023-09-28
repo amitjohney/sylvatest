@@ -698,6 +698,18 @@ units:
       path: ./kustomize-units/rancher-monitoring-clusterid-inject
       wait: true
 
+  shared-workload-clusters-settings:
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/shared-workload-clusters-settings
+      wait: true
+      targetNamespace: default
+      postBuild:
+        substitute:
+          CM_VALUES: '{{ index (tuple . .Values.shared_workload_clusters_values | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | b64enc }}'
+    kustomization_substitute_secrets:
+      SECRET_VALUES: '{{ index (tuple . .Values.shared_workload_clusters_secret_values | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | b64enc }}'
+
   capi:
     repo: sylva-core
     depends_on:
@@ -2257,3 +2269,14 @@ _internal:
       uri: "{{ .Values.sylva_base_oci_registry }}/sylva-elements/diskimage-builder/diskimage-builder-plain:0.0.7"
       filename: ubuntu-22.04-plain.qcow2
       checksum: 56a6363f25a5491aa955e4dda6fae17faa10c5e0850d01fe2a10c996c7830971
+
+shared_workload_clusters_values:
+  cluster:
+    capo:
+      image: '{{ .Values.cluster.image }}'
+      network_id: '{{ .Values.cluster.capo.network_id | default "" }}'
+
+shared_workload_clusters_secret_values:
+  cluster:
+    capo:
+      clouds_yaml: '{{ .Values.cluster.capo.clouds_yaml | toYaml }}'

@@ -1022,3 +1022,9 @@ properties:
 
   _internal:
     type: object
+
+  shared_workload_clusters_values:
+    type: object
+
+  shared_workload_clusters_secret_values:
+    type: object
