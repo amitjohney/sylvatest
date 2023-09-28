@@ -569,7 +569,7 @@ units:
         - patch: |
             - op: add
               path: /spec/unsupported/podTemplate/spec/containers/0/securityContext
-              value: {{ .Values._internal.conditional_seccomp_keycloak | toYaml | nindent 6 }} 
+              value: {{ .Values._internal.conditional_seccomp_keycloak | toYaml | nindent 4 }} 
                 allowPrivilegeEscalation: false
                 capabilities:
                   drop:
