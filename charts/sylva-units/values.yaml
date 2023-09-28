@@ -562,7 +562,7 @@ units:
                 runAsNonRoot: true
                 runAsGroup: 1000
                 runAsUser: 1000
-                seccompProfile: {{ .Values._internal.conditional_seccomp | toYaml | nindent 6}}
+                seccompProfile: {{ .Values._internal.conditional_seccomp | toYaml | nindent 6 }}
           target:
             kind: Deployment
             name: keycloak-operator
@@ -578,7 +578,7 @@ units:
                 runAsNonRoot: true
                 runAsGroup: 1000
                 runAsUser: 1000
-                seccompProfile: {{ .Values._internal.conditional_seccomp | toYaml | nindent 6 }}
+                seccompProfile: {{ .Values._internal.conditional_seccomp_dict | toYaml | nindent 6 }} 
           target:
             kind: Keycloak
             name: keycloak
@@ -2463,3 +2463,4 @@ _internal:
       checksum: 56a6363f25a5491aa955e4dda6fae17faa10c5e0850d01fe2a10c996c7830971
 
   conditional_seccomp: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary nil (dict "type" "RuntimeDefault") | include "preserve-type" }}'
+  conditional_seccomp_dict: '{{ (eq .Values.cluster.cis_profile "cis-1.6") | ternary (dict) (dict "type" "RuntimeDefault") | include "preserve-type" }}'
