@@ -1,40 +1,36 @@
 ---
 
 units:
-  cluster:
-    helmrelease_spec:
-      values:
-        machine_deployments:
-          md0:
-            infra_provider: capo
-            replicas: 1
-            capo:
-              failure_domain: region0
+
   workload-cluster:
     helmrelease_spec:
       values:
-        units:
-          cluster:
-            helmrelease_spec:
-              values:
-                machine_deployments:
-                  md0:
-                    infra_provider: capo
-                    capo:
-                      failure_domain: region0
+        cluster:
+          machine_deployments:
+            md0:
+              replicas: 1
+              capo:
+                failure_domain: region0
 
 cluster:
-  image: capo-ubuntu-2004-kube-v1.23.6-calico-3.23.1
   capi_providers:
     infra_provider: capo
     bootstrap_provider: cabpk
   capo:
+    image_name: capo-ubuntu-2004-kube-v1.23.6-calico-3.23.1
     ssh_key_name: # put the name of your nova SSH keypair here
     network_id: c314d52c-80fe-42b6-9092-55be383d1951
-    ## If cinder CSI is used, provide a name for the storage class and the storage type from OpenStack
-    storageClass:
-      name: "cinder-ceph-ssd"
-      type: "ceph_ssd"
+
+  machine_deployments:
+    md0:
+      replicas: 1
+      capo:
+        failure_domain: region0
+
+openstack:
+  storageClass:
+    name: "cinder-ceph-ssd"
+    type: "ceph_ssd"
 
 proxies:
   # put your own proxy settings here if you need

@@ -322,15 +322,15 @@ units:
       '{{ .Values._internal.default_storage_class_unit }}': true
       vault-operator: true
     annotations:
-      sylvactl/readyMessage: "Vault UI can be reached at https://{{ .Values.cluster.vault.external_hostname }} ({{ .Values.cluster.vault.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
+      sylvactl/readyMessage: "Vault UI can be reached at https://{{ .Values.vault.external_hostname }} ({{ .Values.vault.external_hostname }} must resolve to {{ .Values.display_external_ip }})"
     repo: sylva-core
     kustomization_substitute_secrets:
-      ADMIN_PASSWORD: '{{ .Values.cluster.admin_password }}'
+      ADMIN_PASSWORD: '{{ .Values.admin_password }}'
     kustomization_spec:
       path: ./kustomize-units/vault
       postBuild:
         substitute:
-          VAULT_DNS: '{{ .Values.cluster.vault.external_hostname }}'
+          VAULT_DNS: '{{ .Values.vault.external_hostname }}'
           VAULT_REPLICAS: '{{ .Values._internal.vault_replicas }}'
           MAX_POD_UNAVAILABLE: '{{ int .Values._internal.vault_replicas | eq 1 | ternary 0 1 }}'
       healthChecks:  # sometimes this kustomization seems correctly applied while vault pod is not running, see https://gitlab.com/sylva-projects/sylva-core/-/issues/250
@@ -399,8 +399,8 @@ units:
       wait: true
       postBuild:
         substitute:
-          VAULT_DNS: '{{ .Values.cluster.vault.external_hostname }}'
-          KEYCLOAK_DNS: '{{ .Values.cluster.keycloak.external_hostname }}'
+          VAULT_DNS: '{{ .Values.vault.external_hostname }}'
+          KEYCLOAK_DNS: '{{ .Values.keycloak.external_hostname }}'
 
   external-secrets-operator:
     helm_repo_url: https://charts.external-secrets.io
@@ -476,7 +476,7 @@ units:
       wait: false
       postBuild:
         substitute:
-          SCAN_PROFILE: '{{ .Values.cluster.cis_benchmark_scan_profile }}'
+          SCAN_PROFILE: '{{ .Values.cis_benchmark_scan_profile }}'
 
   keycloak:
     depends_on:
@@ -486,14 +486,14 @@ units:
       postgres: true
       synchronize-secrets: true # make sure that the secret keycloak-initial-admin is ready to be consummed
     annotations:
-      sylvactl/readyMessage: "Keycloak admin console can be reached at https://{{ .Values.cluster.keycloak.external_hostname }}/admin/master/console, user 'admin', password in Vault at secret/keycloak ({{ .Values.cluster.keycloak.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
+      sylvactl/readyMessage: "Keycloak admin console can be reached at https://{{ .Values.keycloak.external_hostname }}/admin/master/console, user 'admin', password in Vault at secret/keycloak ({{ .Values.keycloak.external_hostname }} must resolve to {{ .Values.display_external_ip }})"
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/keycloak
       targetNamespace: keycloak
       postBuild:
         substitute:
-          KEYCLOAK_DNS: '{{ .Values.cluster.keycloak.external_hostname }}'
+          KEYCLOAK_DNS: '{{ .Values.keycloak.external_hostname }}'
         substituteFrom:
         - kind: ConfigMap
           name: proxy-env-vars
@@ -542,15 +542,15 @@ units:
       keycloak-legacy-operator: true
     repo: sylva-core
     kustomization_substitute_secrets:
-      SSO_PASSWORD: '{{ .Values.cluster.admin_password }}'
+      SSO_PASSWORD: '{{ .Values.admin_password }}'
     kustomization_spec:
       path: ./kustomize-units/keycloak-resources
       targetNamespace: keycloak
       postBuild:
         substitute:
-          RANCHER_DNS: '{{ .Values.cluster.rancher.external_hostname }}'
-          FLUX_WEBUI_DNS: '{{ .Values.cluster.flux.external_hostname }}'
-          VAULT_DNS: '{{ .Values.cluster.vault.external_hostname }}'
+          RANCHER_DNS: '{{ .Values.rancher.external_hostname }}'
+          FLUX_WEBUI_DNS: '{{ .Values.flux.external_hostname }}'
+          VAULT_DNS: '{{ .Values.vault.external_hostname }}'
       healthChecks:  #  cannot use __wait: true__ here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/144
         - apiVersion: legacy.k8s.keycloak.org/v1alpha1
           kind: KeycloakRealm
@@ -622,8 +622,8 @@ units:
       path: ./kustomize-units/keycloak-oidc-external-secrets
       postBuild:
         substitute:
-          KEYCLOAK_DNS: '{{ .Values.cluster.keycloak.external_hostname }}'
-          FLUX_WEBUI_DNS: '{{ .Values.cluster.flux.external_hostname }}'
+          KEYCLOAK_DNS: '{{ .Values.keycloak.external_hostname }}'
+          FLUX_WEBUI_DNS: '{{ .Values.flux.external_hostname }}'
       wait: false
       healthChecks:
         - apiVersion: v1
@@ -726,7 +726,7 @@ units:
       path: '{{ ternary "./kustomize-units/capd/base" "./kustomize-units/capd/rke2" (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") }}'
       postBuild:
         substitute:
-          CAPD_DOCKER_HOST: '{{ .Values.cluster.capd.docker_host }}'
+          CAPD_DOCKER_HOST: '{{ .Values.capd_docker_host }}'
       wait: true
 
   capo:
@@ -836,7 +836,7 @@ units:
         services:
           ironic:
             # Specify the IP address used by Ironic service
-            ironicIP: '{{ .Values.cluster.cluster_external_ip }}'
+            ironicIP: '{{ .Values.cluster_external_ip }}'
             # We allow shared IPs because we are exposing (by design) a single cluster external IP
             annotations:
               metallb.universe.tf/allow-shared-ip: cluster-external-ip
@@ -953,69 +953,6 @@ units:
       chart:
         spec:
           chart: .
-      values:
-        name: '{{ .Values.cluster.name }}'
-        air_gapped: '{{ .Values.cluster.air_gapped  | include "preserve-type" }}'
-        cis_profile: '{{ .Values.cluster.cis_profile }}'
-        capi_providers: '{{ .Values.cluster.capi_providers | include "preserve-type" }}'
-        k8s_version: '{{ .Values.cluster.k8s_version }}'
-        control_plane_replicas: '{{ .Values.cluster.control_plane_replicas | include "preserve-type" }}'
-        cluster_external_ip: '{{ tuple .Values.cluster.cluster_external_ip (not (eq .Values.cluster.capi_providers.infra_provider "capo")) | include "set-only-if" }}'
-        cluster_public_ip: '{{ tuple (.Values.cluster.capo.floating_ip) (not (eq .Values.cluster.capo.floating_ip "")) | include "set-only-if" }}'
-        cluster_services_cidrs:
-          - 10.43.0.0/16
-        cluster_pods_cidrs:
-          - 10.42.0.0/16
-        capd:
-          image_name: '{{ .Values.cluster.image }}'
-        capo:
-          image_name: '{{ .Values.cluster.image }}'
-          flavor_name: '{{ .Values.cluster.capo.flavor_name }}'
-          rootVolume: '{{ .Values.cluster.capo.rootVolume | include "preserve-type" }}'
-          ssh_key_name: '{{ .Values.cluster.capo.ssh_key_name }}'
-          network_id: '{{ .Values.cluster.capo.network_id }}'
-          control_plane_security_group_name: "capo-{{ .Values.cluster.name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}"
-          worker_security_group_name: "capo-{{ .Values.cluster.name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}"
-          control_plane_az: '{{ tuple (.Values.cluster | dig "capo" "control_plane_az" list | include "preserve-type") (.Values.cluster | dig "capo" "control_plane_az" nil) | include "set-only-if" }}'
-          #cacert: # cert used to validate CA of OpenStack APIs
-          resources_tag: '{{ .Values.cluster.capo.resources_tag }}'
-        capv:
-          dataCenter: '{{ .Values.cluster.capv.dataCenter }}'
-          image_name: '{{ .Values.cluster.image }}'
-          numCPUs: 2
-          memoryMiB: 8192
-          diskGiB: 25
-          networks:
-            default:
-              networkName: '{{ .Values.cluster.capv.network }}'
-          server: '{{ .Values.cluster.capv.server }}'
-          dataStore: '{{ .Values.cluster.capv.dataStore }}'
-          tlsThumbprint: '{{ .Values.cluster.capv.tlsThumbprint }}'
-          ssh_key: '{{ .Values.cluster.capv.ssh_key }}'
-          folder: '{{ .Values.cluster.capv.folder }}'
-          resourcePool: '{{ .Values.cluster.capv.resourcePool }}'
-          storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
-          storageClass:
-            storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
-            fsType: ext4
-        machine_deployment_default:
-          metadata:
-            labels:
-              created-by/authors: Project-Sylva
-            annotations:
-              repo: "https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster"
-          network_interfaces: {}
-          capo:
-            image_name: '{{ .Values.cluster.worker_machine_image | default .Values.cluster.image }}'
-          capv:
-            image_name: '{{ .Values.cluster.worker_machine_image | default .Values.cluster.image }}'
-        dns_resolver: false
-        ntp: '{{ .Values.ntp | include "preserve-type" }}'
-        proxies: '{{ .Values.proxies | include "preserve-type" }}'
-        registry_mirrors: '{{ .Values.registry_mirrors | include "preserve-type" }}'
-        metallb_helm_oci_url: '{{ .Values.metallb_helm_oci_url | include "preserve-type" }}'
-        metallb_helm_version: '{{ .Values.units.metallb.helmrelease_spec.chart.spec.version }}'
-        enable_longhorn: '{{ tuple . "longhorn" | include "unit-enabled" | include "as-bool" }}'
       valuesFrom:
         - kind: ConfigMap
           name: capo-cluster-resources
@@ -1036,13 +973,10 @@ units:
           name: capo-cluster-resources
           valuesKey: worker_servergroup_id
           targetPath: capo.worker_servergroup_id
-          optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
-    helm_secret_values:
-      capo:
-        clouds_yaml: '{{ .Values.cluster | dig "capo" "clouds_yaml" dict | include "preserve-type" }}'  # for CAPO and cinder-csi
-      capv:
-        username: '{{ .Values.cluster.capv.username }}'
-        password: '{{ .Values.cluster.capv.password }}'
+          optional: true
+    # we pass everything that is under `cluster` to this unit that uses sylva-capi-cluster chart
+    # (we do it via a secret because some of the values are credentials in many scenarios)
+    helm_secret_values: '{{ .Values.cluster | include "preserve-type" }}'
 
   heat-operator:
     enabled_conditions:
@@ -1069,9 +1003,9 @@ units:
           STACK_NAME_PREFIX: 'management-cluster-{{ tuple . .Values.cluster.capo.resources_tag | include "interpret-as-string" | replace "." "-" }}'
           CAPO_TAG: '{{ .Values.cluster.capo.resources_tag }}'
           CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
-          CONTROL_PLANE_AFFINITY_POLICY: '{{ .Values.cluster.capo.control_plane_affinity_policy }}'
-          WORKER_AFFINITY_POLICY: '{{ .Values.cluster.capo.worker_affinity_policy }}'
-          CAPO_EXTERNAL_NETWORK_ID: '{{ tuple .Values.cluster.capo.external_network_id .Values.cluster.capo.external_network_id | include "set-only-if" }}'
+          CONTROL_PLANE_AFFINITY_POLICY: '{{ .Values.openstack.control_plane_affinity_policy }}'
+          WORKER_AFFINITY_POLICY: '{{ .Values.openstack.worker_affinity_policy }}'
+          CAPO_EXTERNAL_NETWORK_ID: '{{ tuple .Values.openstack.external_network_id .Values.openstack.external_network_id | include "set-only-if" }}'
           CONTROL_PLANE_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}'
           WORKER_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}'
           CAPO_CREATE_IRONIC_SECURITY_GROUP: '{{ tuple . (and (.Values.units.metal3.enabled | default false) (.Values.cluster.capi_providers.infra_provider | eq "capo")) "true" "false" | include "interpret-ternary" }}'
@@ -1277,7 +1211,7 @@ units:
             apiVersion: storage.k8s.io/v1
             kind: StorageClass
             metadata:
-              name: "{{ .Values.cluster.capo.storageClass.name }}"
+              name: "{{ .Values.openstack.storageClass.name }}"
               annotations:
                 storageclass.kubernetes.io/is-default-class: "true"
             provisioner: cinder.csi.openstack.org
@@ -1285,7 +1219,7 @@ units:
             reclaimPolicy: Delete
             allowVolumeExpansion: true
             parameters:
-              type: "{{ .Values.cluster.capo.storageClass.type }}"
+              type: "{{ .Values.openstack.storageClass.type }}"
     helm_secret_values:
       secret:
         enabled: "true"
@@ -1314,10 +1248,10 @@ units:
       path: ./kustomize-units/sylva-ca-certs
       postBuild:
         substitute:
-          RANCHER_DNS: '{{ .Values.cluster.rancher.external_hostname }}'
-          VAULT_DNS: '{{ .Values.cluster.vault.external_hostname }}'
-          KEYCLOAK_DNS: '{{ .Values.cluster.keycloak.external_hostname }}'
-          FLUX_WEBUI_DNS: '{{ .Values.cluster.flux.external_hostname }}'
+          RANCHER_DNS: '{{ .Values.rancher.external_hostname }}'
+          VAULT_DNS: '{{ .Values.vault.external_hostname }}'
+          KEYCLOAK_DNS: '{{ .Values.keycloak.external_hostname }}'
+          FLUX_WEBUI_DNS: '{{ .Values.flux.external_hostname }}'
       wait: true
 
   synchronize-secrets:
@@ -1330,7 +1264,7 @@ units:
       wait: true
       postBuild:
         substitute:
-          FLUX_ADMIN_USERNAME: '{{ .Values.cluster.flux_webui.admin_user }}'
+          FLUX_ADMIN_USERNAME: '{{ .Values.flux_webui.admin_user }}'
 
   rancher:
     depends_on:
@@ -1340,7 +1274,7 @@ units:
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
       synchronize-secrets: true
     annotations:
-      sylvactl/readyMessage: "Rancher UI can be reached at https://{{ .Values.cluster.rancher.external_hostname }} ({{ .Values.cluster.rancher.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
+      sylvactl/readyMessage: "Rancher UI can be reached at https://{{ .Values.rancher.external_hostname }} ({{ .Values.rancher.external_hostname }} must resolve to {{ .Values.display_external_ip }})"
     helm_repo_url: https://releases.rancher.com/server-charts/latest
     helmrelease_spec:
       chart:
@@ -1355,7 +1289,7 @@ units:
       values:
         privateCA: true
         useBundledSystemChart: true
-        hostname: '{{ .Values.cluster.rancher.external_hostname }}'
+        hostname: '{{ .Values.rancher.external_hostname }}'
         ingress:
           enabled: true
           ingressClassName: nginx
@@ -1436,8 +1370,8 @@ units:
       path: ./kustomize-units/rancher-keycloak-oidc-provider
       postBuild:
         substitute:
-          KEYCLOAK_EXTERNAL_URL: '{{ .Values.cluster.keycloak.external_hostname }}'
-          RANCHER_EXTERNAL_URL: '{{ .Values.cluster.rancher.external_hostname }}'
+          KEYCLOAK_EXTERNAL_URL: '{{ .Values.keycloak.external_hostname }}'
+          RANCHER_EXTERNAL_URL: '{{ .Values.rancher.external_hostname }}'
       wait: true
 
   k8s-gateway:
@@ -1454,10 +1388,10 @@ units:
         createNamespace: true
       interval: 1m0s
       values:
-        domain: '{{ .Values.cluster.cluster_external_domain }}'
+        domain: '{{ .Values.cluster_external_domain }}'
         replicaCount: 3
         service:
-          loadBalancerIP: '{{ .Values.cluster.cluster_external_ip }}'
+          loadBalancerIP: '{{ .Values.cluster_external_ip }}'
           annotations:
             metallb.universe.tf/allow-shared-ip: cluster-external-ip
 
@@ -1473,7 +1407,7 @@ units:
       wait: true
       postBuild:
         substitute:
-          CLUSTER_EXTERNAL_IP: '{{ .Values.cluster.cluster_external_ip }}'
+          CLUSTER_EXTERNAL_IP: '{{ .Values.cluster_external_ip }}'
 
   capi-rancher-import:
     enabled_conditions:
@@ -1496,7 +1430,7 @@ units:
         conf:
           env:
             - name: URL_REMAP
-              value: "https://{{ .Values.cluster.rancher.external_hostname }}/ https://rancher.cattle-system.svc.cluster.local/"
+              value: "https://{{ .Values.rancher.external_hostname }}/ https://rancher.cattle-system.svc.cluster.local/"
             - name: REQUESTS_SSL_VERIFY
               value: "no"
           cattle_agent_kustomize_source_ref:
@@ -1530,7 +1464,7 @@ units:
             enabled: true
             #####################################################################################################################################
             externalIPs:
-            - '{{ .Values.cluster.cluster_external_ip }}'
+            - '{{ .Values.cluster_external_ip }}'
             annotations:
               metallb.universe.tf/allow-shared-ip: cluster-external-ip
           publishService:
@@ -1552,7 +1486,7 @@ units:
       path: ./kustomize-units/first-login-rancher
       postBuild:
         substitute:
-          RANCHER_EXTERNAL_URL: '{{ .Values.cluster.rancher.external_hostname }}'
+          RANCHER_EXTERNAL_URL: '{{ .Values.rancher.external_hostname }}'
           CURRENT_TIME: '{{ now | date "2006-01-02T15:04:05.999Z" }}'
       wait: true
 
@@ -1563,7 +1497,7 @@ units:
       keycloak-add-client-scope: true
       keycloak-oidc-external-secrets: true
     annotations:
-      sylvactl/readyMessage: "Flux Web UI can be reached at https://{{ .Values.cluster.flux.external_hostname }} ({{ .Values.cluster.flux.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})"
+      sylvactl/readyMessage: "Flux Web UI can be reached at https://{{ .Values.flux.external_hostname }} ({{ .Values.flux.external_hostname }} must resolve to {{ .Values.display_external_ip }})"
     repo: weave-gitops
     helm_chart_artifact_name: weave-gitops
     helmrelease_spec:
@@ -1587,7 +1521,7 @@ units:
         installCRDs: true
         adminUser:
           create: true
-          username: '{{ .Values.cluster.flux_webui.admin_user }}'
+          username: '{{ .Values.flux_webui.admin_user }}'
           createSecret: false
         rbac:
           impersonationResourceNames: ["admin", "sylva-admin@example.com"] # the Keycloak username set in unit keycloak-resources; cannot use "infra-admins" group here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/427
@@ -1599,14 +1533,14 @@ units:
           enabled: true
           className: nginx
           hosts:
-            - host: '{{ .Values.cluster.flux.external_hostname }}'
+            - host: '{{ .Values.flux.external_hostname }}'
               paths:
                 - path: /   # setting this to another value like '/flux-webui' does not work (URLs coming back from flux webui aren't rewritten by nginx)
                   pathType: Prefix
           tls:
             - secretName: flux-webui-tls
               hosts:
-                - '{{ .Values.cluster.flux.external_hostname }}'
+                - '{{ .Values.flux.external_hostname }}'
         extraVolumes:
           - name: custom-ca-cert
             secret:
@@ -1639,11 +1573,11 @@ units:
               - kind: ClusterRoleBinding
                 apiVersion: rbac.authorization.k8s.io/v1
                 metadata:
-                  name: '{{ .Values.cluster.flux_webui.admin_user }}-user-read-resources-cr'
+                  name: '{{ .Values.flux_webui.admin_user }}-user-read-resources-cr'
                 subjects:
                   - apiGroup: rbac.authorization.k8s.io
                     kind: User
-                    name: '{{ .Values.cluster.flux_webui.admin_user }}'
+                    name: '{{ .Values.flux_webui.admin_user }}'
                   - apiGroup: rbac.authorization.k8s.io
                     kind: User
                     name: sylva-admin@example.com  # add same RBAC for the SSO user, so that when flux-webui SA impersonates it has privileges; cannot use "infra-admins" group here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/427
@@ -1742,7 +1676,7 @@ units:
                 - name: run-script
                   env:
                   - name: CLUSTER_NAME
-                    value: '{{ .Values.cluster.test_workload_cluster_name }}'
+                    value: '{{ .Values.test_workload_cluster_name }}'
 
 
   multus:
@@ -1853,7 +1787,7 @@ units:
           chart: .
       targetNamespace: cattle-sriov-system
       values:
-        node_policies: '{{ .Values.cluster.sriov.node_policies | include "preserve-type" }}'
+        node_policies: '{{ .Values.sriov.node_policies | include "preserve-type" }}'
 
   coredns:
     repo: sylva-core
@@ -1870,8 +1804,8 @@ units:
               value: '{{ (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | ternary "coredns" "rke2-coredns-rke2-coredns" }}'
       postBuild:
         substitute:
-          CLUSTER_EXTERNAL_IP: '{{ .Values.cluster.cluster_external_ip }}'
-          CLUSTER_EXTERNAL_DOMAIN: '{{ .Values.cluster.cluster_external_domain }}'
+          CLUSTER_EXTERNAL_IP: '{{ .Values.cluster_external_ip }}'
+          CLUSTER_EXTERNAL_DOMAIN: '{{ .Values.cluster_external_domain }}'
 
   longhorn-crd:
     enabled_conditions:
@@ -1941,24 +1875,26 @@ units:
             existing_source: '{{ deepCopy .Values._internal.sylva_core_existing_source | merge (dict "namespace" .Release.Namespace) | include "preserve-type" }}'
 
         cluster:
-          name: '{{ .Values.cluster.test_workload_cluster_name }}'
-          image: '{{ .Values.cluster.image }}'
-          worker_machine_image: '{{ .Values.cluster.worker_machine_image }}'
+          name: '{{ .Values.test_workload_cluster_name }}'
+          control_plane_replicas: 1
           capi_providers:
             infra_provider: '{{ .Values.cluster.capi_providers.infra_provider }}'
             bootstrap_provider: '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
           k8s_version: '{{ .Values.cluster.k8s_version }}'
           cis_profile: '{{ .Values.cluster.cis_profile }}'
           capo:
+            image_name: '{{ .Values.cluster.capo.image_name }}'
+            flavor_name: '{{ .Values.cluster.capo.flavor_name }}'
             ssh_key_name: '{{ .Values.cluster.capo.ssh_key_name }}'
             resources_tag: '{{ tuple . (.Values.cluster | dig "capo" "resources_tag" "") | include "interpret-as-string" }}'
-            storageClass: '{{ .Values.cluster | dig "capo" "storageClass" dict | include "preserve-type" }}'
             network_id: '{{ .Values.cluster.capo.network_id | default "" }}'
-            flavor_name: '{{ .Values.cluster.capo.flavor_name | default "" }}'
-            worker_flavor_name: '{{ .Values.cluster.capo.worker_flavor_name | default "" }}'
             control_plane_az: '{{ tuple (.Values.cluster | dig "capo" "control_plane_az" list | include "preserve-type") (.Values.cluster | dig "capo" "control_plane_az" nil) | include "set-only-if" }}'
             rootVolume: '{{ .Values.cluster.capo.rootVolume | include "preserve-type" }}'
           capv:
+            image_name: '{{ .Values.cluster.capv.image_name }}'
+            diskGiB: '{{ .Values.cluster.capv.diskGiB }}'
+            memoryMiB: '{{ .Values.cluster.capv.memoryMiB }}'
+            numCPUs: '{{ .Values.cluster.capv.numCPUs }}'
             dataCenter: '{{ .Values.cluster.capv.dataCenter }}'
             network: '{{ .Values.cluster.capv.network }}'
             server: '{{ .Values.cluster.capv.server }}'
@@ -1968,26 +1904,23 @@ units:
             folder: '{{ .Values.cluster.capv.folder }}'
             resourcePool: '{{ .Values.cluster.capv.resourcePool }}'
             storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
-          cluster_external_domain: '{{ .Values.cluster.cluster_external_domain }}'
+
           air_gapped: '{{ .Values.cluster.air_gapped | include "preserve-type" }}'
 
-        metallb_helm_oci_url: '{{ .Values.metallb_helm_oci_url | include "preserve-type" }}'
+          mgmt_cluster_external_domain: '{{ .Values.cluster_external_domain }}'
+          mgmt_cluster_external_ip: '{{ .Values.cluster_external_ip }}'
+          dns_resolver: true
+
+          metallb_helm_oci_url: '{{ .Values.cluster.metallb_helm_oci_url }}'
+
+        cluster_external_domain: '{{ .Values.cluster_external_domain }}'
+
+        openstack: '{{ .Values.openstack | default dict | include "preserve-type" }}'
 
         units:
 
           cluster-import:
             enabled: '{{ tuple . "rancher" | include "unit-enabled" }}'
-
-          cluster:
-            helmrelease_spec:
-              values:
-                control_plane_replicas: 1
-                capo:
-                  control_plane_security_group_name: "capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}"
-                  worker_security_group_name: "capo-{{ .Values.cluster.test_workload_cluster_name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}"
-                mgmt_cluster_external_domain: '{{ .Values.cluster.cluster_external_domain }}'
-                mgmt_cluster_external_ip: '{{ .Values.cluster.cluster_external_ip }}'
-                dns_resolver: true
 
           #multus:   ## can be overriden via environment values
           #  enabled: true
@@ -2027,12 +1960,12 @@ units:
     annotations:
       sylvactl/readyMessage: |
         OS images are served at:
-        {{- $osImageFqdn := (coalesce .Values.cluster.os_image_server.external_hostname .Values.cluster.display_external_ip) -}}
+        {{- $osImageFqdn := (coalesce .Values.os_image_server.external_hostname .Values.display_external_ip) -}}
         {{- range $imageName, $imageParams := (coalesce .Values.cluster.os_images .Values._internal.default_os_images) }}
           * https://{{ $osImageFqdn }}/{{ $imageParams.filename }}(.sha256sum)
         {{- end }}
-        {{- if not (eq $osImageFqdn .Values.cluster.display_external_ip)}}
-        ({{ .Values.cluster.os_image_server.external_hostname }} must resolve to {{ .Values.cluster.display_external_ip }})
+        {{- if not (eq $osImageFqdn .Values.display_external_ip)}}
+        ({{ .Values.os_image_server.external_hostname }} must resolve to {{ .Values.display_external_ip }})
         {{- end }}
     helmrelease_spec:
       chart:
@@ -2049,14 +1982,16 @@ units:
         ingress:
           className: nginx
           hosts:
-            - host: '{{ .Values.cluster.os_image_server.external_hostname }}'
-        osImages: '{{ coalesce .Values.cluster.os_images .Values._internal.default_os_images | include "preserve-type" }}'
+            - host: '{{ .Values.os_image_server.external_hostname }}'
+        osImages: '{{ coalesce .Values.os_images .Values._internal.default_os_images | include "preserve-type" }}'
         osImagePersistenceDefaults:
           enabled: true
           size: 1Gi
           storageClass: '{{ .Values._internal.default_storage_class }}'
 
-## stuff related to the 'cluster' unit
+##### stuff related to the 'cluster' unit #####
+#
+# all these values under 'cluster' are passed as values to sylva-capi-cluster chart
 
 cluster:
   name: management-cluster
@@ -2067,14 +2002,6 @@ cluster:
   # cis profile to be used. Curently supported only for rke2 clusters. "cis-1.6" for k8s prior to 1.25, "cis-1.23" for 1.25+
   cis_profile: cis-1.6
 
-  # Admin password that will be configured by default on various units
-  admin_password: '{{ .Values._internal.default_password }}'
-
-  # image reference depends provider, used for control plane nodes
-  image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/rke2-in-docker:v1-24-12-rke2r1
-
-  # worker_machine_image: "Ubuntu 20.04 Pack"         # Openstack image for worker nodes
-
   # for now, the choice below needs to be made
   # consistently with the choice of a matching kustomization path
   # for the 'cluster' unit
@@ -2082,9 +2009,6 @@ cluster:
   capi_providers:
     infra_provider: capd      # capd, capo, capm3 or capv
     bootstrap_provider: cabpk # cabpr (RKE2) or cabpk (kubeadm)
-
-  # cis benchmark is only for rke2 so far, e.g. rke2-cis-1.23-profile-hardened
-  cis_benchmark_scan_profile: '{{ eq .Values.cluster.capi_providers.bootstrap_provider "cabpr" | ternary "rke2-cis-1.23-profile-hardened" "no-scan-profile-defined-for-kubeadm-cluster" }}'
 
   # kubernetes version to be used
   k8s_version: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.24.12+rke2r1" "v1.24.12" }}'
@@ -2106,22 +2030,20 @@ cluster:
   #         - 55.55.55.55/33
   #         - 10.10.10.10-255.10.10.12
 
-  # Nodes number for controlplane and workers
+  # Nodes number for control-plane
   control_plane_replicas: 3
 
   capo:
     flavor_name: m1.large # Openstack flavor name
-    worker_flavor_name: m1.large
+    image_name: # OpenStack image name
     ssh_key_name: # OpenStack VM SSH key
     network_id:  # OpenStack network used for nodes and VIP port
-    #external_network_id # Can be provided if a FIP is needed in order to reach the management cluster VIP
-    floating_ip: ""
     rootVolume: {} # Let this parameter empty if you don't intent to use root volume
     # otherwise, provide following values
     # diskSize: 20 # Size of the VMs root disk
     # volumeType: '__DEFAULT__' # Type of volume to be created
-    control_plane_affinity_policy: soft-anti-affinity
-    worker_affinity_policy: soft-anti-affinity
+    control_plane_security_group_name: "capo-{{ .Values.cluster.name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}"
+    worker_security_group_name: "capo-{{ .Values.cluster.name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}"
     #control_plane_az: # list of OpenStack availability zones to deploy control planes nodes to, otherwise all would be candidates
     clouds_yaml: # (this is a dict, not a YAML string)
       clouds:
@@ -2136,19 +2058,28 @@ cluster:
           region_name: # replace me
           verify: # e.g. false
     #cacert: # cert used to validate CA of OpenStack APIs
-    storageClass:
-      name: cinder-csi  # name of the storageClass to be created
-      #type: xxx  # please provide the cinder volume type, e.g. 'ceph_sas' (must exist in OpenStack)
     resources_tag: '{{ eq .Values.cluster.capi_providers.infra_provider "capo" | ternary (printf "sylva-%s" .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.username) "" }}' # tag set for OpenStack resources in management and test workload cluster
 
-  cluster_external_ip: 55.55.55.55
-  cluster_external_domain: sylva
-  display_external_ip: '{{ .Values.cluster.capo.floating_ip | eq "" | ternary .Values.cluster.cluster_external_ip .Values.cluster.capo.floating_ip }}'
 
-  capd:
-    docker_host: unix:///var/run/docker.sock
+  cluster_external_ip: '{{ .Values.cluster_external_ip }}'
+
+  cluster_public_ip: '{{ tuple (.Values.openstack.floating_ip) (not (eq .Values.openstack.floating_ip "")) | include "set-only-if" }}'
+  cluster_services_cidrs:
+    - 10.43.0.0/16
+  cluster_pods_cidrs:
+    - 10.42.0.0/16
+
+  dns_resolver: false
+  ntp: '{{ .Values.ntp | include "preserve-type" }}'
+  proxies: '{{ .Values.proxies | include "preserve-type" }}'
+
+  registry_mirrors: '{{ .Values.registry_mirrors | include "preserve-type" }}'
+
+  metallb_helm_oci_url: ""  # for an OCI-based deployment this is overridden in use-oci-artifacts.values.yaml
+  metallb_helm_version: '{{ .Values.units.metallb.helmrelease_spec.chart.spec.version }}'
 
   capv:
+    image_name: # vSphere image name
     username: ""
     password: ""
     dataCenter: ""
@@ -2159,44 +2090,83 @@ cluster:
     folder: ""
     resourcePool: ""
     storagePolicyName: ""
+    networks:
+      default:
+        networkName: '{{ .Values.cluster.capv.network }}'  # FIXME, to revisit ?  do we need .cluster.capv.network ?
+    ssh_key: ''
+    storageClass:
+      storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'  # FIXME, to revisit ?  do we need .cluster.capv.storagePolicyName ?
+      fsType: ext4
+    numCPUs: 2
+    memoryMiB: 8192
+    diskGiB: 25
 
-  flux_webui:
-    admin_user: admin
+  enable_longhorn: '{{ tuple . "longhorn" | include "unit-enabled" | include "as-bool" }}'
 
-  rancher:
-    external_hostname: 'rancher.{{ .Values.cluster.cluster_external_domain }}'
+capd_docker_host: unix:///var/run/docker.sock
 
-  vault:
-    external_hostname: 'vault.{{ .Values.cluster.cluster_external_domain }}'
+openstack:
+  #external_network_id # Can be provided if a FIP is needed in order to reach the management cluster VIP
+  floating_ip: ""  # will typically be set by capo-cluster-resources
+  storageClass:
+    name: cinder-csi  # name of the storageClass to be created
+    #type: xxx  # please provide the cinder volume type, e.g. 'ceph_sas' (must exist in OpenStack)
+  control_plane_affinity_policy: soft-anti-affinity
+  worker_affinity_policy: soft-anti-affinity
 
-  keycloak:
-    external_hostname: 'keycloak.{{ .Values.cluster.cluster_external_domain }}'
+metal3: {}
+  # external_bootstrap_ip:
+  # bootstrap_ip:
 
-  flux:
-    external_hostname: 'flux.{{ .Values.cluster.cluster_external_domain }}'
+cluster_external_ip: 55.55.55.55
 
-  os_image_server:
-    external_hostname: ''
+# Admin password that will be configured by default on various units  # FIXME, only used for SSO today see https://gitlab.com/sylva-projects/sylva-core/-/issues/503
+admin_password: '{{ .Values._internal.default_password }}'
 
-  # osImages images that should be served and from where they should be downloaded
-  # if empty default value are used (default_os_images)
-  os_images: {}
+flux_webui:
+  admin_user: admin
 
-  test_workload_cluster_name: first-workload-cluster
+display_external_ip: '{{ .Values.openstack.floating_ip | eq "" | ternary .Values.cluster_external_ip .Values.openstack.floating_ip }}'
 
-  # to configure the SR-IOV VFs on the supported NICs of cluster nodes
-  sriov:
-    node_policies: {}
-#     mypolicy1:
-#       nodeSelector: {}  # <<< lets you further limit the SR-IOV capable nodes on which the VFs have to be created in a certain config; if not set it applies to all SR-IOV nodes
-#       resourceName: ""
-#       numVfs: ""
-#       deviceType: ""
-#       nicSelector:
-#         deviceID: ""
-#         vendor: ""
-#         pfNames: []
-#         rootDevices: []
+cluster_external_domain: sylva
+
+rancher:
+  external_hostname: 'rancher.{{ .Values.cluster_external_domain }}'
+
+vault:
+  external_hostname: 'vault.{{ .Values.cluster_external_domain }}'
+
+keycloak:
+  external_hostname: 'keycloak.{{ .Values.cluster_external_domain }}'
+
+flux:
+  external_hostname: 'flux.{{ .Values.cluster_external_domain }}'
+
+os_image_server:
+  external_hostname: ''
+
+# cis benchmark is only for rke2 so far, e.g. rke2-cis-1.23-profile-hardened
+cis_benchmark_scan_profile: '{{ eq .Values.cluster.capi_providers.bootstrap_provider "cabpr" | ternary "rke2-cis-1.23-profile-hardened" "no-scan-profile-defined-for-kubeadm-cluster" }}'
+
+# osImages images that should be served and from where they should be downloaded
+# if empty default value are used (default_os_images)
+os_images: {}
+
+test_workload_cluster_name: first-workload-cluster  ## will be removed when progressing https://gitlab.com/sylva-projects/sylva-core/-/issues/477
+
+# to configure the SR-IOV VFs on the supported NICs of cluster nodes
+sriov:
+  node_policies: {}
+#   mypolicy1:
+#     nodeSelector: {}  # <<< lets you further limit the SR-IOV capable nodes on which the VFs have to be created in a certain config; if not set it applies to all SR-IOV nodes
+#     resourceName: ""
+#     numVfs: ""
+#     deviceType: ""
+#     nicSelector:
+#       deviceID: ""
+#       vendor: ""
+#       pfNames: []
+#       rootDevices: []
 
 # add your proxy settings if required
 proxies:
@@ -2250,7 +2220,7 @@ _internal:
   default_storage_class_unit: >-
     {{- tuple . (tuple . "cinder-csi" | include "unit-enabled") "cinder-csi" "local-path-provisioner" | include "interpret-ternary" -}}
   default_storage_class: >-
-    {{- tuple . (tuple . "cinder-csi" | include "unit-enabled") .Values.cluster.capo.storageClass.name "local-path" | include "interpret-ternary" -}}
+    {{- tuple . (tuple . "cinder-csi" | include "unit-enabled") .Values.openstack.storageClass.name "local-path" | include "interpret-ternary" -}}
   vault_replicas: >-
     {{ ge (int .Values.cluster.control_plane_replicas) 3 | ternary 3 1 }}
 

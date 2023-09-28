@@ -34,7 +34,7 @@ units:
         services:
           ironic:
             # Address of the host, that will be reachable from the outside
-            ironicIP: '{{ dig "capm3" "external_bootstrap_ip" (dig "capm3" "bootstrap_ip" "127.0.0.1" .Values.cluster) .Values.cluster }}'
+            ironicIP: '{{ dig "external_bootstrap_ip" (dig "bootstrap_ip" "127.0.0.1" .Values.metal3) .Values.metal3 }}'
             # Address of kind container/node, that will be used to bind ironic service
             externalIPs: '{{ .Values._internal.bootstrap_node_ip | include "preserve-type" }}'
       valuesFrom: []  # override the valuesFrom from default values.yaml which is based on Vault/ExternalSecret
@@ -320,8 +320,7 @@ units:
 
               echo "-- All done"
 
-cluster:
-  display_external_ip: '{{ .Values.cluster | dig "capm3" "external_bootstrap_ip" (.Values.cluster | dig "capm3" "bootstrap_ip" "127.0.0.1") }}'
+display_external_ip: '{{ .Values.metal3 | dig "external_bootstrap_ip" (.Values.metal3 | dig "bootstrap_ip" "127.0.0.1") }}'
 
 # only those components will be enabled on bootstrap cluster (this overrides 'units.<component>.enabled')
 # note that this list does *not* override enabled_conditions set on the units, those are still applied

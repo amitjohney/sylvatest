@@ -39,12 +39,12 @@ spec:
   - kind: ConfigMap
     name: capo-cluster-resources
     valuesKey: allocated_ip
-    targetPath: cluster.cluster_external_ip
+    targetPath: cluster_external_ip
     optional: true
   - kind: ConfigMap
     name: capo-cluster-resources
     valuesKey: allocated_fip
-    targetPath: cluster.capo.floating_ip
+    targetPath: openstack.floating_ip
     optional: true
 
   values:

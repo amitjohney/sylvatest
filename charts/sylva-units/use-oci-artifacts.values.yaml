@@ -72,7 +72,6 @@ _internal:
   sylva_core_version: '{{ regexReplaceAll "[+][0-9]+$" .Chart.Version "" }}'
 
 sylva_core_oci_registry: '{{ .Values.sylva_base_oci_registry }}/sylva-core'
-metallb_helm_oci_url: '{{ .Values.sylva_base_oci_registry }}/sylva-core/metallb'
 
 source_templates:
 
@@ -120,6 +119,11 @@ units:
             kind: OCIRepository
             spec: '{{ mergeOverwrite .Values.oci_repo_spec_default (dig "capi-rancher-import" "spec" "undefined spec" .Values.source_templates) | include "preserve-type" }}'
           cattle_agent_kustomize_path: .
+
+cluster:
+  # we need metallb installation done from RKE2 manifests specified in RKE2ControlPlane
+  # to use an OCI artifact as well:
+  metallb_helm_oci_url: '{{ .Values.sylva_base_oci_registry }}/sylva-core/metallb'
 
 ###########################################################################################################
 #### actual content produced at OCI-artifact buildind time by tools/oci/build-sylva-units-artifact.sh  ####

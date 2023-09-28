@@ -1,51 +1,31 @@
 ---
 
 units:
-  cluster:
-    helmrelease_spec:
-      values:
-        machine_deployments:
-          md0:
-            infra_provider: capv
-            replicas: 3
-            # network_interfaces:
-            #   additional:
-            #     networkName:
-            #     dhcp4:
-            capv:
-              numCPUs: 4
-              memoryMiB: 8192
-              diskGiB: 40
   workload-cluster:
     enabled: false
     helmrelease_spec:
       values:
-        units:
-          cluster:
-            helmrelease_spec:
-              values:
-                machine_deployments:
-                  md0:
-                    infra_provider: capv
-                    # network_interfaces:
-                    #   additional:
-                    #     networkName:
-                    #     dhcp4:
-                    capv:
-                      numCPUs: 4
-                      memoryMiB: 8192
-                      diskGiB: 40
+        cluster:
+          machine_deployments:
+            md0:
+              # network_interfaces:
+              #   additional:
+              #     networkName:
+              #     dhcp4:
+              capv:
+                numCPUs: 4
+                memoryMiB: 8192
+                diskGiB: 40
 
 cluster:
   control_plane_replicas: 1
-
-  image: "ubuntu-2004-kube-v1.24.10"
 
   capi_providers:
     infra_provider: capv
     bootstrap_provider: cabpk
 
   capv:
+    image_name: "ubuntu-2004-kube-v1.24.10"
     dataCenter: # Datacenter to use
     network: # VSphere default network for VMs and CSI
     server: # VSphere server dns name
@@ -56,7 +36,19 @@ cluster:
     resourcePool: # VSphere resoucepool
     # storagePolicyName: # VSphere storage policy name
 
-  cluster_external_ip: # replace me
+  machine_deployments:
+    md0:
+      replicas: 3
+      # network_interfaces:
+      #   additional:
+      #     networkName:
+      #     dhcp4:
+      capv:
+        numCPUs: 4
+        memoryMiB: 8192
+        diskGiB: 40
+
+cluster_external_ip: # replace me
 
 proxies:
   # put your own proxy settings here if you need
