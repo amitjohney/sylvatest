@@ -31,10 +31,10 @@ spec:
   interval: 10m0s
   valuesFrom:
   - kind: Secret
-    name: management-cluster-secrets
+    name: sylva-units-secrets
     valuesKey: secrets
   - kind: ConfigMap
-    name: management-cluster-values
+    name: sylva-units-values
     valuesKey: values
   - kind: ConfigMap
     name: capo-cluster-resources
