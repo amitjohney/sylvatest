@@ -570,6 +570,14 @@ units:
             - op: add
               path: /spec/unsupported/podTemplate/spec/containers/0/securityContext
               value: {{ .Values._internal.conditional_seccomp_keycloak | toYaml | nindent 6 }} 
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                privileged: false
+                runAsNonRoot: true
+                runAsGroup: 1000
+                runAsUser: 1000
           target:
             kind: Keycloak
             name: keycloak
