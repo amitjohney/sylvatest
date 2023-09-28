@@ -199,17 +199,6 @@ units:
         createNamespace: true
       values:
         installCRDs: true
-        securityContext:
-          seccompProfile: null
-        webhook:
-          securityContext:
-            seccompProfile: null
-        cainjector:
-          securityContext:
-            seccompProfile: null
-        startupapicheck:
-          securityContext:
-            seccompProfile: null
 
   trivy-operator:
     enabled: no
@@ -288,9 +277,6 @@ units:
           auth:
             username: postgres
         nameOverride: postgres
-        primary:
-          containerSecurityContext:
-            seccompProfile: null
 
   kubevirt:
     helm_repo_url: https://suse-edge.github.io/charts
@@ -414,14 +400,6 @@ units:
         createNamespace: true
       values:
         installCRDs: true
-        securityContext:
-          seccompProfile: null
-        webhook:
-          securityContext:
-            seccompProfile: null
-        certController:
-          securityContext:
-            seccompProfile: null
 
   eso-secret-stores:
     depends_on:
@@ -642,26 +620,6 @@ units:
       install:
         createNamespace: true
       values:
-        admissionController:
-          container:
-            securityContext:
-              seccompProfile: null
-          initContainer:
-            securityContext:
-              seccompProfile: null
-        test:
-          securityContext:
-            seccompProfile: null
-        cleanupController:
-          securityContext:
-            seccompProfile: null
-        cleanupJobs:
-          admissionReports:
-            securityContext:
-              seccompProfile: null
-        clusterAdmissionReports:
-          securityContext:
-            seccompProfile: null
         backgroundController:
           rbac:
             clusterRole:
@@ -670,11 +628,6 @@ units:
                 resources:
                   - "helmreleases"
                 verbs: ["get", "patch", "list", "update", "watch"]
-          securityContext:
-            seccompProfile: null
-        reportsController:
-          securityContext:
-            seccompProfile: null
 
   kyverno-policies:
     enabled_conditions:
@@ -1623,19 +1576,6 @@ units:
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:
-              - kind: Deployment
-                apiVersion: apps/v1
-                metadata:
-                  name: flux-webui-weave-gitops
-                spec:
-                  template:
-                    spec:
-                      containers:
-                      - name: weave-gitops
-                        securityContext:
-                          seccompProfile:
-                            $patch: delete
-                            type: RuntimeDefault
               - kind: ClusterRoleBinding
                 apiVersion: rbac.authorization.k8s.io/v1
                 metadata:
