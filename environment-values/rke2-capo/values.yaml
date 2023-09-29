@@ -4,15 +4,12 @@ units:
   workload-cluster:
     helmrelease_spec:
       values:
-        units:
-          cluster:
-            helmrelease_spec:
-              values:
-                machine_deployments:
-                  md0:
-                    replicas: 1
-                    capo:
-                      failure_domain: region0
+        cluster:
+          machine_deployments:
+            md0:
+              replicas: 1
+              capo:
+                failure_domain: region0
 
 cluster:
 
