@@ -699,6 +699,8 @@ units:
       wait: true
 
   shared-workload-clusters-settings:
+    depends_on:
+      kyverno: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/shared-workload-clusters-settings

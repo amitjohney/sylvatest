@@ -14,6 +14,8 @@ units:
     enabled: false
   kyverno:
     enabled: false
+  shared-workload-clusters-settings:
+    enabled: false
 
 cluster:
   capi_providers:
