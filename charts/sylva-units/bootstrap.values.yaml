@@ -201,7 +201,6 @@ units:
           # relying on OCI artifacts)
           valuesFiles: |
             {{- without (lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units" | dig "spec" "chart" "spec" "valuesFiles" list) "bootstrap.values.yaml" "charts/sylva-units/bootstrap.values.yaml" | include "preserve-type" -}}
-      interval: 1m0s
       # copy values and valuesFrom from current sylva-units HelmRelease
       # for now we keep the 'cluster' unit disabled, it produces CAPI resources
       # defining the management cluster, which we can't define before having done the pivot

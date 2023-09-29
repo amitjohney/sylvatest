@@ -1386,7 +1386,6 @@ units:
       targetNamespace: k8s-gateway
       install:
         createNamespace: true
-      interval: 1m0s
       values:
         domain: '{{ .Values.cluster_external_domain }}'
         replicaCount: 3
@@ -1423,7 +1422,6 @@ units:
       targetNamespace: capi-rancher-import
       install:
         createNamespace: true
-      interval: 1m0s
       values:
         securityContext:
           runAsUser: 1
@@ -1451,7 +1449,6 @@ units:
         spec:
           chart: rke2-ingress-nginx
           version: 4.1.008
-      interval: 1m0s
       values:
         fullnameOverride: rke2-ingress-nginx
         controller:
