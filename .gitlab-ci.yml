@@ -518,6 +518,24 @@ deploy-kubeadm-capo-oci:
   artifacts:
     expose_as: kubeadm-capo-oci
 
+update-kubeadm-capo-oci:
+  extends: .deploy-capo-oci
+  script:
+    - !reference [.common-deployment, script_common]
+    - !reference [.common-deployment, os_cloud]
+    - !reference [.common-deployment, script_capo]
+    - ./apply.sh environment-values/${ENV_NAME}
+    - !reference [.common-deployment, post_deployment_common]
+  variables:
+    ENV_NAME: "kubeadm-capo"
+    E2E_JOB_MR_PARITY: odd
+  artifacts:
+    expose_as: update-kubeadm-capo-oci
+  needs:
+    - deploy-kubeadm-capo-oci
+  rules:
+    !reference [.rules, post-deployment-rules]
+
 deploy-m3-units-in-capo:
   timeout: 35min
   extends: .deploy-capo-oci
@@ -602,6 +620,7 @@ test-workload-cluster-kubeadm-capo-oci:
   variables:
     OCI_TAG: $OCI_TAG_FORMAT
   needs:
+    - update-kubeadm-capo-oci
     - deploy-kubeadm-capo-oci
 
 .test-login:
@@ -666,6 +685,7 @@ test-login-kubeadm-capo-oci:
   script:
     - !reference [.hurl-report, script_capo ]
   needs:
+    - update-kubeadm-capo-oci
     - deploy-kubeadm-capo-oci
   artifacts:
     expose_as: login-kubeadm-capo-oci
