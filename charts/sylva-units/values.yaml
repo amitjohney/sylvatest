@@ -69,7 +69,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.1.1
+        tag: 0.1.3
 
   local-path-provisioner:
     kind: GitRepository
@@ -967,12 +967,12 @@ units:
         - kind: ConfigMap
           name: capo-cluster-resources
           valuesKey: control_plane_servergroup_id
-          targetPath: capo.control_plane_servergroup_id
+          targetPath: control_plane.capo.server_group_id
           optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
         - kind: ConfigMap
           name: capo-cluster-resources
           valuesKey: worker_servergroup_id
-          targetPath: capo.worker_servergroup_id
+          targetPath: machine_deployment_default.capo.server_group_id
           optional: true
     # we pass everything that is under `cluster` to this unit that uses sylva-capi-cluster chart
     # (we do it via a secret because some of the values are credentials in many scenarios)
@@ -2042,8 +2042,6 @@ cluster:
     # otherwise, provide following values
     # diskSize: 20 # Size of the VMs root disk
     # volumeType: '__DEFAULT__' # Type of volume to be created
-    control_plane_security_group_name: "capo-{{ .Values.cluster.name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}"
-    worker_security_group_name: "capo-{{ .Values.cluster.name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}"
     #control_plane_az: # list of OpenStack availability zones to deploy control planes nodes to, otherwise all would be candidates
     clouds_yaml: # (this is a dict, not a YAML string)
       clouds:
@@ -2060,6 +2058,13 @@ cluster:
     #cacert: # cert used to validate CA of OpenStack APIs
     resources_tag: '{{ eq .Values.cluster.capi_providers.infra_provider "capo" | ternary (printf "sylva-%s" .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.username) "" }}' # tag set for OpenStack resources in management and test workload cluster
 
+  control_plane:
+    capo:
+      security_group_name: "capo-{{ .Values.cluster.name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}"
+
+  machine_deployment_default:
+    capo:
+      security_group_name: "capo-{{ .Values.cluster.name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}"
 
   cluster_external_ip: '{{ .Values.cluster_external_ip }}'
 
