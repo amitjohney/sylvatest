@@ -647,6 +647,8 @@ test-login-rke2-capo-oci:
   extends: .test-login
   script:
     - !reference [.hurl-report, script_capo ]
+  variables:
+    OCI_TAG: $OCI_TAG_FORMAT
   needs:
     - deploy-rke2-capo-oci
   artifacts:
@@ -665,6 +667,8 @@ test-login-kubeadm-capo-oci:
   extends: .test-login
   script:
     - !reference [.hurl-report, script_capo ]
+  variables:
+    OCI_TAG: $OCI_TAG_FORMAT
   needs:
     - deploy-kubeadm-capo-oci
   artifacts:
