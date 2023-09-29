@@ -71,7 +71,7 @@
     {
       "matchPackageNames": [
         "ironic",
-        "cluster-api-provider-metal3"
+        "metal3-io/cluster-api-provider-metal3"
       ],
       "groupName": "metal3"
     },
