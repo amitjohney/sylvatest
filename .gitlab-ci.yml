@@ -45,7 +45,7 @@ include:
       - if: '$CI_PIPELINE_SOURCE == "pipeline"'
         when: never
   - project: 'renovate-bot/renovate-runner'
-    ref: v15.69.1
+    ref: v16.1.2
     file: '/templates/renovate-config-validator.gitlab-ci.yml'
     rules:
       - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
