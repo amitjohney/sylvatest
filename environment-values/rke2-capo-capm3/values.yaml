@@ -61,9 +61,9 @@ units:
                       - ssh-rsa AAAA...... YOUR KEY HERE ....UqnQ==
 
           capm3:
-            machine_image_url: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2
+            machine_image_url: http://{{ .Values.display_external_ip }}/ubuntu-22.04-plain.qcow2
             machine_image_format: qcow2
-            machine_image_checksum: http://{{ .Values.cluster.display_external_ip }}/ubuntu-22.04-plain.qcow2.sha256sum
+            machine_image_checksum: http://{{ .Values.display_external_ip }}/ubuntu-22.04-plain.qcow2.sha256sum
             machine_image_checksum_type: sha256
             public_pool_name: "public-pool"
             public_pool_network: 10.188.36.128
