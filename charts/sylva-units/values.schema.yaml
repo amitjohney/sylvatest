@@ -570,6 +570,12 @@ properties:
     type: string
     format: hostname
 
+  cluster_public_endpoint:  # -------------------------------
+    anyOf:
+      - type: string
+        pattern: "^(https?://.*|)$"
+      - $ref: "#/$defs/gotpl"
+
   rancher: # -------------------------------
     type: object
     additionalProperties: false
@@ -628,6 +634,23 @@ properties:
 
   os_images: # -------------------------------
     type: object
+
+  libvirt_metal:  # -------------------------------
+    type: object
+    additionalProperties: false
+    properties:
+      node_count:  # -------------------------------
+        type: integer
+        minimum: 0
+        maximum: 9
+      node_mem_gb:  # -------------------------------
+        type: integer
+        minimum: 4
+      node_cpus:  # -------------------------------
+        type: integer
+        minimum: 4
+      node_image:  # -------------------------------
+        type: string
 
   proxies:  # -------------------------------
     type: object

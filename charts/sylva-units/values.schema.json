@@ -368,7 +368,7 @@
             "network_id": {
               "type": "string"
             },
-            "servergroup_id": {
+            "server_group_id": {
               "type": "string"
             },
             "security_group_name": {
@@ -796,6 +796,22 @@
             {
               "type": "string",
               "maxLength": 0
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cluster_api_cert_extra_SANs": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             },
             {
               "$ref": "#/$defs/string-with-gotpl"
@@ -1983,6 +1999,32 @@
                               "type": "null"
                             }
                           ]
+                        },
+                        "server_group_id": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "security_group_name": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
                         }
                       }
                     },
@@ -2248,58 +2290,6 @@
                         ]
                       },
                       "network_id": {
-                        "anyOf": [
-                          {
-                            "type": "string"
-                          },
-                          {
-                            "$ref": "#/$defs/string-with-gotpl"
-                          },
-                          {
-                            "type": "null"
-                          }
-                        ]
-                      },
-                      "control_plane_servergroup_id": {
-                        "anyOf": [
-                          {
-                            "type": "string"
-                          },
-                          {
-                            "$ref": "#/$defs/string-with-gotpl"
-                          },
-                          {
-                            "type": "null"
-                          }
-                        ]
-                      },
-                      "worker_servergroup_id": {
-                        "anyOf": [
-                          {
-                            "type": "string"
-                          },
-                          {
-                            "$ref": "#/$defs/string-with-gotpl"
-                          },
-                          {
-                            "type": "null"
-                          }
-                        ]
-                      },
-                      "control_plane_security_group_name": {
-                        "anyOf": [
-                          {
-                            "type": "string"
-                          },
-                          {
-                            "$ref": "#/$defs/string-with-gotpl"
-                          },
-                          {
-                            "type": "null"
-                          }
-                        ]
-                      },
-                      "worker_security_group_name": {
                         "anyOf": [
                           {
                             "type": "string"
@@ -3588,6 +3578,17 @@
       "type": "string",
       "format": "hostname"
     },
+    "cluster_public_endpoint": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^(https?://.*|)$"
+        },
+        {
+          "$ref": "#/$defs/gotpl"
+        }
+      ]
+    },
     "rancher": {
       "type": "object",
       "additionalProperties": false,
@@ -3678,6 +3679,28 @@
     },
     "os_images": {
       "type": "object"
+    },
+    "libvirt_metal": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "node_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9
+        },
+        "node_mem_gb": {
+          "type": "integer",
+          "minimum": 4
+        },
+        "node_cpus": {
+          "type": "integer",
+          "minimum": 4
+        },
+        "node_image": {
+          "type": "string"
+        }
+      }
     },
     "proxies": {
       "type": "object",

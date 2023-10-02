@@ -1,0 +1,130 @@
+# This example environment values files will let you build
+# a Sylva two-node (1 control-plane + 1 worker) mgmt baremetal cluster
+#
+# To also have a workload-cluster, you can configure
+# the workload-cluster unit based on what is in environment-values/rke2-capo-capm3
+# which defines a capm3 workload cluster
+
+cluster_external_ip: 192.168.100.2
+
+cluster:
+  capi_providers:
+    infra_provider: capm3
+    bootstrap_provider: cabpr
+
+  control_plane_replicas: 1
+
+  # Add kind container address to cluster kubernetes api certificate SubjectAltNames,
+  # in order to be able to reach it from the outside through kubernetes-external service created by libvirt-metal unit
+  # once pivot to management cluster will happen, this IP will be retrieved in a cluster-public-endpoint configMap created for that purpose
+  cluster_api_cert_extra_SANs:
+    - '{{ lookup "v1" "ConfigMap" "default" "cluster-public-endpoint" | dig "data" "address" (.Values._internal.bootstrap_node_ip | default "127.0.0.1") }}'
+
+  rke2:
+    additionalUserData:
+      config:
+        #cloud-config
+        users:
+          - name: sylva-user
+            groups: users
+            sudo: ALL=(ALL) NOPASSWD:ALL
+            shell: /bin/bash
+            lock_passwd: false
+            passwd: $1$pdWEicWs$9ZWQf5.CWyXccmP8Chuu01 # sylva
+
+  capm3:
+    machine_image_url: http://os-image-server-ubuntu-2204-plain-qcow2.os-images.svc.cluster.local:8080/ubuntu-22.04-plain.qcow2
+    machine_image_format: qcow2
+    machine_image_checksum: http://os-image-server-ubuntu-2204-plain-qcow2.os-images.svc.cluster.local:8080/ubuntu-22.04-plain.qcow2.sha256sum
+    machine_image_checksum_type: sha256
+    public_pool_name: "public-pool"
+    public_pool_network: 192.168.100.0
+    public_pool_gateway: 192.168.100.1
+    public_pool_start: 192.168.100.20
+    public_pool_end: 192.168.100.50
+    public_pool_prefix: "24"
+    provisioning_pool_name: "provisioning-pool"
+    provisioning_pool_network: 192.168.10.0
+    provisioning_pool_gateway: 192.168.10.1
+    provisioning_pool_start: 192.168.10.20
+    provisioning_pool_end: 192.168.10.50
+    provisioning_pool_prefix: "24"
+    dns_server: 1.2.3.4
+
+  control_plane:  # tweak network configuration as needed
+
+    capm3:
+      hostSelector:  # criteria for matching labels on BareMetalHost objects defined by baremetal_hosts value
+        matchLabels:
+          cluster-role: control-plane
+
+      provisioning_pool_interface: ens5
+      public_pool_interface: ens6
+
+    network_interfaces:
+      ens5:
+        type: phy
+      ens6:
+        type: phy
+
+  baremetal_host_default:
+    bmh_spec:
+      online: true
+      externallyProvisioned: false
+      bmc:
+        disableCertificateVerification: true
+      automatedCleaningMode: metadata
+      bootMode: legacy
+      rootDeviceHints:  # https://github.com/metal3-io/baremetal-operator/blob/main/docs/api.md#rootdevicehints
+        deviceName: /dev/sda
+
+  baremetal_hosts:  # corresponding credentials need to be set in secrets.yaml
+    vbmh-0:
+      bmh_metadata:
+        labels:
+          cluster-role: control-plane
+      bmh_spec:
+        description: control plane node
+        bmc:
+          address: redfish-virtualmedia://vbmh-0.libvirt-metal.default.svc.cluster.local:8000/redfish/v1/Systems/4347b19b-67d0-4f0f-befe-114c0648af0a
+          disableCertificateVerification: true
+        bootMACAddress: 48:df:37:e7:82:94
+        bootMode: legacy
+        rootDeviceHints:
+          deviceName: /dev/vda
+
+units:
+
+  workload-cluster:
+    enabled: false  # (no workload cluster is described in this example)
+
+  metal3:
+    helmrelease_spec:
+      # Workaround https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3/-/issues/9
+      values:
+        mariadb:
+          architecture: standalone
+
+libvirt_metal:
+  node_count: 1
+  node_mem_gb: 12
+  node_image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/libvirt-metal:0.0.0-test-fe
+
+#proxies:
+#  # put your own proxy settings here if you need
+#  http_proxy: ""
+#  https_proxy: ""
+#  no_proxy: ""
+
+# configure containerd registry mirrors following https://github.com/containerd/containerd/blob/main/docs/hosts.md
+# see charts/syla-units/values.yaml for a more detailled example
+# registry_mirrors:
+#   hosts_config:
+#     docker.io:
+#     - mirror_url: http://your.mirror/docker
+
+ntp:
+  enabled: yes
+  servers:
+  - 172.16.0.3
+  - 172.16.0.4
