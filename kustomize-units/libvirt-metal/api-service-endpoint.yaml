@@ -1,0 +1,44 @@
+# Service exposing the management cluster api in kind container (accessible through container IP)
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubernetes-external
+  labels:
+    app: kubernetes-external
+spec:
+  ports:
+    - protocol: TCP
+      port: 8443 # we can't bind 6443 as kind's kube-apiserver pod is already binding this port
+      targetPort: 6443
+  externalIPs:
+  - ${CLUSTER_PUBLIC_IP}
+---
+# Static endpoint targetting the external_ip of management cluster
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: kubernetes-external-1
+  labels:
+    kubernetes.io/service-name: kubernetes-external
+addressType: IPv4
+ports:
+  - name: ''
+    appProtocol: https
+    protocol: TCP
+    port: 6443
+endpoints:
+  - addresses:
+      - ${CLUSTER_EXTERNAL_IP}
+---
+# Save public address in a configmap copied to management cluster
+# This way, sylva units will be able to retrive that value when in will de reinstalled in management cluster
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    copy-from-bootstrap-to-management: ""
+  name: cluster-public-endpoint
+  namespace: default
+data:
+  endpoint: ${CLUSTER_PUBLIC_ENDPOINT}
+  address: ${CLUSTER_PUBLIC_IP}

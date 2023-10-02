@@ -52,6 +52,11 @@ function retrieve_kubeconfig {
     until kubectl get secret $(kubectl get cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}' 2>/dev/null)-kubeconfig -o jsonpath='{.data.value}' 2>/dev/null | base64 -d > management-cluster-kubeconfig; do
         sleep 2
     done
+    # Check if there is an alternative public endpoint declared in values, in which case we modify kubeconfig to use it
+    if kubectl get secret sylva-units-values -o template='{{ .data.values }}' | base64 -d | yq -e .cluster_public_endpoint &> /dev/null; then
+        CLUSTER_PUBLIC_ENDPOINT=$(kubectl get secret sylva-units-values -o template='{{ .data.values }}' | base64 -d | yq -e .cluster_public_endpoint)
+        yq -i ".clusters[0].cluster.server=\"${CLUSTER_PUBLIC_ENDPOINT}\"" management-cluster-kubeconfig
+    fi
     umask $orig_umask
 }
 

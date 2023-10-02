@@ -4,8 +4,8 @@
 # when the chart is instantiated in the bootstrap cluster
 _internal:
   default_storage_class_unit: "bootstrap-local-path"
-  bootstrap_node_ip:
-    - |
+  libvirt_metal_networks: '[{"name": "provisioning", "namespace": "default",  "ips": ["192.168.10.123"]}, { "name": "management", "namespace": "default"}]'
+  bootstrap_node_ip: |-
       {{- $result := "not found" -}}
       {{- range $address := lookup "v1" "Node" "" "" | dig "items" list | first | default dict |  dig "status" "addresses" list -}}
         {{- if and (eq $address.type "InternalIP") (eq $result "not found") -}}
@@ -22,21 +22,23 @@ unit_helmrelease_spec_default:
   interval: 100000m
 
 units:
-
   metal3:
     enabled_conditions:
       - '{{ tuple . "capm3" | include "unit-enabled" }}'
     depends_on:
       metal3-sync-secrets: false ## override default set in values.yaml
+      multus: '{{ tuple . (not (empty .Values.units.metal3.helmrelease_spec.values.ironicExtraNetworks)) | include "interpret-for-test" }}'
     helmrelease_spec:
       values:
+        ironicExtraNetworks: '{{ tuple .Values._internal.libvirt_metal_networks ( tuple . "libvirt-metal" | include "unit-enabled") | include "set-only-if" }}'
         # ironicIPADownloaderBaseURI:
         services:
           ironic:
             # Address of the host, that will be reachable from the outside
-            ironicIP: '{{ dig "external_bootstrap_ip" (dig "bootstrap_ip" "127.0.0.1" .Values.metal3) .Values.metal3 }}'
+            ironicIP: '{{- tuple . (tuple . "libvirt-metal" | include "unit-enabled") "192.168.10.123" (dig "capm3" "external_bootstrap_ip" (dig "capm3" "bootstrap_ip" "127.0.0.1" .Values.metal3) .Values.metal3) | include "interpret-ternary" -}}'
             # Address of kind container/node, that will be used to bind ironic service
-            externalIPs: '{{ .Values._internal.bootstrap_node_ip | include "preserve-type" }}'
+            externalIPs:
+              - '{{ .Values._internal.bootstrap_node_ip }}'
       valuesFrom: []  # override the valuesFrom from default values.yaml which is based on Vault/ExternalSecret
     helm_secret_values:  # on bootstrap we don't have Vault/ExternalSecret, so we rely on Helm-generated random passwords
       mariadb:
@@ -67,7 +69,8 @@ units:
       values:
         controller:
           service:
-            externalIPs: '{{ .Values._internal.bootstrap_node_ip | include "preserve-type" }}'
+            externalIPs:
+              - '{{ .Values._internal.bootstrap_node_ip }}'
 
   os-image-server:
     helmrelease_spec:
@@ -319,7 +322,35 @@ units:
 
               echo "-- All done"
 
+  multus:
+    enabled_conditions:
+    - '{{ tuple . "libvirt-metal" | include "unit-enabled" }}'
+    depends_on:
+      calico: false
+
+  libvirt-metal:
+    enabled_conditions:
+    - '{{ gt (.Values.libvirt_metal.node_count | int) 0 }}'
+    depends_on:
+      multus: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/libvirt-metal
+      wait: true
+      targetNamespace: default
+      postBuild:
+        substitute:
+          NODE_COUNT: '{{ .Values.libvirt_metal.node_count }}'
+          NODE_MEM_GB: '{{ .Values.libvirt_metal.node_mem_gb | quote }}'
+          NODE_CPUS: '{{ .Values.libvirt_metal.node_cpus | quote }}'
+          NODE_IMAGE: '{{ .Values.libvirt_metal.node_image }}'
+          CLUSTER_EXTERNAL_IP: '{{ .Values.cluster_external_ip }}'
+          CLUSTER_PUBLIC_IP: '{{ .Values._internal.bootstrap_node_ip }}'
+          CLUSTER_PUBLIC_ENDPOINT: '{{ tuple . .Values.cluster_public_endpoint | include "interpret-as-string" }}'
+
 display_external_ip: '{{ .Values.metal3 | dig "external_bootstrap_ip" (.Values.metal3 | dig "bootstrap_ip" "127.0.0.1") }}'
+
+cluster_public_endpoint: '{{ tuple (printf "https://%s:%s" .Values._internal.bootstrap_node_ip "8443") (tuple . "libvirt-metal" | include "unit-enabled") | include "set-only-if" }}'
 
 # only those components will be enabled on bootstrap cluster (this overrides 'units.<component>.enabled')
 # note that this list does *not* override enabled_conditions set on the units, those are still applied
@@ -341,3 +372,5 @@ units_override_enabled:
   - pivot
   - heat-operator
   - capo-cluster-resources
+  - multus
+  - libvirt-metal
