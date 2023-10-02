@@ -553,6 +553,7 @@ units:
           requests:
             cpu: 100m
             memory: 2280Mi
+        psp: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") | include "as-bool" }}' 
 
   keycloak:
     depends_on:
