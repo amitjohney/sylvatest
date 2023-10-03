@@ -55,7 +55,7 @@ echo -e "\e[0Ksection_start:`date +%s`:helm_base_values\r\e[0K--------------- Ch
 
 # This applies only to sylva-units chart where we want to check that templating
 # works fine with all units enabled
-yq eval '{"units": .units | ... comments="" | to_entries | map({"key":.key,"value":{"enabled":true}}) | from_entries}' $chart_dir/values.yaml > /tmp/all-units-enabled.yaml
+yq eval '{"units": .units | ... comments="" | to_entries | map({"key":.key,"value":{"enabled":true,"enabled_conditions":[]}}) | from_entries}' $chart_dir/values.yaml > /tmp/all-units-enabled.yaml
 
 helm template ${HELM_NAME} $chart_dir --values /tmp/all-units-enabled.yaml \
 | yamllint - -d "$(cat < ${BASE_DIR}/tools/gci-templates/configuration/yamllint.yaml) $(cat < ${BASE_DIR}/tools/gci-templates/configuration/yamllint-helm-template-rules)"
