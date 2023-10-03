@@ -27,10 +27,10 @@ units:
       - '{{ tuple . "capm3" | include "unit-enabled" }}'
     depends_on:
       metal3-sync-secrets: false ## override default set in values.yaml
-      multus: '{{ tuple . (not (empty .Values.units.metal3.helmrelease_spec.values.ironicExtraNetworks)) | include "interpret-for-test" }}'
+      multus: '{{ not (empty (tuple . .Values.units.metal3.helmrelease_spec.values.ironicExtraNetworks | include "interpret-as-string")) }}'
     helmrelease_spec:
       values:
-        ironicExtraNetworks: '{{ tuple .Values._internal.libvirt_metal_networks ( tuple . "libvirt-metal" | include "unit-enabled") | include "set-only-if" }}'
+        ironicExtraNetworks: '{{ tuple . (tuple . "libvirt-metal" | include "unit-enabled") .Values._internal.libvirt_metal_networks "" | include "interpret-ternary" }}'
         # ironicIPADownloaderBaseURI:
         services:
           ironic:
