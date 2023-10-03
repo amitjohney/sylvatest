@@ -5,6 +5,7 @@ include: '/tools/gci-templates/gitlab-ci.yml'
 
 stages:
   - test
+  - security-test
 
 EOF
 
@@ -72,6 +73,18 @@ cat <<EOF
 '${f}:kustomize-build':
   stage: test
   extends: .kustomize-build
+  variables:
+    KUSTOMIZATION_PATH: "${f}"
+  rules:
+    - changes:
+        - tools/gci-templates/**/*
+        - environment-values/**/*
+        - kustomize-units/**/*
+
+
+'${f}:kube-score':
+  stage: security-test
+  extends: .kube-score
   variables:
     KUSTOMIZATION_PATH: "${f}"
   rules:

@@ -9,6 +9,7 @@ workflow:
 
 stages:
   - test
+  - security-test
   - build
   - deploy
   - deployment-test
