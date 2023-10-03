@@ -1222,7 +1222,7 @@ units:
       chart:
         spec:
           chart: rke2-calico-crd
-          version: v3.25.001
+          version: v3.26.100
 
   calico:
     depends_on:
@@ -1234,7 +1234,7 @@ units:
       chart:
         spec:
           chart: rke2-calico
-          version: v3.25.001
+          version: v3.26.100
       values:
         installation:
           calicoNetwork:
@@ -1598,7 +1598,8 @@ units:
       chart:
         spec:
           chart: rke2-ingress-nginx
-          version: 4.1.008
+          version: 4.6.100
+      interval: 1m0s
       values:
         fullnameOverride: rke2-ingress-nginx
         controller:
@@ -1606,10 +1607,6 @@ units:
             use-forwarded-headers: true
           kind: DaemonSet
           service:
-            ############## required until we upgrade to RKE2 >= 1.24.14 - see https://gitlab.com/sylva-projects/sylva-core/-/issues/324 #########
-            type: LoadBalancer
-            enabled: true
-            #####################################################################################################################################
             externalIPs:
             - '{{ .Values.cluster_external_ip }}'
             annotations:
