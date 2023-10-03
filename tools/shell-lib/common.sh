@@ -31,7 +31,7 @@ end_section() {
 }
 
 function check_pivot_has_ran() {
-  if kubectl wait --for condition=complete --timeout=0s job pivot-job > /dev/null 2>&1; then
+  if kubectl wait --for condition=complete --timeout=0s job pivot-job-default -n kube-job > /dev/null 2>&1; then
     { echo_b "\U000274C The pivot job has already ran and moved resources to the management cluster. Please use apply.sh instead of bootstrap.sh"; exit 1;} || echo
   fi
   if kubectl get customresourcedefinitions.apiextensions.k8s.io kustomizations.kustomize.toolkit.fluxcd.io &>/dev/null; then
