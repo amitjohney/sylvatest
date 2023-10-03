@@ -255,3 +255,11 @@ units:
           kind: Cluster
           name: "{{ .Values.cluster.name }}-capi"
           namespace: '{{ .Release.Namespace }}'
+
+  vsphere-cloud-controller-manager:
+    enabled: true
+    unit_template: base-deps
+
+  vsphere-csi-driver:
+    enabled: true
+    unit_template: base-deps

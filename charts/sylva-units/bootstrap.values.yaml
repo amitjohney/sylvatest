@@ -348,6 +348,13 @@ units:
           CLUSTER_PUBLIC_IP: '{{ .Values._internal.bootstrap_node_ip }}'
           CLUSTER_PUBLIC_ENDPOINT: '{{ tuple . .Values.cluster_public_endpoint | include "interpret-as-string" }}'
 
+  vsphere-cloud-controller-manager:
+    # overload vsphere-cloud-controller-manager definition in bootstrap context to deploy in the management cluster
+    kustomization_spec:
+      kubeConfig:
+        secretRef:
+          name: '{{ .Values.cluster.name }}-kubeconfig'
+
 display_external_ip: '{{ .Values.metal3 | dig "external_bootstrap_ip" (.Values.metal3 | dig "bootstrap_ip" "127.0.0.1") }}'
 
 cluster_public_endpoint: '{{ tuple (printf "https://%s:%s" .Values._internal.bootstrap_node_ip "8443") (tuple . "libvirt-metal" | include "unit-enabled") | include "set-only-if" }}'
@@ -374,3 +381,4 @@ units_override_enabled:
   - capo-cluster-resources
   - multus
   - libvirt-metal
+  - vsphere-cloud-controller-manager
