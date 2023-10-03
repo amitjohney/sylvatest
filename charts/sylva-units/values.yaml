@@ -1222,7 +1222,7 @@ units:
       chart:
         spec:
           chart: rke2-calico-crd
-          version: v3.26.100
+          version: v3.25.001
 
   calico:
     depends_on:
@@ -1234,7 +1234,7 @@ units:
       chart:
         spec:
           chart: rke2-calico
-          version: v3.26.100
+          version: v3.25.001
       values:
         installation:
           calicoNetwork:
@@ -1598,7 +1598,7 @@ units:
       chart:
         spec:
           chart: rke2-ingress-nginx
-          version: 4.6.100
+          version: 4.5.202
       interval: 1m0s
       values:
         fullnameOverride: rke2-ingress-nginx
@@ -2265,7 +2265,7 @@ cluster:
     bootstrap_provider: cabpk # cabpr (RKE2) or cabpk (kubeadm)
 
   # kubernetes version to be used
-  k8s_version: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.26.8+rke2r1" "v1.26.8" }}'
+  k8s_version: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.26.6+rke2r1" "v1.26.6" }}'
 
   # Nodes number for control-plane
   control_plane_replicas: 3
