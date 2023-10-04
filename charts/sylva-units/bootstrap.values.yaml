@@ -260,6 +260,10 @@ units:
               echo "-- Signal that the pivot job has started. This is used in bootstrap.sh to prevent accidental re-runs"
               kubectl -n $TARGET_NAMESPACE  annotate --overwrite kustomizations.kustomize.toolkit.fluxcd.io cluster pivot/started=true
 
+              kubectl -n $TARGET_NAMESPACE get secret {{ .Values.cluster.name }}-kubeconfig -o json | \
+                jq '. | del(.metadata.uid) | del(.metadata.ownerReferences) | .metadata.name = "{{ .Values.cluster.name }}-kubeconfig-copy"' |\
+                kubectl apply -f -
+
               echo "-- Retrieve target cluster kubeconfig"
               kubectl -n $TARGET_NAMESPACE get secret {{ .Values.cluster.name }}-kubeconfig -o jsonpath='{.data.value}' | base64 -d > management-cluster-kubeconfig
 
