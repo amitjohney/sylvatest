@@ -725,7 +725,6 @@ units:
       postBuild:
         substitute:
           CM_VALUES: |-
-            #\n
             {{ index (tuple . .Values.shared_workload_clusters_values | include "interpret-inner-gotpl" | fromJson) "result" | toYaml }}
     kustomization_substitute_secrets:
       SECRET_VALUES: '{{ index (tuple . .Values.shared_workload_clusters_secret_values | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | b64enc }}'
