@@ -165,7 +165,7 @@ units:
       values:
         controller:
           service:
-            externalIPs: '{{ tuple (list .Values.cluster.cluster_external_ip) (not (.Values.cluster.capi_providers.infra_provider | eq "capo")) | include "set-only-if" }}'
+            externalIPs: '{{ tuple (list .Values.cluster_external_ip) (not (.Values.cluster.capi_providers.infra_provider | eq "capo")) | include "set-only-if" }}'
       valuesFrom:
         - kind: ConfigMap
           name: capo-cluster-resources

@@ -1988,7 +1988,7 @@ units:
       sylvactl/readyMessage: |
         OS images are served at:
         {{- $osImageFqdn := (coalesce .Values.os_image_server.external_hostname .Values.display_external_ip) -}}
-        {{- range $imageName, $imageParams := (coalesce .Values.cluster.os_images .Values._internal.default_os_images) }}
+        {{- range $imageName, $imageParams := (coalesce .Values.os_images .Values._internal.default_os_images) }}
           * https://{{ $osImageFqdn }}/{{ $imageParams.filename }}(.sha256sum)
         {{- end }}
         {{- if not (eq $osImageFqdn .Values.display_external_ip)}}
@@ -2343,7 +2343,7 @@ _internal:
 
   sylva_core_existing_source: '{{ .Values.unit_helmrelease_kustomization_spec_default.sourceRef }}'
 
-  # These values are used only if `cluster.os_images` is empty
+  # These values are used only if `os_images` is empty
   default_os_images:
     ubuntu-2204-plain-qcow2:
       uri: "{{ .Values.sylva_base_oci_registry }}/sylva-elements/diskimage-builder/diskimage-builder-plain:0.0.7"
@@ -2353,7 +2353,7 @@ _internal:
 shared_workload_clusters_values:
   cluster:
     capo:
-      image: '{{ .Values.cluster.image }}'
+      image_name: '{{ .Values.cluster.capo.image_name }}'
       network_id: '{{ .Values.cluster.capo.network_id | default "" }}'
 
 shared_workload_clusters_secret_values:
