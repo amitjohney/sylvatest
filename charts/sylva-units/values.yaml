@@ -2030,8 +2030,6 @@ units:
   vsphere-cloud-controller-manager:
     enabled_conditions:
       - '{{ eq .Values.cluster.capi_providers.infra_provider "capv" }}'
-    depends_on:
-      cluster: true
     repo: sylva-core
     kustomization_spec:
       path: kustomize-units/vsphere-cloud-controller-manager
@@ -2166,7 +2164,6 @@ cluster:
     username: ""
     password: ""
     dataCenter: ""
-    network: ""
     server: ""
     dataStore: ""
     tlsThumbprint: ""
@@ -2175,12 +2172,9 @@ cluster:
     storagePolicyName: ""
     networks:
       default:
-        networkName: '{{ .Values.cluster.capv.network }}'  # FIXME, to revisit ?  do we need .cluster.capv.network ?
+        networkName: ""
     ssh_key: ''
-    storageClass:
-      storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'  # FIXME, to revisit ?  do we need .cluster.capv.storagePolicyName ?
-      fsType: ext4
-    numCPUs: 2
+    numCPUs: 4
     memoryMiB: 8192
     diskGiB: 25
 

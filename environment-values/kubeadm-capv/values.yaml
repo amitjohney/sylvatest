@@ -27,7 +27,9 @@ cluster:
   capv:
     image_name: "ubuntu-2004-kube-v1.24.10"
     dataCenter: # Datacenter to use
-    network: # VSphere default network for VMs and CSI
+    networks:
+      default:
+        networkName: # VSphere default network for VMs and CSI
     server: # VSphere server dns name
     # dataStore: # VSphere datastore name
     tlsThumbprint: # VSphere https TLS thumbprint
