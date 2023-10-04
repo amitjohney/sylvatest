@@ -2362,9 +2362,8 @@ cluster:
     capo:
       security_group_name: "capo-{{ .Values.cluster.name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}"
 
-  common_security_group:
-    capo:
-      security_group_name: "capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}"
+capo:
+  common_security_group_name: "capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}"
 
   cluster_external_ip: '{{ .Values.cluster_external_ip }}'
 
