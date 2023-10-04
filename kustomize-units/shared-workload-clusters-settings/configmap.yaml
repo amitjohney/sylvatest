@@ -3,6 +3,5 @@ kind: ConfigMap
 metadata:
   name: shared-workload-clusters-settings
   namespace: default
-data:
-  values: |-
-    ${CM_VALUES}
+binaryData:
+  values: ${CM_VALUES}

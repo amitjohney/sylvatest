@@ -40,3 +40,18 @@ spec:
       clone:
         name: shared-workload-clusters-settings
         namespace: default
+  - name: copy-data
+    match:
+      any:
+      - resources:
+          kinds:
+            - ConfigMap
+          names:
+            - shared-workload-clusters-settings
+          selector:
+            matchLabels:
+              generate.kyverno.io/rule-name: generate-cm
+    mutate:
+      patchStrategicMerge:
+        data:
+          valuesData: '{{ request.object.binaryData.values | base64_decode(@) }}'
