@@ -726,7 +726,7 @@ units:
         substitute:
           CM_VALUES: |-
             #\n
-            '{{ index (tuple . .Values.shared_workload_clusters_values | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | indent 4 | replace '^    ' '' }}'
+            '{{ index (tuple . .Values.shared_workload_clusters_values | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | indent 4 | replace "^    " "" }}'
     kustomization_substitute_secrets:
       SECRET_VALUES: '{{ index (tuple . .Values.shared_workload_clusters_secret_values | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | b64enc }}'
 
