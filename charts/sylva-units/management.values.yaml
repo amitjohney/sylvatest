@@ -36,6 +36,9 @@ units:
   kubevirt:
     enabled: false
 
+  kubevirt-test-vms:
+    enabled: false
+
   monitoring:
     helmrelease_spec:
       values:
