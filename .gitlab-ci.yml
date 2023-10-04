@@ -518,16 +518,16 @@ deploy-kubeadm-capo-oci:
   artifacts:
     expose_as: kubeadm-capo-oci
 
-deploy-m3-units-in-capo:
+deploy-misc-units-in-capo:
   timeout: 35min
   extends: .deploy-capo-oci
   variables:
     ENV_NAME: "kubeadm-capo"
-    CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-M3-OCI"
-    CUSTOM_VALUES_FILE: environment-values/ci/m3-units-in-capo.yml
+    CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-MISC-OCI"
+    CUSTOM_VALUES_FILE: environment-values/ci/misc-units-in-capo.yml
     MGMT_WATCH_TIMEOUT_MIN: 20
   artifacts:
-    expose_as: m3-units-in-capo
+    expose_as: misc-units-in-capo
 
 deploy-capo-fip:
   timeout: 35min
@@ -731,13 +731,13 @@ cleanup-kubeadm-capo-oci:
     - test-workload-cluster-kubeadm-capo-oci
     - test-login-kubeadm-capo-oci
 
-cleanup-m3-units-in-capo:
+cleanup-misc-units-in-capo:
   extends: .cleanup-capo-oci
   variables:
     ENV_NAME: "kubeadm-capo"
-    CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-M3-OCI"
+    CAPO_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}-MISC-OCI"
   needs:
-    - deploy-m3-units-in-capo
+    - deploy-misc-units-in-capo
 
 cleanup-capo-fip:
   extends: .cleanup-capo-oci

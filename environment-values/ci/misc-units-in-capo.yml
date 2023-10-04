@@ -47,5 +47,11 @@ units:
     enabled: true
   workload-cluster:
     enabled: false # explicitly disabled, since env_type_ci is set in .gitlab-ci.yml
+  multus:
+    enabled: true
+  kubevirt:
+    enabled: true
+  kubevirt-test-vms:
+    enabled: true
 cluster:
   control_plane_replicas: 1
