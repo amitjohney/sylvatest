@@ -17,11 +17,11 @@ cluster:
 
   control_plane_replicas: 3
 
-  machine_deployments:
-    md0:
-      replicas: 0
-      capo:
-        failure_domain: region0
+  # machine_deployments:
+  #   md0:
+  #     replicas: 1
+  #     capo:
+  #       failure_domain: region0
 
 openstack:
   ## If cinder CSI is used, provide a name for the storage class and the storage type from OpenStack
