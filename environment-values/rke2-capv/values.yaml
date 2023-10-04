@@ -9,6 +9,7 @@ units:
         cluster:
           machine_deployments:
             md0:
+              replicas: 1
               # network_interfaces:
               #   additional:
               #     networkName:
