@@ -4,4 +4,5 @@ metadata:
   name: shared-workload-clusters-settings
   namespace: default
 data:
-  values: {{ $CM_VALUES | toYaml }}
+  values: |-
+    $CM_VALUES
