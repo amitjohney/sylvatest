@@ -3,5 +3,4 @@ kind: Kustomization
 
 resources:
 - rancher-bootstrap-secret.yaml
-- flux-webui-cluster-user-auth.yaml
 - cluster-creator-password.yaml
