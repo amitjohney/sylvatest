@@ -354,6 +354,8 @@ units:
 
   vsphere-cloud-controller-manager:
     # overload vsphere-cloud-controller-manager definition in bootstrap context to deploy in the management cluster
+    depends_on:
+      cluster: true
     kustomization_spec:
       kubeConfig:
         secretRef:

@@ -29,7 +29,9 @@ cluster:
   capv:
     image_name: "tpl-ubuntu-2204-rke2-v1.24.12+rke2r1"
     dataCenter: # Datacenter to use
-    network: # VSphere default network for VMs and CSI
+    networks:
+      default:
+        networkName: # VSphere default network for VMs and CSI
     server: # VSphere server dns name
     # dataStore: # VSphere datastore name
     tlsThumbprint: # VSphere https TLS thumbprint
