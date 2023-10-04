@@ -4371,19 +4371,6 @@
                           }
                         ]
                       },
-                      "common_security_group_name": {
-                        "anyOf": [
-                          {
-                            "type": "string"
-                          },
-                          {
-                            "$ref": "#/$defs/gotpl"
-                          },
-                          {
-                            "type": "null"
-                          }
-                        ]
-                      },
                       "clouds_yaml": {
                         "anyOf": [
                           {
