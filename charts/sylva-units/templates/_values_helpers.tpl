@@ -7,7 +7,7 @@ Ensure that no_proxy covers everything that we need by adding the values defined
    {{- $no_proxy_base  := dict 
        "localhost" "true" 
        ".svc" "true"  
-       (printf ".%s" .Values.cluster.cluster_external_domain) "true" 
+       (printf ".%s" .Values.cluster_external_domain) "true"
        ".cluster.local." "true" 
        ".cluster.local" "true" 
    -}}
