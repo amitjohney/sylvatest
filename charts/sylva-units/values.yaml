@@ -2337,9 +2337,9 @@ _internal:
   # These values are used only if `cluster.os_images` is empty
   default_os_images:
     ubuntu-2204-plain-qcow2:
-      uri: "{{ .Values.sylva_base_oci_registry }}/sylva-elements/diskimage-builder/diskimage-builder-plain:0.0.7"
+      uri: "{{ .Values.sylva_base_oci_registry }}/sylva-elements/diskimage-builder/diskimage-builder-plain@sha256:5f31d4faf1f0f1b9113c7eecb9a97f32066d40e3fcb08d763f88c08a43dbffc0"
       filename: ubuntu-22.04-plain.qcow2
-      checksum: 56a6363f25a5491aa955e4dda6fae17faa10c5e0850d01fe2a10c996c7830971
+      checksum: dbd6c3cef0b1b3a2722ea54ba5e400fc0e5ee2f704a362a70378a1a877e006e4
 
 shared_workload_clusters_values:
   cluster:
