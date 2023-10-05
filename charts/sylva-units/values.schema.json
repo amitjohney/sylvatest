@@ -390,6 +390,9 @@
             "security_group_name": {
               "type": "string"
             },
+            "common_security_group_name": {
+              "type": "string"
+            },
             "identity_ref_secret": {
               "type": "object",
               "properties": {
@@ -2041,9 +2044,22 @@
                               "type": "null"
                             }
                           ]
-                        }
+                        },
+                        "common_security_group_name": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
                       }
-                    },
+                    }
+                  },
                     {
                       "$ref": "#/$defs/string-with-gotpl"
                     },
@@ -3663,23 +3679,6 @@
             },
             {
               "$ref": "#/$defs/string-with-gotpl"
-            }
-          ]
-        }
-      }
-    },
-    "capo": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "common_security_group_name": {
-          "anyOf": [
-            {
-              "type": "string",
-              "$ref": "#/$defs/string-with-gotpl"
-            },
-            {
-              "type": "null"
             }
           ]
         }
