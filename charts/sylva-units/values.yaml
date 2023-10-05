@@ -2098,23 +2098,6 @@ cluster:
   # kubernetes version to be used
   k8s_version: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.24.12+rke2r1" "v1.24.12" }}'
 
-  # Additional IP addresses to be used by metallb and L3 configuration if needed
-  # metallb_additional_options:
-  #   l3_options:
-  #     bgp_peers:
-  #       - name: peerName
-  #         local_asn: 64511  # example only, must be updated
-  #         peer_asn: 64510  # example only, must be updated
-  #         peer_address: 55.55.55.55
-  #         advertised_pools:
-  #           - lbpool  # default IP pool used for kube-api and ingress exposure
-  #           - my-custom-pool  # additional IP pools to be advertised to this peer
-  #   address_pools:
-  #     - name: my-custom-pool
-  #       addresses:
-  #         - 55.55.55.55/33
-  #         - 10.10.10.10-255.10.10.12
-
   # Nodes number for control-plane
   control_plane_replicas: 3
 
