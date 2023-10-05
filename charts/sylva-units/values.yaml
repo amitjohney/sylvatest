@@ -1921,11 +1921,13 @@ units:
             rootVolume: '{{ .Values.cluster.capo.rootVolume | include "preserve-type" }}'
           capv:
             image_name: '{{ .Values.cluster.capv.image_name }}'
-            diskGiB: '{{ .Values.cluster.capv.diskGiB }}'
-            memoryMiB: '{{ .Values.cluster.capv.memoryMiB }}'
-            numCPUs: '{{ .Values.cluster.capv.numCPUs }}'
+            diskGiB: '{{ .Values.cluster.capv.diskGiB | include "preserve-type" }}'
+            memoryMiB: '{{ .Values.cluster.capv.memoryMiB | include "preserve-type" }}'
+            numCPUs: '{{ .Values.cluster.capv.numCPUs | include "preserve-type" }}'
             dataCenter: '{{ .Values.cluster.capv.dataCenter }}'
-            network: '{{ .Values.cluster.capv.network }}'
+            networks:
+              default:
+                networkName: '{{ .Values.cluster.capv.networks.default.networkName }}'
             server: '{{ .Values.cluster.capv.server }}'
             dataStore: '{{ .Values.cluster.capv.dataStore }}'
             tlsThumbprint: '{{ .Values.cluster.capv.tlsThumbprint }}'
