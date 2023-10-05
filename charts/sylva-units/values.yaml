@@ -1300,7 +1300,7 @@ units:
       chart:
         spec:
           chart: rancher
-          version: 2.7.4
+          version: 2.7.7
       targetNamespace: cattle-system
       interval: 10m0s
       upgrade:
@@ -1606,6 +1606,7 @@ units:
     helmrelease_spec:
       releaseName: rancher-monitoring-crd
       targetNamespace: cattle-monitoring-system
+      storageNamespace: cattle-monitoring-system # see https://gitlab.com/sylva-projects/sylva-core/-/issues/443
       chart:
         spec:
           chart: rancher-monitoring-crd
@@ -1625,6 +1626,7 @@ units:
     helmrelease_spec:
       releaseName: rancher-monitoring
       targetNamespace: cattle-monitoring-system
+      storageNamespace: cattle-monitoring-system # see https://gitlab.com/sylva-projects/sylva-core/-/issues/443
       chart:
         spec:
           chart: rancher-monitoring
