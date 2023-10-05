@@ -2002,197 +2002,109 @@
       ]
     },
     "machine-deployment": {
-      "anyOf": [
-        {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "infra_provider": {
+          "type": "string"
+        },
+        "replicas": {
+          "type": "integer"
+        },
+        "metadata": {
           "type": "object",
-          "additionalProperties": false,
           "properties": {
-            "infra_provider": {
-              "anyOf": [
-                {
+            "labels": {
+              "type": "object"
+            },
+            "annotations": {
+              "type": "object"
+            }
+          }
+        },
+        "kubelet_extra_args": {
+          "type": "object"
+        },
+        "rke2": {
+          "$ref": "#/$defs/rke2"
+        },
+        "kubeadm": {
+          "$ref": "#/$defs/kubeadm-users"
+        },
+        "additional_commands": {
+          "$ref": "#/$defs/bootstrap-additional-commands"
+        },
+        "capo": {
+          "type": "object",
+          "properties": {
+            "image_name": {
+              "type": "string"
+            },
+            "flavor_name": {
+              "type": "string"
+            },
+            "rootVolume": {
+              "$ref": "#/$defs/capo-machine-rootVolume"
+            },
+            "network_id": {
+              "type": "string"
+            },
+            "server_group_id": {
+              "type": "string"
+            },
+            "security_group_name": {
+              "type": "string"
+            },
+            "common_security_group_name": {
+              "type": "string"
+            },
+            "identity_ref_secret": {
+              "type": "object",
+              "properties": {
+                "name": {
                   "type": "string"
                 },
-                {
-                  "$ref": "#/$defs/string-with-gotpl"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            },
-            "replicas": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "$ref": "#/$defs/string-with-gotpl"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            },
-            "metadata": {
-              "anyOf": [
-                {
+                "clouds_yaml": {
                   "type": "object",
+                  "additionalProperties": false,
                   "properties": {
-                    "labels": {
-                      "anyOf": [
-                        {
-                          "type": "object"
-                        },
-                        {
-                          "$ref": "#/$defs/string-with-gotpl"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
-                    "annotations": {
-                      "anyOf": [
-                        {
-                          "type": "object"
-                        },
-                        {
-                          "$ref": "#/$defs/string-with-gotpl"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    }
-                  }
-                },
-                {
-                  "$ref": "#/$defs/string-with-gotpl"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            },
-            "kubelet_extra_args": {
-              "anyOf": [
-                {
-                  "type": "object"
-                },
-                {
-                  "$ref": "#/$defs/string-with-gotpl"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            },
-            "rke2": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/rke2"
-                },
-                {
-                  "$ref": "#/$defs/string-with-gotpl"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            },
-            "kubeadm": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/kubeadm-users"
-                },
-                {
-                  "$ref": "#/$defs/string-with-gotpl"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            },
-            "additional_commands": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/bootstrap-additional-commands"
-                },
-                {
-                  "$ref": "#/$defs/string-with-gotpl"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            },
-            "additional_files": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/bootstrap-additional-files"
-                },
-                {
-                  "$ref": "#/$defs/string-with-gotpl"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            },
-            "capo": {
-              "anyOf": [
-                {
-                  "type": "object",
-                  "properties": {
-                    "image_name": {
-                      "anyOf": [
-                        {
-                          "type": "string"
-                        },
-                        {
-                          "$ref": "#/$defs/string-with-gotpl"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
-                    "flavor_name": {
-                      "anyOf": [
-                        {
-                          "type": "string"
-                        },
-                        {
-                          "$ref": "#/$defs/string-with-gotpl"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
-                    "rootVolume": {
-                      "anyOf": [
-                        {
+                    "clouds": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "capo_cloud"
+                      ],
+                      "patternProperties": {
+                        "(capo_cloud|.*)": {
                           "type": "object",
-                          "additionalProperties": false,
+                          "additionalProperties": true,
+                          "required": [
+                            "auth"
+                          ],
                           "properties": {
-                            "diskSize": {
-                              "anyOf": [
-                                {
-                                  "type": "integer",
-                                  "minimum": 1
+                            "auth": {
+                              "type": "object",
+                              "additionalProperties": true,
+                              "required": [
+                                "auth_url",
+                                "username",
+                                "password",
+                                "project_name",
+                                "project_domain_name",
+                                "user_domain_name"
+                              ],
+                              "properties": {
+                                "auth_url": {
+                                  "type": "string",
+                                  "format": "uri"
                                 },
-                                {
-                                  "$ref": "#/$defs/string-with-gotpl"
+                                "user_domain_name": {
+                                  "type": "string"
                                 },
-                                {
-                                  "type": "null"
-                                }
-                              ]
-                            },
-                            "volumeType": {
-                              "anyOf": [
-                                {
+                                "project_domain_name": {
+                                  "type": "string"
+                                },
+                                "project_name": {
                                   "type": "string"
                                 },
                                 {
@@ -4079,9 +3991,35 @@
                               "type": "null"
                             }
                           ]
-                        }
+                        },
+                        "security_group_name": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "common_security_group_name": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
                       }
-                    },
+                    }
+                  },
                     {
                       "$ref": "#/$defs/string-with-gotpl"
                     },
@@ -4089,27 +4027,11 @@
                       "type": "null"
                     }
                   ]
-                }
-              }
-            },
-            {
-              "$ref": "#/$defs/string-with-gotpl"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "images": {
-          "anyOf": [
-            {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "kube_vip": {
+                },
+                "capv": {
                   "anyOf": [
                     {
-                      "$ref": "#/$defs/container-image"
+                      "$ref": "#/$defs/capv-machine"
                     },
                     {
                       "$ref": "#/$defs/string-with-gotpl"
@@ -5777,7 +5699,7 @@
         }
       }
     },
-    "neuvector": {
+    "flux": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -5806,43 +5728,6 @@
             },
             {
               "$ref": "#/$defs/string-with-gotpl"
-            }
-          ]
-        }
-      }
-    },
-    "os_image_server": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "external_hostname": {
-          "anyOf": [
-            {
-              "type": "string",
-              "format": "hostname"
-            },
-            {
-              "const": ""
-            },
-            {
-              "$ref": "#/$defs/string-with-gotpl"
-            }
-          ]
-        }
-      }
-    },
-    "capo": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "common_security_group_name": {
-          "anyOf": [
-            {
-              "type": "string",
-              "$ref": "#/$defs/string-with-gotpl"
-            },
-            {
-              "type": "null"
             }
           ]
         }
