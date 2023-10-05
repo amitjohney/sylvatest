@@ -3668,6 +3668,23 @@
         }
       }
     },
+    "capo": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "common_security_group_name": {
+          "anyOf": [
+            {
+              "type": "string",
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
     "os_images": {
       "type": "object"
     },
