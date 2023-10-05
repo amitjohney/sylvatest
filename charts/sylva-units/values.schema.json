@@ -4017,9 +4017,9 @@
                               "type": "null"
                             }
                           ]
+                        }
                       }
-                    }
-                  },
+                    },
                     {
                       "$ref": "#/$defs/string-with-gotpl"
                     },
