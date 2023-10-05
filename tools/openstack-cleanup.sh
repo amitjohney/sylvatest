@@ -54,6 +54,8 @@ do
   else
     echo "All ports are deleted"
     openstack ${OS_ARGS} security group list --tags ${CAPO_TAG} -f value -c ID | xargs -tr openstack ${OS_ARGS} security group delete || true
+    openstack ${OS_ARGS} security group list --tags ${CAPO_TAG} -f value -c ID || true
+    openstack ${OS_ARGS} security group list --tags ${CAPO_TAG} -f value -c ID | xargs -tr -I % openstack ${OS_ARGS} port list --security-group=% || true
     break
   fi
 done
