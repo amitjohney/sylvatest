@@ -13,6 +13,15 @@ _internal:
         {{- end -}}
       {{- end -}}
       {{- $result -}}
+  ironic_ip: >-
+    {{-
+    tuple .
+    (tuple . "libvirt-metal" | include "unit-enabled")
+    "192.168.10.123"
+    (.Values.metal3.external_bootstrap_ip | default .Values.metal3.bootstrap_ip | default "")
+    | include "interpret-ternary"
+    -}}
+
 
 unit_kustomization_spec_default:
   interval: 100000m   # for bootstrap, we don't care about having flux update things on the longterm
@@ -35,7 +44,14 @@ units:
         services:
           ironic:
             # Address of the host, that will be reachable from the outside
-            ironicIP: '{{- tuple . (tuple . "libvirt-metal" | include "unit-enabled") "192.168.10.123" (dig "capm3" "external_bootstrap_ip" (dig "capm3" "bootstrap_ip" "127.0.0.1" .Values.metal3) .Values.metal3) | include "interpret-ternary" -}}'
+            ironicIP: >-
+              {{- if (tuple . "capm3" | include "unit-enabled") -}}
+                {{- if .Values._internal.ironic_ip -}}
+                  {{- .Values._internal.ironic_ip -}}
+                {{- else -}}
+                  {{- fail "to bootstrap a baremetal management cluster, you need to set metal3.bootstrap_ip or metal3.external_bootstrap_ip" -}}
+                {{- end -}}
+              {{- end -}}
             # Address of kind container/node, that will be used to bind ironic service
             externalIPs:
               - '{{ .Values._internal.bootstrap_node_ip }}'
