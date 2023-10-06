@@ -451,7 +451,7 @@ units:
         global:
           cattle:
             psp:
-              enabled: '{{ .Values.cluster.cis_profile | eq "cis-1.6" | include "preserve-type" }}'
+              enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") | include "preserve-type" }}'
 
   # this allows for running a CIS scan for management cluster
   # generates a report which can be viewed and downloaded in CSV from the Rancher UI, at https://rancher.sylva/dashboard/c/local/cis/cis.cattle.io.clusterscan
@@ -1290,7 +1290,7 @@ units:
 
   cinder-csi-psp:
     enabled_conditions:
-    - '{{ .Values.cluster.cis_profile | eq "cis-1.6" }}'
+    - '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") }}'
     - '{{ tuple . "cinder-csi" | include "unit-enabled" }}'
     depends_on:
       namespace-defs: true
@@ -1752,7 +1752,7 @@ units:
         global:
           cattle:
             psp:
-              enabled: '{{ .Values.cluster.cis_profile | eq "cis-1.6" | include "as-bool" }}'
+              enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") | include "as-bool" }}'
 
   monitoring:
     depends_on:
@@ -1772,7 +1772,7 @@ units:
         global:
           cattle:
             psp:
-              enabled: '{{ .Values.cluster.cis_profile | eq "cis-1.6" | include "as-bool" }}'
+              enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") | include "as-bool" }}'
 
   # this is a Job attempt to check successful import of a CAPI workload clusters in Rancher, still incomplete
   # it would be used along with a definition of a 'workload-cluster' unit
@@ -1937,7 +1937,7 @@ units:
 
   sriov-psp:
     enabled_conditions:
-    - '{{ .Values.cluster.cis_profile | eq "cis-1.6" }}'
+    - '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") }}'
     - '{{ (tuple . "sriov" | include "unit-enabled") }}'
     depends_on:
       sriov-crd: true
@@ -2007,7 +2007,7 @@ units:
           chart: longhorn
           version: 102.2.0+up1.4.1
       values:
-        enablePSP: '{{ .Values.cluster.cis_profile | eq "cis-1.6" | include "preserve-type" }}'
+        enablePSP: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") | include "preserve-type" }}'
         defaultSettings:
           createDefaultDiskLabeledNodes: true
           defaultDataPath: /var/lib/longhorn
@@ -2265,7 +2265,7 @@ cluster:
     bootstrap_provider: cabpk # cabpr (RKE2) or cabpk (kubeadm)
 
   # kubernetes version to be used
-  k8s_version: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.26.8+rke2r1" "v1.26.8" }}'
+  k8s_version: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.26.9+rke2r1" "v1.26.9" }}'
 
   # Nodes number for control-plane
   control_plane_replicas: 3
