@@ -1678,7 +1678,7 @@ units:
       chart:
         spec:
           chart: rke2-cilium
-          version: 1.13.200
+          version: '{{ semver (tuple . .Values.cluster.k8s_version | include "interpret-as-string") | (semver "v1.26.6").Compare | le 0 | ternary "1.13.200" "1.14.100" }}'
       values:
         operator:
           replicas: '{{ .Values.cluster.control_plane_replicas }}'  ### Workaround for single node clusters
