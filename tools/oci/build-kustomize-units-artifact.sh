@@ -53,7 +53,12 @@ EOF
     yq -i '.resources = ["local-resources.yaml"]' $kustomization
 }
 
-artifact_source="$(git config --get remote.origin.url)"
+# if we run in a gitlab CI job, then we use the CI_REPOSITORY_URL provided by gitlab job environment
+if [[ -n ${CI_REPOSITORY_URL:-} ]]; then
+  artifact_source="${CI_REPOSITORY_URL/gitlab-ci-token*@/}"
+else
+  artifact_source="$(git config --get remote.origin.url)"
+fi
 artifact_revision="$(git branch --show-current)/$(git rev-parse HEAD)"
 artifact_tag="${1:-$(git rev-parse --short HEAD)}"
 
