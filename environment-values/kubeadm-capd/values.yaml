@@ -18,6 +18,7 @@ units:
     enabled: false
 
 cluster:
+  k8s_version: v1.26.6
   capi_providers:
     infra_provider: capd
     bootstrap_provider: cabpk

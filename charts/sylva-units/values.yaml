@@ -2265,7 +2265,7 @@ cluster:
     bootstrap_provider: cabpk # cabpr (RKE2) or cabpk (kubeadm)
 
   # kubernetes version to be used
-  k8s_version: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.26.6+rke2r1" "v1.26.6" }}'
+  k8s_version: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.26.8+rke2r1" "v1.26.8" }}'
 
   # Nodes number for control-plane
   control_plane_replicas: 3
