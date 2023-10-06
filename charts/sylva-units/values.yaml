@@ -62,7 +62,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3.git
       ref:
-        tag: 0.4.0
+        branch: tmon/mariadb-galera
 
   sylva-capi-cluster:
     kind: GitRepository
@@ -858,7 +858,7 @@ units:
             # We allow shared IPs because we are exposing (by design) a single cluster external IP
             annotations:
               metallb.universe.tf/allow-shared-ip: cluster-external-ip
-        mariadb:
+        mariadb-galera:
           persistence:
             storageClass: '{{ .Values._internal.default_storage_class }}'
         podSecurityContext:
@@ -871,17 +871,12 @@ units:
         - kind: Secret
           name: metal3-secrets
           valuesKey: metal3-mariadb-root-secret
-          targetPath: mariadb.auth.rootPassword
-          optional: false
-        - kind: Secret
-          name: metal3-secrets
-          valuesKey: metal3-mariadb-replication-secret
-          targetPath: mariadb.auth.replicationPassword
+          targetPath: mariadb-galera.rootUser.password
           optional: false
         - kind: Secret
           name: metal3-secrets
           valuesKey: metal3-ironic-secret
-          targetPath: mariadb.auth.ironicPassword
+          targetPath: mariadb-galera.db.password
           optional: false
         - kind: Secret
           name: metal3-secrets
