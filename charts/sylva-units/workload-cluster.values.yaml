@@ -235,6 +235,7 @@ units:
     unit_template: base-deps
     depends_on:
       default/rancher: true  # depends on rancher unit in default ns
+      default/capi-rancher-import: true  # depends on capi-rancher-import unit in default ns
     repo: sylva-core
     kustomization_spec:
       # because this resource lives in the mgmt cluster:
