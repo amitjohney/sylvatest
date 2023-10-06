@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 cat <<EOF
-include: '/tools/gci-templates/gitlab-ci.yml'
+include: '/.gitlab/ci/chart-jobs.yml'
 
 stages:
   - test
@@ -19,7 +19,7 @@ cat <<EOF
   rules:
     - changes:
         - ${f}/**/*
-        - tools/gci-templates/**/*
+        - .gitlab/ci/**/*
   needs:
     - job: '${f##*/}:helm-schema-validation'
       optional: true
@@ -32,7 +32,7 @@ cat <<EOF
   rules:
     - changes:
         - ${f}/**/*
-        - tools/gci-templates/**/*
+        - .gitlab/ci/**/*
 
 '${f##*/}:helm-template-yamllint':
   stage: test
@@ -42,7 +42,7 @@ cat <<EOF
   rules:
     - changes:
         - ${f}/**/*
-        - tools/gci-templates/**/*
+        - .gitlab/ci/**/*
   needs:
     - job: '${f##*/}:helm-schema-validation'
       optional: true
@@ -57,7 +57,7 @@ cat <<EOF
         - charts/${f##*/}/values.schema.yaml
         - charts/${f##*/}/values.schema.json
       changes:
-        - tools/gci-templates/**/*
+        - .gitlab/ci/**/*
         - charts/${f##*/}/values.schema.json
         - charts/${f##*/}/values.schema.yaml
         - tools/generate_json_schema.py
@@ -76,7 +76,7 @@ cat <<EOF
     KUSTOMIZATION_PATH: "${f}"
   rules:
     - changes:
-        - tools/gci-templates/**/*
+        - .gitlab/ci/**/*
         - environment-values/**/*
         - kustomize-units/**/*
 EOF

@@ -1,0 +1,20 @@
+---
+workflow:
+  rules:
+    - when: always
+
+stages:
+  - deploy
+  - deployment-test
+  - delete
+
+default:
+  tags:
+    - gitlab-org-docker
+  image: $CI_IMAGE
+  before_script:
+    - |
+      echo "CAPO_TAG = $CAPO_TAG"
+      echo "KIND_CLUSTER_NAME = $KIND_CLUSTER_NAME"
+      echo "MANAGEMENT_CLUSTER_NAME = $MANAGEMENT_CLUSTER_NAME"
+      echo "TEST_WORKLOAD_CLUSTER_NAME = $TEST_WORKLOAD_CLUSTER_NAME"

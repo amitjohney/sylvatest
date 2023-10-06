@@ -1,0 +1,163 @@
+
+# ==========================================
+# Deploy stage
+# ==========================================
+
+include:
+  - local: .gitlab/ci/templates-deployments.yml
+
+variables:
+  CAPO_PLATFORM_TAG: capo-ci
+  # if a deploy job sets this to "even" (resp. "odd"), the job will automatically trigger
+  # for any MR having an even MR number and the run-e2e-tests label
+  E2E_JOB_MR_PARITY: any
+  ENV_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}"
+  ENV_TAG_OCI: "${CI_PIPELINE_ID}-${ENV_NAME}-oci"
+  KIND_CLUSTER_NAME: bootstrap-${ENV_TAG}
+  MANAGEMENT_CLUSTER_NAME: management-cluster-${ENV_TAG}
+  TEST_WORKLOAD_CLUSTER_NAME: test-workload-cluster-${ENV_TAG}
+
+.deployment_rules:
+  - if: $CI_MERGE_REQUEST_LABELS =~ /renovate/ && $CAPO_TAG
+    allow_failure: true
+    when: manual
+  - if: '$CI_COMMIT_TAG'
+  - if: $CI_PIPELINE_SOURCE == 'pipeline' && $OCI_TAG == null
+    allow_failure: true
+    when: manual
+  - if: $CI_PIPELINE_SOURCE == 'web'
+  - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_DEPLOYMENTS'
+  - if: $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/ && ($E2E_JOB_MR_PARITY == "any" || ($E2E_JOB_MR_PARITY == "even" && $CI_OPEN_MERGE_REQUESTS =~ /[02468]$/) || ($E2E_JOB_MR_PARITY == "odd" && $CI_OPEN_MERGE_REQUESTS =~ /[13579]$/))
+  - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    allow_failure: true
+    when: manual
+
+.default-trigger:
+  stage: deploy
+  rules: !reference [".deployment_rules"]
+
+.needs-publish-jobs:
+  - job: push-helm-artifacts
+  - job: publish-kustomize-units-artifact
+  - job: publish-sylva-units-artifact
+
+.default-trigger-oci:
+  extends: .default-trigger
+  variables:
+    OCI_TAG: $OCI_TAG_FORMAT
+  needs: !reference [.needs-publish-jobs]
+
+capd-preview-deploy:
+  extends:
+    - .deploy-base
+    - .default-trigger
+  timeout: 15min
+  script:
+    - !reference [.common-deployment, script_common]
+    - !reference [.common-deployment, script_capd]
+    - ./preview.sh environment-values/${ENV_NAME}
+  artifacts:
+    when: on_failure
+    expire_in: 1 hour
+    paths:
+      - debug-on-exit.log
+      - bootstrap-cluster-dump/
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - preview.sh
+        - tools/shell-lib/common.sh
+  variables:
+    ENV_NAME: kubeadm-capd
+
+capd-preview-oci-deploy:
+  extends: [capd-preview-deploy]
+  variables:
+    OCI_TAG: $OCI_TAG_FORMAT
+    ENV_NAME: kubeadm-capd
+  needs: !reference [.needs-publish-jobs]
+
+capd-kubeadm-deploy:
+  extends: .default-trigger
+  variables:
+    E2E_JOB_MR_PARITY: even
+    ENV_NAME: kubeadm-capd
+  trigger:
+    include: .gitlab/ci/pipeline-deploy-kubeadm-capd.yml
+    strategy: depend
+
+capd-kubeadm-oci-deploy:
+  extends: .default-trigger-oci
+  variables:
+    E2E_JOB_MR_PARITY: odd
+    ENV_NAME: kubeadm-capd
+  trigger:
+    include: .gitlab/ci/pipeline-deploy-kubeadm-capd.yml
+    strategy: depend
+
+capo-kubeadm-deploy:
+  extends: .default-trigger
+  variables:
+    CAPO_TAG: $ENV_TAG
+    E2E_JOB_MR_PARITY: even
+    ENV_NAME: kubeadm-capo
+  trigger:
+    include: .gitlab/ci/pipeline-deploy-kubeadm-capo.yml
+    strategy: depend
+
+capo-kubeadm-oci-deploy:
+  extends: .default-trigger-oci
+  variables:
+    CAPO_TAG: $ENV_TAG_OCI
+    E2E_JOB_MR_PARITY: odd
+    ENV_NAME: kubeadm-capo
+  trigger:
+    include: .gitlab/ci/pipeline-deploy-kubeadm-capo.yml
+    strategy: depend
+
+capo-rke2-deploy:
+  extends: .default-trigger
+  variables:
+    CAPO_TAG: $ENV_TAG
+    E2E_JOB_MR_PARITY: odd
+    ENV_NAME: rke2-capo
+  trigger:
+    include: .gitlab/ci/pipeline-deploy-rke2-capo.yml
+    strategy: depend
+
+capo-rke2-oci-deploy:
+  extends: .default-trigger-oci
+  variables:
+    CAPO_TAG: $ENV_TAG_OCI
+    E2E_JOB_MR_PARITY: even
+    ENV_NAME: rke2-capo
+  trigger:
+    include: .gitlab/ci/pipeline-deploy-rke2-capo.yml
+    strategy: depend
+
+capo-misc-units-deploy:
+  extends: .default-trigger-oci
+  stage: deploy
+  variables:
+    ENV_NAME: kubeadm-capo
+    CAPO_TAG: "${ENV_TAG_OCI}-misc"
+  trigger:
+    include: .gitlab/ci/pipeline-deploy-misc-units-in-capo.yml
+    strategy: depend
+
+capo-fip-deploy:
+  extends: .default-trigger
+  rules:
+    - if: $CI_MERGE_REQUEST_LABELS =~ /renovate/
+      allow_failure: true
+      when: manual
+    - if: $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
+      allow_failure: true
+      when: manual
+    - !reference [.default-trigger, rules]
+  variables:
+    ENV_NAME: kubeadm-capo
+    CAPO_TAG: "${ENV_TAG_OCI}-fip"
+  trigger:
+    include: .gitlab/ci/pipeline-deploy-capo-fip.yml
+    strategy: depend

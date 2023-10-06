@@ -1,0 +1,55 @@
+---
+include:
+  - local: .gitlab/ci/child-pipeline-default.yml
+  - local: .gitlab/ci/templates-deployments.yml
+
+#----------------------------------------------------------
+
+.deploy-kubeadm-capo:
+  extends: .deploy-capo
+
+deploy-kubeadm-capo:
+  extends: [.deploy-kubeadm-capo]
+  rules:
+    - if: $OCI_TAG == null
+  artifacts:
+    expose_as: deploy-kubeadm-capo
+
+deploy-kubeadm-capo-oci:
+  extends: [.deploy-kubeadm-capo]
+  rules:
+    - if: $OCI_TAG
+  artifacts:
+    expose_as: deploy-kubeadm-capo-oci
+
+#----------------------------------------------------------
+
+test-workload-cluster-kubeadm-capo:
+  extends: .test-workload-cluster
+
+#----------------------------------------------------------
+
+.test-login-kubeadm-capo:
+  extends: .test-login
+  script:
+    - !reference [.hurl-report, script_capo ]
+
+test-login-kubeadm-capo:
+  extends: [.test-login-kubeadm-capo]
+  rules:
+    - if: $OCI_TAG == null
+  artifacts:
+    expose_as: login-kubeadm-capo
+
+test-login-kubeadm-capo-oci:
+  extends: [.test-login-kubeadm-capo]
+  rules:
+    - if: $OCI_TAG
+  artifacts:
+    expose_as: login-kubeadm-capo-oci
+
+#----------------------------------------------------------
+
+cleanup-kubeadm-capo:
+  extends: .cleanup-capo
+  when: always

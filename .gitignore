@@ -3,3 +3,5 @@
 bin/*
 tools/kind/registry.d/
 clouds.yaml
+.gitlab-ci-local-variables.yml
+.gitlab-ci-local/

@@ -1,0 +1,198 @@
+#=============================
+# Templates for deployments
+#=============================
+
+include:
+  - local: .gitlab/ci/common.yml
+
+.common-deployment:
+  script_common:
+    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_common[collapsed=true]\r\e[0KRunning common deployment steps\e[0m"
+    - export DOCKER_IP=$(getent ahostsv4 docker | awk '{print $1}' | sort -u)
+    - export ENV_PATH=environment-values/${ENV_NAME}
+    - values_file=environment-values/${ENV_NAME}/values.yaml
+    - docker network create --attachable kind
+    - KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
+    - ip route add $KIND_PREFIX via $DOCKER_IP
+    - |
+      if [ ${OCI_TAG} ]; then
+        echo -e "Applying OCI configuration for tag: ${OCI_TAG}"
+        if [ $(yq '.components | length' environment-values/$ENV_NAME/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' environment-values/$ENV_NAME/kustomization.yaml; fi
+        yq -i '.components += "../components/oci-artifacts"' $ENV_PATH/kustomization.yaml
+      cat <<EOF>> $ENV_PATH/kustomization.yaml
+      patches:
+      - target:
+          kind: HelmRelease
+          name: sylva-units
+        patch: |
+          - op: replace
+            path: /spec/chart/spec/version
+            value: ${OCI_TAG}
+      EOF
+        cat $ENV_PATH/kustomization.yaml
+        export METALLB_HELM_OCI_URL='{{ lookup "source.toolkit.fluxcd.io/v1beta2" "HelmRepository" "default" "sylva-core" | dig "spec" "url" "oci://registry.gitlab.com/sylva-projects/sylva-core" | dir | replace "oci:/" "oci://" }}/sylva-core/metallb'
+        yq -i '.cluster.metallb_helm_oci_url = strenv(METALLB_HELM_OCI_URL)' $values_file
+      fi
+    - yq -i '.cluster.name = strenv(MANAGEMENT_CLUSTER_NAME)' $values_file
+    - yq -i '.test_workload_cluster_name = strenv(TEST_WORKLOAD_CLUSTER_NAME)' $values_file
+    - yq -i '.env_type = "ci"' $values_file
+    - |
+      if [ ${CUSTOM_VALUES_FILE} ]; then
+        yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file $CUSTOM_VALUES_FILE
+      fi
+    - |
+      if [[ ${CI_PIPELINE_SOURCE} == 'pipeline' && ${REMOTE_VALUES} ]]; then
+        echo -e "This pipeline is a cross project pipeline."
+        echo -e "Applying custome remote values to $values_file."
+        echo "${REMOTE_VALUES}" > /tmp/remote_values.yaml
+        cat /tmp/remote_values.yaml
+        yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file /tmp/remote_values.yaml
+        cat $values_file
+      fi
+    - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_common\r\e[0K"
+  script_capd:
+    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capd[collapsed=true]\r\e[0KApplying specific capd configuration\e[0m"
+    - export DOCKER_HOST=tcp://$DOCKER_IP:2375
+    - yq -i '.capd_docker_host = strenv(DOCKER_HOST)' $values_file
+    - export CLUSTER_EXTERNAL_IP=$(echo $KIND_PREFIX | awk -F"." '{print $1"."$2"."$3".100"}')
+    - yq -i '.cluster_external_ip = strenv(CLUSTER_EXTERNAL_IP)' $values_file
+    - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capd\r\e[0K"
+  script_capo:
+    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capo[collapsed=true]\r\e[0KApplying specific capo configuration\e[0m"
+    - yq -i eval-all 'select(fileIndex==0).cluster.capo.clouds_yaml = select(fileIndex==1) | select(fileIndex==0)' environment-values/${ENV_NAME}/secrets.yaml ~/.config/openstack/clouds.yml
+    - yq -i '.cluster.capo.resources_tag = strenv(CAPO_TAG)' $values_file
+    - git config --global credential.helper cache
+    # the CI_COMPONENT_* variables below are set in the gitlab runner configuration
+    # and allow to enable extra kustomize components needed in the context of the platform
+    # on which this test actually runs
+    - git clone --depth=1 https://foo:${CI_COMPONENT_REPO_PAT}@${CI_COMPONENT_REPO}
+    - export CI_COMPONENT="https://${CI_COMPONENT_REPO}//${CI_COMPONENT_REPO_PATH}-${ENV_NAME}?ref=2023-09-28"
+    - if [ $(yq '.components | length' environment-values/$ENV_NAME/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' environment-values/$ENV_NAME/kustomization.yaml; fi
+    - yq -i '.components += strenv(CI_COMPONENT)' environment-values/$ENV_NAME/kustomization.yaml
+    - yq -e '.registry_mirrors' $(basename ${CI_COMPONENT_REPO} .git)/${CI_COMPONENT_REPO_PATH}-base/values.yaml > registry_mirrors.yml
+    - yq -i eval-all 'select(fileIndex==0).registry_mirrors = select(fileIndex==1) | select(fileIndex==0)' $values_file registry_mirrors.yml
+    - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capo\r\e[0K"
+  post_deployment_common:
+    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_post_deployment[collapsed=true]\r\e[0KRunning post deployment step\e[0m"
+    - export CHECK_RANCHER_JOB_POD=`kubectl --kubeconfig management-cluster-kubeconfig -n kube-job get pod --selector job-name=check-rancher-clusters-job-cattle-system -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}'`
+    - |
+      if [ -n "$CHECK_RANCHER_JOB_POD" ]; then
+        kubectl --kubeconfig management-cluster-kubeconfig -n kube-job logs $CHECK_RANCHER_JOB_POD
+      else
+        echo "No workload clusters here"
+      fi
+    - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_post_deployment\r\e[0K"
+  os_cloud:
+    # the OS_* variables below are set in the gitlab runner configuration
+    # and contain information to connect to the OpenStack instance used
+    # by this test
+    - mkdir -p ~/.config/openstack
+    - |
+      cat <<EOF>> ~/.config/openstack/clouds.yml
+      clouds:
+        capo_cloud:
+          auth:
+            auth_url: '${OS_AUTH_URL}'
+            user_domain_name: '${OS_USER_DOMAIN_ID}'
+            project_domain_name: '${OS_PROJECT_DOMAIN_ID}'
+            project_name: '${OS_TENANT_NAME}'
+            username: '${OS_USERNAME}'
+            password: '${OS_PASSWORD}'
+          region_name: '${OS_REGION_NAME}'
+          verify: false
+      EOF
+
+.deploy-base:
+  extends: .docker-service
+  stage: deploy
+  timeout: 60min
+  artifacts:
+    expire_in: 6 hour
+    when: always
+    paths:
+      - debug-on-exit.log
+      - bootstrap-cluster-dump/
+      - management-cluster-dump/
+      - bootstrap-cluster-units-report.xml
+      - management-cluster-units-report.xml
+      - bootstrap-timeline.html
+      - management-cluster-timeline.html
+      - management-cluster-kubeconfig
+    reports:
+      junit:
+      - bootstrap-cluster-units-report.xml
+      - management-cluster-units-report.xml
+    # expose_as: $CI_JOB_NAME  # not allowed https://gitlab.com/gitlab-org/gitlab/-/issues/427149
+
+.deploy-capo:
+  extends: .deploy-base
+  script:
+    - !reference [.common-deployment, script_common]
+    - !reference [.common-deployment, os_cloud]
+    - !reference [.common-deployment, script_capo]
+    - ./bootstrap.sh environment-values/${ENV_NAME}
+    - !reference [.common-deployment, post_deployment_common]
+  tags:
+    - $CAPO_PLATFORM_TAG
+
+.cleanup-capo:
+  stage: delete
+  image:
+    name: $OPENSTACK_CLIENT_IMAGE
+  script:
+    - !reference [.common-deployment, os_cloud]
+    - ./tools/openstack-cleanup.sh capo_cloud "${CAPO_TAG}"
+  tags:
+    - $CAPO_PLATFORM_TAG
+
+.script-test-workload-cluster: |
+  set -eo pipefail
+  echo "-- Get secret workoad-cluster-rancher-kubeconfig and save it locally in a workload-cluster-rancher-kubeconfig file"
+  kubectl --kubeconfig management-cluster-kubeconfig -n cattle-system get secret workload-cluster-rancher-kubeconfig -o jsonpath='{.data.kubeconfig}' | base64 -d | yq -P > workload-cluster-rancher-kubeconfig
+  echo "-- Get ingress saved into /etc/hosts"
+  kubectl --kubeconfig management-cluster-kubeconfig get ingress -A -o custom-columns=:.status.loadBalancer.ingress[].ip,:.spec.tls[].hosts[] | grep -v '<none>' >> /etc/hosts
+  export no_proxy=$no_proxy,.sylva
+  attempts=0
+  max_attempts=5
+  until kubectl run test --image=busybox --kubeconfig workload-cluster-rancher-kubeconfig -- sleep 10; do
+    sleep 3
+    ((attempts++)) && ((attempts==max_attempts)) && exit -1
+  done
+  echo "-- Wait for test pod to be created"
+  kubectl wait --for=condition=Ready pod/test --kubeconfig workload-cluster-rancher-kubeconfig --timeout=60s
+  echo "-- All done"
+
+.test-workload-cluster:
+  stage: deployment-test
+  script:
+    - echo "Testing workload cluster. Job started at '$CI_JOB_STARTED_AT'."
+    - !reference [.script-test-workload-cluster]
+  tags:
+    - $CAPO_PLATFORM_TAG
+
+.test-login:
+  stage: deployment-test
+  variables:
+    HURL_JUNIT_REPORT: login_junit_report.xml
+  artifacts:
+    expire_in: 6 hour
+    when: always
+    paths:
+      - $HURL_JUNIT_REPORT
+      - index.html
+      - store/
+    reports:
+      junit:
+      - $HURL_JUNIT_REPORT
+  tags:
+    - $CAPO_PLATFORM_TAG
+
+.hurl-report:
+  script_capo:
+    - kubectl --kubeconfig management-cluster-kubeconfig get ingress -A -o custom-columns=:.status.loadBalancer.ingress[].ip,:.spec.tls[].hosts[] >> /etc/hosts
+    - export HURL_token=$(kubectl --kubeconfig management-cluster-kubeconfig -n vault get secrets/vault-unseal-keys -o jsonpath='{.data.vault-root}' | base64 -d)
+    - export HURL_flux_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n flux-system flux-webui-weave-gitops -o jsonpath='{ .spec.tls[].hosts[] }')
+    - export HURL_vault_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n vault vault -o jsonpath='{ .spec.tls[].hosts[] }')
+    - export HURL_rancher_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n cattle-system rancher -o jsonpath='{ .spec.tls[].hosts[] }'); export domain=$(echo $HURL_rancher_url | cut -f2 -d .)
+    - export HURL_keycloak_url=$(kubectl --kubeconfig management-cluster-kubeconfig  get ingress -n keycloak keycloak-ingress -o jsonpath='{ .spec.tls[].hosts[] }')
+    - hurl -k ./tools/login-test/*.hurl --test --color --noproxy=".$domain"  --report-junit $HURL_JUNIT_REPORT --report-html .

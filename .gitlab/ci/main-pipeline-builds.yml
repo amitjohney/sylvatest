@@ -1,0 +1,34 @@
+# ==========================================
+# Build stage
+# ==========================================
+
+
+.build-base:
+  stage: build
+  dependencies: []
+  variables:
+    OCI_REGISTRY: oci://${CI_REGISTRY_IMAGE}
+    OCI_TAG: $OCI_TAG_FORMAT
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_PIPELINE_SOURCE == 'pipeline'
+      when: never
+    - if: $CI_PIPELINE_SOURCE == 'web'
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_DEPLOYMENTS'
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+publish-kustomize-units-artifact:
+  extends: .build-base
+  script:
+    - tools/oci/build-kustomize-units-artifact.sh ${OCI_TAG}
+
+push-helm-artifacts:
+  extends: .build-base
+  script:
+    - tools/oci/push-helm-charts-artifacts.sh "oci://${CI_REGISTRY_IMAGE}"
+
+publish-sylva-units-artifact:
+  extends: .build-base
+  script:
+    - tools/oci/build-sylva-units-artifact.sh ${OCI_TAG}

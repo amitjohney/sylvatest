@@ -1,0 +1,27 @@
+---
+include:
+  - local: .gitlab/ci/child-pipeline-default.yml
+  - local: .gitlab/ci/templates-deployments.yml
+
+.deploy-kubeadm-capd:
+  extends: .deploy-base
+  script:
+    - !reference [.common-deployment, script_common]
+    - !reference [.common-deployment, script_capd]
+    - ./bootstrap.sh environment-values/${ENV_NAME}
+    - !reference [.common-deployment, post_deployment_common]
+
+
+deploy-kubeadm-capd:
+  extends: [.deploy-kubeadm-capd]
+  rules:
+    - if: $OCI_TAG == null
+  artifacts:
+    expose_as: deploy-kubeadm-capd
+
+deploy-kubeadm-capd-oci:
+  extends: [.deploy-kubeadm-capd]
+  rules:
+    - if: $OCI_TAG
+  artifacts:
+    expose_as: deploy-kubeadm-capd-oci
