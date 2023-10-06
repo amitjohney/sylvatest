@@ -19,7 +19,7 @@ fi
 
 function helm() { $(which helm) $@ 2> >(grep -v 'found symbolic link' >&2); }
 
-export BASE_DIR=$( cd "$(dirname "${BASH_SOURCE[0]}")/../../.." ; pwd -P )
+export BASE_DIR=$( cd "$(dirname "${BASH_SOURCE[0]}")/../.." ; pwd -P )
 
 chart_dir=${BASE_DIR}/charts/${HELM_NAME}
 
@@ -27,7 +27,7 @@ RED='\033[0;31m'
 NC='\033[0m'
 echo -e "\e[0Ksection_start:`date +%s`:lint_schema\r\e[0K--------------- Lint Schema YAML file"
 echo "Lint $chart_dir/values.schema.yaml ..."
-yamllint --no-warnings -c ${BASE_DIR}/tools/gci-templates/configuration/yamllint.yaml $chart_dir/values.schema.yaml
+yamllint --no-warnings -c ${BASE_DIR}/.gitlab/ci/configuration/yamllint.yaml $chart_dir/values.schema.yaml
 echo "   DONE"
 echo -e "\e[0Ksection_end:`date +%s`:lint_schema\r\e[0K"
 

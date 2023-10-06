@@ -6,7 +6,7 @@ Some of the scripts run in  Sylva's CI can also be run manually on developer lap
 
 To validate that the schema of one of Sylva charts is a valid JSONSchema, you can run the following script:
 
-`tools/gci-templates/scripts/helm-schema-validation.sh sylva-units`
+`./tools/validation/helm-schema-validation.sh sylva-units`
 
 pre-requisites:
 
@@ -20,7 +20,7 @@ pre-requisites:
 
 To perform test runs of `helm template` followed by the YAML validation of the output, (with default and tests values) for one of Sylva Helm charts, you can run the following script:
 
-`tools/gci-templates/scripts/helm-template-yamllint.sh sylva-units`
+`./tools/validation/helm-template-yamllint.sh sylva-units`
 
 pre-requisites:
 

@@ -1,0 +1,55 @@
+---
+include:
+  - local: .gitlab/ci/child-pipeline-default.yml
+  - local: .gitlab/ci/templates-deployments.yml
+
+#----------------------------------------------------------
+
+.deploy-rke2-capo:
+  extends: .deploy-capo
+
+deploy-rke2-capo:
+  extends: [.deploy-rke2-capo]
+  rules:
+    - if: $OCI_TAG == null
+  artifacts:
+    expose_as: deploy-rke-capo
+
+deploy-rke2-capo-oci:
+  extends: [.deploy-rke2-capo]
+  rules:
+    - if: $OCI_TAG
+  artifacts:
+    expose_as: deploy-rke-capo-oci
+
+#----------------------------------------------------------
+
+test-workload-cluster-rke2-capo:
+  extends: .test-workload-cluster
+
+#----------------------------------------------------------
+
+.test-login-rke2-capo:
+  extends: .test-login
+  script:
+    - !reference [.hurl-report, script_capo ]
+
+test-login-rke2-capo:
+  extends: [.test-login-rke2-capo]
+  rules:
+    - if: $OCI_TAG == null
+  artifacts:
+    expose_as: test-login-rke2-capo
+
+test-login-rke2-capo-oci:
+  extends: [.test-login-rke2-capo]
+  rules:
+    - if: $OCI_TAG
+  artifacts:
+    expose_as: test-login-rke2-capo-oci
+
+#----------------------------------------------------------
+
+cleanup-rke2-capo:
+  extends: .cleanup-capo
+  when: always

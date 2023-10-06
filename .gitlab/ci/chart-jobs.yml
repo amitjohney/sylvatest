@@ -14,15 +14,15 @@ default:
 
 .helm-yamllint:
   script:
-    - yamllint $chart_dir -d "$(cat < tools/gci-templates/configuration/yamllint.yaml) $(cat < tools/gci-templates/configuration/yamllint-helm-exclude-chart-templates.yaml)"
+    - yamllint $chart_dir -d "$(cat < .gitlab/ci/configuration/yamllint.yaml) $(cat < .gitlab/ci/configuration/yamllint-helm-exclude-chart-templates.yaml)"
 
 .helm-template-yamllint:
   script:
-    - tools/gci-templates/scripts/helm-template-yamllint.sh
+    - ./tools/validation/helm-template-yamllint.sh
 
 .helm-schema-validation:
   script:
-    - tools/gci-templates/scripts/helm-schema-validation.sh
+    - ./tools/validation/helm-schema-validation.sh
 
 .kustomize-build:
   script:

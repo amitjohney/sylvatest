@@ -22,7 +22,7 @@ fi
 
 function helm() { $(which helm) $@ 2> >(grep -v 'found symbolic link' >&2); }
 
-export BASE_DIR=$( cd "$(dirname "${BASH_SOURCE[0]}")/../../.." ; pwd -P )
+export BASE_DIR=$( cd "$(dirname "${BASH_SOURCE[0]}")/../.." ; pwd -P )
 
 chart_dir=${BASE_DIR}/charts/${HELM_NAME}
 
@@ -58,7 +58,7 @@ echo -e "\e[0Ksection_start:`date +%s`:helm_base_values\r\e[0K--------------- Ch
 yq eval '{"units": .units | ... comments="" | to_entries | map({"key":.key,"value":{"enabled":true,"enabled_conditions":[]}}) | from_entries}' $chart_dir/values.yaml > /tmp/all-units-enabled.yaml
 
 helm template ${HELM_NAME} $chart_dir --values /tmp/all-units-enabled.yaml \
-| yamllint - -d "$(cat < ${BASE_DIR}/tools/gci-templates/configuration/yamllint.yaml) $(cat < ${BASE_DIR}/tools/gci-templates/configuration/yamllint-helm-template-rules)"
+| yamllint - -d "$(cat < ${BASE_DIR}/.gitlab/ci/configuration/yamllint.yaml) $(cat < ${BASE_DIR}/.gitlab/ci/configuration/yamllint-helm-template-rules)"
 
 echo OK
 echo -e "\e[0Ksection_end:`date +%s`:helm_base_values\r\e[0K"
@@ -70,7 +70,7 @@ if [ -d $chart_dir/test-values ] && [ -n "$test_dirs" ] ; then
 
     set +e
     helm template ${HELM_NAME} $chart_dir $(ls $dir/*.y*ml | grep -v test-spec.yaml | sed -e 's/^/--values /') \
-      | yamllint - -d "$(cat < ${BASE_DIR}/tools/gci-templates/configuration/yamllint.yaml) $(cat < ${BASE_DIR}/tools/gci-templates/configuration/yamllint-helm-template-rules)"
+      | yamllint - -d "$(cat < ${BASE_DIR}/.gitlab/ci/configuration/yamllint.yaml) $(cat < ${BASE_DIR}/.gitlab/ci/configuration/yamllint-helm-template-rules)"
     exit_code=$?
     set -e
 

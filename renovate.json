@@ -9,7 +9,7 @@
   ],
   "gitlabci": {
     "fileMatch": [
-      "gitlab-ci\\.yml$"
+      "\\.gitlab/ci/.*.yml"
     ]
   },
   "packageRules": [
@@ -83,7 +83,7 @@
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": [".gitlab-ci.yml"],
+      "fileMatch": [".gitlab/ci/.*.yml"],
       "matchStrings": [
         "\\s+# renovate: datasource=(?<datasource>.*?)\\s+.*?_IMAGE: (?<registryUrl>.*?)\/(?<depName>.*?):(?<currentValue>.*)"
       ],
