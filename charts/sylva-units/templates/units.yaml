@@ -34,10 +34,10 @@
       {{ if hasKey $unit_def "helmrelease_spec" -}}
         {{ if eq $repo_def.kind "OCIRepository" }}
           {{/* if the source repo is not of type GitRepository then we fail as we don't know how to do that yet */}}
-          {{ fail (printf "You cannot use helm_release_spec for a unit using 'repo' and referencing a source repo of type OCIRepository (unit '%s')" $unit_name) }}
+          {{ fail (printf "You cannot use helmrelease_spec for a unit using 'repo' and referencing a source repo of type OCIRepository (unit '%s')" $unit_name) }}
         {{ end }}
         {{/*
-        if helm_release_spec is used and the source repo is of type GitRepository then we inject our GitRepository in it as sourceRef
+        if helmrelease_spec is used and the source repo is of type GitRepository then we inject our GitRepository in it as sourceRef
         (the Kustomization will in that case, see in 'unit_helmrelease_kustomization_spec_default', use 'sylva-core' as the GitRepository)
         */}}
         {{- $helmrelease_spec_overrides = dict "chart" (dict "spec" (dict "sourceRef" $sourceRef

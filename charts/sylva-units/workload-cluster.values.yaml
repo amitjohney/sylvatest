@@ -16,7 +16,7 @@
 # when this values override file is used, it is assumed that
 # - `cluster.name` contains the name of the workload cluster to work on
 # - `cluster.capi_providers.(infra|bootstrap)_provider` are set to relevant values
-# - `cluster.capo` for Openstack settings needed by cinder-csi
+# - `openstack` for Openstack settings needed by cinder-csi
 # - etc.
 # any settings at the root of values, or under 'cluster', which is
 # needed for any unit listed below, will have to be specified
@@ -38,7 +38,7 @@ unit_helmrelease_kustomization_spec_default:
   kubeConfig: null
   targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
 
-# ... and its at the level of the HelmRelease that we ensure
+# ... and it's at the level of the HelmRelease that we ensure
 # that the Helm release is deployed in the workload cluster
 # (in default ns)
 unit_helmrelease_spec_default:
@@ -139,7 +139,7 @@ units:
     depends_on:
       cluster: true
     kustomization_spec:
-      targetNamespace: null  # if we don't do this, there are error because namespaces are a non-namespaced resource
+      targetNamespace: null  # if we don't do this, there are errors because namespaces are a non-namespaced resource
 
   calico-crd:
     enabled: true
