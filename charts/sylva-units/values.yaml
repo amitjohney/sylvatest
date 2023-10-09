@@ -1018,7 +1018,7 @@ units:
       targetNamespace: '{{ .Release.Namespace }}'
       postBuild:
         substitute:
-          STACK_NAME_PREFIX: 'management-cluster-{{ tuple . .Values.cluster.capo.resources_tag | include "interpret-as-string" | replace "." "-" }}'
+          STACK_NAME_PREFIX: '{{ .Values.cluster.name }}-{{ tuple . .Values.cluster.capo.resources_tag | include "interpret-as-string" | replace "." "-" }}'
           CAPO_TAG: '{{ .Values.cluster.capo.resources_tag }}'
           CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
           CONTROL_PLANE_AFFINITY_POLICY: '{{ .Values.openstack.control_plane_affinity_policy }}'
