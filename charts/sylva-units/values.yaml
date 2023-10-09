@@ -1672,6 +1672,9 @@ units:
     enabled_conditions:
     - '{{ .Values.cluster.default_cni | eq "cilium" | include "preserve-type" }}'
     helm_repo_url: https://rke2-charts.rancher.io
+    helm_chart_versions:
+      - "1.13.200"
+      - "1.14.100"
     helmrelease_spec:
       releaseName: rke2-cilium
       targetNamespace: kube-system
