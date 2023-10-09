@@ -602,13 +602,11 @@ properties:
     type: object
     additionalProperties: false
     properties:
-
       external_hostname:  # -------------------------------
         anyOf:
           - type: string
             format: hostname
           - $ref: "#/$defs/string-with-gotpl"
-
       expire_password_policy:  # -------------------------------
         type: integer
 
