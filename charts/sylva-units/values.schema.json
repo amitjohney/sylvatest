@@ -3332,11 +3332,7 @@
             "helm_chart_versions": {
               "type": "array",
               "items": {
-                "patternProperties": {
-                  "semver": {
-                    "type": "string"
-                  }
-                }
+                "type": "string"
               }
             },
             "helm_chart_artifact_name": {
