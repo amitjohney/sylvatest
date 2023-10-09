@@ -161,3 +161,11 @@ capo-fip-deploy:
   trigger:
     include: .gitlab/ci/pipeline-deploy-capo-fip.yml
     strategy: depend
+
+capm3-rke2-virt-equinix-deploy:
+  extends: .default-trigger
+  variables:
+    ENV_NAME: rke2-capm3-virt
+  trigger:
+    include: .gitlab/ci/pipeline-deploy-rke2-capm3-virt-equinix.yml
+    strategy: depend

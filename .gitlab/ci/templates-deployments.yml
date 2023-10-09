@@ -8,12 +8,15 @@ include:
 .common-deployment:
   script_common:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_common[collapsed=true]\r\e[0KRunning common deployment steps\e[0m"
-    - export DOCKER_IP=$(getent ahostsv4 docker | awk '{print $1}' | sort -u)
     - export ENV_PATH=environment-values/${ENV_NAME}
     - values_file=environment-values/${ENV_NAME}/values.yaml
     - docker network create --attachable kind
-    - KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
-    - ip route add $KIND_PREFIX via $DOCKER_IP
+    - |
+      if [ -n "$DOCKER_HOST" ]; then
+        export DOCKER_IP=$(getent ahostsv4 docker | awk '{print $1}' | sort -u)
+        KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
+        ip route add $KIND_PREFIX via $DOCKER_IP
+      fi
     - |
       if [ ${OCI_TAG} ]; then
         echo -e "Applying OCI configuration for tag: ${OCI_TAG}"

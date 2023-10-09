@@ -49,7 +49,7 @@ cluster:
     provisioning_pool_start: 192.168.10.20
     provisioning_pool_end: 192.168.10.50
     provisioning_pool_prefix: "24"
-    dns_server: 1.2.3.4
+    # dns_server: 1.2.3.4
 
   control_plane:  # tweak network configuration as needed
 
@@ -117,5 +117,5 @@ libvirt_metal:
 ntp:
   enabled: yes
   servers:
-  - 172.16.0.3
-  - 172.16.0.4
+  - 0.ubuntu.pool.ntp.org
+  - 1.ubuntu.pool.ntp.org
