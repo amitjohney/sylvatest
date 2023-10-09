@@ -46,6 +46,7 @@ unit_helmrelease_spec_default:
     secretRef:
       name: '{{ .Values.cluster.name }}-kubeconfig'
   targetNamespace: default  # (in workload-cluster)
+  storageNamespace: default # (in workload-cluster)
 
 
 unit_templates:
@@ -119,6 +120,7 @@ units:
       # because this resource lives in the mgmt cluster:
       kubeConfig: null  # cancel what is inherited from unit_kustomization_spec_default
       targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
+      storageNamespace: '{{ .Release.Namespace }}' # (in mgmt cluster)
 
   resume-cluster-reconciliation:
     enabled: true
