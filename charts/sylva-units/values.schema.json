@@ -3638,7 +3638,7 @@
             }
           ]
         },
-        "expire_password_policy": {
+        "keycloak_expire_password_days": {
           "type": "integer"
         }
       }
