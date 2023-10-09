@@ -9,7 +9,7 @@ scheduled-cleanup-capo:
   script:
     - !reference [.common-deployment, os_cloud]
     - touch tags.txt exclude-tags.txt
-    - MAX_DEPLOY_CAPO_TIMEOUT=$(yq .deploy-*-capo.timeout .gitlab-ci.yml | awk -F"min" '{print $1}' | sort -nr | head -1)
+    - MAX_DEPLOY_CAPO_TIMEOUT=60  # eq to capo deployment timeout
     - STACK_TTL=$(((MAX_DEPLOY_CAPO_TIMEOUT+5)*60))
     - |
       for STACK in $(openstack stack list -f value -c "Stack Name" | grep -E '^(management|workload|capo)-cluster' ); do
