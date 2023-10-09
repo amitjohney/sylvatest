@@ -1222,7 +1222,7 @@ units:
       chart:
         spec:
           chart: rke2-calico-crd
-          version: '{{ semver .Values.cluster.k8s_version | (semver "v1.26.6").Compare | le 0 | ternary "v3.25.001" "v3.26.101" }}'
+          version: '{{ semver (tuple . .Values.cluster.k8s_version | include "interpret-as-string") | (semver "v1.26.6").Compare | le 0 | ternary "v3.25.001" "v3.26.101" }}'
 
   calico:
     depends_on:
@@ -1234,7 +1234,7 @@ units:
       chart:
         spec:
           chart: rke2-calico
-          version: '{{ semver .Values.cluster.k8s_version | (semver "v1.26.6").Compare | le 0 | ternary "v3.25.001" "v3.26.101" }}'
+          version: '{{ semver (tuple . .Values.cluster.k8s_version | include "interpret-as-string") | (semver "v1.26.6").Compare | le 0 | ternary "v3.25.001" "v3.26.101" }}'
       values:
         installation:
           calicoNetwork:
@@ -1598,7 +1598,7 @@ units:
       chart:
         spec:
           chart: rke2-ingress-nginx
-          version: '{{ semver .Values.cluster.k8s_version | (semver "v1.26.6").Compare | le 0 | ternary "4.5.202" "4.6.101" }}'
+          version: '{{ semver (tuple . .Values.cluster.k8s_version | include "interpret-as-string") | (semver "v1.26.6").Compare | le 0 | ternary "4.5.202" "4.6.101" }}'
       interval: 1m0s
       values:
         fullnameOverride: rke2-ingress-nginx
