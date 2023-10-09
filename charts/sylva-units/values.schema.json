@@ -3329,6 +3329,16 @@
                 }
               ]
             },
+            "helm_chart_versions": {
+              "type": "array",
+              "items": {
+                "patternProperties": {
+                  "semver": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
             "helm_chart_artifact_name": {
               "type": "string"
             },

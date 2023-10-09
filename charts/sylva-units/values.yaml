@@ -1216,6 +1216,9 @@ units:
     enabled_conditions:
     - '{{ tuple . "calico" | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io
+    helm_chart_versions:
+      - "v3.25.001"
+      - "v3.26.101"
     helmrelease_spec:
       releaseName: rke2-calico-crd
       targetNamespace: kube-system
@@ -1228,6 +1231,9 @@ units:
     depends_on:
       calico-crd: true
     helm_repo_url: https://rke2-charts.rancher.io
+    helm_chart_versions:
+      - "v3.25.001"
+      - "v3.26.101"
     helmrelease_spec:
       releaseName: rke2-calico
       targetNamespace: kube-system
@@ -1592,6 +1598,9 @@ units:
       capd-metallb-config: '{{ tuple . "capd-metallb-config" | include "unit-enabled" }}'
       calico: '{{ tuple . "calico" | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io
+    helm_chart_versions:
+      - "4.5.202"
+      - "4.6.101"
     helmrelease_spec:
       releaseName: rke2-ingress-nginx
       targetNamespace: kube-system

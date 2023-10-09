@@ -146,19 +146,23 @@ for unit in "${units[@]}"; do
     helm_repo_url=$(echo "$unit" | yq '.helm_repo_url' -)
     if [[ -n "$helm_repo_url" && $helm_repo_url != "null" ]]; then
       ## Helm charts in helm repository ##
-      version=$(echo "$helmchart_spec" | yq '.version' -)
-
-      ## no processing is needed if the OCI artifact already exist in the OCI repository
-      ## looking for invalid semver tag
-      ## if an invalid tag is found we used a rewrited version of it for the check
-      version_to_check=$(check_invalid_semver_tag $version)
-      echo "Version to check: $version_to_check"
-      if (flux pull artifact $OCI_REGISTRY/$chart:${version_to_check/+/_} -o /tmp 2>&1 || true) | grep -q created; then
-        echo "Skipping $chart processing, $chart:$version_to_check already exists in $OCI_REGISTRY"
-        continue
+      readarray versions < <(echo "$unit" | yq '.helm_chart_versions[]')
+      if [[ ${#versions[@]} -eq 0 ]]; then
+        versions+=$(echo "$helmchart_spec" | yq '.version' -)
       fi
+      for version in "${versions[@]}"; do
+        ## no processing is needed if the OCI artifact already exist in the OCI repository
+        ## looking for invalid semver tag
+        ## if an invalid tag is found we used a rewrited version of it for the check
+        version_to_check=$(check_invalid_semver_tag $version)
+        echo "Version to check: $version_to_check"
+        if (flux pull artifact $OCI_REGISTRY/$chart:${version_to_check/+/_} -o /tmp 2>&1 || true) | grep -q created; then
+          echo "Skipping $chart processing, $chart:$version_to_check already exists in $OCI_REGISTRY"
+          continue
+        fi
 
-      process_chart_in_helm_repo $helm_repo_url $chart $version
+     #   process_chart_in_helm_repo $helm_repo_url $chart $version
+      done
     else
       ## Helm charts in git repository ##
       chart_name=$(echo "$unit" | yq '.helm_chart_artifact_name // ""')
@@ -175,7 +179,7 @@ for unit in "${units[@]}"; do
         continue
       fi
 
-      process_chart_in_git $git_repo_url $chart $git_revision $chart_name
+      #process_chart_in_git $git_repo_url $chart $git_revision $chart_name
     fi
   fi
 done
