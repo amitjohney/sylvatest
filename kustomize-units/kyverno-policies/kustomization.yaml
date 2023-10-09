@@ -3,3 +3,4 @@ kind: Kustomization
 
 resources:
 - tag.yaml
+- default-namespace.yaml
