@@ -15,7 +15,7 @@ spec:
     loginTheme: keycloak
     accountTheme: keycloak
     adminTheme: keycloak
-    passwordPolicy: length(12) and upperCase(1) and lowerCase(1) and digits(1)
+    passwordPolicy: length(12) and upperCase(1) and lowerCase(1) and digits(1) and forceExpiredPasswordChange(${EXPIRE_PASSWORD_POLICY})
     groups:
     - name: infra-admins
     - name: infra-restricted-admins

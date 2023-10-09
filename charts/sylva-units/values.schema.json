@@ -3637,6 +3637,9 @@
               "$ref": "#/$defs/string-with-gotpl"
             }
           ]
+        },
+        "expire_password_policy": {
+          "type": "integer"
         }
       }
     },

@@ -609,6 +609,9 @@ properties:
             format: hostname
           - $ref: "#/$defs/string-with-gotpl"
 
+      expire_password_policy:  # -------------------------------
+        type: integer
+
   flux: # -------------------------------
     type: object
     additionalProperties: false
