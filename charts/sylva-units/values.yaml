@@ -1602,7 +1602,6 @@ units:
         spec:
           chart: rke2-ingress-nginx
           version: '{{ semver (tuple . .Values.cluster.k8s_version | include "interpret-as-string") | (semver "v1.26.6").Compare | le 0 | ternary "4.5.202" "4.6.101" }}'
-      interval: 1m0s
       values:
         fullnameOverride: rke2-ingress-nginx
         controller:
