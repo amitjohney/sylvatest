@@ -307,7 +307,6 @@ units:
 #                          $patch: delete
 #                          type: RuntimeDefault
                       containers:
-                      - name: virt-operator
                         securityContext:
                           seccompProfile:
                             $patch: delete
