@@ -559,6 +559,7 @@ deploy-capo-fip:
   echo "-- Get ingress saved into /etc/hosts"
   kubectl --kubeconfig management-cluster-kubeconfig get ingress -A -o custom-columns=:.status.loadBalancer.ingress[].ip,:.spec.tls[].hosts[] | grep -v '<none>' >> /etc/hosts
   export no_proxy=$no_proxy,.sylva
+  kubectl run test --image=busybox --kubeconfig workload-cluster-rancher-kubeconfig --overrides='{ "spec" :{ "securityContext" :{ "seccompProfile" :{ "type": "RuntimeDefault" } } } } ' -- sleep 10
   attempts=0
   max_attempts=5
   until kubectl run test --image=busybox --kubeconfig workload-cluster-rancher-kubeconfig --overrides='{ "spec" :{ "securityContext" :{ "seccompProfile" :{ "type": "RuntimeDefault" } } } } ' -- sleep 10; do
