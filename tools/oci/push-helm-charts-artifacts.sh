@@ -161,7 +161,7 @@ for unit in "${units[@]}"; do
           continue
         fi
 
-     #   process_chart_in_helm_repo $helm_repo_url $chart $version
+        process_chart_in_helm_repo $helm_repo_url $chart $version
       done
     else
       ## Helm charts in git repository ##
@@ -179,7 +179,7 @@ for unit in "${units[@]}"; do
         continue
       fi
 
-      #process_chart_in_git $git_repo_url $chart $git_revision $chart_name
+      process_chart_in_git $git_repo_url $chart $git_revision $chart_name
     fi
   fi
 done

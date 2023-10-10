@@ -496,7 +496,6 @@ units:
           name: keycloak
           namespace: keycloak
       _components:
-        - "components/keycloak-operator-security"
         - '{{ tuple "components/keycloak-operator-proxies" (.Values.proxies.https_proxy) | include "set-only-if" }}'
       _patches:
         - patch: |
