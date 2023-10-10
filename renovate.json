@@ -12,6 +12,14 @@
       "\\.gitlab/ci/.*.yml"
     ]
   },
+  "kubernetes": {
+    "fileMatch": [
+      "kustomize-units/.+\\.yaml"
+    ],
+    "ignorePaths": [
+      "kustomize-units/**/kustomization.yaml"
+    ]
+  },
   "packageRules": [
     {
       "matchPackageNames": [
