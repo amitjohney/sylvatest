@@ -1216,7 +1216,7 @@ units:
     - '{{ tuple . "calico" | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io
     helm_chart_versions:
-      - "v3.25.001"
+      - "v3.25.001"  # used for k8s < 1.26.6
       - "v3.26.101"
     helmrelease_spec:
       releaseName: rke2-calico-crd
@@ -1231,7 +1231,7 @@ units:
       calico-crd: true
     helm_repo_url: https://rke2-charts.rancher.io
     helm_chart_versions:
-      - "v3.25.001"
+      - "v3.25.001"  # used for k8s < 1.26.6
       - "v3.26.101"
     helmrelease_spec:
       releaseName: rke2-calico
@@ -1593,7 +1593,7 @@ units:
       calico: '{{ tuple . "calico" | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io
     helm_chart_versions:
-      - "4.5.202"
+      - "4.5.202"  # used with k8s < 1.26.6
       - "4.6.101"
     helmrelease_spec:
       releaseName: rke2-ingress-nginx
