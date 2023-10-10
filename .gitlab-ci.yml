@@ -561,7 +561,7 @@ deploy-capo-fip:
   export no_proxy=$no_proxy,.sylva
   attempts=0
   max_attempts=5
-  until kubectl run test --image=busybox --kubeconfig workload-cluster-rancher-kubeconfig -- sleep 10; do
+  until kubectl run test --image=busybox --kubeconfig workload-cluster-rancher-kubeconfig --overrides='{ "spec" :{ "securityContext" :{ "seccompProfile" :{ "type": "RuntimeDefault" } } } } ' -- sleep 10; do
     sleep 3
     ((attempts++)) && ((attempts==max_attempts)) && exit -1
   done
