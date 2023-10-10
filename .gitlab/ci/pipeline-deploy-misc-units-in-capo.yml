@@ -5,10 +5,10 @@ include:
 
 variables:
   CUSTOM_VALUES_FILE: environment-values/ci/misc-units-in-capo.yml
-  MGMT_WATCH_TIMEOUT_MIN: 20
+  MGMT_WATCH_TIMEOUT_MIN: 30
 
 deploy-misc-units-in-capo:
-  timeout: 35min
+  timeout: 45min
   extends: .deploy-capo
   artifacts:
     expose_as: capo-misc-units
