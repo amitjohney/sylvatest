@@ -302,10 +302,10 @@ units:
                 spec:
                   template:
                     spec:
-                      securityContext:
-                        seccompProfile:
-                          $patch: delete
-                          type: RuntimeDefault
+#                      securityContext:
+#                        seccompProfile:
+#                          $patch: delete
+#                          type: RuntimeDefault
                       containers:
                       - name: virt-operator
                         securityContext:
