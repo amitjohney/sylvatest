@@ -45,6 +45,13 @@ units:
     enabled: true
   cluster:
     enabled: true
+  trivy-operator:
+    enabled: true  # explicitly enable to test Trivy
+    helmrelease_spec:
+      values:  # https://github.com/aquasecurity/trivy-operator/blob/main/deploy/helm/values.yaml
+        operator:
+          vulnerabilityScannerEnabled: true
+          scanJobsConcurrentLimit: 1
   workload-cluster:
     enabled: false # explicitly disabled, since env_type_ci is set in .gitlab-ci.yml
   multus:
