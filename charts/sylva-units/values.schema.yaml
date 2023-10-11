@@ -609,6 +609,9 @@ properties:
             format: hostname
           - $ref: "#/$defs/string-with-gotpl"
 
+      keycloak_expire_password_days:  # -------------------------------
+        type: integer
+
   flux: # -------------------------------
     type: object
     additionalProperties: false
