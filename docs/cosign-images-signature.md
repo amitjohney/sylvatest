@@ -118,12 +118,12 @@ The following checks were performed on each of these signatures:
       - ghcr.io/banzaicloud/*
 ```
 
-According to [Kyverno official documentation](https://kyverno.io/docs/writing-policies/verify-images/sigstore/#using-a-signature-repository), the signatures can be stored on a dedicated OCI registry (`registry.gitlab.com/sylva-projects/sylva-core/signatures` by default). This registry can be modified though the environment variables of the deployment:
+According to [Kyverno official documentation](https://kyverno.io/docs/writing-policies/verify-images/sigstore/#using-a-signature-repository), the signatures can be stored on a dedicated OCI registry (`registry.gitlab.com/sylva-projects/sylva-core/signatures` by default). This registry can be modified though the environment variables of the deployment, e.g. **air-gapped**:
 
 ```yaml
 image_signature:
   action: Audit
-  repository: registry.gitlab.com/sylva-projects/sylva-core/signatures
+  repository: "{{ .Values.sylva_base_oci_registry }}/sylva-core/signatures"
 ```
 
 The field `image_signature.action` tunes the action to perform when verifying the images signature (for the repositories matching the selection rule of the kyverno policy). The possible values are:

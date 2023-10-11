@@ -955,7 +955,8 @@ units:
                   namespace: kyverno
                 spec:
                   startingDeadlineSeconds: 180
-
+# Proxy setting is needed to allow the admission controller to fetch images signature to be verified
+        - '{{ tuple (.Files.Get "elements/kyverno-proxies.tpl" | fromYaml) (.Values.proxies.https_proxy) | include "set-only-if" }}'
 
   kyverno-policies:
     enabled_conditions:
@@ -2754,7 +2755,7 @@ env_type: prod
 # image_signature.repository: set the OCI registry where image signatures are stored
 image_signature:
   action: Audit
-  repository: registry.gitlab.com/sylva-projects/sylva-core/signatures
+  repository: "{{ .Values.sylva_base_oci_registry }}/sylva-core/signatures"
 
 # set NTP servers by IP or FQDN and enable their usage for control plane nodes
 ntp:
