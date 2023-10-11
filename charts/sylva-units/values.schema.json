@@ -3637,6 +3637,9 @@
               "$ref": "#/$defs/string-with-gotpl"
             }
           ]
+        },
+        "keycloak_expire_password_days": {
+          "type": "integer"
         }
       }
     },
