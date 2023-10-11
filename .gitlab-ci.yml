@@ -559,7 +559,7 @@ deploy-capo-fip:
   echo "-- Get ingress saved into /etc/hosts"
   kubectl --kubeconfig management-cluster-kubeconfig get ingress -A -o custom-columns=:.status.loadBalancer.ingress[].ip,:.spec.tls[].hosts[] | grep -v '<none>' >> /etc/hosts
   export no_proxy=$no_proxy,.sylva
-  kubectl run test --image=busybox:1.36 --kubeconfig workload-cluster-kubeconfig --overrides='{"apiVersion": "v1","spec": {"containers": [{"name": "test","image": "busybox:1.36","securityContext": {"allowPrivilegeEscalation": false,"capabilities": {"drop": ["ALL"]},"runAsNonRoot": true,"runAsGroup": 1000,"runAsUser": 1000,"seccompProfile": {"type": "RuntimeDefault"}}}]}}' -- sleep 30--image=busybox --kubeconfig workload-cluster-rancher-kubeconfig --overrides='{ "spec" :{ "securityContext" :{ "seccompProfile" :{ "type": "RuntimeDefault" } } } } ' -- sleep 10
+  kubectl run test --image=busybox:1.36 --kubeconfig workload-cluster-kubeconfig --overrides='{"apiVersion": "v1","spec": {"containers": [{"name": "test","image": "busybox:1.36","securityContext": {"allowPrivilegeEscalation": false,"capabilities": {"drop": ["ALL"]},"runAsNonRoot": true,"runAsGroup": 1000,"runAsUser": 1000,"seccompProfile": {"type": "RuntimeDefault"}}}]}}' -- sleep 10
   attempts=0
   max_attempts=5
   until kubectl run test --image=busybox:1.36 --kubeconfig workload-cluster-kubeconfig --overrides='{"apiVersion": "v1","spec": {"containers": [{"name": "test","image": "busybox:1.36","securityContext": {"allowPrivilegeEscalation": false,"capabilities": {"drop": ["ALL"]},"runAsNonRoot": true,"runAsGroup": 1000,"runAsUser": 1000,"seccompProfile": {"type": "RuntimeDefault"}}}]}}' -- sleep 10; do
