@@ -24,7 +24,7 @@ create_runner:
       --form "token=$RUNNER_AAS_TOKEN"
       --form ref=first_version
       --form "variables[REQUEST]=$REQUEST"
-      --form "variables[RUNNER_HOSTNAME]=\$EQUINIX_PROJECT_ID"
+      --form "variables[RUNNER_HOSTNAME]=\${EQUINIX_PROJECT_ID:1:5}"
       --form "variables[RUNNER_TAG]=$RUNNER_TAG"
       --form "variables[RUNNER_PROJECT_ID]=$RUNNER_PROJECT_ID"
       --form "variables[SOURCE_JWT_TOKEN]=$JOB_ID_TOKEN"
