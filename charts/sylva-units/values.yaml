@@ -292,15 +292,15 @@ units:
         spec:
           chart: kubevirt
           version: 0.1.0
-#      targetNamespace: kubevirt
       _postRenderers:
         - kustomize:
-            patchesStrategicMerge:
-              - kind: Job
-                apiVersion: batch/v1
-                metadata:
-                  name: kubevirt-crd-uninstaller
-                  namespace: kubevirt
+            _patches:
+            - target:
+                kind: Job
+              patch: |
+                - op: replace
+                  path: /metadata/namespace
+                  value: kubevirt
 
 #      _postRenderers:
 #        - kustomize:
