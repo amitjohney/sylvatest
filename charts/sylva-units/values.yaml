@@ -2106,6 +2106,45 @@ units:
                   path: /metadata/annotations/helm.toolkit.fluxcd.io~1driftDetection
                   value: disabled
 
+  snmp-exporter:
+    enabled_conditions:
+    - '{{ tuple . "monitoring" | include "unit-enabled" }}'
+    depends_on:
+      monitoring: true
+    helm_repo_url: https://prometheus-community.github.io/helm-charts
+    helmrelease_spec:
+      releaseName: snmp-exporter
+      targetNamespace: cattle-monitoring-system
+      chart:
+        spec:
+          chart: prometheus-snmp-exporter
+          version: 1.8.1
+      install:
+        createNamespace: false
+      values:
+        config: |-
+          ## start dell_idrac
+          dell_idrac:
+            version: {{ .Values.snmp.version }}
+            auth:
+              community: '{{ .Values.snmp.auth.community }}'
+              security_level: '{{ .Values.snmp.auth.security_level }}'
+              username: '{{ .Values.snmp.auth.username }}'
+              password: '{{ .Values.snmp.auth.password }}'
+              auth_protocol: '{{ .Values.snmp.auth.auth_protocol }}'
+              priv_protocol: '{{ .Values.snmp.auth.priv_protocol }}'
+              priv_password: '{{ .Values.snmp.auth.priv_password }}'
+              {{ .Files.Get "configs/snmp-exporter/dell_idrac.yaml" }}
+        serviceMonitor: |-
+          enabled: true
+          namespace: cattle-monitoring-system
+          params:
+          {{- range $device := .Values.snmp.devices }}
+          - name: {{ $device.name }}
+            module: dell_idrac
+            target: {{ $device.ip }}
+          {{- end }}
+
   multus:
     enabled: false
     depends_on:
@@ -2863,3 +2902,8 @@ shared_workload_clusters_values:
 shared_workload_clusters_secret_values:
   cluster:
     capo: '{{ tuple (dict "clouds_yaml" (.Values.cluster | dig "capo" "clouds_yaml" dict)) (.Values.cluster | dig "capo" "clouds_yaml" dict) | include "set-only-if" }}'
+
+snmp:
+  version: 3
+  auth: {}
+  devices: []
