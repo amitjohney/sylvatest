@@ -45,6 +45,9 @@ variables:
   extends: .default-trigger
   variables:
     OCI_TAG: $OCI_TAG_FORMAT
+    KIND_CLUSTER_NAME: bootstrap-${ENV_TAG_OCI}
+    MANAGEMENT_CLUSTER_NAME: management-cluster-${ENV_TAG_OCI}
+    TEST_WORKLOAD_CLUSTER_NAME: test-workload-cluster-${ENV_TAG_OCI}
   needs: !reference [.needs-publish-jobs]
 
 capd-preview-deploy:
