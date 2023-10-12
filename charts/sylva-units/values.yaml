@@ -301,6 +301,14 @@ units:
                 - op: replace
                   path: /metadata/namespace
                   value: kubevirt
+            - target:
+                kind: Deployment
+              patch: |
+                - op: remove
+                  path: /spec/template/spec/securityContext/seccompProfile
+                - op: remove
+                  path: /spec/template/spec/containers/*/securityContext/seccompProfile
+
 
 #      _postRenderers:
 #        - kustomize:
