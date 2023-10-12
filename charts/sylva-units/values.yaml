@@ -305,29 +305,29 @@ units:
                 kind: Deployment
               patch: |
                 - op: remove
+                  path: /spec/template/spec/containers/securityContext/seccompProfile
+                - op: remove
                   path: /spec/template/spec/securityContext/seccompProfile
-#                - op: remove
-#                  path: /spec/template/spec/containers/securityContext/seccompProfile
 
 #      _postRenderers:
 #        - kustomize:
-            patchesStrategicMerge:
-              - kind: Deployment
-                apiVersion: apps/v1
-                metadata:
-                  name: virt-operator
-                spec:
-                  template:
-                    spec:
+#            patchesStrategicMerge:
+#              - kind: Deployment
+#                apiVersion: apps/v1
+#                metadata:
+#                  name: virt-operator
+#                spec:
+#                  template:
+#                    spec:
 #                      securityContext:
 #                        seccompProfile:
 #                          $patch: delete
 #                          type: RuntimeDefault
-                      containers:
-                        securityContext:
-                          seccompProfile:
-                            $patch: delete
-                            type: RuntimeDefault
+#                      containers:
+#                        securityContext:
+#                          seccompProfile:
+#                            $patch: delete
+#                            type: RuntimeDefault
 
   kubevirt-test-vms:
     depends_on:
