@@ -1,17 +1,4 @@
 ---
-
-units:
-
-  workload-cluster:
-    helmrelease_spec:
-      values:
-        cluster:
-          machine_deployments:
-            md0:
-              replicas: 1
-              capo:
-                failure_domain: region0
-
 cluster:
   capi_providers:
     infra_provider: capo

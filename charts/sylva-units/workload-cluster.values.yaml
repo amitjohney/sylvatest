@@ -240,6 +240,53 @@ units:
     enabled: true
     unit_template: base-deps
 
+  check-rancher-clusters:
+    enabled: false  # overriden depending on whether Rancher is enabled or not
+    repo: sylva-core
+    depends_on:
+      cluster-import: true
+    kustomization_spec:
+      targetNamespace: '{{ .Release.Namespace }}' #in mgmt cluster
+      path: ./kustomize-units/kube-job
+      wait: true
+      force: true
+      postBuild:
+        substitute:
+          JOB_NAME: check-rancher-clusters-job
+          JOB_TARGET_NAMESPACE: cattle-system
+      _patches:
+      - target:
+          kind: Job
+        patch: |
+          - op: replace
+            path: /spec/backoffLimit
+            value: 15
+      - target:
+          kind: ConfigMap
+        patch: |
+          - op: replace
+            path: /metadata/name
+            value: check-rancher-clusters-job-cm
+          - op: replace
+            path: /data/kube-job.sh
+            value: |
+          {{ .Files.Get "scripts/check-rancher-clusters.sh" | indent 4 }}
+      - target:
+          kind: Job
+        patch: |
+          apiVersion: batch/v1
+          kind: Job
+          metadata:
+            name: ignored
+          spec:
+            template:
+              spec:
+                containers:
+                - name: run-script
+                  env:
+                  - name: CLUSTER_NAME
+                    value: '{{ .Values.cluster.name }}'
+
   cluster-import:
     enabled: false  # overriden depending on whether Rancher is enabled or not (eg. via shared-workload-clusters-settings)
     unit_template: base-deps

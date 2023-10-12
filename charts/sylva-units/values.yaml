@@ -1939,41 +1939,6 @@ units:
                   path: /metadata/annotations/helm.toolkit.fluxcd.io~1driftDetection
                   value: disabled
 
-  # this is a Job attempt to check successful import of a CAPI workload clusters in Rancher, still incomplete
-  # it would be used along with a definition of a 'workload-cluster' unit
-  # and is conditioned by .Values.env_type: ci
-  check-rancher-clusters:
-    enabled_conditions:
-    - '{{ tuple . "workload-cluster" | include "unit-enabled" }}'
-    repo: sylva-core
-    depends_on:
-      workload-cluster/cluster-import: true
-    kustomization_spec:
-      path: ./kustomize-units/kube-job
-      wait: true
-      force: true
-      postBuild:
-        substitute:
-          JOB_NAME: check-rancher-clusters-job
-          JOB_TARGET_NAMESPACE: cattle-system
-      _patches:
-      - target:
-          kind: Job
-        patch: |
-          - op: replace
-            path: /spec/backoffLimit
-            value: 15
-      - target:
-          kind: ConfigMap
-        patch: |
-          - op: replace
-            path: /metadata/name
-            value: check-rancher-clusters-job-cm
-          - op: replace
-            path: /data/kube-job.sh
-            value: |
-          {{ .Files.Get "scripts/check-rancher-clusters.sh" | indent 4 }}
-
   multus:
     enabled: false
     depends_on:
@@ -2157,119 +2122,6 @@ units:
           defaultDataPath: /var/lib/longhorn
           deletingConfirmationFlag: true
           autoCleanupSystemGeneratedSnapshot: true
-
-
-  # this unit is an example of how to use sylva-units to deploy a workload-cluster
-  workload-cluster:
-    depends_on:
-      namespace-defs: true
-    unit_template: sylva-units
-    kustomization_spec:
-      targetNamespace: workload-cluster  # this ensures that the HelmRelease below is created in 'workload-cluster' ns
-      healthChecks:
-        - apiVersion: kustomize.toolkit.fluxcd.io/v1
-          kind: Kustomization
-          name: sylva-units-status
-          namespace: workload-cluster
-    helmrelease_spec:
-      chart:
-        spec:
-          chart: charts/sylva-units
-          reconcileStrategy: Revision
-          # copy sourceRef from sylva-units HelmRelease in default ns
-          # with an override of namespace field to point to the source livig in the default ns
-          sourceRef: '{{ lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units" | dig "spec" "chart" "spec" "sourceRef" dict | mergeOverwrite (dict "namespace" "default") | include "preserve-type" }}'
-          valuesFiles:
-            - charts/sylva-units/values.yaml
-            - charts/sylva-units/workload-cluster.values.yaml
-            # if main sylva-units release uses OCI artifacts, do the same for this release
-            - '{{ tuple "use-oci-artifacts.values.yaml" (lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "default" "sylva-units" | dig "spec" "chart" "spec" "valuesFiles" list | has "use-oci-artifacts.values.yaml") | include "set-only-if" }}'
-
-      values:
-
-        source_templates:
-          sylva-core:
-            existing_source: '{{ deepCopy .Values._internal.sylva_core_existing_source | merge (dict "namespace" .Release.Namespace) | include "preserve-type" }}'
-
-        cluster:
-          name: '{{ .Values.test_workload_cluster_name }}'
-          control_plane_replicas: 1
-          capi_providers:
-            infra_provider: '{{ .Values.cluster.capi_providers.infra_provider }}'
-            bootstrap_provider: '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
-          k8s_version: '{{ .Values.cluster.k8s_version }}'
-          cis_profile: '{{ .Values.cluster.cis_profile }}'
-
-          capo:
-            image_name: '{{ .Values.cluster.capo.image_name | include "set-if-defined" }}'
-            flavor_name: '{{ .Values.cluster.capo.flavor_name | include "set-if-defined" }}'
-            ssh_key_name: '{{ .Values.cluster.capo.ssh_key_name | include "set-if-defined" }}'
-            resources_tag: '{{ tuple . (.Values.cluster | dig "capo" "resources_tag" "") | include "interpret-as-string" | include "set-if-defined" }}'
-            network_id: '{{ .Values.cluster.capo.network_id | include "set-if-defined" }}'
-            control_plane_az: '{{ tuple (.Values.cluster | dig "capo" "control_plane_az" list | include "preserve-type") (.Values.cluster | dig "capo" "control_plane_az" nil) | include "set-only-if" }}'
-            rootVolume: '{{ .Values.cluster.capo.rootVolume | include "set-if-defined" }}'
-          capv:
-            image_name: '{{ .Values.cluster.capv.image_name | include "set-if-defined" }}'
-            diskGiB: '{{ .Values.cluster.capv.diskGiB | include "set-if-defined" }}'
-            memoryMiB: '{{ .Values.cluster.capv.memoryMiB | include "set-if-defined" }}'
-            numCPUs: '{{ .Values.cluster.capv.numCPUs | include "set-if-defined" }}'
-            dataCenter: '{{ .Values.cluster.capv.dataCenter | include "set-if-defined" }}'
-            networks: '{{ .Values.cluster.capv.networks | include "set-if-defined" }}'
-            server: '{{ .Values.cluster.capv.server | include "set-if-defined" }}'
-            dataStore: '{{ .Values.cluster.capv.dataStore | include "set-if-defined" }}'
-            tlsThumbprint: '{{ .Values.cluster.capv.tlsThumbprint | include "set-if-defined" }}'
-            ssh_key: '{{ .Values.cluster.capv.ssh_key | include "set-if-defined" }}'
-            folder: '{{ .Values.cluster.capv.folder | include "set-if-defined" }}'
-            resourcePool: '{{ .Values.cluster.capv.resourcePool | include "set-if-defined" }}'
-            storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName | include "set-if-defined" }}'
-
-          rke2: '{{ .Values.cluster.rke2 | include "set-if-defined" }}'
-          kubeadm: '{{ .Values.cluster.kubeadm | include "set-if-defined" }}'
-
-          kubelet_extra_args: '{{ .Values.cluster.kubelet_extra_args | include "set-if-defined" }}'
-
-          air_gapped: '{{ .Values.cluster.air_gapped | include "preserve-type" }}'
-
-          mgmt_cluster_external_domain: '{{ .Values.cluster_external_domain }}'
-          mgmt_cluster_external_ip: '{{ .Values.cluster_external_ip }}'
-          dns_resolver: true
-
-          metallb_helm_oci_url: '{{ .Values.cluster.metallb_helm_oci_url }}'
-
-        cluster_external_domain: '{{ .Values.cluster_external_domain }}'
-
-        openstack: '{{ .Values.openstack | include "set-if-defined" }}'
-
-        units:
-
-          cluster-import:
-            enabled: '{{ tuple . "rancher" | include "unit-enabled" }}'
-
-          #multus:   ## can be overriden via environment values
-          #  enabled: true
-
-          #longhorn:   ## can be overriden via environment values
-          #  enabled: true
-
-          #sriov:   ## can be overriden via environment values
-          #  enabled: true
-
-          #sriov-resources:  ## can be overriden via environment values
-          #  enabled: true
-
-        proxies: '{{ .Values.proxies | include "preserve-type" }}'
-
-        ntp: '{{ .Values.ntp | include "preserve-type" }}'
-
-        registry_mirrors: '{{ .Values.registry_mirrors | include "preserve-type" }}'
-
-    helm_secret_values:
-      cluster:
-        capo: '{{ tuple (dict "clouds_yaml" (.Values.cluster | dig "capo" "clouds_yaml" dict)) (.Values.cluster | dig "capo" "clouds_yaml" dict) | include "set-only-if" }}'
-        capv:
-          username: '{{ .Values.cluster.capv.username }}'
-          password: '{{ .Values.cluster.capv.password }}'
-
 
   os-image-server:
     # this units allows to deploy web server on management cluster
@@ -2561,8 +2413,6 @@ cis_benchmark_scan_profile: '{{ eq .Values.cluster.capi_providers.bootstrap_prov
 # if empty default value are used (default_os_images)
 os_images: {}
 
-test_workload_cluster_name: first-workload-cluster  ## will be removed when progressing https://gitlab.com/sylva-projects/sylva-core/-/issues/477
-
 # to configure the SR-IOV VFs on the supported NICs of cluster nodes
 sriov:
   node_policies: {}
@@ -2697,6 +2547,8 @@ shared_workload_clusters_values:
       network_id: '{{ .Values.cluster.capo.network_id | include "set-if-defined" }}'
   units:
     cluster-import:
+      enabled: '{{ tuple . "rancher" | include "unit-enabled" }}'
+    check-rancher-clusters:
       enabled: '{{ tuple . "rancher" | include "unit-enabled" }}'
 
 shared_workload_clusters_secret_values:

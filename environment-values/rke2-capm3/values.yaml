@@ -142,9 +142,6 @@ units:
   longhorn:
     enabled: true
 
-  workload-cluster:
-    enabled: false  # (no workload cluster is described in this example)
-
 metal3:
   bootstrap_ip: 10.177.129.138
 
