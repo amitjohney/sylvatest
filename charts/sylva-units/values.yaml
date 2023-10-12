@@ -340,6 +340,7 @@ units:
                   template:
                     spec:
                       containers:
+                      - name: virt-operator
                         securityContext:
                           seccompProfile:
                             $patch: delete
