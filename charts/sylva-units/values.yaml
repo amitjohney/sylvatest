@@ -567,7 +567,7 @@ units:
           RANCHER_DNS: '{{ .Values.rancher.external_hostname }}'
           FLUX_WEBUI_DNS: '{{ .Values.flux.external_hostname }}'
           VAULT_DNS: '{{ .Values.vault.external_hostname }}'
-          EXPIRE_PASSWORD_DAYS: '{{ int .Values.keycloak.keycloak_expire_password_days | default 30 }}'
+          EXPIRE_PASSWORD_DAYS: '{{ int .Values.keycloak.keycloak_expire_password_days }}'
       healthChecks:  #  cannot use __wait: true__ here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/144
         - apiVersion: legacy.k8s.keycloak.org/v1alpha1
           kind: KeycloakRealm

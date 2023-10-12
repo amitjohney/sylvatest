@@ -45,3 +45,6 @@ units:
         global:
           cattle:
             clusterId: local
+
+keycloak:
+  keycloak_expire_password_days: 30
