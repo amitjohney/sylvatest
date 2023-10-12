@@ -306,9 +306,13 @@ units:
               patch: |
                 - op: remove
                   path: /spec/template/spec/securityContext/seccompProfile
+#                - op: remove
+#                  path: /spec/template/spec/containers/securityContext/seccompProfile
+            - target:
+                kind: Deployment
+              patch: |
                 - op: remove
-                  path: /spec/template/spec/containers/securityContext
-
+                  path: /spec/template/spec/containers/securityContext/seccompProfile
 
 
 #      _postRenderers:
