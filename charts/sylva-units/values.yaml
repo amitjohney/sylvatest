@@ -294,7 +294,7 @@ units:
           version: 0.1.0
       _postRenderers:
         - kustomize:
-            _patches:
+            patches:
             - target:
                 kind: Job
               patch: |
