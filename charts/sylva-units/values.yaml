@@ -1258,13 +1258,13 @@ units:
         data:
           cloud.conf: |-
             [Global]
-            auth-url = "{{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.auth_url }}"
-            tenant-name = "{{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.project_name }}"
-            domain-name = "{{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.user_domain_name }}"
-            username = "{{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.username }}"
-            password = "{{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.password }}"
-            region = "{{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.region_name }}"
-            tls-insecure = "{{ not .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.verify }}"
+            auth-url = {{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.auth_url | quote }}
+            tenant-name = {{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.project_name | quote }}
+            domain-name = {{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.user_domain_name | quote }}
+            username = {{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.username | quote }}
+            password = {{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.password | quote }}
+            region = {{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.region_name | quote }}
+            tls-insecure = {{ not .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.verify }}
             [BlockStorage]
             ignore-volume-az = true
 
