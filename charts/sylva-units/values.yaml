@@ -292,6 +292,7 @@ units:
         spec:
           chart: kubevirt
           version: 0.1.0
+      targetNamespace: kubevirt
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:
