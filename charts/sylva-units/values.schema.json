@@ -295,24 +295,37 @@
             },
             "rootDeviceHints": {
               "type": "object",
-              "anyOf": [
-                {
-                  "required": [
-                    "hctl"
-                  ]
-                },
-                {
-                  "required": [
-                    "deviceName"
-                  ]
-                }
-              ],
+              "additionalProperties": false,
               "properties": {
+                "deviceName": {
+                  "type": "string"
+                },
                 "hctl": {
                   "type": "string"
                 },
-                "deviceName": {
+                "model": {
                   "type": "string"
+                },
+                "vendor": {
+                  "type": "string"
+                },
+                "serialNumber": {
+                  "type": "string"
+                },
+                "minSizeGigabytes": {
+                  "type": "integer"
+                },
+                "wwn": {
+                  "type": "string"
+                },
+                "wwnWithExtension": {
+                  "type": "string"
+                },
+                "wwnVendorExtension": {
+                  "type": "string"
+                },
+                "rotational": {
+                  "type": "boolean"
                 }
               }
             }
@@ -2798,47 +2811,6 @@
                               "linkedClone",
                               "fullClone"
                             ]
-                          },
-                          {
-                            "$ref": "#/$defs/string-with-gotpl"
-                          },
-                          {
-                            "type": "null"
-                          }
-                        ]
-                      },
-                      "storageClass": {
-                        "anyOf": [
-                          {
-                            "type": "object",
-                            "properties": {
-                              "storagePolicyName": {
-                                "anyOf": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "$ref": "#/$defs/string-with-gotpl"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              },
-                              "fsType": {
-                                "anyOf": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "$ref": "#/$defs/string-with-gotpl"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            }
                           },
                           {
                             "$ref": "#/$defs/string-with-gotpl"
