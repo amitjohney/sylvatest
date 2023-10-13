@@ -90,6 +90,15 @@ if yq -e '.metal3.bootstrap_ip' ${VALUES_FILE} &>/dev/null; then
     done
 fi
 
+# Inject nomasquerade service if libvirt-metal is enabled
+if yq -e '.libvirt_metal.node_count > 0' ${VALUES_FILE} &>/dev/null; then
+    export MASQ_SERVICE_PATH=${BASE_DIR}/tools/kind/systemd/nomasquerade.service
+    KIND_CONFIG=$(echo "$KIND_CONFIG" | yq '.nodes[0].extraMounts += [{"hostPath": env(MASQ_SERVICE_PATH), "containerPath": "/etc/systemd/system/nomasquerade.service"}]')
+    export MASQ_SCRIPT_PATH=${BASE_DIR}/tools/kind/systemd/iptables.sh
+    KIND_CONFIG=$(echo "$KIND_CONFIG" | yq '.nodes[0].extraMounts += [{"hostPath": env(MASQ_SCRIPT_PATH), "containerPath": "/usr/local/bin/iptables.sh"}]')
+    LIBVIRT_METAL_ENABLED=1
+fi
+
 # Use docker-in-docker address as api endpoint when running in docker-in-docker
 if [[ -n "$DOCKER_IP" ]]; then
     KIND_CONFIG=$(echo "$KIND_CONFIG" | yq '.networking.apiServerPort = 6443 | .networking.apiServerAddress = env(DOCKER_IP)')
@@ -99,3 +108,5 @@ fi
 
 echo -e "Creating kind cluster with following config:\n$KIND_CONFIG"
 echo "$KIND_CONFIG" | kind create cluster --name $KIND_CLUSTER_NAME --config=-
+
+[[ -n ${LIBVIRT_METAL_ENABLED} ]] && docker exec -it ${KIND_CLUSTER_NAME}-control-plane systemctl --now enable nomasquerade.service
