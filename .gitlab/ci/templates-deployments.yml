@@ -174,6 +174,13 @@ include:
   stage: deployment-test
   variables:
     HURL_JUNIT_REPORT: login_junit_report.xml
+  before_script:
+    - apk --no-cache add --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing firefox
+    - pip install selenium
+    - wget https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz
+    - tar xvfz geckodriver-v0.33.0-linux64.tar.gz
+    - mv geckodriver /usr/local/bin/
+    - chmod +x /usr/local/bin/geckodriver
   artifacts:
     expire_in: 6 hour
     when: always
@@ -195,4 +202,9 @@ include:
     - export HURL_vault_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n vault vault -o jsonpath='{ .spec.tls[].hosts[] }')
     - export HURL_rancher_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n cattle-system rancher -o jsonpath='{ .spec.tls[].hosts[] }'); export domain=$(echo $HURL_rancher_url | cut -f2 -d .)
     - export HURL_keycloak_url=$(kubectl --kubeconfig management-cluster-kubeconfig  get ingress -n keycloak keycloak-ingress -o jsonpath='{ .spec.tls[].hosts[] }')
+    - export USER_SSO=$(kubectl --kubeconfig ./management-cluster-kubeconfig -n keycloak get secrets/credential-sylva-sylva-admin-keycloak -o jsonpath='{.data.username}'| base64 -d)
+    - export PASSWORD_SSO=$(kubectl --kubeconfig ./management-cluster-kubeconfig -n keycloak get secrets/credential-sylva-sylva-admin-keycloak -o jsonpath='{.data.password}'| base64 -d)
     - hurl -k ./tools/login-test/*.hurl --test --color --noproxy=".$domain"  --report-junit $HURL_JUNIT_REPORT --report-html .
+    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_test_loging[collapsed=true]\r\e[0KTesting login using SSO\e[0m"
+    - unset https_proxy http_proxy; python3 ./tools/login-test/test-sso.py;
+    - sleep 500;
