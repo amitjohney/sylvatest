@@ -305,15 +305,9 @@ units:
                 kind: Deployment
               patch: |
                 - op: remove
-                  path: /spec/template/spec/containers/0/securityContext/seccompProfile
-
-                - op: remove
                   path: /spec/template/spec/securityContext/seccompProfile
-
-#                - op: remove
-#                  path: /spec/template/spec/securityContext/seccompProfile
-#                - op: remove
-#                  path: /spec/template/spec/containers/0/securityContext/seccompProfile
+                - op: remove
+                  path: /spec/template/spec/containers/0/securityContext/seccompProfile
 
 
             # patchesStrategicMerge:
