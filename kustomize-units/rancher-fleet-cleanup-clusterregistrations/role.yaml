@@ -1,0 +1,15 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: unrestricted-psp
+  namespace: cattle-fleet-system
+rules:
+- apiGroups:
+  - extensions
+  resourceNames:
+  - system-unrestricted-psp
+  resources:
+  - podsecuritypolicies
+  verbs:
+    - use
