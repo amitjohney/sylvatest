@@ -301,13 +301,13 @@ units:
                 - op: replace
                   path: /metadata/namespace
                   value: kubevirt
-            - target:
-                kind: Deployment
-              patch: |
-                - op: remove
-                  path: /spec/template/spec/securityContext/seccompProfile
-                - op: remove
-                  path: /spec/template/spec/containers/0/securityContext/seccompProfile
+            # - target:
+            #     kind: Deployment
+            #   patch: |
+            #     - op: remove
+            #       path: /spec/template/spec/securityContext/seccompProfile
+            #     - op: remove
+            #       path: /spec/template/spec/containers/0/securityContext/seccompProfile
 
 
             # patchesStrategicMerge:
