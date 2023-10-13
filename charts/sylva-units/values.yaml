@@ -304,10 +304,22 @@ units:
             - target:
                 kind: Deployment
               patch: |
-                - op: remove
-                  path: /spec/template/spec/securityContext/seccompProfile
-                - op: remove
-                  path: /spec/template/spec/containers/0/securityContext/seccompProfile
+                - op: replace
+                  path: /spec/template/spec/containers/0/securityContext
+                  value:
+                    runAsNonRoot: false
+                    seccompProfile:
+                      type: RuntimeDefault
+                - op: replace
+                  path: /spec/template/spec/securityContext
+                  value:
+                    runAsNonRoot: false
+                    seccompProfile:
+                      type: RuntimeDefault
+#                - op: remove
+#                  path: /spec/template/spec/securityContext/seccompProfile
+#                - op: remove
+#                  path: /spec/template/spec/containers/0/securityContext/seccompProfile
 
 
             # patchesStrategicMerge:
