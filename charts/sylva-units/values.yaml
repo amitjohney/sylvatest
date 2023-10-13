@@ -297,7 +297,7 @@ units:
             patches:
             - target:
                 kind: Job
-                name: kubevirt-crd-upgrader
+#                name: kubevirt-crd-upgrader
               patch: |
                 - op: replace
                   path: /metadata/namespace
