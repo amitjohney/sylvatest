@@ -30,12 +30,6 @@ spec:
         worker_affinity_policy:
           type: string
           description: "Worker affinity policy"
-        control_plane_security_group_name:
-          type: string
-          description: "Control plane security group name"
-        worker_security_group_name:
-          type: string
-          description: "Worker security group name"
         common_security_group_name:
           type: string
           description: "Common security group name"
