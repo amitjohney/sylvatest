@@ -297,7 +297,7 @@ units:
             patches:
             - target:
                 kind: Job
-                name: kubevirt-crd-upgrader
+#                name: kubevirt-crd-upgrader
               patch: |
                 - op: replace
                   path: /metadata/namespace
@@ -307,8 +307,8 @@ units:
               patch: |
                 - op: remove
                   path: /spec/template/spec/securityContext/seccompProfile
-#                - op: remove
-#                  path: /spec/template/spec/containers/securityContext/seccompProfile
+                - op: remove
+                  path: /spec/template/spec/containers/*/securityContext/seccompProfile
 
 
 #      _postRenderers:
@@ -330,23 +330,23 @@ units:
 #                          seccompProfile:
 #                            $patch: delete
 #                            type: RuntimeDefault
-            patchesStrategicMerge:
-              - kind: Deployment
-                apiVersion: apps/v1
-                metadata:
-                  labels:
-                    kubevirt.io: virt-operator
-                  name: virt-operator
-                  namespace: kubevirt
-                spec:
-                  template:
-                    spec:
-                      containers:
-                      - name: virt-operator
-                        securityContext:
-                          seccompProfile:
-                            $patch: delete
-                            type: RuntimeDefault
+            # patchesStrategicMerge:
+            #   - kind: Deployment
+            #     apiVersion: apps/v1
+            #     metadata:
+            #       labels:
+            #         kubevirt.io: virt-operator
+            #       name: virt-operator
+            #       namespace: kubevirt
+            #     spec:
+            #       template:
+            #         spec:
+            #           containers:
+            #           - name: virt-operator
+            #             securityContext:
+            #               seccompProfile:
+            #                 $patch: delete
+            #                 type: RuntimeDefault
 
   kubevirt-test-vms:
     depends_on:
