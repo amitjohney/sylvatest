@@ -130,16 +130,22 @@ fi
 
 ### Parse values file ###
 readarray source_templates < <(yq -o=j -I=0 '.source_templates' $VALUES_FILE)
-readarray units < <(yq -o=j -I=0 '.units[]' $VALUES_FILE)
-for unit in "${units[@]}"; do
+for unit_name in $(yq -r '(.units | ... comments="" | keys())[]' $VALUES_FILE | sort) ; do
+  unit=$(yq ".units.\"$unit_name\"" -o json $VALUES_FILE)
+
   helmchart_spec=$(echo "$unit" | yq '.helmrelease_spec.chart.spec' -)
   if [[ -n "$helmchart_spec" &&  $helmchart_spec != "null" ]]; then
+
+    echo -e "\e[1m\e[0Ksection_start:`date +%s`:section_${unit_name}[collapsed=true]\r\e[0K--- processing unit ${unit_name}\e[0m"
+    section_end="\e[0Ksection_end:`date +%s`:section_${unit_name}\r\e[0K"
+
     chart=$(echo "$helmchart_spec" | yq '.chart' -)
 
     # no processing is needed if the chart is sylva-units
     # (sylva-units packaging is handled separately by build-sylva-units-artifact.sh)
     if [[ $chart =~ (^|/)sylva-units$ ]]; then
       echo "skipping sylva-units chart"
+      echo -e $section_end
       continue
     fi
 
@@ -155,6 +161,7 @@ for unit in "${units[@]}"; do
       echo "Version to check: $version_to_check"
       if (flux pull artifact $OCI_REGISTRY/$chart:${version_to_check/+/_} -o /tmp 2>&1 || true) | grep -q created; then
         echo "Skipping $chart processing, $chart:$version_to_check already exists in $OCI_REGISTRY"
+        echo -e $section_end
         continue
       fi
 
@@ -172,11 +179,14 @@ for unit in "${units[@]}"; do
       ## no processing is needed if the OCI artifact already exist in the OCI repository
       if (flux pull artifact $OCI_REGISTRY/$chart_name:${git_revision/+/_} -o /tmp 2>&1 || true) | grep -q created; then     
         echo "Skipping $chart_name processing, $chart_name:$git_revision already exists in $OCI_REGISTRY"
+        echo -e $section_end
         continue
       fi
 
       process_chart_in_git $git_repo_url $chart $git_revision $chart_name
     fi
+
+    echo -e $section_end
   fi
 done
 
