@@ -60,5 +60,6 @@ units:
     enabled: true
   kubevirt-test-vms:
     enabled: true
+
 cluster:
-  control_plane_replicas: 1
+  control_plane_replicas: 3
