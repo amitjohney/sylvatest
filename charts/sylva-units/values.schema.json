@@ -2052,9 +2052,6 @@
             "server_group_id": {
               "type": "string"
             },
-            "security_group_name": {
-              "type": "string"
-            },
             "common_security_group_name": {
               "type": "string"
             },
@@ -3983,19 +3980,6 @@
                                   ]
                                 }
                               }
-                            },
-                            {
-                              "$ref": "#/$defs/string-with-gotpl"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                        },
-                        "security_group_name": {
-                          "anyOf": [
-                            {
-                              "type": "string"
                             },
                             {
                               "$ref": "#/$defs/string-with-gotpl"
