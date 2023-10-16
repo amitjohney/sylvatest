@@ -2392,4 +2392,4 @@ shared_workload_clusters_values:
 shared_workload_clusters_secret_values:
   cluster:
     capo:
-      clouds_yaml: '{{ .Values.cluster.capo.clouds_yaml | toYaml }}'
+      clouds_yaml: '{{ .Values.cluster.capo.clouds_yaml | include "preserve-type" }}'
