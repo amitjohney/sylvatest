@@ -160,6 +160,8 @@ include:
   done
   echo "-- Wait for test pod to be created"
   kubectl wait --for=condition=Ready pod/test --kubeconfig workload-cluster-rancher-kubeconfig --timeout=60s
+  echo "-- Get the sample workload cluster nodes annotations for keys node.longhorn.io/default-node-tags & node.longhorn.io/default-disks-config"
+  kubectl --kubeconfig workload-cluster-rancher-kubeconfig get nodes -o yaml | yq '.items[] | (.metadata.name,.metadata.annotations."node.longhorn.io/default-node-tags",.metadata.annotations."node.longhorn.io/default-disks-config")'
   echo "-- All done"
 
 .test-workload-cluster:

@@ -184,6 +184,9 @@
         },
         "nodeLabels": {
           "type": "object"
+        },
+        "node_annotations": {
+          "type": "object"
         }
       }
     },
