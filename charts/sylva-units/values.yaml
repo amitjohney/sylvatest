@@ -686,12 +686,40 @@ units:
               - apiGroups: ["helm.toolkit.fluxcd.io"]
                 resources:
                   - "helmreleases"
-                verbs: ["get", "patch", "list", "update", "watch"]
+                verbs: ["get", "list", "watch", "patch", "update"]
+              - apiGroups: [""]
+                resources:
+                  - "nodes"
+                verbs: ["get", "list", "watch", "patch", "update"]
           securityContext:
             seccompProfile: null
         reportsController:
           securityContext:
             seccompProfile: null
+        config:
+          # -- Resource types to be skipped by the Kyverno policy engine, removed [Node,*,*] [Node/*,*,*] entries
+          resourceFilters:
+            - '[Event,*,*]'
+            - '[*/*,kube-system,*]'
+            - '[*/*,kube-public,*]'
+            - '[*/*,kube-node-lease,*]'
+            - '[APIService,*,*]'
+            - '[APIService/*,*,*]'
+            - '[TokenReview,*,*]'
+            - '[SubjectAccessReview,*,*]'
+            - '[SelfSubjectAccessReview,*,*]'
+            - '[Binding,*,*]'
+            - '[Pod/binding,*,*]'
+            - '[ReplicaSet,*,*]'
+            - '[ReplicaSet/*,*,*]'
+            - '[AdmissionReport,*,*]'
+            - '[AdmissionReport/*,*,*]'
+            - '[ClusterAdmissionReport,*,*]'
+            - '[ClusterAdmissionReport/*,*,*]'
+            - '[BackgroundScanReport,*,*]'
+            - '[BackgroundScanReport/*,*,*]'
+            - '[ClusterBackgroundScanReport,*,*]'
+            - '[ClusterBackgroundScanReport/*,*,*]'
 
   kyverno-policies:
     enabled_conditions:
@@ -733,6 +761,19 @@ units:
             {{ index (tuple . .Values.shared_workload_clusters_values | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | indent 4 }}
     kustomization_substitute_secrets:
       SECRET_VALUES: '{{ index (tuple . .Values.shared_workload_clusters_secret_values | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | b64enc }}'
+
+  node-annotation-from-label:
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
+    depends_on:
+      kyverno: '{{ tuple . "kyverno" | include "unit-enabled" }}'
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/node-annotation-from-label
+      wait: true
+      postBuild:
+        substitute:
+          NODE_LABEL_KEY_LIST: '{{ mergeOverwrite (.Values.cluster | dig "rke2" "node_annotations" dict) (.Values.cluster | dig "control_plane" "rke2" "node_annotations" dict) (.Values.cluster | dig "machine_deployment_default" "rke2" "node_annotations" dict) | keys | toJson }}' # need to address .cluster.machine_deployments.X.rke2.node_annotations
 
   capi:
     repo: sylva-core
@@ -1945,6 +1986,7 @@ units:
             folder: '{{ .Values.cluster.capv.folder }}'
             resourcePool: '{{ .Values.cluster.capv.resourcePool }}'
             storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
+          rke2: '{{ .Values.cluster.rke2 }}'
 
           air_gapped: '{{ .Values.cluster.air_gapped | include "preserve-type" }}'
 

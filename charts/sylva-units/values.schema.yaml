@@ -8,6 +8,7 @@
 #
 # The values.schema.json file is the file actually used by the Helm chart
 # and MUST BE RECREATED after each modification of this file:
+# (export https_proxy if behind a Forward Proxy)
 #
 #   ./tools/generate_json_schema.py
 #
