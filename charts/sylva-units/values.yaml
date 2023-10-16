@@ -1754,16 +1754,6 @@ units:
     depends_on:
       calico: '{{ tuple . "calico" | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io/
-    kustomization_spec:
-      healthChecks:
-        - apiVersion: apps/v1
-          kind: DaemonSet
-          name: multus-ds
-          namespace: kube-system
-        - apiVersion: apps/v1
-          kind: DaemonSet
-          name: multus-rke2-whereabouts
-          namespace: kube-system
     helmrelease_spec:
       chart:
         spec:
