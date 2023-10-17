@@ -13,6 +13,16 @@ function dump_flux_resources() {
     done
 }
 
+function dump_additional_resources() {
+    for cr in $@; do
+      echo "Dumping resources $cr in the whole cluster"
+      if kubectl api-resources | grep -q $cr ; then
+        kubectl get $cr -A -o wide >  $cluster_dir/$cr.txt
+        kubectl get $cr -A -o yaml >> $cluster_dir/$cr.yaml
+      fi
+    done
+}
+
 echo "Docker containers"
 docker ps
 
@@ -24,6 +34,7 @@ echo "Performing dump on bootstrap cluster"
 kubectl cluster-info dump -A -o yaml --output-directory=bootstrap-cluster-dump
 
 dump_flux_resources bootstrap-cluster-dump
+dump_additional_resources sts bmh cl
 
 if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
     export KUBECONFIG=${KUBECONFIG:-$BASE_DIR/management-cluster-kubeconfig}
@@ -38,6 +49,7 @@ if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
     kubectl cluster-info dump -A -o yaml --output-directory=management-cluster-dump
 
     dump_flux_resources management-cluster-dump
+    dump_additional_resources sts bmh cl
 fi
 
 echo "Dump node logs"

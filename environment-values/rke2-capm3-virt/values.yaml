@@ -49,10 +49,10 @@ cluster:
     provisioning_pool_start: 192.168.10.20
     provisioning_pool_end: 192.168.10.50
     provisioning_pool_prefix: "24"
-    dns_server: 1.2.3.4
+
+    dns_server: 1.1.1.1
 
   control_plane:  # tweak network configuration as needed
-
     capm3:
       hostSelector:  # criteria for matching labels on BareMetalHost objects defined by baremetal_hosts value
         matchLabels:
@@ -67,39 +67,48 @@ cluster:
       ens6:
         type: phy
 
+
+  baremetal_host_default:
+    bmh_metadata:
+      labels:
+        cluster-role: control-plane
+    bmh_spec:
+      online: true
+      description: control plane node
+      bmc:
+        disableCertificateVerification: true
+      bootMode: legacy
+      automatedCleaningMode: disabled
+      rootDeviceHints:
+        deviceName: /dev/vda
+
   baremetal_hosts:  # corresponding credentials need to be set in secrets.yaml
     vbmh-0:
-      bmh_metadata:
-        labels:
-          cluster-role: control-plane
       bmh_spec:
-        online: true
-        description: control plane node
         bmc:
           address: redfish-virtualmedia://vbmh-0.libvirt-metal.default.svc.cluster.local:8000/redfish/v1/Systems/4347b19b-67d0-4f0f-befe-114c0648af0a
-          disableCertificateVerification: true
-        bootMACAddress: 48:df:37:e7:82:94
-        bootMode: legacy
-        automatedCleaningMode: disabled
-        rootDeviceHints:
-          deviceName: /dev/vda
+        bootMACAddress: 48:df:37:e7:82:90
+    # vbmh-1:
+    #   bmh_spec:
+    #     bmc:
+    #       address: redfish-virtualmedia://vbmh-1.libvirt-metal.default.svc.cluster.local:8000/redfish/v1/Systems/4347b19b-67d0-4f0f-befe-114c0648af0a
+    #     bootMACAddress: 48:df:37:e7:82:91
+    # vbmh-2:
+    #   bmh_spec:
+    #     bmc:
+    #       address: redfish-virtualmedia://vbmh-2.libvirt-metal.default.svc.cluster.local:8000/redfish/v1/Systems/4347b19b-67d0-4f0f-befe-114c0648af0a
+    #     bootMACAddress: 48:df:37:e7:82:92
+
 
 units:
 
   workload-cluster:
     enabled: false  # (no workload cluster is described in this example)
 
-  metal3:
-    helmrelease_spec:
-      # Workaround https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3/-/issues/9
-      values:
-        mariadb:
-          architecture: standalone
-
 libvirt_metal:
   node_count: 1
   node_mem_gb: 12
-  node_image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/libvirt-metal:0.1.2
+  node_cpus: 8
 
 #proxies:
 #  # put your own proxy settings here if you need
@@ -113,9 +122,3 @@ libvirt_metal:
 #   hosts_config:
 #     docker.io:
 #     - mirror_url: http://your.mirror/docker
-
-ntp:
-  enabled: yes
-  servers:
-  - 172.16.0.3
-  - 172.16.0.4
