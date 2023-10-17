@@ -881,8 +881,6 @@ units:
         global:
           storageClass: '{{ .Values._internal.default_storage_class }}'
         # ironicIPADownloaderBaseURI:
-        httpProxy: '{{ .Values.proxies.https_proxy }}'
-        httpsProxy: '{{ .Values.proxies.https_proxy }}'
         noProxy: '{{ include "sylva-units.no_proxy" . }}'
         images:
           baremetalOperator:

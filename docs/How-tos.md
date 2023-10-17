@@ -40,3 +40,22 @@ When deploying management cluster in OpenStack, you can specify to which network
 In some cases, this virtual network (VN) will not be accessible to the bootstrap cluster (like when deploying the VMs on an isolated network behind an OpenStack router with Source NAT enabled and using a remote bootstrap machine without direct connectivity inside `cluster.capo.network_id` defined VN), so bootstrap cluster is not able to reach the Kubernetes API to confirm that node is ready.
 
 You can specify `openstack.external_network_id` to create a floating IP. This floating IP will be used by default to access to cluster API and allows the bootstrap cluster to access management cluster API as well.
+
+## Use upstream IPA Downloader container in Metal3 chart
+
+By default the chart `metal3` uses our custom IPA Downloader container which directly embeds the IPA ramdisk image.
+
+However if a more recent IPA ramdisk image is required, it's possible to override our custom container to use an upstream one which retreives from Internet the IPA ramdisk image. In certain circumstances, to be able to reach it, the container must be configured with proxy setttings like this:
+
+```shell
+
+units:
+  metal3:
+    helmrelease_spec:
+      values:
+        images:
+          ironicIPADownloader:
+            repository: <upstream_image>
+        httpProxy: <upstream http proxy, value set under proxies.http_proxy>
+        httpsProxy: <upstream http proxy, value set under proxies.https_proxy>
+```
