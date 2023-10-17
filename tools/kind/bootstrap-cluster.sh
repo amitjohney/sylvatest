@@ -110,5 +110,5 @@ echo -e "Creating kind cluster with following config:\n$KIND_CONFIG"
 echo "$KIND_CONFIG" | kind create cluster --name $KIND_CLUSTER_NAME --config=-
 
 if [[ -n ${LIBVIRT_METAL_ENABLED} ]]; then
-    docker exec -it ${KIND_CLUSTER_NAME}-control-plane systemctl --now enable nomasquerade.service
+    docker exec ${KIND_CLUSTER_NAME}-control-plane systemctl --now enable nomasquerade.service
 fi
