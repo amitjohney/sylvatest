@@ -2354,11 +2354,11 @@ cluster:
 
   control_plane:
     capo:
-      common_security_group_name: "capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}"
+      security_group_name: "capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}"
 
   machine_deployment_default:
     capo:
-      common_security_group_name: "capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}"
+      security_group_name: "capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}"
 
   cluster_external_ip: '{{ .Values.cluster_external_ip }}'
 
