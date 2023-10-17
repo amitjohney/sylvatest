@@ -65,12 +65,28 @@ function process_chart_in_helm_repo {
   local helm_repo=$1
   local chart_name=$2
   local chart_version=$3
+  local artifact_name=$4
+
   local tgz_file="$chart_name-$chart_version.tgz"
 
   # Pull Helm chart locally
   if (helm pull --repo $helm_repo --version $chart_version $chart_name); then
     if [[ -e $tgz_file ]]; then
       check_invalid_semver_tag $version true
+
+      if [[ $artifact_name != $chart_name ]]; then
+        # if the desired artifact name differs from the upstream chart name,
+        # we need to rename the Helm chart archive
+        local new_tgz_file="$artifact_name-$chart_version.tgz"
+
+        tar -xzvf $tgz_file
+        yq -i ".name = \"$artifact_name\"" $chart_name/Chart.yaml
+        tar -czvf $new_tgz_file $chart_name/
+        rm -rf $chart_name $tgz_file
+
+        tgz_file=$new_tgz_file
+      fi
+
       # Push Helm chart to OCI
       helm push $tgz_file $OCI_REGISTRY
       rm -f $tgz_file
@@ -152,6 +168,10 @@ for unit_name in $(yq -r '(.units | ... comments="" | keys())[]' $VALUES_FILE | 
     helm_repo_url=$(echo "$unit" | yq '.helm_repo_url' -)
     if [[ -n "$helm_repo_url" && $helm_repo_url != "null" ]]; then
       ## Helm charts in helm repository ##
+
+      artifact_name=$(echo "$unit" | yq '.helm_chart_artifact_name // .helmrelease_spec.chart.spec.chart')
+      echo "artifact name will be $artifact_name"
+
       version=$(echo "$helmchart_spec" | yq '.version' -)
 
       ## no processing is needed if the OCI artifact already exist in the OCI repository
@@ -159,13 +179,13 @@ for unit_name in $(yq -r '(.units | ... comments="" | keys())[]' $VALUES_FILE | 
       ## if an invalid tag is found we used a rewrited version of it for the check
       version_to_check=$(check_invalid_semver_tag $version)
       echo "Version to check: $version_to_check"
-      if (flux pull artifact $OCI_REGISTRY/$chart:${version_to_check/+/_} -o /tmp 2>&1 || true) | grep -q created; then
-        echo "Skipping $chart processing, $chart:$version_to_check already exists in $OCI_REGISTRY"
+      if (flux pull artifact $OCI_REGISTRY/$artifact_name:${version_to_check/+/_} -o /tmp 2>&1 || true) | grep -q created; then
+        echo "Skipping $chart processing, $artifact_name:$version_to_check already exists in $OCI_REGISTRY"
         echo -e $section_end
         continue
       fi
 
-      process_chart_in_helm_repo $helm_repo_url $chart $version
+      process_chart_in_helm_repo $helm_repo_url $chart $version $artifact_name
     else
       ## Helm charts in git repository ##
       chart_name=$(echo "$unit" | yq '.helm_chart_artifact_name // ""')
