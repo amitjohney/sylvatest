@@ -1,0 +1,13 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cinder-csi-network-policy
+  namespace: cinder-csi
+spec:
+  egress:
+  - {}
+  podSelector: {}
+  policyTypes:
+  - Egress
+  - Ingress

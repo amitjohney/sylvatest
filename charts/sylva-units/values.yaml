@@ -1188,6 +1188,8 @@ units:
           chart: rke2-calico
           version: v3.25.001
       values:
+        securityContext:
+          privileged: false
         installation:
           calicoNetwork:
             bgp: Enabled
@@ -1291,6 +1293,92 @@ units:
             allowVolumeExpansion: true
             parameters:
               type: "{{ .Values.openstack.storageClass.type }}"
+      _postRenderers:
+      - kustomize:
+          patchesJson6902:
+          - patch:
+            - op: add
+              path: "/spec/template/spec/containers/0/securityContext"
+              value:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                  - "ALL"
+                readOnlyRootFilesystem: true
+            - op: add
+              path: "/spec/template/spec/containers/1/securityContext"
+              value:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                  - "ALL"
+                readOnlyRootFilesystem: true
+            - op: add
+              path: "/spec/template/spec/containers/2/securityContext"
+              value:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                  - "ALL"
+                readOnlyRootFilesystem: true
+            - op: add
+              path: "/spec/template/spec/containers/3/securityContext"
+              value:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                  - "ALL"
+                readOnlyRootFilesystem: true
+            - op: add
+              path: "/spec/template/spec/containers/4/securityContext"
+              value:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                  - "ALL"
+                readOnlyRootFilesystem: true
+            - op: add
+              path: "/spec/template/spec/containers/5/securityContext"
+              value:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                  - "ALL"
+                readOnlyRootFilesystem: true
+            - op: add
+              path: "/spec/template/spec/securityContext"
+              value:
+                runAsGroup: 65533
+                runAsNonRoot: true
+                runAsUser: 65533
+            target:
+              group: apps
+              kind: Deployment
+              name: cinder-csi-controllerplugin
+              version: v1
+          - patch:
+            - op: add
+              path: "/metadata/annotations"
+              value:
+                kube-score/ignore:
+                  "container-security-context-privileged,container-security-context-user-group-id"
+            - op: add
+              path: "/spec/template/spec/containers/0/securityContext"
+              value:
+                readOnlyRootFilesystem: true
+            - op: add
+              path: "/spec/template/spec/containers/1/securityContext"
+              value:
+                readOnlyRootFilesystem: true
+            - op: add
+              path:
+                "/spec/template/spec/containers/2/securityContext/readOnlyRootFilesystem"
+              value: true
+            target:
+              group: apps
+              kind: DaemonSet
+              name: cinder-csi-nodeplugin
+              version: v1
     helm_secret_values:
       secret:
         enabled: "true"

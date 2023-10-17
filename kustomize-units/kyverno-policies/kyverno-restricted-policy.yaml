@@ -1,0 +1,160 @@
+---
+apiVersion: kyverno.io/v1
+kind: Policy
+metadata:
+  annotations:
+    kyverno.io/kubernetes-version: "1.24"
+    kyverno.io/kyverno-version: 1.8.0
+    policies.kyverno.io/category: Pod Security, EKS Best Practices
+    policies.kyverno.io/description: >-
+      The restricted profile of the Pod Security Standards, which is inclusive
+      of the baseline profile, is a collection of all the most common
+      configurations that can be taken to secure Pods. Beginning with Kyverno
+      1.8, an entire profile may be assigned to the cluster through a single
+      rule. This policy configures the restricted profile through the latest
+      version of the Pod Security Standards cluster wide.
+    policies.kyverno.io/minversion: 1.8.0
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/title: Restricted Pod Security Standards
+  name: podsecurity-restricted
+  namespace: cinder-csi
+spec:
+  background: true
+  rules:
+    - match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      name: restricted
+      preconditions:
+        - key: >-
+            {{ request.object.metadata.labels.component || '' }}
+          operator: AnyNotIn
+          value:
+            - nodeplugin
+      validate:
+        podSecurity:
+          exclude:
+            - controlName: HostPath Volumes
+            - controlName: Volume Types
+            - controlName: Seccomp
+              images:
+                - "*"
+          level: restricted
+          version: latest
+    - match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      name: host-port-range
+      preconditions:
+        - key: >-
+            {{ request.object.metadata.labels.component || '' }}
+          operator: AnyNotIn
+          value:
+            - nodeplugin
+      validate:
+        deny:
+          conditions:
+            all:
+              - key: >-
+                  {{ request.object.spec.[ephemeralContainers, initContainers,
+                  containers][].ports[].hostPort }}
+                operator: AnyNotIn
+                value:
+                  - 9808
+        message: >-
+          The only permitted hostPorts is 9808.
+    - match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      name: restricted-volumes
+      preconditions:
+        - key: >-
+            {{ request.object.metadata.labels.component || '' }}
+          operator: AnyNotIn
+          value:
+            - nodeplugin
+      validate:
+        deny:
+          conditions:
+            all:
+              - key: "{{ request.object.spec.volumes[].keys(@)[] || '' }}"
+                operator: AnyNotIn
+                value:
+                  - configMap
+                  - emptyDir
+                  - projected
+                  - secret
+                  - downwardAPI
+                  - persistentVolumeClaim
+                  - hostPath
+                  - name
+                  - ''
+        message: >-
+          Only the following types of volumes may be used: configMap, hostpath,
+          downwardAPI, emptyDir, ephemeral, persistentVolumeClaim, projected,
+          and secret.
+    - match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      name: limit-hostpath-to-specific-location
+      preconditions:
+        - key: >-
+            {{ request.object.metadata.labels.component || '' }}
+          operator: AnyNotIn
+          value:
+            - nodeplugin
+      validate:
+        foreach:
+          - deny:
+              conditions:
+                any:
+                  - key: "{{ element.path || '' }}"
+                    operator: AnyNotIn
+                    value:
+                      - /etc/cacert
+                      - ''
+            list: "request.object.spec.volumes[?hostPath].hostPath"
+        message: >-
+          hostpath volumes are limited to /etc/cacert
+    - match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      name: ensure-cacert-readonly
+      preconditions:
+        - key: >-
+            {{ request.object.metadata.labels.component || '' }}
+          operator: AnyNotIn
+          value:
+            - nodeplugin
+      validate:
+        foreach:
+          - deny:
+              conditions:
+                any:
+                  - key: >
+                      {{ request.object.spec.[containers, initContainers,
+                      ephemeralContainers][].volumeMounts[?name ==
+                      '{{element.name}}'][] | length(@) }}
+                    operator: NotEquals
+                    value: >
+                      {{ request.object.spec.[containers, initContainers,
+                      ephemeralContainers][].volumeMounts[?name ==
+                      '{{element.name}}' && readOnly] [] | length(@) }}
+            list: >-
+              request.object.spec.volumes[?hostPath] | [?hostPath.path ==
+              '/etc/cacert']
+        message: >-
+          hostpath volume for /etc/cacert should be in readonly
+
+  validationFailureAction: enforce

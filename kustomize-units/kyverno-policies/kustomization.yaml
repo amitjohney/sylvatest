@@ -4,3 +4,8 @@ kind: Kustomization
 resources:
 - tag.yaml
 - default-namespace.yaml
+- network-policy.yaml
+- role-binding-controllerplugin.yaml
+- role-binding-nodeplugin.yaml
+- kyverno-restricted-policy.yaml
+- kyverno-nodeplugin-policy.yaml
