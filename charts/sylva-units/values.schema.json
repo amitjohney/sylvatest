@@ -2052,7 +2052,7 @@
             "server_group_id": {
               "type": "string"
             },
-            "common_security_group_name": {
+            "security_group_name": {
               "type": "string"
             },
             "identity_ref_secret": {
@@ -3989,7 +3989,7 @@
                             }
                           ]
                         },
-                        "common_security_group_name": {
+                        "security_group_name": {
                           "anyOf": [
                             {
                               "type": "string"
