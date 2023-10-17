@@ -1986,7 +1986,11 @@ units:
             folder: '{{ .Values.cluster.capv.folder }}'
             resourcePool: '{{ .Values.cluster.capv.resourcePool }}'
             storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
-          rke2: '{{ .Values.cluster.rke2 }}'
+
+          rke2: '{{ tuple .Values.cluster.rke2 .Values.cluster.rke2 | include "set-only-if" | include "preserve-type" }}'
+          kubeadm: '{{ tuple .Values.cluster.kubeadm .Values.cluster.kubeadm | include "set-only-if" | include "preserve-type" }}'
+
+          kubelet_extra_args: '{{ tuple .Values.cluster.kubelet_extra_args .Values.cluster.kubelet_extra_args | include "set-only-if" | include "preserve-type" }}'
 
           air_gapped: '{{ .Values.cluster.air_gapped | include "preserve-type" }}'
 
