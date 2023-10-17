@@ -2041,6 +2041,7 @@ units:
       - '{{ tuple . "metal3" | include "unit-enabled" }}'
     depends_on:
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
+      '{{ .Values._internal.default_storage_class_unit }}': true
     repo: os-image-server
     annotations:
       sylvactl/readyMessage: |
