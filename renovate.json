@@ -22,6 +22,13 @@
   },
   "packageRules": [
     {
+      "matchPackagePrefixes": [
+        "gcr.io/cloud-provider-vsphere/csi/release",
+        "quay.io/k8scsi"
+      ],
+      "groupName": "cloud-provider-vsphere"
+    },
+    {
       "matchPackageNames": [
         "rke2-calico",
         "rke2-calico-crd"
