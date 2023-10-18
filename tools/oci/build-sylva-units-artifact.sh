@@ -127,7 +127,7 @@ yq eval-all -i '
                 "helmrelease_spec": {
                   "chart": {
                     "spec": {
-                      "version": $reference_units[.key].helmrelease_spec.chart.spec.version | sub("(.?[0-9]+)\.([0-9]+)\.([0-9]+)([\+\-].*)?", "${1}.${2}.9${3}${4}+${1}.${2}.${3}${4}")
+                      "version": $reference_units[.key].helmrelease_spec.chart.spec.version | sub("(.?[0-9]+)\.([0-9]+)\.(0[0-9]+)([\+\-].*)?", "${1}.${2}.9${3}${4}+${1}.${2}.${3}${4}")
                     }
                   }
                 }
