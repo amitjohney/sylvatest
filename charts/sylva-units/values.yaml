@@ -296,7 +296,10 @@ units:
         - kustomize:
             patches:
             - target:
+                apiVersion: batch/v1
                 kind: Job
+                metadata:
+                  name: kubevirt-crd-upgrader
               patch: |
                 - op: replace
                   path: /metadata/namespace
