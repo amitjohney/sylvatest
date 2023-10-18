@@ -206,6 +206,9 @@ units:
     #enabled: true
     unit_template: base-deps
 
+  multus-ready:
+    enabled: true
+
   sriov:
     # can be enabled at runtime if desired:
     #enabled: true
