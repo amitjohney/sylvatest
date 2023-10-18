@@ -294,28 +294,25 @@ units:
           version: 0.1.0
       _postRenderers:
         - kustomize:
-            patches:
-            - target:
-                kind: Job
-              patch: |
-                - op: replace
-                  path: /metadata/namespace
-                  value: kubevirt
-
-            # patchesStrategicMerge:
-            #   - kind: Job
-            #     apiVersion: batch/v1
-            #     metadata:
-            #       namespace: kubevirt
-            #       name: kubevirt-crd-upgrader
-
+            # patches:
             # - target:
-            #     kind: Deployment
+            #     kind: Job
             #   patch: |
-            #     - op: remove
-            #       path: /spec/template/spec/securityContext/seccompProfile
-            #     - op: remove
-            #       path: /spec/template/spec/containers/0/securityContext/seccompProfile
+            #     - op: replace
+            #       path: /metadata/namespace
+            #       value: kubevirt
+
+            patchesStrategicMerge:
+              - kind: Job
+                apiVersion: batch/v1
+                metadata:
+                  namespace: kubevirt
+                  name: kubevirt-crd-upgrader
+                spec:
+                  template:
+                    metadata:
+                      name: kubevirt-crd-upgrader
+
 
 
             # patchesStrategicMerge:
