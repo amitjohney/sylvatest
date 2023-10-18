@@ -301,6 +301,7 @@ units:
             #     - op: replace
             #       path: /metadata/namespace
             #       value: kubevirt
+
             patchesStrategicMerge:
               - kind: Job
                 apiVersion: batch/v1
