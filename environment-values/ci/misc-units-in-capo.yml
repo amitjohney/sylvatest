@@ -56,6 +56,8 @@ units:
     enabled: false # explicitly disabled, since env_type_ci is set in .gitlab-ci.yml
   multus:
     enabled: true
+  multus-ready:
+    enabled: true
   kubevirt:
     enabled: true
   kubevirt-test-vms:

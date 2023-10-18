@@ -373,7 +373,7 @@ units:
     enabled_conditions:
     - '{{ gt (.Values.libvirt_metal.node_count | int) 0 }}'
     depends_on:
-      multus: true
+      multus-ready: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/libvirt-metal
@@ -423,5 +423,6 @@ units_override_enabled:
   - heat-operator
   - capo-cluster-resources
   - multus
+  - multus-ready
   - libvirt-metal
   - vsphere-cloud-controller-manager
