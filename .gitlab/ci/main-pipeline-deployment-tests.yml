@@ -35,6 +35,9 @@ variables:
 .default-trigger:
   stage: deploy
   rules: !reference [".deployment_rules"]
+  trigger:
+    forward:
+      pipeline_variables: true  # required to pass variables from upstream to downstream pipelines
 
 .needs-publish-jobs:
   - job: push-helm-artifacts
@@ -51,9 +54,9 @@ variables:
   needs: !reference [.needs-publish-jobs]
 
 capd-preview-deploy:
+  stage: deploy
   extends:
     - .deploy-base
-    - .default-trigger
   timeout: 15min
   script:
     - !reference [.common-deployment, script_common]
