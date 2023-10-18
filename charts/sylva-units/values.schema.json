@@ -3304,6 +3304,12 @@
                 }
               ]
             },
+            "helm_chart_versions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
             "helm_chart_artifact_name": {
               "type": "string"
             },

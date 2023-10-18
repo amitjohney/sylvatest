@@ -48,7 +48,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/capi-rancher-import.git
       ref:
-        tag: 0.1.3
+        tag: 0.1.4
 
   weave-gitops:
     kind: GitRepository
@@ -69,7 +69,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.1.8
+        tag: 0.1.10
 
   local-path-provisioner:
     kind: GitRepository
@@ -206,17 +206,6 @@ units:
         createNamespace: true
       values:
         installCRDs: true
-        securityContext:
-          seccompProfile: null
-        webhook:
-          securityContext:
-            seccompProfile: null
-        cainjector:
-          securityContext:
-            seccompProfile: null
-        startupapicheck:
-          securityContext:
-            seccompProfile: null
 
   trivy-operator:
     enabled: no
@@ -295,9 +284,6 @@ units:
           auth:
             username: postgres
         nameOverride: postgres
-        primary:
-          containerSecurityContext:
-            seccompProfile: null
 
   kubevirt:
     helm_repo_url: https://suse-edge.github.io/charts
@@ -326,9 +312,6 @@ units:
       targetNamespace: vault
       install:
         createNamespace: true
-      values:
-        psp:
-          enabled: true
 
 # Vault assumes that the certificate vault-tls has been issued
   vault:
@@ -375,7 +358,6 @@ units:
           kind: Deployment
           name: vault-configurer
           namespace: vault
-
 
   vault-config-operator:
     depends_on:
@@ -430,14 +412,6 @@ units:
         createNamespace: true
       values:
         installCRDs: true
-        securityContext:
-          seccompProfile: null
-        webhook:
-          securityContext:
-            seccompProfile: null
-        certController:
-          securityContext:
-            seccompProfile: null
 
   eso-secret-stores:
     depends_on:
@@ -477,7 +451,7 @@ units:
         global:
           cattle:
             psp:
-              enabled: true
+              enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") | include "preserve-type" }}'
 
   # this allows for running a CIS scan for management cluster
   # generates a report which can be viewed and downloaded in CSV from the Rancher UI, at https://rancher.sylva/dashboard/c/local/cis/cis.cattle.io.clusterscan
@@ -523,6 +497,24 @@ units:
           namespace: keycloak
       _components:
         - '{{ tuple "components/keycloak-operator-proxies" (.Values.proxies.https_proxy) | include "set-only-if" }}'
+      _patches:
+        - patch: |
+            - op: replace
+              path: /spec/template/spec/containers/0/securityContext
+              value:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                privileged: false
+                runAsNonRoot: true
+                runAsGroup: 1000
+                runAsUser: 1000
+                seccompProfile:
+                  type: RuntimeDefault
+          target:
+            kind: Deployment
+            name: keycloak-operator
 
   keycloak-legacy-operator:
     enabled_conditions:
@@ -544,8 +536,17 @@ units:
             spec:
               template:
                 spec:
-                  securityContext:
-                    runAsUser: 10000
+                  containers:
+                    - name: keycloak-realm-operator
+                      securityContext:
+                        runAsUser: 10000
+                        allowPrivilegeEscalation: false
+                        capabilities:
+                          drop:
+                            - ALL
+                        runAsNonRoot: true
+                        seccompProfile:
+                          type: RuntimeDefault
           target:
             kind: Deployment
             name: keycloak-realm-operator
@@ -604,14 +605,6 @@ units:
       - target:
           kind: Job
         patch: |
-          - op: add
-            path: /spec/template/spec/securityContext
-            value:
-              runAsUser: 1000
-              runAsGroup: 3000
-      - target:
-          kind: Job
-        patch: |
           - op: replace
             path: /spec/backoffLimit
             value: 15
@@ -659,26 +652,8 @@ units:
       install:
         createNamespace: true
       values:
-        admissionController:
-          container:
-            securityContext:
-              seccompProfile: null
-          initContainer:
-            securityContext:
-              seccompProfile: null
-        test:
-          securityContext:
-            seccompProfile: null
-        cleanupController:
-          securityContext:
-            seccompProfile: null
-        cleanupJobs:
-          admissionReports:
-            securityContext:
-              seccompProfile: null
-        clusterAdmissionReports:
-          securityContext:
-            seccompProfile: null
+        webhooksCleanup:
+          enabled: false
         backgroundController:
           rbac:
             clusterRole:
@@ -691,11 +666,6 @@ units:
                 resources:
                   - "nodes"
                 verbs: ["get", "list", "watch", "patch", "update"]
-          securityContext:
-            seccompProfile: null
-        reportsController:
-          securityContext:
-            seccompProfile: null
         config:
           # -- Resource types to be skipped by the Kyverno policy engine, removed [Node,*,*] [Node/*,*,*] entries
           resourceFilters:
@@ -801,6 +771,24 @@ units:
     kustomization_spec:
       path: ./kustomize-units/capo
       wait: true
+      _patches:
+        - target:
+            group: apps
+            version: v1
+            kind: Deployment
+            name: capo-controller-manager
+            namespace: capo-system
+          patch: |-
+            - op: add
+              path: /spec/template/spec/containers/0/securityContext
+              value:
+                runAsNonRoot: true
+                seccompProfile:
+                  type: RuntimeDefault
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
 
   capm3:
     repo: sylva-core
@@ -839,6 +827,41 @@ units:
     kustomization_spec:
       path: ./kustomize-units/cabpr
       wait: true
+      _patches:
+        - target:
+            group: apps
+            version: v1
+            kind: Deployment
+            name: rke2-bootstrap-controller-manager
+            namespace: rke2-bootstrap-system
+          patch: |-
+            - op: add
+              path: /spec/template/spec/containers/0/securityContext
+              value:
+                runAsNonRoot: true
+                seccompProfile:
+                  type: RuntimeDefault
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+        - target:
+            group: apps
+            version: v1
+            kind: Deployment
+            name: rke2-control-plane-controller-manager
+            namespace: rke2-control-plane-system
+          patch: |-
+            - op: add
+              path: /spec/template/spec/containers/0/securityContext
+              value:
+                runAsNonRoot: true
+                seccompProfile:
+                  type: RuntimeDefault
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
 
   metal3-init:
     enabled_conditions:
@@ -875,7 +898,7 @@ units:
         spec:
           chart: .
       install:
-        createNamespace: true
+        createNamespace: false
       targetNamespace: metal3-system
       values:  # see https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3/-/blob/main/values.yaml
         global:
@@ -1050,6 +1073,29 @@ units:
     kustomization_spec:
       path: ./kustomize-units/heat-operator
       wait: true
+      _patches:
+        - target:
+            group: apps
+            version: v1
+            kind: Deployment
+            name: heat-operator-controller-manager
+            namespace: heat-operator-system
+          patch: |-
+            - op: add
+              path: /spec/template/spec/containers/0/securityContext/seccompProfile
+              value:
+                type: RuntimeDefault
+        - target:
+            group: apps
+            version: v1
+            kind: Deployment
+            name: heat-operator-controller-manager
+            namespace: heat-operator-system
+          patch: |-
+            - op: add
+              path: /spec/template/spec/containers/1/securityContext/seccompProfile
+              value:
+                type: RuntimeDefault
 
   capo-cluster-resources:
     enabled_conditions:
@@ -1097,14 +1143,6 @@ units:
           JOB_CHECKSUM: '{{ .Values | toJson | sha256sum }}'
       _patches:
       - target:
-          kind: Job
-        patch: |
-          - op: add
-            path: /spec/template/spec/securityContext
-            value:
-              runAsUser: 1000
-              runAsGroup: 3000
-      - target:
           kind: ConfigMap
         patch: |
           - op: replace
@@ -1143,14 +1181,6 @@ units:
           JOB_CHECKSUM: '{{ .Values | toJson | sha256sum }}'
       _patches:
       - target:
-          kind: Job
-        patch: |
-          - op: add
-            path: /spec/template/spec/securityContext
-            value:
-              runAsUser: 1000
-              runAsGroup: 3000
-      - target:
           kind: ConfigMap
         patch: |
           - op: replace
@@ -1166,35 +1196,36 @@ units:
     enabled_conditions:
     - '{{ tuple . "calico" | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io
+    helm_chart_versions:
+      - "v3.25.001"  # used for k8s < 1.26.6
+      - "v3.26.101"
     helmrelease_spec:
       releaseName: rke2-calico-crd
       targetNamespace: kube-system
       chart:
         spec:
           chart: rke2-calico-crd
-          version: v3.25.001
+          version: '{{ semver (tuple . .Values.cluster.k8s_version | include "interpret-as-string") | (semver "v1.26.6").Compare | le 0 | ternary "v3.25.001" "v3.26.101" }}'
 
   calico:
     depends_on:
       calico-crd: true
     helm_repo_url: https://rke2-charts.rancher.io
+    helm_chart_versions:
+      - "v3.25.001"  # used for k8s < 1.26.6
+      - "v3.26.101"
     helmrelease_spec:
       releaseName: rke2-calico
       targetNamespace: kube-system
       chart:
         spec:
           chart: rke2-calico
-          version: v3.25.001
+          version: '{{ semver (tuple . .Values.cluster.k8s_version | include "interpret-as-string") | (semver "v1.26.6").Compare | le 0 | ternary "v3.25.001" "v3.26.101" }}'
       values:
         installation:
           calicoNetwork:
             bgp: Enabled
           registry: UseDefault
-        felixConfiguration:
-          failsafeInboundHostPorts: "[ {'protocol': 'TCP', 'port': 22}, {'protocol': 'UDP', 'port': 68}, {'protocol': 'TCP', 'port': 179}, {'protocol': 'TCP', 'port': 2379}, {'protocol': 'TCP', 'port': 2380}, {'protocol': 'TCP', 'port': 5473}, {'protocol': 'TCP', 'port': 6443}, {'protocol': 'TCP', 'port': 6666}, {'protocol': 'TCP', 'port': 6667} ]"
-          failsafeOutboundHostPorts: "[ {'protocol': 'UDP', 'port': 53}, {'protocol': 'UDP', 'port': 67}, {'protocol': 'TCP', 'port': 179}, {'protocol': 'TCP', 'port': 2379}, {'protocol': 'TCP', 'port': 2380}, {'protocol': 'TCP', 'port': 5473}, {'protocol': 'TCP', 'port': 6443}, {'protocol': 'TCP', 'port': 6666}, {'protocol': 'TCP', 'port': 6667} ]"
-          iptablesBackend: "Auto"
-          iptablesRefreshInterval: "10s"
 
   metallb:
     enabled_conditions:
@@ -1240,7 +1271,7 @@ units:
 
   cinder-csi-psp:
     enabled_conditions:
-    - '{{ .Values.cluster.cis_profile | eq "cis-1.6" }}'
+    - '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") }}'
     - '{{ tuple . "cinder-csi" | include "unit-enabled" }}'
     depends_on:
       namespace-defs: true
@@ -1462,6 +1493,28 @@ units:
           loadBalancerIP: '{{ .Values.cluster_external_ip }}'
           annotations:
             metallb.universe.tf/allow-shared-ip: cluster-external-ip
+      _postRenderers:
+        - kustomize:
+            patchesStrategicMerge:
+              - kind: Deployment
+                apiVersion: apps/v1
+                metadata:
+                  name: k8s-gateway
+                spec:
+                  template:
+                    spec:
+                      containers:
+                      - name: k8s-gateway
+                        securityContext:
+                          allowPrivilegeEscalation: false
+                          capabilities:
+                            drop:
+                            - ALL
+                          runAsNonRoot: true
+                          runAsGroup: 1000
+                          runAsUser: 1000
+                          seccompProfile:
+                            type: RuntimeDefault
 
   capd-metallb-config:
     enabled_conditions:
@@ -1493,7 +1546,16 @@ units:
         createNamespace: true
       values:
         securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          privileged: false
+          runAsNonRoot: true
+          runAsGroup: 1
           runAsUser: 1
+          seccompProfile:
+            type: RuntimeDefault
         conf:
           env:
             - name: URL_REMAP
@@ -1511,13 +1573,16 @@ units:
       capd-metallb-config: '{{ tuple . "capd-metallb-config" | include "unit-enabled" }}'
       calico: '{{ tuple . "calico" | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io
+    helm_chart_versions:
+      - "4.5.202"  # used with k8s < 1.26.6
+      - "4.6.101"
     helmrelease_spec:
       releaseName: rke2-ingress-nginx
       targetNamespace: kube-system
       chart:
         spec:
           chart: rke2-ingress-nginx
-          version: 4.1.008
+          version: '{{ semver (tuple . .Values.cluster.k8s_version | include "interpret-as-string") | (semver "v1.26.6").Compare | le 0 | ternary "4.5.202" "4.6.101" }}'
       values:
         fullnameOverride: rke2-ingress-nginx
         controller:
@@ -1525,10 +1590,6 @@ units:
             use-forwarded-headers: true
           kind: DaemonSet
           service:
-            ############## required until we upgrade to RKE2 >= 1.24.14 - see https://gitlab.com/sylva-projects/sylva-core/-/issues/324 #########
-            type: LoadBalancer
-            enabled: true
-            #####################################################################################################################################
             externalIPs:
             - '{{ .Values.cluster_external_ip }}'
             annotations:
@@ -1623,19 +1684,6 @@ units:
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:
-              - kind: Deployment
-                apiVersion: apps/v1
-                metadata:
-                  name: flux-webui-weave-gitops
-                spec:
-                  template:
-                    spec:
-                      containers:
-                      - name: weave-gitops
-                        securityContext:
-                          seccompProfile:
-                            $patch: delete
-                            type: RuntimeDefault
               - kind: ClusterRoleBinding
                 apiVersion: rbac.authorization.k8s.io/v1
                 metadata:
@@ -1647,6 +1695,27 @@ units:
                   - apiGroup: rbac.authorization.k8s.io
                     kind: User
                     name: sylva-admin@example.com  # add same RBAC for the SSO user, so that when flux-webui SA impersonates it has privileges; cannot use "infra-admins" group here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/427
+              - kind: Deployment
+                apiVersion: apps/v1
+                metadata:
+                  name: flux-webui-weave-gitops
+                spec:
+                  template:
+                    spec:
+                      containers:
+                      - name: weave-gitops
+                        securityContext:
+                          allowPrivilegeEscalation: false
+                          capabilities:
+                            drop:
+                            - ALL
+                          privileged: false
+                          readOnlyRootFilesystem: true
+                          runAsNonRoot: true
+                          runAsGroup: 1000
+                          runAsUser: 1000
+                          seccompProfile:
+                            type: RuntimeDefault
 
   monitoring-crd:
     enabled_conditions:
@@ -1666,7 +1735,7 @@ units:
         global:
           cattle:
             psp:
-              enabled: '{{ .Values.cluster.cis_profile | eq "cis-1.6" | include "as-bool" }}'
+              enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") | include "as-bool" }}'
 
   monitoring:
     depends_on:
@@ -1686,7 +1755,7 @@ units:
         global:
           cattle:
             psp:
-              enabled: '{{ .Values.cluster.cis_profile | eq "cis-1.6" | include "as-bool" }}'
+              enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") | include "as-bool" }}'
 
   # this is a Job attempt to check successful import of a CAPI workload clusters in Rancher, still incomplete
   # it would be used along with a definition of a 'workload-cluster' unit
@@ -1706,14 +1775,6 @@ units:
           JOB_NAME: check-rancher-clusters-job
           JOB_TARGET_NAMESPACE: cattle-system
       _patches:
-      - target:
-          kind: Job
-        patch: |
-          - op: add
-            path: /spec/template/spec/securityContext
-            value:
-              runAsUser: 1000
-              runAsGroup: 3000
       - target:
           kind: Job
         patch: |
@@ -1745,7 +1806,6 @@ units:
                   env:
                   - name: CLUSTER_NAME
                     value: '{{ .Values.test_workload_cluster_name }}'
-
 
   multus:
     enabled: false
@@ -1844,7 +1904,7 @@ units:
 
   sriov-psp:
     enabled_conditions:
-    - '{{ .Values.cluster.cis_profile | eq "cis-1.6" }}'
+    - '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") }}'
     - '{{ (tuple . "sriov" | include "unit-enabled") }}'
     depends_on:
       sriov-crd: true
@@ -1907,12 +1967,14 @@ units:
     helmrelease_spec:
       releaseName: longhorn
       targetNamespace: longhorn-system
+      install:
+        createNamespace: false
       chart:
         spec:
           chart: longhorn
           version: 102.2.0+up1.4.1
       values:
-        enablePSP: true
+        enablePSP: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") | include "preserve-type" }}'
         defaultSettings:
           createDefaultDiskLabeledNodes: true
           defaultDataPath: /var/lib/longhorn
@@ -2065,6 +2127,27 @@ units:
         downloader:
           proxy: '{{ get .Values.proxies "https_proxy" }}'
           no_proxy: '{{ include "sylva-units.no_proxy" . }}'
+          securityContext:
+            capabilities:
+              drop:
+              - ALL
+            runAsNonRoot: true
+            runAsUser: 10000
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
+        nginx:
+          securityContext:
+            capabilities:
+              drop:
+              - ALL
+            runAsNonRoot: true
+            runAsUser: 10000
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
         ingress:
           className: nginx
           hosts:
@@ -2144,7 +2227,7 @@ cluster:
   air_gapped: false
 
   # cis profile to be used. Curently supported only for rke2 clusters. "cis-1.6" for k8s prior to 1.25, "cis-1.23" for 1.25+
-  cis_profile: cis-1.6
+  cis_profile: cis-1.23
 
   # for now, the choice below needs to be made
   # consistently with the choice of a matching kustomization path
@@ -2155,7 +2238,7 @@ cluster:
     bootstrap_provider: cabpk # cabpr (RKE2) or cabpk (kubeadm)
 
   # kubernetes version to be used
-  k8s_version: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.24.12+rke2r1" "v1.24.12" }}'
+  k8s_version: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.26.9+rke2r1" "v1.26.9" }}'
 
   # Nodes number for control-plane
   control_plane_replicas: 3

@@ -172,20 +172,24 @@ for unit_name in $(yq -r '(.units | ... comments="" | keys())[]' $VALUES_FILE | 
       artifact_name=$(echo "$unit" | yq '.helm_chart_artifact_name // .helmrelease_spec.chart.spec.chart')
       echo "artifact name will be $artifact_name"
 
-      version=$(echo "$helmchart_spec" | yq '.version' -)
-
-      ## no processing is needed if the OCI artifact already exist in the OCI repository
-      ## looking for invalid semver tag
-      ## if an invalid tag is found we used a rewrited version of it for the check
-      version_to_check=$(check_invalid_semver_tag $version)
-      echo "Version to check: $version_to_check"
-      if (flux pull artifact $OCI_REGISTRY/$artifact_name:${version_to_check/+/_} -o /tmp 2>&1 || true) | grep -q created; then
-        echo "Skipping $chart processing, $artifact_name:$version_to_check already exists in $OCI_REGISTRY"
-        echo -e $section_end
-        continue
+      readarray versions < <(echo "$unit" | yq '.helm_chart_versions[]')
+      if [[ ${#versions[@]} -eq 0 ]]; then
+        versions+=$(echo "$helmchart_spec" | yq '.version' -)
       fi
+      for version in "${versions[@]}"; do
+        ## no processing is needed if the OCI artifact already exist in the OCI repository
+        ## looking for invalid semver tag
+        ## if an invalid tag is found we used a rewrited version of it for the check
+        version_to_check=$(check_invalid_semver_tag $version)
+        echo "Version to check: $version_to_check"
+        if (flux pull artifact $OCI_REGISTRY/$chart:${version_to_check/+/_} -o /tmp 2>&1 || true) | grep -q created; then
+          echo "Skipping $chart processing, $chart:$version_to_check already exists in $OCI_REGISTRY"
+	  echo -e $section_end
+          continue
+        fi
 
-      process_chart_in_helm_repo $helm_repo_url $chart $version $artifact_name
+        process_chart_in_helm_repo $helm_repo_url $chart $version $artifact_name
+      done
     else
       ## Helm charts in git repository ##
       chart_name=$(echo "$unit" | yq '.helm_chart_artifact_name // ""')

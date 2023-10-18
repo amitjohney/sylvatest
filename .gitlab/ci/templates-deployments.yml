@@ -69,7 +69,7 @@ include:
     # and allow to enable extra kustomize components needed in the context of the platform
     # on which this test actually runs
     - git clone --depth=1 https://foo:${CI_COMPONENT_REPO_PAT}@${CI_COMPONENT_REPO}
-    - export CI_COMPONENT="https://${CI_COMPONENT_REPO}//${CI_COMPONENT_REPO_PATH}-${ENV_NAME}?ref=2023-09-28"
+    - export CI_COMPONENT="https://${CI_COMPONENT_REPO}//${CI_COMPONENT_REPO_PATH}-${ENV_NAME}?ref=2023-10-18"
     - if [ $(yq '.components | length' environment-values/$ENV_NAME/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' environment-values/$ENV_NAME/kustomization.yaml; fi
     - yq -i '.components += strenv(CI_COMPONENT)' environment-values/$ENV_NAME/kustomization.yaml
     - yq -e '.registry_mirrors' $(basename ${CI_COMPONENT_REPO} .git)/${CI_COMPONENT_REPO_PATH}-base/values.yaml > registry_mirrors.yml
@@ -157,7 +157,7 @@ include:
   export no_proxy=$no_proxy,.sylva
   attempts=0
   max_attempts=5
-  until kubectl run test --image=busybox --kubeconfig workload-cluster-rancher-kubeconfig -- sleep 10; do
+  until kubectl run test --image=registry.k8s.io/pause:3.9 --kubeconfig workload-cluster-rancher-kubeconfig --overrides='{"apiVersion": "v1","spec": {"containers": [{"name": "test","image": "registry.k8s.io/pause:3.9","securityContext": {"allowPrivilegeEscalation": false,"capabilities": {"drop": ["ALL"]},"runAsNonRoot": true,"runAsGroup": 1000,"runAsUser": 1000,"seccompProfile": {"type": "RuntimeDefault"}}}]}}'; do
     sleep 3
     ((attempts++)) && ((attempts==max_attempts)) && exit -1
   done

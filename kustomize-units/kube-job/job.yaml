@@ -4,6 +4,9 @@ metadata:
   name: kube-job
   annotations:
     kustomize.toolkit.fluxcd.io/prune: disabled
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/enforce-version: latest
 ---
 apiVersion: batch/v1
 kind: Job
@@ -22,6 +25,16 @@ spec:
       - name: run-script
         image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/kube-job:v1.0.4
         command: ["/bin/sh", "-c", "/opt/kube-job.sh"]
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          runAsNonRoot: true
+          runAsUser: 1000
+          privileged: false
+          seccompProfile:
+            type: RuntimeDefault
         env:
         - name: TARGET_NAMESPACE
           value: ${JOB_TARGET_NAMESPACE:-default}
@@ -32,6 +45,10 @@ spec:
       - name: registry-secret
       restartPolicy: Never
       serviceAccountName: ${JOB_NAME}-sa
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       volumes:
       - name: script-volume
         configMap:

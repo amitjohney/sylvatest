@@ -12,9 +12,6 @@ patches:
           spec:
             containers:
               - name: manager
-                securityContext:
-                  seccompProfile:
-                    $patch: delete
                 env:
                   - name: "http_proxy"
                     value: "${http_proxy}"
