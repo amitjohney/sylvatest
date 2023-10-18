@@ -294,15 +294,20 @@ units:
           version: 0.1.0
       _postRenderers:
         - kustomize:
-            patches:
-            - target:
-                kind: Job
+            # patches:
+            # - target:
+            #     kind: Job
+            #     metadata:
+            #       name: kubevirt-crd-upgrader
+            #   patch: |
+            #     - op: replace
+            #       path: /metadata/namespace
+            #       value: kubevirt
+            patchesStrategicMerge:
+              - kind: Job
+                apiVersion: batch/v1
                 metadata:
-                  name: kubevirt-crd-upgrader
-              patch: |
-                - op: replace
-                  path: /metadata/namespace
-                  value: kubevirt
+                  namespace: kubevirt
             # - target:
             #     kind: Deployment
             #   patch: |
