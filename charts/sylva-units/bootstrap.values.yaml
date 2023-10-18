@@ -277,7 +277,7 @@ units:
               kubectl -n $TARGET_NAMESPACE  annotate --overwrite kustomizations.kustomize.toolkit.fluxcd.io cluster pivot/started=true
 
               kubectl -n $TARGET_NAMESPACE get secret {{ .Values.cluster.name }}-kubeconfig -o json | \
-                jq '. | del(.metadata.uid) | del(.metadata.ownerReferences) | .metadata.name = "{{ .Values.cluster.name }}-kubeconfig-copy"' |\
+                jq '. | del(.metadata.uid) | del(.metadata.ownerReferences) | del(.metadata.resourceVersion) | del(.metadata.creationTimestamp) | .metadata.name = "{{ .Values.cluster.name }}-kubeconfig-copy"' |\
                 kubectl apply -f -
 
               echo "-- Retrieve target cluster kubeconfig"
