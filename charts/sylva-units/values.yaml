@@ -2569,16 +2569,17 @@ _internal:
       local-path
     {{- end -}}
 
+  # maps storage class names to the name of the unit that implements it
+  # (a storage class does not need to appear in this map if the required unit has the same name)
+  storage_class_unit_map:
+    local-path: local-path-provisioner
+    longhorn: longhorn
+    vsphere-csi: vsphere-csi-driver
+    '{{ .Values.openstack.storageClass.name }}': cinder-csi
+
   default_storage_class_unit: >-
-    {{- if (tuple . "cinder-csi" | include "unit-enabled") -}}
-      cinder-csi
-    {{- else if (tuple . "vsphere-csi-driver" | include "unit-enabled") -}}
-      vsphere-csi-driver
-    {{- else if (tuple . "longhorn" | include "unit-enabled") -}}
-      longhorn
-    {{- else -}}
-      local-path-provisioner
-    {{- end -}}
+    {{- $default_storage_class := tuple . .Values._internal.default_storage_class | include "interpret-as-string" -}}
+    {{- index (tuple . .Values._internal.storage_class_unit_map | include "interpret-inner-gotpl" | fromJson) "result" | dig $default_storage_class (printf "storage class unit not found for %s" $default_storage_class) -}}
 
   vault_replicas: >-
     {{ ge (int .Values.cluster.control_plane_replicas) 3 | ternary 3 1 }}
