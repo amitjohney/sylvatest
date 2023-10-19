@@ -3825,6 +3825,46 @@
     {
       "if": {
         "properties": {
+          "units": {
+            "properties": {
+              "cluster": {
+                "properties": {
+                  "enabled": {
+                    "const": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "units": {
+            "properties": {
+              "cluster": {
+                "properties": {
+                  "helmrelease_spec": {
+                    "properties": {
+                      "values": {
+                        "not": {
+                          "required": [
+                            "helmrelease_spec"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
           "cluster": {
             "properties": {
               "capi_providers": {
