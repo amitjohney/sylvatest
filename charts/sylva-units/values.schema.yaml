@@ -766,6 +766,26 @@ allOf:
           cluster_external_ip:  # -------------------------------
             const: '{{ .Values.cluster_external_ip }}'  # only the value defined in values.yaml can be used
 
+  - if:
+      properties:
+        units:
+          properties:
+            cluster:
+              properties:
+                enabled:
+                  const: true
+    then:
+      properties:
+        units:
+          properties:
+            cluster:
+              properties:
+                helmrelease_spec:
+                  properties:
+                    values:
+                      not:
+                        required: [helmrelease_spec]
+
   # additional constraints for .openstack
   - if:
       properties:
