@@ -234,6 +234,8 @@ Before triggering bootstrap.sh, certain prerequisites need to be done/followed
     no_proxy: 127.0.0.1,localhost,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8,.sylva
   ```
 
+> **_NOTE:_** If OpenStack instances do not use Cinder root volume, ensure the size of the image being used is within the flavor's disk size or use a larger flavor to avoid machine creation failures during the deployment.
+
 - Run the bootstrap script:
 
   ```shell
