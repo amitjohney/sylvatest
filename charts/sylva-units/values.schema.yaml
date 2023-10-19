@@ -751,6 +751,10 @@ properties:
   _internal:  # -------------------------------
     type: object
 
+  # Placeholder for external units that would need to define their own values
+  third_party:  # -------------------------------
+    type: object
+
   shared_workload_clusters_values:
     type: object
 
