@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: vbmh
-        image: ${NODE_IMAGE:-registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image/emulated-baremetal:0.1.0}
+        image: ${NODE_IMAGE}
         securityContext:
           privileged: true
         env:
