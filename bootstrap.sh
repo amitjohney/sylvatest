@@ -65,11 +65,4 @@ sylvactl watch \
   --timeout $(ci_remaining_minutes_and_at_most ${MGMT_WATCH_TIMEOUT_MIN:-45}) \
   ${SYLVACTL_SAVE:+--save management-cluster-timeline.html}
 
-echo_b "\U00002714 Sylva is ready, everything deployed in management cluster"
-echo "   Management cluster nodes:"
-kubectl --kubeconfig management-cluster-kubeconfig get nodes
-
-echo_b "\U0001F331 You can access following UIs"
-kubectl --kubeconfig management-cluster-kubeconfig get ingress --all-namespaces
-
-echo_b "\U0001F389 All done"
+display_final_messages

@@ -335,3 +335,18 @@ function ci_remaining_minutes_and_at_most() {
     echo $((ci_remaining_min > at_most ? at_most : ci_remaining_min))m
   fi
 }
+
+function display_final_messages() {
+  CALLER_SCRIPT_NAME=$(basename ${BASH_SOURCE[1]})
+  if [[ $CALLER_SCRIPT_NAME != *"apply-workload-cluster.sh"* ]]; then
+    echo_b "\U00002714 Sylva is ready, everything deployed in management cluster"
+    echo "   Management cluster nodes:"
+    kubectl --kubeconfig management-cluster-kubeconfig get nodes
+  fi
+
+  if [[ $CALLER_SCRIPT_NAME == *"bootstrap.sh"* ]]; then
+    echo_b "\U0001F331 You can access following UIs"
+    kubectl --kubeconfig management-cluster-kubeconfig get ingress --all-namespaces
+  fi
+  echo_b "\U0001F389 All done"
+}

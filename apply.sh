@@ -51,4 +51,4 @@ sylvactl watch \
   ${SYLVACTL_SAVE:+--save apply-management-cluster-timeline.html} \
   -n sylva-system
 
-echo_b "\U0001F389 All done"
+display_final_messages
