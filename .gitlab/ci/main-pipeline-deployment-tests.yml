@@ -38,6 +38,7 @@ variables:
   trigger:
     forward:
       pipeline_variables: true  # required to pass variables from upstream to downstream pipelines
+  needs: []
 
 .needs-publish-jobs:
   - job: push-helm-artifacts
