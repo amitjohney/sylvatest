@@ -1,7 +1,7 @@
 # Grab some info in case of failure, essentially usefull to troubleshoot CI, fell free to add your own commands while troubleshooting
 
 function dump_flux_resources() {
-    cluster_dir=$1
+    local cluster_dir=$1
     echo "Dumping Flux resources to $cluster_dir"
     for kind in gitrepositories helmcharts helmrepositories helmreleases kustomizations ; do
         if [[ $kind == helmreleases || $kind == kustomizations ]]; then
@@ -14,6 +14,8 @@ function dump_flux_resources() {
 }
 
 function dump_additional_resources() {
+    local cluster_dir=$1
+    shift
     for cr in $@; do
       echo "Dumping resources $cr in the whole cluster"
       if kubectl api-resources | grep -q $cr ; then
@@ -34,7 +36,7 @@ echo "Performing dump on bootstrap cluster"
 kubectl cluster-info dump -A -o yaml --output-directory=bootstrap-cluster-dump
 
 dump_flux_resources bootstrap-cluster-dump
-dump_additional_resources sts bmh cl
+dump_additional_resources bootstrap-cluster-dump statefulsets baremetalhosts clusters.cluster
 
 if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
     export KUBECONFIG=${KUBECONFIG:-$BASE_DIR/management-cluster-kubeconfig}
@@ -49,7 +51,7 @@ if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
     kubectl cluster-info dump -A -o yaml --output-directory=management-cluster-dump
 
     dump_flux_resources management-cluster-dump
-    dump_additional_resources sts bmh cl
+    dump_additional_resources management-cluster-dump statefulsets baremetalhosts clusters.cluster
 fi
 
 echo "Dump node logs"
