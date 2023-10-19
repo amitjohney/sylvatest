@@ -27,11 +27,11 @@ done
 # unset KUBECONFIG in case it would refer to management-cluster-kubeconfig,
 # otherwise kind kubeconfig would be saved in this file (which may be overwritten by bootstrap.sh...)
 [[ "$KUBECONFIG" =~ management-cluster-kubeconfig$ ]] && unset KUBECONFIG
-# Check if there is already a functionnal kind cluster
+# Check if there is already a functional kind cluster
 if kind get clusters 2>/dev/null | grep -q "^$KIND_CLUSTER_NAME\$"; then
     if ! kubectl --kubeconfig=<(kind get kubeconfig --name $KIND_CLUSTER_NAME 2>/dev/null) get nodes &>/dev/null; then
         echo "Found an existing kind cluster named $KIND_CLUSTER_NAME that does not seem to be functional"
-        echo "Please delete it suing \"kind delete cluster --name $KIND_CLUSTER_NAME\" and try again"
+        echo "Please delete it using \"kind delete cluster --name $KIND_CLUSTER_NAME\" and try again"
         exit 1
     elif [[ $(kubectl config current-context 2>/dev/null) == kind-${KIND_CLUSTER_NAME} ]]; then
         echo "Kind cluster $KIND_CLUSTER_NAME is already configured and used as current kubeconfig context"
