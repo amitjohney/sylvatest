@@ -107,14 +107,14 @@
     },
     {
       "customType": "regex",
-      "fileMatch": "kustomization.yaml",
+      "fileMatch": "kustomization.y[a]?ml",
       "matchStrings": ["https:\/\/github\.com\/(?<depName>.*\/.*?)\/releases\/download\/(?<currentValue>.*?)\/"
       ],
       "datasourceTemplate": "github-releases"
     },
     {
       "customType": "regex",
-      "fileMatch": "kustomization.yaml",
+      "fileMatch": "kustomization.y[a]?ml",
       "matchStrings": [
         "https:\/\/raw.githubusercontent.com\/(?<depName>[^\/]*\/[^\/]*)\/(?<currentValue>.*?)\/"
       ],
