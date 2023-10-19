@@ -217,6 +217,15 @@ capo-misc-units-deploy:
     include: .gitlab/ci/pipeline-deploy-capo.yml
     strategy: depend
 
+capo-rke2-cilium-deploy:
+  extends: .default-trigger
+  variables:
+    CAPO_TAG: $ENV_TAG
+    ENV_NAME: rke2-capo
+  trigger:
+    include: .gitlab/ci/pipeline-deploy-cilium-rke2-capo.yml
+    strategy: depend
+
 capo-fip-deploy:
   extends: .default-trigger-oci
   variables:
