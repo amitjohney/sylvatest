@@ -5175,7 +5175,8 @@
               },
               "not": {
                 "required": [
-                  "secretRef"
+                  "secretRef",
+                  "verify"
                 ]
               }
             }
