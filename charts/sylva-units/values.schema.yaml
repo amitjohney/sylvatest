@@ -573,8 +573,10 @@ properties:
     type: string
 
   cluster_external_domain:  # -------------------------------
-    type: string
-    format: hostname
+    anyOf:
+      - type: string
+        format: hostname
+      - $ref: "#/$defs/string-with-gotpl"
 
   cluster_public_endpoint:  # -------------------------------
     anyOf:

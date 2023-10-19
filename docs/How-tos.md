@@ -45,7 +45,7 @@ You can specify `openstack.external_network_id` to create a floating IP. This fl
 
 By default the chart `metal3` uses our custom IPA Downloader container which directly embeds the IPA ramdisk image.
 
-However if a more recent IPA ramdisk image is required, it's possible to override our custom container to use an upstream one which retreives from Internet the IPA ramdisk image. In certain circumstances, to be able to reach it, the container must be configured with proxy setttings like this:
+However if a more recent IPA ramdisk image is required, it's possible to override our custom container to use an upstream one which retreives from Internet the IPA ramdisk image. In certain circumstances, to be able to reach it, the container must be configured with proxy settings like this:
 
 ```shell
 
@@ -59,3 +59,31 @@ units:
         httpProxy: <upstream http proxy, value set under proxies.http_proxy>
         httpsProxy: <upstream http proxy, value set under proxies.https_proxy>
 ```
+
+## Using nip.io dns records in order to avoid editing hosts file
+
+The following trick can be used to generate a dynamic cluster domain, avoiding to edit the system hosts file manually:
+
+```yaml
+cluster_external_domain: '{{ .Values.display_external_ip }}.nip.io'
+```
+
+As result you got something like:
+
+```txt
+🌱 You can access following UIs
+NAMESPACE       NAME                      CLASS    HOSTS                            ADDRESS                                                          PORTS     AGE
+cattle-system   rancher                   nginx    rancher.172.49.112.148.nip.io    192.168.128.120,192.168.128.121,192.168.128.49,192.168.129.244   80, 443   15m
+flux-system     flux-webui-weave-gitops   nginx    flux.172.49.112.148.nip.io       192.168.128.120,192.168.128.121,192.168.128.49,192.168.129.244   80, 443   11m
+keycloak        keycloak-ingress          <none>   keycloak.172.49.112.148.nip.io   192.168.128.120,192.168.128.121,192.168.128.49,192.168.129.244   80, 443   33m
+vault           vault                     <none>   vault.172.49.112.148.nip.io      192.168.128.120,192.168.128.121,192.168.128.49,192.168.129.244   80, 443   33m
+
+🎉 All done
+```
+
+and you should be able to directly access UIS as `https://rancher.172.49.112.148.nip.io` in your browser
+
+Notes:
+
+- If your are behind a proxy, you need to be able to resolve Internet hostnames.
+- Depending of your proxy config, you also may need to add `.nip.io` in `proxy.no_proxy`
