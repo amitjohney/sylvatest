@@ -307,11 +307,12 @@ units:
                 apiVersion: batch/v1
                 metadata:
                   namespace: kubevirt
-                  name: kubevirt-crd-upgrader
-                spec:
-                  template:
-                    metadata:
-                      name: kubevirt-crd-upgrader
+                  name: "*"
+                #   name: kubevirt-crd-upgrader
+                # spec:
+                #   template:
+                #     metadata:
+                #       name: kubevirt-crd-upgrader
 
 
 
