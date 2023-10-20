@@ -292,8 +292,8 @@ units:
         spec:
           chart: kubevirt
           version: 0.1.0
-      # _postRenderers:
-      #   - kustomize:
+       _postRenderers:
+         - kustomize:
       #       patches:
       #       - target:
       #           kind: Job
@@ -302,13 +302,14 @@ units:
       #             path: /metadata/namespace
       #             value: kubevirt
 
-      #       patchesStrategicMerge:
-      #         - kind: Job
-      #           apiVersion: batch/v1
-      #           metadata:
+             patchesStrategicMerge:
+               - kind: Job
+                 apiVersion: batch/v1
+                 metadata:
       #             namespace: kubevirt
       #             name: "*"
-      #             #name: kubevirt-crd-upgrader
+                   name: kubevirt-crd-upgrader
+                 $patch: delete
       #           spec:
       #             template:
       #               metadata:
