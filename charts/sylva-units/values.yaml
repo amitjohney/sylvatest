@@ -294,13 +294,13 @@ units:
           version: 0.1.0
       _postRenderers:
         - kustomize:
-            patches:
-            - target:
-                kind: ConfigMap
-              patch: |
-                - op: replace
-                  path: /metadata/name
-                  value: temp-remove
+            _patches:
+              - target:
+                  kind: ConfigMap
+                patch: |
+                  - op: replace
+                    path: /metadata/name
+                    value: temp-remove
                 # - op: remove
                 #   path: /data
 
