@@ -3816,6 +3816,9 @@
     "_internal": {
       "type": "object"
     },
+    "third_party": {
+      "type": "object"
+    },
     "shared_workload_clusters_values": {
       "type": "object"
     },
