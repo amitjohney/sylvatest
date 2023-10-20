@@ -298,10 +298,12 @@ units:
             - target:
                 kind: ConfigMap
               patch: |
-                - op: remove
-                  path: /metadata
+                - op: replace
+                  path: /metadata/name
+                  value: temp-remove
                 - op: remove
                   path: /data
+
 
 
             # patchesStrategicMerge:
