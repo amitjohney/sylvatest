@@ -330,6 +330,12 @@ Before trigerring bootstrap.sh, some prerequisites need to be satisfied.
 
 </details>
 
+<details><summary>**Deploying Baremetal Clusters using CAPM3**</summary>
+
+<<--!TODO--!>>
+
+</details>
+
 ### Finding the default admin SSO password
 
 Sylva tooling will generate a random default admin password, used for accessing the different services (Rancher, Flux Web UI and Vault) through the Keycloak default SSO account.
