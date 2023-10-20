@@ -3,10 +3,10 @@ kind: Kustomization
 
 resources:
 - helm-release.yaml
+- namespace.yaml
 
 buildMetadata:
 - originAnnotations
-
 
 # Generate empty secret & configmap to let kustomize overlays & descendants add data with 'behavior: merge'
 

@@ -151,6 +151,11 @@ function define_source() {
   sed "s/CURRENT_COMMIT/${CURRENT_COMMIT}/" "$@" | sed "s,SYLVA_CORE_REPO,${SYLVA_CORE_REPO},g" "$@"
 }
 
+function set_wc_namespace() {
+  local WORKLOAD_CLUSTER_NAMESPACE=$(basename ${ENV_PATH})
+  sed "s/WORKLOAD_CLUSTER_NAMESPACE/${WORKLOAD_CLUSTER_NAMESPACE}/g"
+}
+
 function inject_bootstrap_values() {
   # this function transforms the output of 'kubectl kustomize ${ENV_PATH}'
   # to add bootstrap.values.yaml into the valuesFiles field of the HelmRelease
