@@ -294,13 +294,21 @@ units:
           version: 0.1.0
       _postRenderers:
         - kustomize:
-            patchesStrategicMerge:
-              - kind: ConfigMap
-                apiVersion: v1
-                metadata:
-                  name: kubevirt-crd-manifest
-                  namespace: default
-                $patch: delete
+            patches:
+            - target:
+                kind: ConfigMap
+              patch: |
+                - op: remove
+                  path: /data
+
+
+            # patchesStrategicMerge:
+            #   - kind: ConfigMap
+            #     apiVersion: v1
+            #     metadata:
+            #       name: kubevirt-crd-manifest
+            #       namespace: default
+            #     $patch: delete
       #       patches:
       #       - target:
       #           kind: Job
