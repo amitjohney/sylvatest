@@ -53,7 +53,20 @@ metadata:
   labels:
     sylva-units.repo: {{ $repo_name }}
 {{ include "sylva-units.labels" $envAll | indent 4 }}
+      {{ if $repo_def.kind | eq "GitRepository" }}
 stringData: {{ $repo_def.auth | toYaml | nindent 2 }}
+      {{ else if $repo_def.kind | eq "OCIRepository" }}
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: |
+        {{- $auths := dict "auths"
+                          (dict ((urlParse $repo_def.spec.url).hostname)
+                                (dict "username" $repo_def.auth.username
+                                      "password" $repo_def.auth.password
+                                      "auth" (printf "%s:%s" $repo_def.auth.username $repo_def.auth.password | b64enc)))
+        }}
+{{ $auths | toJson | b64enc | indent 4 -}}
+      {{ end -}}
     {{- end }}
 ---
   {{ end -}}
