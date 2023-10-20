@@ -299,6 +299,8 @@ units:
                 kind: ConfigMap
               patch: |
                 - op: remove
+                  path: /metadata
+                - op: remove
                   path: /data
 
 
