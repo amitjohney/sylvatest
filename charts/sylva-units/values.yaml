@@ -292,26 +292,8 @@ units:
         spec:
           chart: kubevirt
           version: 0.1.0
-      _postRenderers:
-        - kustomize:
-            _patches:
-              - target:
-                  kind: ConfigMap
-                patch: |
-                  - op: replace
-                    path: /metadata/name
-                    value: temp-remove
-                # - op: remove
-                #   path: /data
-
-      #       patches:
-      #       - target:
-      #           kind: Job
-      #         patch: |
-      #           - op: replace
-      #             path: /metadata/namespace
-      #             value: kubevirt
-
+      # _postRenderers:
+      #   - kustomize:
       #       patchesStrategicMerge:
       #         - kind: Job
       #           apiVersion: batch/v1
@@ -324,7 +306,13 @@ units:
       #               metadata:
       #                 name: kubevirt-crd-upgrader
 
-
+      #       patches:
+      #       - target:
+      #           kind: Job
+      #         patch: |
+      #           - op: replace
+      #             path: /metadata/namespace
+      #             value: kubevirt
 
             # patchesStrategicMerge:
             #   - kind: Deployment
