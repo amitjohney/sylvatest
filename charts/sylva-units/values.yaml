@@ -294,25 +294,28 @@ units:
           version: 0.1.0
       _postRenderers:
         - kustomize:
-            patches:
-            - target:
+            patchesStrategicMerge:
+              - apiVersion: v1
                 kind: ConfigMap
-              patch: |
-                - op: replace
-                  path: /metadata/name
-                  value: temp-remove
-                - op: remove
-                  path: /data
+                metadata:
+                  namespace: default
+                  name: kubevirt-crd-manifest
+                  annotations:
+                    "helm.sh/hook": pre-upgrade
+                    "helm.sh/hook-delete-policy": hook-succeeded
+                    "helm.sh/hook-weight": "1"
+                $patch: delete
 
+            # patches:
+            # - target:
+            #     kind: ConfigMap
+            #   patch: |
+            #     - op: replace
+            #       path: /metadata/name
+            #       value: temp-remove
+            #     - op: remove
+            #       path: /data
 
-
-            # patchesStrategicMerge:
-            #   - kind: ConfigMap
-            #     apiVersion: v1
-            #     metadata:
-            #       name: kubevirt-crd-manifest
-            #       namespace: default
-            #     $patch: delete
       #       patches:
       #       - target:
       #           kind: Job
