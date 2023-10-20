@@ -2466,10 +2466,13 @@ _internal:
 
   # These values are used only if `os_images` is empty
   default_os_images:
-    ubuntu-2204-plain-qcow2:
-      uri: "{{ .Values.sylva_base_oci_registry }}/sylva-elements/diskimage-builder/diskimage-builder-plain:0.0.7"
-      filename: ubuntu-22.04-plain.qcow2
-      checksum: 56a6363f25a5491aa955e4dda6fae17faa10c5e0850d01fe2a10c996c7830971
+    ubuntu-jammy-plain-rke2-1-26-9:
+      uri: "{{ .Values.sylva_base_oci_registry }}/sylva-elements/diskimage-builder/ubuntu-jammy-plain-rke2-1.26.9:0.0.12"
+      filename: ubuntu-jammy-plain-rke2-1.26.9.qcow2
+      checksum: ffdc81fcdc0104151aa792a508eefe0d47660b18683949edcd734b3a4f938f20
+      persistence:
+        enabled: true
+        size: 3Gi
 
 shared_workload_clusters_values:
   cluster:
