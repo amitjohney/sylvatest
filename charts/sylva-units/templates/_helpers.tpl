@@ -140,11 +140,7 @@ Usage:
     {{- end -}}
   {{- end -}}
 
-  {{- if $envAll.Values.all_units_enabled -}}
-    {{- $unit_enabled = true -}}
-  {{- end -}}
-
-  {{- if $unit_enabled -}}
+  {{- if or $unit_enabled $envAll.Values.all_units_enabled  -}}
 true
   {{- else -}} {{- /* we "emulate" a 'false' value by returning an empty string which the caller will evaluate as False */ -}}
   {{- end -}}
