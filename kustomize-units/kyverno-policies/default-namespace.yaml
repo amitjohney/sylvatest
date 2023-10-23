@@ -36,7 +36,7 @@ spec:
           kinds:
           - DaemonSet
           - Deployment
-          - Job
+#          - Job
           - StatefulSet
     validate:
       message: "Using 'default' namespace is not allowed for pod controllers."
