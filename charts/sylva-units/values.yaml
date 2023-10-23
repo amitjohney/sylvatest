@@ -890,6 +890,12 @@ units:
       cert-manager: true
       '{{ .Values._internal.default_storage_class_unit }}': true
       metal3-sync-secrets: true # make sure that the password secrets are ready to be consumed
+    kustomization_spec:
+      postBuild:
+        substitute:
+          # Force substitution in order to be consistent with what is done in bootstrap,
+          # See https://gitlab.com/sylva-projects/sylva-core/-/issues/659
+          var_substitution_enabled: "true"
     repo: metal3
     helm_chart_artifact_name: metal3
     helmrelease_spec:
