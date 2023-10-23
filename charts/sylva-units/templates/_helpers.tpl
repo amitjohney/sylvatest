@@ -141,7 +141,7 @@ Usage:
   {{- end -}}
 
   {{- if $envAll.Values.all_units_enabled -}}
-    {{- $unit_enabled := true -}}
+    {{- $unit_enabled = true -}}
   {{- end -}}
 
   {{- if $unit_enabled -}}
