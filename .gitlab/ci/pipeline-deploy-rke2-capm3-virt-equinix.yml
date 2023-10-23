@@ -16,7 +16,7 @@ create_runner:
     RUNNER_TAG: $CI_PIPELINE_IID
     RUNNER_PROJECT_ID: $CI_PROJECT_ID
   image:
-    name: registry.gitlab.com/gitlab-org/cli:v1.33.0
+    name: registry.gitlab.com/gitlab-org/cli:v1.34.0
     entrypoint: [""]
   script:
     - >
