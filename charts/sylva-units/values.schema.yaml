@@ -724,6 +724,9 @@ properties:
   units_enabled_default:  # -------------------------------
     type: boolean
 
+  all_units_enabled:  # -------------------------------
+    type: boolean
+
   units_override_enabled:  # -------------------------------
     type: array
     items:
