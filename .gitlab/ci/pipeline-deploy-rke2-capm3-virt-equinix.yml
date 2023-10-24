@@ -39,6 +39,23 @@ create_runner:
         sleep 5
       done
 
+deploy-rke2-virt-m3-suse:
+  extends: .deploy-base
+  timeout: 2h
+  variables:
+    DOCKER_HOST: ""
+  tags:
+    - $CI_PIPELINE_IID
+    - equinix
+  script:
+    - !reference [.common-deployment, script_common]
+    - !reference [.metal3-provider, suse]
+    - ./bootstrap.sh environment-values/${ENV_NAME}
+    - !reference [.common-deployment, post_deployment_common]
+    - !reference [.common-deployment, cleanup_bootstrap]
+  artifacts:
+    expose_as: rke2-capm3-virt-suse
+
 deploy-rke2-virt-m3:
   extends: .deploy-base
   timeout: 2h
@@ -49,8 +66,10 @@ deploy-rke2-virt-m3:
     - equinix
   script:
     - !reference [.common-deployment, script_common]
+    - !reference [.metal3-provider, sylva]
     - ./bootstrap.sh environment-values/${ENV_NAME}
     - !reference [.common-deployment, post_deployment_common]
+    - !reference [.common-deployment, cleanup_bootstrap]
   artifacts:
     expose_as: rke2-capm3-virt
 

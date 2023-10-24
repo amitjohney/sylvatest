@@ -10,7 +10,12 @@ include:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_common[collapsed=true]\r\e[0KRunning common deployment steps\e[0m"
     - export ENV_PATH=environment-values/${ENV_NAME}
     - values_file=environment-values/${ENV_NAME}/values.yaml
-    - docker network create --attachable kind
+    - |
+      if [ ! "$(docker network ls | grep kind)" ]; then
+        docker network create --attachable kind
+      else
+        echo "network with name 'kind' already exists"
+      fi
     - |
       if [ -n "$DOCKER_HOST" ]; then
         export DOCKER_IP=$(getent ahostsv4 docker | awk '{print $1}' | sort -u)
@@ -85,6 +90,10 @@ include:
         echo "No workload clusters here"
       fi
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_post_deployment\r\e[0K"
+  cleanup_bootstrap:
+    - curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64 && chmod +x ./kind
+    - ./kind delete clusters $KIND_CLUSTER_NAME
+    - rm ./kind
   os_cloud:
     # the OS_* variables below are set in the gitlab runner configuration
     # and contain information to connect to the OpenStack instance used
@@ -217,3 +226,11 @@ include:
     - export HURL_rancher_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n cattle-system rancher -o jsonpath='{ .spec.tls[].hosts[] }'); export domain=$(echo $HURL_rancher_url | cut -f2 -d .)
     - export HURL_keycloak_url=$(kubectl --kubeconfig management-cluster-kubeconfig  get ingress -n keycloak keycloak-ingress -o jsonpath='{ .spec.tls[].hosts[] }')
     - hurl -k ./tools/login-test/*.hurl --test --color --noproxy=".$domain"  --report-junit $HURL_JUNIT_REPORT --report-html .
+
+.metal3-provider:
+  sylva:
+    - values_file=environment-values/${ENV_NAME}/values.yaml
+    - yq -i '.metal3.provider = "sylva"' $values_file
+  suse:
+    - values_file=environment-values/${ENV_NAME}/values.yaml
+    - yq -i '.metal3.provider = "suse"' $values_file
