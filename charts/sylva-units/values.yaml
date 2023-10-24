@@ -64,6 +64,13 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: 0.6.0
 
+  metal3-suse:
+    kind: GitRepository
+    spec:
+      url: https://github.com/suse-edge/charts.git
+      ref:
+        tag: 0.2.0-metal3
+
   sylva-capi-cluster:
     kind: GitRepository
     spec:
@@ -863,6 +870,49 @@ units:
                 capabilities:
                   drop:
                     - ALL
+  metal3-suse:
+    depends_on:
+      cert-manager: true
+      '{{ .Values._internal.default_storage_class_unit }}': true
+    repo: metal3-suse
+    helm_chart_artifact_name: metal3
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: charts/metal3/0.2.0
+      install:
+        createNamespace: true
+      targetNamespace: metal3-system
+      values:
+        global:
+          ironicIP: '{{ .Values.cluster_external_ip }}'
+          provisioningInterface: eth0
+        metal3-baremetal-operator:
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsUser: 1000
+        metal3-ironic:
+          ingress:
+            enabled: false
+          service:
+            type: LoadBalancer
+            externalIPs:
+            - '{{ .Values.cluster_external_ip }}'
+            annotations:
+              metallb.universe.tf/allow-shared-ip: cluster-external-ip
+          podSecurityContext:
+            runAsUser: 475
+          baremetaloperator:
+            ironichostNetwork: false
+          persistence:
+            ironic:
+              storageClass: '{{ .Values._internal.default_storage_class }}'
+              accessMode: ReadWriteOnce
+        metal3-mariadb:
+          securityContext:
+            runAsUser: 60
+          persistence:
+            storageClass: '{{ .Values._internal.default_storage_class }}'
 
   metal3-init:
     enabled_conditions:
@@ -1018,7 +1068,8 @@ units:
       '{{ .Values.cluster.capi_providers.infra_provider }}': true
       '{{ .Values.cluster.capi_providers.bootstrap_provider }}': true
       capo-cluster-resources: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
-      metal3: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+      metal3: '{{ (and (.Values.cluster.capi_providers.infra_provider | eq "capm3") (.Values.metal3.provider | eq "sylva")) }}'
+      metal3-suse: '{{ (and (.Values.cluster.capi_providers.infra_provider | eq "capm3") (.Values.metal3.provider | eq "suse")) }}'
       default/os-image-server: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
     labels:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
@@ -2105,7 +2156,7 @@ units:
     # this units allows to deploy web server on management cluster
     # which serves OS image file for baremetal workload cluster
     enabled_conditions:
-      - '{{ tuple . "metal3" | include "unit-enabled" }}'
+      - '{{ (or (tuple . "metal3" | include "unit-enabled") (tuple . "metal3-suse" | include "unit-enabled")) }}'
     depends_on:
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
       '{{ .Values._internal.default_storage_class_unit }}': true
@@ -2330,7 +2381,8 @@ openstack:
   control_plane_affinity_policy: soft-anti-affinity
   worker_affinity_policy: soft-anti-affinity
 
-metal3: {}
+metal3:
+  provider: sylva # sylva or suse
   # external_bootstrap_ip:
   # bootstrap_ip:
 

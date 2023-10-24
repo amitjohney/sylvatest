@@ -31,9 +31,36 @@ unit_helmrelease_spec_default:
   interval: 100000m
 
 units:
+  metal3-suse:
+    enabled_conditions:
+      - '{{ tuple . "capm3" | include "unit-enabled" }}'
+      - '{{ .Values.metal3.provider | eq "suse" }}'
+    depends_on:
+      multus: '{{ tuple . "multus" | include "unit-enabled" }}'
+    helmrelease_spec:
+      values:
+        global:
+          ironicIP: >-
+            {{- if (tuple . "capm3" | include "unit-enabled") -}}
+              {{- if .Values._internal.ironic_ip -}}
+                {{- .Values._internal.ironic_ip -}}
+              {{- else -}}
+                {{- fail "to bootstrap a baremetal management cluster, you need to set metal3.bootstrap_ip or metal3.external_bootstrap_ip" -}}
+              {{- end -}}
+            {{- end -}}
+        metal3-ironic:
+          podAnnotations:
+            k8s.v1.cni.cncf.io/networks: '{{ tuple . (tuple . "libvirt-metal" | include "unit-enabled") .Values._internal.libvirt_metal_networks "" | include "interpret-ternary" }}'
+          service:
+            externalIPs:
+              - '{{ .Values._internal.bootstrap_node_ip }}'
+    labels:
+      suspend-on-pivot: "yes"
+
   metal3:
     enabled_conditions:
       - '{{ tuple . "capm3" | include "unit-enabled" }}'
+      - '{{ .Values.metal3.provider | eq "sylva" }}'
     depends_on:
       metal3-sync-secrets: false ## override default set in values.yaml
       multus: '{{ not (empty (tuple . .Values.units.metal3.helmrelease_spec.values.ironicExtraNetworks | include "interpret-as-string")) }}'
@@ -72,7 +99,7 @@ units:
 
   bootstrap-local-path:
     enabled_conditions:
-      - '{{ tuple . "metal3" | include "unit-enabled" }}'
+      - '{{ (or (tuple . "metal3" | include "unit-enabled") (tuple . "metal3-suse" | include "unit-enabled")) }}'
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/bootstrap-local-path
@@ -417,7 +444,7 @@ units_override_enabled:
   - capi
   - '{{ .Values.cluster.capi_providers.infra_provider }}'
   - '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
-  - metal3
+  - '{{ .Values.metal3.provider | eq "sylva" | ternary "metal3" "metal3-suse" }}'
   - bootstrap-local-path
   - ingress-nginx
   - os-image-server
