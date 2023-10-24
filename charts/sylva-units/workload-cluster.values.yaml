@@ -273,11 +273,3 @@ units:
   vsphere-csi-driver:
     enabled: true
     unit_template: base-deps
-
-  kyverno:
-    enabled: true
-    unit_template: base-deps
-
-  node-annotation-from-label:
-    enabled: true
-    unit_template: base-deps

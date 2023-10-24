@@ -733,6 +733,7 @@ units:
       SECRET_VALUES: '{{ index (tuple . .Values.shared_workload_clusters_secret_values | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | b64enc }}'
 
   node-annotation-from-label:
+    enabled: false # it blocks RKE2 node registrations when bootstrap is slower (for CAPM3 deployments) than Kyverno ClusterPolicy webhook install, https://gitlab.com/sylva-projects/sylva-core/-/issues/660
     enabled_conditions:
     - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
     depends_on:
