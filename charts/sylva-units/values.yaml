@@ -2448,6 +2448,8 @@ _internal:
       {{ .Values.openstack.storageClass.name }}
     {{- else if (tuple . "vsphere-csi-driver" | include "unit-enabled") -}}
       vsphere-csi
+    {{- else if (tuple . "longhorn" | include "unit-enabled") -}}
+      longhorn
     {{- else -}}
       local-path
     {{- end -}}
@@ -2457,6 +2459,8 @@ _internal:
       cinder-csi
     {{- else if (tuple . "vsphere-csi-driver" | include "unit-enabled") -}}
       vsphere-csi-driver
+    {{- else if (tuple . "longhorn" | include "unit-enabled") -}}
+      longhorn
     {{- else -}}
       local-path-provisioner
     {{- end -}}
