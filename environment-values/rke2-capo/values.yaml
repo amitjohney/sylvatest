@@ -1,5 +1,4 @@
 ---
-
 units:
   workload-cluster:
     helmrelease_spec:
@@ -14,9 +13,11 @@ units:
               node.longhorn.io/default-node-tags: '["fast","storage"]'
           machine_deployments:
             md0:
-              replicas: 1
+              replicas: 3
               capo:
                 failure_domain: region0
+          control_plane_replicas: 3
+          enable_longhorn: true
 
 cluster:
 
