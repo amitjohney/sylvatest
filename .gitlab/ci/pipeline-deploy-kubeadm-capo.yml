@@ -25,7 +25,14 @@ deploy-kubeadm-capo-oci:
 #----------------------------------------------------------
 
 test-workload-cluster-kubeadm-capo:
-  extends: .test-workload-cluster
+  extends: [.test-workload-cluster]
+  rules:
+    - if: $OCI_TAG == null
+
+test-workload-cluster-kubeadm-capo-oci:
+  extends: [.test-workload-cluster]
+  rules:
+    - if: $OCI_TAG
 
 #----------------------------------------------------------
 
