@@ -1789,21 +1789,6 @@ units:
             path: /data/kube-job.sh
             value: |
           {{ .Files.Get "scripts/check-rancher-clusters.sh" | indent 4 }}
-      - target:
-          kind: Job
-        patch: |
-          apiVersion: batch/v1
-          kind: Job
-          metadata:
-            name: ignored
-          spec:
-            template:
-              spec:
-                containers:
-                - name: run-script
-                  env:
-                  - name: CLUSTER_NAME
-                    value: '{{ .Values.test_workload_cluster_name }}'
 
   multus:
     enabled: false

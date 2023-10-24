@@ -25,7 +25,14 @@ deploy-rke2-capo-oci:
 #----------------------------------------------------------
 
 test-workload-cluster-rke2-capo:
-  extends: .test-workload-cluster
+  extends: [.test-workload-cluster]
+  rules:
+    - if: $OCI_TAG == null
+
+test-workload-cluster-rke2-capo-oci:
+  extends: [.test-workload-cluster]
+  rules:
+    - if: $OCI_TAG
 
 #----------------------------------------------------------
 
