@@ -295,28 +295,46 @@ units:
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:
-              - kind: Job
-                apiVersion: batch/v1
+              - kind: Deployment
+                apiVersion: apps/v1
                 metadata:
-                  namespace: default
-                  name: kubevirt-crd-upgrader
+                  labels:
+                    kubevirt.io: virt-api
+                  name: virt-api
+                  namespace: kubevirt
                 spec:
                   template:
-                    metadata:
-                      name: kubevirt-crd-upgrader
                     spec:
-                      serviceAccountName: kubevirt-crd-upgrader
-                      restartPolicy: OnFailure
                       containers:
-                        - name: kubevirt-crd-upgrader
-                          securityContext:
-                            seccompProfile:
-                              type: RuntimeDefault
-                            runAsNonRoot: true
-                            allowPrivilegeEscalation: false
-                            capabilities:
-                              drop:
-                              - ALL
+                      - name: virt-api-manik
+                        # securityContext:
+                        #   seccompProfile:
+                        #     $patch: delete
+                        #     type: RuntimeDefault
+
+      #       patchesStrategicMerge:
+      #         - kind: Job
+      #           apiVersion: batch/v1
+      #           metadata:
+      #             namespace: default
+      #             name: kubevirt-crd-upgrader
+      #           spec:
+      #             template:
+      #               metadata:
+      #                 name: kubevirt-crd-upgrader
+      #               spec:
+      #                 serviceAccountName: kubevirt-crd-upgrader
+      #                 restartPolicy: OnFailure
+      #                 containers:
+      #                   - name: kubevirt-crd-upgrader
+      #                     securityContext:
+      #                       seccompProfile:
+      #                         type: RuntimeDefault
+      #                       runAsNonRoot: true
+      #                       allowPrivilegeEscalation: false
+      #                       capabilities:
+      #                         drop:
+      #                         - ALL
 
 
       #       patches:
@@ -327,23 +345,7 @@ units:
       #             path: /metadata/namespace
       #             value: kubevirt
 
-            # patchesStrategicMerge:
-            #   - kind: Deployment
-            #     apiVersion: apps/v1
-            #     metadata:
-            #       labels:
-            #         kubevirt.io: virt-api
-            #       name: virt-api
-            #       namespace: kubevirt
-            #     spec:
-            #       template:
-            #         spec:
-            #           containers:
-            #           - name: virt-api
-            #             securityContext:
-            #               seccompProfile:
-            #                 $patch: delete
-            #                 type: RuntimeDefault
+
 
   kubevirt-test-vms:
     depends_on:
