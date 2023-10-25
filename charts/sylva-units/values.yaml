@@ -2360,7 +2360,7 @@ cluster:
       common_sg_name: "capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}"
 
   machine_deployment_default:
-    capo:v
+    capo:
       security_group_name: "capo-{{ .Values.cluster.name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}"
       common_sg_name: "capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}"
 
