@@ -292,29 +292,29 @@ units:
         spec:
           chart: kubevirt
           version: 0.1.0
-      _postRenderers:
-        - kustomize:
-            patchesStrategicMerge:
-              - kind: Job
-                apiVersion: batch/v1
-                metadata:
-                  namespace: default
-                  #name: "*"
-                  name: kubevirt-crd-upgrader
-                spec:
-                  template:
-                    metadata:
-                      name: kubevirt-crd-upgrader
-                    spec:
-                      serviceAccountName: kubevirt-crd-upgrader
-                      restartPolicy: OnFailure
-                      containers:
-                        - name: kubevirt-crd-upgrader
-                          securityContext:
-                            seccompProfile:
-                              type: RuntimeDefault
-                              runAsNonRoot: true
-                            allowPrivilegeEscalation: false
+      # _postRenderers:
+      #   - kustomize:
+      #       patchesStrategicMerge:
+      #         - kind: Job
+      #           apiVersion: batch/v1
+      #           metadata:
+      #             namespace: default
+      #             #name: "*"
+      #             name: kubevirt-crd-upgrader
+      #           spec:
+      #             template:
+      #               metadata:
+      #                 name: kubevirt-crd-upgrader
+      #               spec:
+      #                 serviceAccountName: kubevirt-crd-upgrader
+      #                 restartPolicy: OnFailure
+      #                 containers:
+      #                   - name: kubevirt-crd-upgrader
+      #                     securityContext:
+      #                       seccompProfile:
+      #                         type: RuntimeDefault
+      #                         runAsNonRoot: true
+      #                       allowPrivilegeEscalation: false
 
       #       patches:
       #       - target:
