@@ -53,6 +53,17 @@ spec:
             port: ['5050', '6180', '6385', '9999']
             protocol: [tcp, tcp, tcp, tcp]
             remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
+        common_sg_rules:
+          type: json
+          description: "Common security group rules for control plane and worker VMs"
+          default:
+            direction: [ingress, ingress, ingress, ingress]
+            port: ['80', '443', '22', '53']
+            protocol: [tcp, tcp, tcp, tcp]
+            remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
+        common_security_group_name:
+          type: string
+          description: "Common security group name for contrl plane and worker VM's"
 
       conditions:
         external_network_cond:
@@ -86,6 +97,25 @@ spec:
           type: OS::Neutron::SecurityGroup
           properties:
             description: "Heat Stack managed common security group for control plane and worker VMs"
+            name: { get_param: common_security_group_name }
+            rules:
+              repeat:
+                for_each:
+                  <%direction%>: {if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [common_sg_rules, direction]}, { get_param: [ironic_rules, direction] }]}, { get_param: [common_sg_rules, direction] }]}
+                  <%port%>: { if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [common_sg_rules, port]}, { get_param: [ironic_rules, port]}]}, { get_param: [common_sg_rules, port] }]}
+                  <%protocol%>: { if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [common_sg_rules, protocol]}, { get_param: [ironic_rules, protocol]}]}, { get_param: [common_sg_rules, protocol] }]}
+                  <%remote_ip_prefix%>: { if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [common_sg_rules, remote_ip_prefix]}, { get_param: [ironic_rules, remote_ip_prefix]}]}, { get_param: [common_sg_rules, remote_ip_prefix] }]}
+                template:
+                  protocol: <%protocol%>
+                  port_range_min: <%port%>
+                  port_range_max: <%port%>
+                  remote_ip_prefix: <%remote_ip_prefix%>
+                  direction: <%direction%>
+                permutations: false
+        security-group-common:
+          type: OS::Neutron::SecurityGroup
+          properties:
+            description: "Heat Stack managed security group for worker VMs"
             name: { get_param: common_security_group_name }
             rules:
               repeat:
