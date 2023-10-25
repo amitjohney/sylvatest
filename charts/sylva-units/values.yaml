@@ -318,7 +318,7 @@ units:
               - kind: Job
                 apiVersion: batch/v1
                 metadata:
-                  namespace: default
+ #                 namespace: default
                   name: kubevirt-crd-upgrader
                 spec:
                   template:
