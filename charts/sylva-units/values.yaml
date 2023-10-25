@@ -295,22 +295,26 @@ units:
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:
-              - kind: Deployment
-                apiVersion: apps/v1
+              - kind: Job
+                apiVersion: batch/v1
                 metadata:
-                  labels:
-                    kubevirt.io: virt-operator
-                  name: virt-operator
-                  namespace: kubevirt
+                  namespace: default
+                  name: kubevirt-crd-upgrader
                 spec:
                   template:
+                    metadata:
+                      name: kubevirt-crd-upgrader
                     spec:
                       containers:
-                      - name: virt-operator
+                      - name: kubevirt-crd-upgrader
                         securityContext:
                           seccompProfile:
-                            $patch: delete
                             type: RuntimeDefault
+                          runAsNonRoot: true
+                          allowPrivilegeEscalation: false
+                          capabilities:
+                            drop:
+                            - ALL
 
 
       #       patchesStrategicMerge:
