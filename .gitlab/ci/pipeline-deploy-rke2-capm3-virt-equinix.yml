@@ -1,63 +1,10 @@
 ---
 include:
-  - local: .gitlab/ci/child-pipeline-default.yml
-  - local: .gitlab/ci/templates-deployments.yml
-
-#----------------------------------------------------------
-create_runner:
-  stage: .pre
-  timeout: 15min
-  id_tokens:
-    JOB_ID_TOKEN:
-      aud: runner-aas
-  variables:
-    REQUEST: create
-    RUNNER_HOSTNAME: syla-core-$CI_PIPELINE_ID
-    RUNNER_TAG: $CI_PIPELINE_IID
-    RUNNER_PROJECT_ID: $CI_PROJECT_ID
-  image:
-    name: registry.gitlab.com/gitlab-org/cli:v1.34.0
-    entrypoint: [""]
-  script:
-    - >
-      curl -Ss -X POST --fail
-      --form "token=$RUNNER_AAS_TOKEN"
-      --form ref=main
-      --form "variables[REQUEST]=$REQUEST"
-      --form "variables[SOURCE_JWT_TOKEN]=$JOB_ID_TOKEN"
-      "$CI_API_V4_URL/projects/51177405/trigger/pipeline" > pipeline.json
-    - PIPELINE_ID=$(cat pipeline.json | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')
-    - echo "Pipeline triggered = $(cat pipeline.json | python3 -c 'import json,sys;print(json.load(sys.stdin)["web_url"])')"
-    - >
-      while true; do
-        PIPELINE=$(glab api projects/51177405/pipelines/$PIPELINE_ID)
-        PIPELINE_STATUS=$(echo $PIPELINE | python3 -c 'import json,sys;print(json.load(sys.stdin)["status"])')
-        echo "PIPELINE_STATUS = $PIPELINE_STATUS"
-        [[ $PIPELINE_STATUS == "" ]] && exit 1
-        [[ $PIPELINE_STATUS == "failed" ]] && exit 1
-        [[ $PIPELINE_STATUS == "success" ]] && break
-        sleep 5
-      done
+- local: .gitlab/ci/templates-equinix-deployments.yml
 
 deploy-rke2-virt-m3:
-  extends: .deploy-base
-  timeout: 2h
+  extends: .deploy-in-equinix
   variables:
-    DOCKER_HOST: ""
-  tags:
-    - $CI_PIPELINE_IID
-    - equinix
-  script:
-    - !reference [.common-deployment, script_common]
-    - !reference [.metal3-provider, sylva]
-    - ./bootstrap.sh environment-values/${ENV_NAME}
-    - !reference [.common-deployment, post_deployment_common]
+    METAL3_PROVIDER: "sylva"
   artifacts:
     expose_as: rke2-capm3-virt
-
-clean_runner:
-  stage: delete
-  extends: create_runner
-  variables:
-    REQUEST: delete
-  when: always
