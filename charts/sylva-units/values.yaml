@@ -324,15 +324,15 @@ units:
                   template:
                     spec:
                       containers:
-                      - name: kubevirt-crd-upgrader
-                        securityContext:
-                          seccompProfile:
-                            type: RuntimeDefault
-                          runAsNonRoot: true
-                          allowPrivilegeEscalation: false
-                          capabilities:
-                            drop:
-                            - ALL
+                        - name: kubevirt-crd-upgrader
+                          securityContext:
+                            seccompProfile:
+                              type: RuntimeDefault
+                            runAsNonRoot: true
+                            allowPrivilegeEscalation: false
+                            capabilities:
+                              drop:
+                              - ALL
 
 
       #       patchesStrategicMerge:
