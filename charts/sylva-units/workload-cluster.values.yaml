@@ -147,6 +147,12 @@ units:
       namespace-defs: true
       cluster: true
 
+  tigera-clusterrole:
+    enabled: true
+    depends_on:
+      namespace-defs: true
+      cluster: true
+
   calico:
     enabled: true
     depends_on:

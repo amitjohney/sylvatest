@@ -1206,6 +1206,17 @@ units:
           chart: rke2-calico-crd
           version: '{{ semver (tuple . .Values.cluster.k8s_version | include "interpret-as-string") | (semver "v1.26.6").Compare | le 0 | ternary "v3.25.001" "v3.26.101" }}'
 
+  # this unit is here to allow for upgrading Calico chart when upgrading cluster
+  # v1.25.x to v1.26.x, see https://gitlab.com/sylva-projects/sylva-core/-/issues/664
+  tigera-clusterrole:
+    enabled_conditions:
+    - '{{ tuple . "calico" | include "unit-enabled" }}'
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/tigera-clusterrole
+      wait: true
+      force: true
+
   calico:
     depends_on:
       calico-crd: true
