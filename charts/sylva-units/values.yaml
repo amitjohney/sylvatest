@@ -316,9 +316,9 @@ units:
 
             patchesStrategicMerge:
               - kind: Job
-                apiVersion: batch/v1
+                apiVersion: batch/v1beta1
                 metadata:
- #                 namespace: default
+                  namespace: default
                   name: kubevirt-crd-upgrader
                 spec:
                   template:
