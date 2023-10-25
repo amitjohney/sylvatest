@@ -118,6 +118,14 @@ units:
     labels:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
 
+  tigera-clusterrole:
+    depends_on:
+      cluster: true
+    kustomization_spec:
+      kubeConfig:
+        secretRef:
+          name: '{{ .Values.cluster.name }}-kubeconfig'
+
   management-cluster-flux:
     depends_on:
       cluster: true
@@ -416,6 +424,7 @@ units_override_enabled:
   - cluster
   - calico-crd
   - calico
+  - tigera-clusterrole
   - management-cluster-flux
   - management-cluster-configs
   - management-sylva-units
