@@ -39,7 +39,7 @@ create_runner:
         sleep 5
       done
 
-deploy-rke2-virt-m3:
+deploy-rke2-virt-m3-suse:
   extends: .deploy-base
   timeout: 2h
   variables:
@@ -49,11 +49,11 @@ deploy-rke2-virt-m3:
     - equinix
   script:
     - !reference [.common-deployment, script_common]
-    - !reference [.metal3-provider, sylva]
+    - !reference [.metal3-provider, suse]
     - ./bootstrap.sh environment-values/${ENV_NAME}
     - !reference [.common-deployment, post_deployment_common]
   artifacts:
-    expose_as: rke2-capm3-virt
+    expose_as: rke2-capm3-virt-suse
 
 clean_runner:
   stage: delete

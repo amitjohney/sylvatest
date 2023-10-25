@@ -176,3 +176,11 @@ capm3-rke2-virt-equinix-deploy:
   trigger:
     include: .gitlab/ci/pipeline-deploy-rke2-capm3-virt-equinix.yml
     strategy: depend
+
+capm3-rke2-virt-equinix-deploy-suse:
+  extends: .default-trigger
+  variables:
+    ENV_NAME: rke2-capm3-virt
+  trigger:
+    include: .gitlab/ci/pipeline-deploy-rke2-capm3-virt-equinix-suse.yml
+    strategy: depend

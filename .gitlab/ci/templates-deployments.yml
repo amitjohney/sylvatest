@@ -90,10 +90,6 @@ include:
         echo "No workload clusters here"
       fi
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_post_deployment\r\e[0K"
-  cleanup_bootstrap:
-    - curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64 && chmod +x ./kind
-    - ./kind delete clusters $KIND_CLUSTER_NAME
-    - rm ./kind
   os_cloud:
     # the OS_* variables below are set in the gitlab runner configuration
     # and contain information to connect to the OpenStack instance used
