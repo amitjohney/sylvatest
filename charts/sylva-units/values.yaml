@@ -713,6 +713,16 @@ units:
       path: ./kustomize-units/rancher-monitoring-clusterid-inject
       wait: true
 
+  check-healthcheck:
+    enabled_conditions:
+    - '{{ tuple . "kyverno" | include "unit-enabled" }}'
+    depends_on:
+      kyverno: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/check-healthcheck
+      wait: true
+
   shared-workload-clusters-settings:
     depends_on:
       kyverno: true
@@ -1040,6 +1050,10 @@ units:
         - apiVersion: v1
           kind: Secret
           name: '{{ .Values.cluster.name }}-kubeconfig'
+          namespace: '{{ .Release.Namespace }}'
+        - apiVersion: v1
+          kind: ConfigMap
+          name: capi-md-resources
           namespace: '{{ .Release.Namespace }}'
     helmrelease_spec:
       targetNamespace: '{{ .Release.Namespace }}'

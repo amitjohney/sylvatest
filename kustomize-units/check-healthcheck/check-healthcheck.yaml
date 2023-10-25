@@ -1,0 +1,40 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: check-capi-resources
+spec:
+  mutateExistingOnPolicyUpdate: true
+  schemaValidation: false
+  rules:
+  - name: Check-control-plane
+    match:
+      any:
+      - resources:
+          kinds:
+          - controlplane.cluster.x-k8s.io/v1beta1/KubeadmControlPlane
+    preconditions:
+      all:
+      - key: "{{request.object.status.replicas}}"
+        operator: Equals
+        value: "{{request.object.status.readyReplicas}}"
+    generate:
+      kind: ConfigMap
+      apiVersion: v1
+      name: capi-cp-resources
+      namespace: "{{request.object.metadata.namespace}}"
+  - name: Check-worker
+    match:
+      any:
+      - resources:
+          kinds:
+          - cluster.x-k8s.io/v1beta1/MachineDeployment
+    preconditions:
+      all:
+      - key: "{{request.object.status.replicas}}"
+        operator: Equals
+        value: "{{request.object.status.readyReplicas}}"
+    generate:
+      kind: ConfigMap
+      apiVersion: v1
+      name: capi-md-resources
+      namespace: "{{request.object.metadata.namespace}}"
