@@ -306,11 +306,11 @@ units:
                   template:
                     spec:
                       containers:
-                      - name: virt-api-manik
-                        # securityContext:
-                        #   seccompProfile:
-                        #     $patch: delete
-                        #     type: RuntimeDefault
+                      - name: virt-api
+                        securityContext:
+                          seccompProfile:
+                            $patch: delete
+                            type: RuntimeDefault
 
       #       patchesStrategicMerge:
       #         - kind: Job
