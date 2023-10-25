@@ -326,8 +326,6 @@ units:
                     "helm.sh/hook-weight": "4"
                 spec:
                   template:
-                    metadata:
-                      name: kubevirt-crd-upgrader
                     spec:
                       containers:
                       - name: kubevirt-crd-upgrader
