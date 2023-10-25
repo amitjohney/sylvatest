@@ -299,18 +299,19 @@ units:
                 apiVersion: apps/v1
                 metadata:
                   labels:
-                    kubevirt.io: virt-api
-                  name: virt-api
+                    kubevirt.io: virt-operator
+                  name: virt-operator
                   namespace: kubevirt
                 spec:
                   template:
                     spec:
                       containers:
-                      - name: virt-api
+                      - name: virt-operator
                         securityContext:
                           seccompProfile:
                             $patch: delete
                             type: RuntimeDefault
+
 
       #       patchesStrategicMerge:
       #         - kind: Job
