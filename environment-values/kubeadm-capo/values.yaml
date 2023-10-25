@@ -9,8 +9,6 @@ units:
           machine_deployments:
             md0:
               replicas: 1
-              capo:
-                failure_domain: region0
 
 cluster:
   capi_providers:
@@ -24,8 +22,6 @@ cluster:
   machine_deployments:
     md0:
       replicas: 1
-      capo:
-        failure_domain: region0
 
 openstack:
   storageClass:
