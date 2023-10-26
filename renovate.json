@@ -23,6 +23,11 @@
   },
   "packageRules": [
     {
+      "matchPackageNames": ["renovate-bot/renovate-runner"],
+      "groupName": "renovate",
+      "schedule": ["before 4am on monday"]
+    },
+    {
       "matchPackagePrefixes": [
         "gcr.io/cloud-provider-vsphere/csi/release",
         "quay.io/k8scsi"
