@@ -3,6 +3,7 @@ Ensure that no_proxy covers everything that we need by adding the values defined
 (Default values will be add only if the user set at least one of no_proxy or no_proxy_additional field) 
 */}}
 {{- define "sylva-units.no_proxy" -}}
+ {{- $envAll := . }}
  {{- if or .Values.proxies.no_proxy .Values.no_proxy_additional }}
    {{- $no_proxy_base  := dict 
        "localhost" "true" 
@@ -28,7 +29,7 @@ Ensure that no_proxy covers everything that we need by adding the values defined
      {{- $no_proxy_list = append $no_proxy_list (printf "%s/%s" .Values.cluster.capm3.public_pool_network .Values.cluster.capm3.public_pool_prefix) -}}
      {{- $no_proxy_list = append $no_proxy_list (printf "%s/%s" .Values.cluster.capm3.provisioning_pool_network .Values.cluster.capm3.provisioning_pool_prefix) -}}
      {{- range .Values.cluster.baremetal_hosts }}
-       {{- $bmc_mgmt := urlParse .bmh_spec.bmc.address }}
+       {{- $bmc_mgmt := urlParse (tuple $envAll .bmh_spec.bmc.address | include "interpret-as-string") }}
        {{- $no_proxy_list = append $no_proxy_list ($bmc_mgmt.host | splitList ":" | first) }}
      {{- end }}
    {{- end }}

@@ -406,23 +406,15 @@ units:
 
   libvirt-metal:
     enabled_conditions:
-    - '{{ gt (.Values.libvirt_metal.node_count | int) 0 }}'
+    - '{{ not (.Values.libvirt_metal.nodes | empty) }}'
     depends_on:
       multus-ready: true
-    repo: sylva-core
-    kustomization_spec:
-      path: ./kustomize-units/libvirt-metal
-      wait: true
-      targetNamespace: default
-      postBuild:
-        substitute:
-          NODE_COUNT: '{{ .Values.libvirt_metal.node_count }}'
-          NODE_MEM_GB: '{{ .Values.libvirt_metal.node_mem_gb | quote }}'
-          NODE_CPUS: '{{ .Values.libvirt_metal.node_cpus | quote }}'
-          NODE_IMAGE: '{{ .Values.libvirt_metal.node_image }}'
-          CLUSTER_EXTERNAL_IP: '{{ .Values.cluster_external_ip }}'
-          CLUSTER_PUBLIC_IP: '{{ .Values._internal.bootstrap_node_ip }}'
-          CLUSTER_PUBLIC_ENDPOINT: '{{ tuple . .Values.cluster_public_endpoint | include "interpret-as-string" }}'
+    repo: libvirt-metal
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: charts/libvirt-metal
+      values: '{{ mergeOverwrite (dict "clusterExternalIP" .Values.cluster_external_ip "clusterPublicIP" .Values._internal.bootstrap_node_ip) .Values.libvirt_metal | include "preserve-type" }}'
 
   vsphere-cloud-controller-manager:
     # overload vsphere-cloud-controller-manager definition in bootstrap context to deploy in the management cluster
