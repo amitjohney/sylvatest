@@ -64,8 +64,12 @@ cluster:
     network_interfaces:
       ens5:
         type: phy
+        macAddress:
+          fromHostInterface: '{{ .Values.metal3.provider | eq "suse" | ternary "eth1" "ens5" }}'
       ens6:
         type: phy
+        macAddress:
+          fromHostInterface: '{{ .Values.metal3.provider | eq "suse" | ternary "eth2" "ens6" }}'
 
 
   baremetal_host_default:
