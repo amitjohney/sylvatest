@@ -9,31 +9,42 @@ import urllib.request
 import yaml
 
 # This script is used to generate sylva-units helm schema values.schema.json from values.schema.yaml
-# Moreover this script is adding sylva-capi-cluster schema into sylva-units schema in order to
+# Moreover this script is adding external chart schema into sylva-units schema in order to
 # make helm able to check values provided for cluster creation.
 
+# The script will retrieve source definition of following units:
+# - dict key defines the source_templates definition to use in sylva-units/values.yaml
+# - dict value defines the relative path of values.schema.json in corresponding project
+# the schema will be appended to $def.[unit-name]-values schema key in sylva-units
+SYLVA_UNITS_CHARTS_SCHEMAS = {
+        "sylva-capi-cluster": "",
+        "libvirt-metal": "charts/libvirt-metal",
+    }
 SCRIPT_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
 CHART_DIR = os.path.abspath(f"{SCRIPT_DIR}/../charts/sylva-units")
 SYLVA_UNITS_VALUES_FILE = f"{CHART_DIR}/values.yaml"
 SYLVA_UNITS_YAML_SCHEMA = f"{CHART_DIR}/values.schema.yaml"
 SYLVA_UNITS_JSON_SCHEMA = f"{CHART_DIR}/values.schema.json"
 
-
-def get_sylva_capi_cluster_schema(values_file):
+def get_unit_schema(values_file, unit_name):
     """
-    Get sylva-capi-cluster helm chart schema from Gitlab repository
+    Get external helm chart schema from Gitlab repository
     Helm chart url and tag (or branch, or commit) is read from values.yaml
     """
     with open(values_file) as f:
         data = yaml.load(f, Loader=yaml.loader.SafeLoader)
-    spec_ref = data['source_templates']['sylva-capi-cluster']['spec']['ref']
+    spec_ref = data['source_templates'][unit_name]['spec']['ref']
     ref = spec_ref.get('commit') or spec_ref.get('tag') or spec_ref['branch']
-    base_url = data['source_templates']['sylva-capi-cluster']['spec']['url']
+    base_url = data['source_templates'][unit_name]['spec']['url']
     if base_url.endswith(".git"):
         base_url = base_url[:-4]
-    url = f"{base_url.rstrip('/')}/-/raw/{ref}/values.schema.json"
-    sylva_capi_cluster_schema = urllib.request.urlopen(url).read()
-    return json.loads(sylva_capi_cluster_schema)
+    if SYLVA_UNITS_CHARTS_SCHEMAS[unit_name]:
+        url = f"{base_url.rstrip('/')}/-/raw/{ref}/{SYLVA_UNITS_CHARTS_SCHEMAS[unit_name]}/values.schema.json"
+    else:
+        url = f"{base_url.rstrip('/')}/-/raw/{ref}/values.schema.json"
+    unit_schema = urllib.request.urlopen(url).read()
+
+    return json.loads(unit_schema)
 
 
 def load_sylva_units_schema(yaml_schema_file):
@@ -96,8 +107,8 @@ def merge_schemas(schema1, schema2, target_sub_schema):
     Inject schema2 as a $defs.<target_sub_schema> of schema1.
     """
     check_sub_schemas(schema1, schema2)
-    # since sylva-units may use GoTPL for any value then passed to sylva-capi-cluster,
-    # we need all values of sylva-capi-cluster to be GoTPL
+    # since sylva-units may use GoTPL for any value then passed to external chart,
+    # we need all values of the external chart to be GoTPL
     schema2 = allow_additional_format_for_all_schema_properties(schema2, {"$ref": "#/$defs/string-with-gotpl"})
     # we also need to be able to set some value to null
     schema2 = allow_additional_format_for_all_schema_properties(schema2, {"type": "null"})
@@ -126,6 +137,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     sylva_unit_schema = load_sylva_units_schema(args.input)
-    sylva_capi_cluster_schema = get_sylva_capi_cluster_schema(args.values)
-    final_schema = merge_schemas(sylva_unit_schema, sylva_capi_cluster_schema, "sylva-capi-cluster-values")
-    dump_schema(final_schema, args.output)
+    for unit_name in SYLVA_UNITS_CHARTS_SCHEMAS:
+        unit_schema = get_unit_schema(args.values, unit_name)
+        sylva_unit_schema = merge_schemas(sylva_unit_schema, unit_schema, unit_name +  "-values")
+    dump_schema(sylva_unit_schema, args.output)

@@ -92,6 +92,10 @@ $defs:
     # this sub-schema will be completed with actual sylva-capi-cluster-values with json schema generation
     type: object
 
+  libvirt-metal-values:
+    # this sub-schema will be completed with actual libvirt-metal values schema with json schema generation
+    type: object
+
 # lines with '# -------------------------------' correspond to keys in values.yaml
 # (the rest being the JSONSchema language itself)
 
@@ -647,21 +651,8 @@ properties:
     type: object
 
   libvirt_metal:  # -------------------------------
-    type: object
-    additionalProperties: false
-    properties:
-      node_count:  # -------------------------------
-        type: integer
-        minimum: 0
-        maximum: 9
-      node_mem_gb:  # -------------------------------
-        type: integer
-        minimum: 4
-      node_cpus:  # -------------------------------
-        type: integer
-        minimum: 4
-      node_image:  # -------------------------------
-        type: string
+    # the values are values of the libvirt-metal chart
+    $ref: "#/$defs/libvirt-metal-values"
 
   proxies:  # -------------------------------
     type: object

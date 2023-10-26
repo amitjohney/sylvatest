@@ -106,6 +106,13 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: 1.0.2
 
+  libvirt-metal:
+    kind: GitRepository
+    spec:
+      url: https://gitlab.com/sylva-projects/sylva-elements/container-images/libvirt-metal.git
+      ref:
+        tag: 0.1.4
+
 helm_repo_spec_default:
   interval: 60m0s
 
@@ -2464,10 +2471,19 @@ registry_mirrors:
 
 # deploy emulated baremetal nodes in bootstrap cluster
 libvirt_metal:
-  node_count: 0
-  node_mem_gb: 4
-  node_cpus: 4
-  node_image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/libvirt-metal:0.1.2
+  nodes: {}
+  #management-cp:
+  #  memGB: 12
+  #  numCPUs: 6
+  #
+  #workload-cp:
+  #  memGB: 4
+  #  numCPUs: 2
+  #
+  #workload-md:
+  #  memGB: 2
+  #  numCPUs: 2
+
 
 # set the type of environment between 3 possible values: dev, ci and prod
 env_type: prod
@@ -2522,6 +2538,9 @@ _internal:
   sylva_core_version: ''
 
   sylva_core_existing_source: '{{ .Values.unit_helmrelease_kustomization_spec_default.sourceRef }}'
+
+  # We need to retrieve bootstrap_node_ip in management-cluster while using libvirt-metal emulation, it is stored in a ConfigMap by libvirt-metal unit in that case
+  bootstrap_node_ip: '{{ lookup "v1" "ConfigMap" "default" "cluster-public-endpoint" | dig "data" "address" "not found" | default "not found" }}'
 
   # These values are used only if `os_images` is empty
   default_os_images:
