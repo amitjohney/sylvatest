@@ -149,7 +149,7 @@
       "customType": "regex",
       "fileMatch": "charts/sylva-units/values.yaml",
       "matchStrings": [
-        "\\s+repository:\\s+(?<registryUrl>.*)\/(?<depName>.*)\\n\\s+tag:\\s+\"(?<currentValue>.*)\"\\n"
+        "\\s+repository:\\s+(?<registryUrl>.*)\/(?<depName>.*)\\n\\s+tag:\\s\"?(?<currentValue>[^\"\\n]+)\"?\\n"
       ],
       "registryUrlTemplate": "https://{{{ registryUrl }}}",
       "datasourceTemplate": "docker"
