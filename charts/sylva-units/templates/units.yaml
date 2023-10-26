@@ -157,8 +157,9 @@ spec: {{ $helm_repo_spec | toYaml | nindent 2 }}
         {{- $_ := set $unit_def "kustomization_substitute_secrets" (dict "VALUES_B64" ($unit_def.helm_secret_values | toYaml | b64enc)) -}}
       {{- end -}}
 
+      {{- $secretHash := $unit_def.helm_secret_values | default dict | toYaml | sha256sum | trunc 7 }}
       {{/* inject the HelmRelease spec via patches in the Kustomization: */}}
-      {{- $patches = index (include "helmrelease-kustomization-patch-template" (tuple $unit_name $helmrelease_spec $labels (hasKey $unit_def "helm_secret_values")) | fromYaml) "patches" -}}
+      {{- $patches = index (include "helmrelease-kustomization-patch-template" (tuple $unit_name $helmrelease_spec $labels (hasKey $unit_def "helm_secret_values") $secretHash) | fromYaml) "patches" -}}
     {{- end -}}
 
     {{- $kustomization_spec := dict -}}
@@ -167,7 +168,7 @@ spec: {{ $helm_repo_spec | toYaml | nindent 2 }}
         {{/* if the unit has "kustomization_substitute_secrets" defined, then
              we add to substituteFrom a Secret with "kustomization_substitute_secrets"
         */}}
-        {{- $secretName := printf "kustomization-unit-substitute-%s" $unit_name }}
+        {{- $secretName := printf "kustomization-unit-substitute-%s-%s" $unit_name ($unit_def.kustomization_substitute_secrets | toYaml | sha256sum | trunc 7) }}
 ---
 apiVersion: v1
 kind: Secret

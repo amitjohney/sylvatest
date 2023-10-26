@@ -64,6 +64,7 @@ which is used to create a Flux Kustomization that generates a HelmRelease.
   {{- $helmrelease_spec := index . 1 -}}
   {{- $labels := index . 2 -}}
   {{- $has_secret := index . 3 -}}
+  {{- $secretHash := index . 4 -}}
 patches:
   - target:
       kind: HelmRelease
@@ -85,7 +86,7 @@ patches:
         path: /metadata
         value:
           namespace: default
-          name: helm-unit-values-{{ $unit_name }}
+          name: helm-unit-values-{{ $unit_name }}-{{ $secretHash }}
           labels: {{ $labels | toYaml | nindent 12 }}
   - target:
       kind: HelmRelease
@@ -94,7 +95,7 @@ patches:
         path: /spec/valuesFrom/0
         value:
           kind: Secret
-          name: helm-unit-values-{{ $unit_name }}
+          name: helm-unit-values-{{ $unit_name }}-{{ $secretHash }}
           valuesKey: values
   {{ else }}
   - target:
