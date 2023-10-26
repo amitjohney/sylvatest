@@ -12,6 +12,10 @@ include:
     - values_file=environment-values/${ENV_NAME}/values.yaml
     - docker network create --attachable kind
     - |
+      if [ -n "$METAL3_PROVIDER" ]; then
+        yq -i ".metal3.provider = \"$METAL3_PROVIDER\"" $values_file
+      fi
+    - |
       if [ -n "$DOCKER_HOST" ]; then
         export DOCKER_IP=$(getent ahostsv4 docker | awk '{print $1}' | sort -u)
         KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
@@ -217,3 +221,4 @@ include:
     - export HURL_rancher_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n cattle-system rancher -o jsonpath='{ .spec.tls[].hosts[] }'); export domain=$(echo $HURL_rancher_url | cut -f2 -d .)
     - export HURL_keycloak_url=$(kubectl --kubeconfig management-cluster-kubeconfig  get ingress -n keycloak keycloak-ingress -o jsonpath='{ .spec.tls[].hosts[] }')
     - hurl -k ./tools/login-test/*.hurl --test --color --noproxy=".$domain"  --report-junit $HURL_JUNIT_REPORT --report-html .
+
