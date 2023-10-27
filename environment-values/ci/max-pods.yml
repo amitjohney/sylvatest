@@ -1,0 +1,3 @@
+cluster:
+  kubelet_extra_args:
+    max-pods: "111"

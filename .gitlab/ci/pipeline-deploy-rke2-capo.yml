@@ -24,6 +24,25 @@ deploy-rke2-capo-oci:
 
 #----------------------------------------------------------
 
+.apply-rke2-capo:
+  extends: .apply-capo
+
+update-rke2-capo:
+  extends: [.apply-rke2-capo]
+  rules:
+    - if: $OCI_TAG == null
+  artifacts:
+    expose_as: apply-rke2-capo
+
+update-rke2-capo-oci:
+  extends: [.apply-rke2-capo]
+  rules:
+    - if: $OCI_TAG
+  artifacts:
+    expose_as: apply-rke2-capo-oci
+
+#----------------------------------------------------------
+
 test-workload-cluster-rke2-capo:
   extends: [.test-workload-cluster]
   rules:

@@ -138,6 +138,20 @@ include:
   tags:
     - $CAPO_PLATFORM_TAG
 
+.apply-capo:
+  extends: .deploy-base
+  stage: update
+  script:
+    - !reference [.common-deployment, script_common]
+    - !reference [.common-deployment, os_cloud]
+    - !reference [.common-deployment, script_capo]
+    - yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file $APPLY_VALUES_FILE
+    - cat $values_file
+    - ./apply.sh environment-values/${ENV_NAME}
+    - !reference [.common-deployment, post_deployment_common]
+  tags:
+    - $CAPO_PLATFORM_TAG
+
 .cleanup-capo:
   stage: delete
   image:

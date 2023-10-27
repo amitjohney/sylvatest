@@ -5,6 +5,7 @@ workflow:
 
 stages:
   - deploy
+  - update
   - deployment-test
   - delete
 
