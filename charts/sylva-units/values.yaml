@@ -2303,6 +2303,12 @@ cluster:
   # kubernetes version to be used
   k8s_version: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.26.9+rke2r1" "v1.26.9" }}'
 
+  # kube_vip version to be used for kubeadm deployments
+  images:
+    kube_vip:
+      repository: ghcr.io/kube-vip/kube-vip
+      tag: "v0.6.3"
+
   # Nodes number for control-plane
   control_plane_replicas: 3
 
