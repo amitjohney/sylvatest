@@ -48,7 +48,7 @@ include:
         yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file $CUSTOM_VALUES_FILE
       fi
     - |
-      if [[ ${CI_PIPELINE_SOURCE} == 'pipeline' && ${REMOTE_VALUES} ]]; then
+      if [ -n "${REMOTE_VALUES}" ]; then
         echo -e "This pipeline is a cross project pipeline."
         echo -e "Applying custome remote values to $values_file."
         echo "${REMOTE_VALUES}" > /tmp/remote_values.yaml
