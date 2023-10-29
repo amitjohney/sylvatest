@@ -28,5 +28,4 @@ The results are summarized by the following table:
 |2023-10-05 02:16|kubeadm-capv|dde7eb673c465ddb199c7caf485a8fa9fd74167d|:white_check_mark: success||
 |2023-10-04 02:09|kubeadm-capv|7aef8aa10c5bee7c8a97834c9151c6e0fd79624f|:x: failed|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/67b69e9b953cb48491a2a3e90925455e/test-kubeadm-capv.zip)|
 |2023-10-03 02:01|kubeadm-capv|4f8168b9310948f244ae848538037ec9f5dc5bbc|:x: failed|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/e2727aec3eb340f2f430a723a15771ed/test-kubeadm-capv.zip)|
-|2023-09-30 02:01|kubeadm-capv|1493eedf1a42b998c34cb2bc03d766576acbc650|:x: failed|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/2e4026f0b7e886586df7c0851a19a6d9/test-kubeadm-capv.zip)|
 
