@@ -411,27 +411,158 @@ Before triggering bootstrap.sh, certain prerequisites need to be done/followed
 
 > **_NOTE:_** Obviously, the `secrets.yaml` file is sensitive and meant to be ignored by Git (see `.gitignore`). However, for the sake of security, it can be a good idea to [secure these files with SOPS](./sops-howto.md) to mitigate the risk of leakage.
 
-- Adapt `environment-values/my-capo-env/values.yaml` by changing the values:
+- Adapt `environment-values/my-rke2-camp3/values.yaml` by changing the values:
 
   ```yaml
   ...
+  cluster_external_ip: 10.188.36.149
   cluster:
-    image: my_base_image
-    flavor:
-      infra_provider: capo
-      bootstrap_provider: cabpk
-    capo:
-      ssh_key_name: my_key_name # put the name of your nova SSH keypair here, you'll need it if you intend to SSH to cluster nodes
-      network_id: my_network_id # The id of the network in which cluster nodes will be created
+    capi_providers:
+      infra_provider: capm3
+      bootstrap_provider: cabpr
+  
+    control_plane_replicas: 1
+  
+    rke2:
+      additionalUserData:
+        config:
+          #cloud-config
+          users:
+            - name: sylva-user
+              groups: users
+              sudo: ALL=(ALL) NOPASSWD:ALL
+              shell: /bin/bash
+              lock_passwd: false
+              passwd: "put your password hash here"  # (copy pasted from /etc/shadow or created with "mkpasswd --method=SHA-512 --stdin")
+              ssh_authorized_keys:
+                - ssh-rsa AAAA...... YOUR KEY HERE ....UqnQ==
+  
+    capm3:
+      machine_image_url: http://{{ .Values.display_external_ip }}/ubuntu-22.04-plain.qcow2
+      machine_image_format: qcow2
+      machine_image_checksum: http://{{ .Values.display_external_ip }}/ubuntu-22.04-plain.qcow2.sha256sum
+      machine_image_checksum_type: sha256
+      public_pool_name: "public-pool"
+      public_pool_network: 10.188.36.128
+      public_pool_gateway: 10.188.36.129
+      public_pool_start: 10.188.36.148
+      public_pool_end: 10.188.36.148
+      public_pool_prefix: "26"
+      provisioning_pool_name: "provisioning-pool"
+      provisioning_pool_network: 10.199.39.192
+      provisioning_pool_gateway: 10.199.39.193
+      provisioning_pool_start: 10.199.39.219
+      provisioning_pool_end: 10.199.39.219
+      provisioning_pool_prefix: "27"
+      dns_server: 1.2.3.4
+  
+    control_plane:  # tweak network configuration as needed
+  
+      capm3:
+        hostSelector:  # criteria for matching labels on BareMetalHost objects defined by baremetal_hosts value
+          matchLabels:
+            cluster-role: control-plane
+  
+        provisioning_pool_interface: bond0
+        public_pool_interface: bond0.13
+  
+      network_interfaces:
+        # for CAPM3 folowing are used and mapped to Metal3Data.spec.template.spec.networkData.links
+        bond0:
+          # bond_mode can be one of balance-rr, active-backup, balance-xor, broadcast, balance-tlb, balance-alb, 802.3ad
+          # https://github.com/metal3-io/cluster-api-provider-metal3/blob/main/api/v1alpha5/metal3datatemplate_types.go#L201-L202
+          bond_mode: 802.3ad
+          interfaces:
+            - ens1f0
+            - ens1f1
+          vlans:
+            - id: 13
+        ens1f0:
+          type: phy
+        ens1f1:
+          type: phy
+  
+    machine_deployment_default:  # tweak as needed
+  
+      capm3:
+        hostSelector:
+          matchLabels:
+            cluster-role: worker
+  
+        provisioning_pool_interface: bond0
+        public_pool_interface: bond0.13
+  
+    machine_deployments:
+      md0:
+        replicas: 1
+        network_interfaces:
+          bond0:
+            bond_mode: 802.3ad
+            interfaces:
+              - ens2f0
+              - ens2f1
+            vlans:
+              - id: 13
+          ens2f0:
+            type: phy
+          ens2f1:
+            type: phy
+  
+    baremetal_host_default:
+      bmh_spec:
+        online: true
+        externallyProvisioned: false
+        bmc:
+          disableCertificateVerification: true
+        automatedCleaningMode: metadata
+        bootMode: legacy
+        rootDeviceHints:  # https://github.com/metal3-io/baremetal-operator/blob/main/docs/api.md#rootdevicehints
+          deviceName: /dev/sda
+  
+    baremetal_hosts:  # corresponding credentials need to be set in secrets.yaml
+  
+      # this example is based on what worked on an HP Proliant DL360 Gen10
+      my-hpe-server:
+        bmh_metadata:
+          labels:
+            cluster-role: control-plane
+        bmh_spec:
+          description: my control plane node
+          bmc:
+            address: redfish-virtualmedia://66.66.66.66/redfish/v1/Systems/1   # put the real BMC address here ()
+            disableCertificateVerification: true
+          bootMACAddress: ba:ad:00:c0:ff:ee    # put the real address here!
+          # rootDeviceHints:
+          #   hctl: 2:1:0:0   # tweak as needed
+  
+      # this example is based on what worked on an Dell PowerEdge XR11
+      my-dell-server:
+        bmh_metadata:
+          labels:
+            cluster-role: worker
+        bmh_spec:
+          description: my worker node
+          bmc:
+            address: idrac-virtualmedia://77.77.77.77/redfish/v1/Systems/System.Embedded.1  # put the real BMC address here!
+          bootMACAddress: ba:ad:00:c0:ff:ee    # put the real address here!
+  
+  units:
+  
+    longhorn:
+      enabled: true
+  
+    workload-cluster:
+      enabled: false  # (no workload cluster is described in this example)
+  
+  metal3:
+    bootstrap_ip: 10.177.129.138
+  
 
   proxies:
     http_proxy: http://your.company.proxy.url  #replace me
     https_proxy: http://your.company.proxy.url  #replace me
     no_proxy: 127.0.0.1,localhost,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8,.sylva
   ```
-
-> **_NOTE:_** If OpenStack instances do not use Cinder root volume, ensure the size of the image being used is within the flavor's disk size or use a larger flavor to avoid machine creation failures during the deployment.
-
 - Run the bootstrap script:
 
   ```shell
