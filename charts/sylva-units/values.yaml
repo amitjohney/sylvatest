@@ -2560,9 +2560,15 @@ _internal:
 
 shared_workload_clusters_values:
   cluster:
+    mgmt_cluster_external_ip: '{{ .Values.cluster_external_ip }}'
+    mgmt_cluster_external_domain: '{{ .Values.cluster_external_domain }}'
+    dns_resolver: true
     capo:
       image_name: '{{ .Values.cluster.capo.image_name }}'
       network_id: '{{ .Values.cluster.capo.network_id | default "" }}'
+  units:
+    cluster-import:
+      enabled: '{{ tuple . "rancher" | include "unit-enabled" }}'
 
 shared_workload_clusters_secret_values:
   cluster:
