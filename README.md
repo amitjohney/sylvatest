@@ -332,7 +332,111 @@ Before trigerring bootstrap.sh, some prerequisites need to be satisfied.
 
 <details><summary>**Deploying Baremetal Clusters using CAPM3**</summary>
 
-<<--!TODO--!>>
+This scenario details deployment procedure for a Full Baremetal use case. You will make use of Baremetal Hosts on both ***management-cluster*** && ***workload-cluster*** to deploy `sylva`.
+
+In order to deploy a minimal `sylva cluster` on baremetal servers, you would need a baremetal host, acting as K8s controller and K8s worker. This is applicable for both `management && workload` clusters.
+For Highly Available clusters at least three servers are required acting as both K8s `control-plane` && `worker`.
+
+> **_Hardware Requirements:_** It is recommended to have the following specs at the minimum for the Baremetal Servers
+
+  - 16 CPU cores (32 vCPU with HT)
+  - 32GB of RAM
+  - 100GB of OS Disk
+
+**Network Prerequisites for Full Baremetal Deployment**
+
+The BMC interfaces (IDRAC for Dell, ILO for HPE, XCC for Lenovo) must be reachable from the bootstrap vm over the list of ports mention below (Only the few necessary flows should be authorized to be routed from/to the Out-of-Band network since this network allows sensitive/disruptive operations):
+
+TCP 6180: (Ironic -> BM) pull discovery image (ram disk) (ironic-httpd)
+TCP 5050: (BM -> Ironic) Port used by Ironic Python Agent from the BM node to the Ironic Inspector (management cluster)
+TCP 6385: (BM -> Ironic) Port used for Ironic API
+TCP 161/162: SNMPv3 (BM -> Prometheus) (optional)
+
+> **_IMPORTANT NOTE:_** Depending on your infrastructure provider, the following ports should be passed in the security groups/rules to allow traffic to-and-fro (ingress and egress) from the bootstrap vm to baremetal hosts on the management cluster.
+  - 80, 443, 6443, 6180, 6385, 5050, 9345, 9999
+
+The baremetal nodes needs to have their first interface (PXE boot interface) connected to a provisioning network which needs to access to a DHCP server (potentially through a DHCP relay). This provisioning network needs also to reach a HTTP(s) endpoint (Ironic API: components of CAPM3) on the management cluster and to be accessible on port TCP 9999.
+
+The provisioning network should be split into 2 ranges, one used for the DHCPD server during provisioning and the second for the Ironic provisioning pools to provision the operating system on each baremetal node.
+
+
+# Network allocation example
+
+| Network        | VLAN id | CIDR             | Gateway        | Reserved Pool                   | Metal3 pools                         |
+| -------------- | ------- | ---------------- | ------------- | ---------------------------------|-----------------------------------|
+| Provisioning   | 2016    | 10.199.39.192/27 | 10.199.39.193 | 10.199.39.225-240 (DHCPD server) | Provisioning pool: 10.199.39.219-220 |
+| Public Network | 2015    | 10.188.36.128/26 | 10.188.36.129 | None                            | Public pool: 10.188.36.148-149     |
+
+# Cluster Deployment on Baremetal Servers
+
+The deployment workflow is in line with other infrastrucure providers as detailed above, with additions specific to CAPM3 in `environment-values/rke2-capm3/`
+
+Before triggering bootstrap.sh, certain prerequisites need to be done/followed
+
+- Create a **bootstrap vm** using OpenStack or use any existing Linux environment
+- Set the **proxies** environment variables (http_proxy, https_proxy, no_proxy) if using corporate proxy
+- Install **Docker** and add your user to the `docker` group
+- Clone **sylva-core** project on the **bootstrap vm**
+- Create your own copy of **environment-values** (this will prevent you from accidentally committing your secrets).
+
+  ```shell
+  cp -a environment-values/rke2-capm3 environment-values/my-rke2-capm3
+  ```
+
+- Provide your **Node specific IPMI credentials** in `environment-values/my-rke2-camp3/secrets.yaml`
+
+  ```yaml
+  cluster:
+    baremetal_hosts:
+      my-:
+        credentials:
+          username: Administrator
+          password: "put the actual password here"
+
+  units:
+    workload-cluster:
+      helmrelease_spec:
+        values:
+          cluster:
+            baremetal_hosts:
+              dl360-38:
+                credentials:
+                  username: Administrator
+                  password: "put the actual password here"
+              dl360-39:
+                credentials:
+                  username: Administrator
+                  password: "put the actual password here"
+  ```
+
+> **_NOTE:_** Obviously, the `secrets.yaml` file is sensitive and meant to be ignored by Git (see `.gitignore`). However, for the sake of security, it can be a good idea to [secure these files with SOPS](./sops-howto.md) to mitigate the risk of leakage.
+
+- Adapt `environment-values/my-capo-env/values.yaml` by changing the values:
+
+  ```yaml
+  ...
+  cluster:
+    image: my_base_image
+    flavor:
+      infra_provider: capo
+      bootstrap_provider: cabpk
+    capo:
+      ssh_key_name: my_key_name # put the name of your nova SSH keypair here, you'll need it if you intend to SSH to cluster nodes
+      network_id: my_network_id # The id of the network in which cluster nodes will be created
+
+  proxies:
+    http_proxy: http://your.company.proxy.url  #replace me
+    https_proxy: http://your.company.proxy.url  #replace me
+    no_proxy: 127.0.0.1,localhost,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8,.sylva
+  ```
+
+> **_NOTE:_** If OpenStack instances do not use Cinder root volume, ensure the size of the image being used is within the flavor's disk size or use a larger flavor to avoid machine creation failures during the deployment.
+
+- Run the bootstrap script:
+
+  ```shell
+  ./bootstrap.sh environment-values/my-capo-env
+  ```
 
 </details>
 
