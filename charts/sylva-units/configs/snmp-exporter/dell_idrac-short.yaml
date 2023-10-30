@@ -1,0 +1,84 @@
+walk:
+- 1.3.6.1.4.1.674.10892.5.1.3
+- 1.3.6.1.4.1.674.10892.5.2
+- 1.3.6.1.4.1.674.10892.5.4.1100.30.1
+- 1.3.6.1.4.1.674.10892.5.4.1100.32.1
+- 1.3.6.1.4.1.674.10892.5.4.1100.50.1
+- 1.3.6.1.4.1.674.10892.5.4.1100.80.1
+- 1.3.6.1.4.1.674.10892.5.4.1100.90.1
+- 1.3.6.1.4.1.674.10892.5.4.2000.10.1
+- 1.3.6.1.4.1.674.10892.5.4.300.50.1
+- 1.3.6.1.4.1.674.10892.5.4.300.60.1
+- 1.3.6.1.4.1.674.10892.5.4.300.70.1
+- 1.3.6.1.4.1.674.10892.5.4.600.12.1
+- 1.3.6.1.4.1.674.10892.5.4.600.50.1
+- 1.3.6.1.4.1.674.10892.5.4.700.12.1.5
+- 1.3.6.1.4.1.674.10892.5.4.700.12.1.8
+- 1.3.6.1.4.1.674.10892.5.4.700.20.1
+- 1.3.6.1.4.1.674.10892.5.5.1.20.130.1.1
+- 1.3.6.1.4.1.674.10892.5.5.1.20.130.4.1
+- 1.3.6.1.4.1.674.10892.5.5.1.20.140.1.1
+get:
+- 1.3.6.1.4.1.674.10892.5.1.1.2.0
+- 1.3.6.1.4.1.674.10892.5.1.1.8.0
+- 1.3.6.1.4.1.674.10892.5.4.300.1.0
+metrics:
+- name: racShortName
+  oid: 1.3.6.1.4.1.674.10892.5.1.1.2
+  type: DisplayString
+  help: This attribute defines the short product name of a remote access card. -
+    1.3.6.1.4.1.674.10892.5.1.1.2
+- name: racFirmwareVersion
+  oid: 1.3.6.1.4.1.674.10892.5.1.1.8
+  type: DisplayString
+  help: This attribute defines the firmware version of a remote access card. - 1.3.6.1.4.1.674.10892.5.1.1.8
+- name: systemFQDN
+  oid: 1.3.6.1.4.1.674.10892.5.1.3.1
+  type: DisplayString
+  help: This attribute defines the fully qualified domain name of the system - 1.3.6.1.4.1.674.10892.5.1.3.1
+- name: systemServiceTag
+  oid: 1.3.6.1.4.1.674.10892.5.1.3.2
+  type: DisplayString
+  help: This attribute defines the service tag of the system. - 1.3.6.1.4.1.674.10892.5.1.3.2
+- name: systemExpressServiceCode
+  oid: 1.3.6.1.4.1.674.10892.5.1.3.3
+  type: DisplayString
+  help: This attribute defines the express service code of the system. - 1.3.6.1.4.1.674.10892.5.1.3.3
+- name: systemAssetTag
+  oid: 1.3.6.1.4.1.674.10892.5.1.3.4
+  type: DisplayString
+  help: This attribute defines the asset tag of the system. - 1.3.6.1.4.1.674.10892.5.1.3.4
+- name: systemBladeSlotNumber
+  oid: 1.3.6.1.4.1.674.10892.5.1.3.5
+  type: OctetString
+  help: This attribute defines the slot number of the system in the modular chassis.
+    - 1.3.6.1.4.1.674.10892.5.1.3.5
+- name: systemOSName
+  oid: 1.3.6.1.4.1.674.10892.5.1.3.6
+  type: OctetString
+  help: This attribute defines the name of the operating system that the host is
+    running. - 1.3.6.1.4.1.674.10892.5.1.3.6
+- name: systemFormFactor
+  oid: 1.3.6.1.4.1.674.10892.5.1.3.7
+  type: gauge
+  help: This attribute defines the form factor of the system. - 1.3.6.1.4.1.674.10892.5.1.3.7
+  enum_values:
+    1: other
+    2: unknown
+    3: u1
+    4: u2
+    5: u4
+    6: u7
+    7: singleWidthHalfHeight
+    8: dualWidthHalfHeight
+    9: singleWidthFullHeight
+    10: dualWidthFullHeight
+    11: singleWidthQuarterHeight
+    12: u5
+    13: u1HalfWidth
+    14: u1QuarterWidth
+    15: u1FullWidth
+- name: systemDataCenterName
+  oid: 1.3.6.1.4.1.674.10892.5.1.3.8
+  type: DisplayString
+  help: This attribute defines the Data Center locator of the system. - 1.3.6.1.4.1.674.10892.5.1.3.8
