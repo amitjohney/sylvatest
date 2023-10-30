@@ -230,7 +230,7 @@ stringData:
     {{- end -}}
 
     {{/* finalize the definition of the Kustomization spec by merging everything we have */}}
-    {{- $kustomization_spec = mergeOverwrite $kustomization_spec $envAll.Values.unit_kustomization_spec_default ($unit_def.kustomization_spec | default dict) $dependsOn $kustomization_spec_overrides (dict "patches" $patches) (dict "components" $components) -}}
+    {{- $kustomization_spec = mergeOverwrite $kustomization_spec (deepCopy $envAll.Values.unit_kustomization_spec_default) ($unit_def.kustomization_spec | default dict) $dependsOn $kustomization_spec_overrides (dict "patches" $patches) (dict "components" $components) -}}
 
     {{/* if the merge above resulted in setting kubeConfig or targetNamespace to null, remove them from the dict */}}
     {{- if hasKey $kustomization_spec "kubeConfig" -}}
