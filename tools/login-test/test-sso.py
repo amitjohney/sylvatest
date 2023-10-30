@@ -3,6 +3,8 @@ from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 from pathlib import Path
 from colorama import Fore, Style
 import time
@@ -32,8 +34,21 @@ def rancher_sso(endpoint, username, password, workload_name):
   print(browser.current_url)
   print(browser.title)
   browser.implicitly_wait(10)
+  delay = 30 
+  try:
+    element_present = EC.presence_of_element_located((By.XPATH, '//button[@class="btn bg-primary"]'))
+    WebDriverWait(browser, delay).until(element_present)
+  except TimeoutException:
+    print ("Cannot access SSO option")
+    exit (1)
   browser.find_element(By.XPATH, '//button[@class="btn bg-primary"]').click()
   print("Redirect to SSO")
+  try:
+    element_present = EC.presence_of_element_located((By.ID,"username"))
+    WebDriverWait(browser, delay).until(element_present)
+  except TimeoutException:
+    print ("Cannot access SSO Sign In page")
+    exit (1)
   print(browser.title)
   print(browser.current_url)
   browser.implicitly_wait(10)
@@ -42,7 +57,13 @@ def rancher_sso(endpoint, username, password, workload_name):
   browser.find_element(By.ID,"kc-login").click()
   print(browser.current_url)
   print("Waiting to be redirect towards rancher UI home page")
-  time.sleep(25)
+  cluster=workload_name + '-capi'
+  try:
+    element_present = EC.presence_of_element_located((By.LINK_TEXT,cluster))
+    WebDriverWait(browser, delay).until(element_present)
+  except TimeoutException:
+    print ("Cannot access the Rancher UI")
+    exit(1)
   print("Redirect to rancher UI home page")
   print(browser.current_url)
   cluster=workload_name + '-capi'
@@ -87,7 +108,14 @@ def vault_sso(endpoint, username, password):
   vault=windows[0]
   sso=windows[1]
   print("Redirect to SSO")
+  delay = 30
   browser.switch_to.window(sso)
+  try:
+    element_present = EC.presence_of_element_located((By.ID,"username"))
+    WebDriverWait(browser, delay).until(element_present)
+  except TimeoutException:
+    print ("Cannot access SSO Sign In page")
+    exit (1)
   print(browser.title)
   print(browser.current_url)
   browser.find_element(By.ID,"username").send_keys(username)
@@ -97,9 +125,15 @@ def vault_sso(endpoint, username, password):
   time.sleep(10)
   print("Redirect to vault UI home")
   browser.switch_to.window(vault)
-  print(browser.current_url)
-  print(Fore.GREEN + "Vault SSO check done")
-  print(Style.RESET_ALL)
+  try:
+    element_present = EC.presence_of_element_located((By.ID,"ember70"))
+    WebDriverWait(browser, delay).until(element_present)
+    print(browser.current_url)
+    print(Fore.GREEN + "Vault SSO check done")
+    print(Style.RESET_ALL)
+  except TimeoutException:
+    print ("Cannot access the Vault UI")
+    exit(1)
   browser.delete_all_cookies()
   browser.quit()
 
@@ -112,8 +146,21 @@ def flux_sso(endpoint, username, password):
   print(browser.current_url)
   print(browser.title)
   browser.implicitly_wait(10)
+  delay = 30
+  try:
+    element_present = EC.presence_of_element_located((By.XPATH, '//span[@class="MuiButton-label"]'))
+    WebDriverWait(browser, delay).until(element_present)
+  except TimeoutException:
+    print ("Cannot access SSO option")
+    exit (1)
   browser.find_element(By.XPATH, '//span[@class="MuiButton-label"]').click()
   print("Redirect to SSO")
+  try:
+    element_present = EC.presence_of_element_located((By.ID,"username"))
+    WebDriverWait(browser, delay).until(element_present)
+  except TimeoutException:
+    print ("Cannot access SSO Sign In page")
+    exit (1)
   print(browser.title)
   print(browser.current_url)
   browser.find_element(By.ID,"username").send_keys(username)
@@ -123,11 +170,18 @@ def flux_sso(endpoint, username, password):
   print("Waiting to be redirect towards flux UI home page")
   time.sleep(25)
   print("Redirect to flux UI home page")
-  print(browser.current_url)
-  print(Fore.GREEN + "Flux SSO check done")
-  print(Style.RESET_ALL)
+  try:
+    element_present = EC.presence_of_element_located((By.XPATH, '//a[@href="/applications"]'))
+    WebDriverWait(browser, delay).until(element_present)
+    print(browser.current_url)
+    print(Fore.GREEN + "Flux SSO check done")
+    print(Style.RESET_ALL)
+  except TimeoutException:
+    print ("Cannot access the Flux UI")
+    exit(1)
   browser.delete_all_cookies()
   browser.quit()
+
 
 rancher_sso( rancher_url, user, password, workload_name )
 vault_sso( vault_url, user, password )
