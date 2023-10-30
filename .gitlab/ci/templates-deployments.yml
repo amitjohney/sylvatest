@@ -202,6 +202,13 @@ include:
 
 .test-workload-cluster:
   stage: deployment-test
+  rules:
+    - if: $CI_MERGE_REQUEST_LABELS =~ /renovate/
+      allow_failure: true
+      when: manual
+    - if: $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
+      allow_failure: true
+      when: manual
   script:
     - !reference [.sso-test, script]
     - echo "Testing workload cluster. Job started at '$CI_JOB_STARTED_AT'."
