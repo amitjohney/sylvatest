@@ -2381,7 +2381,7 @@ cluster:
     memoryMiB: 8192
     diskGiB: 25
 
-  enable_longhorn: '{{ tuple . "longhorn" | include "unit-enabled" | include "as-bool" }}'
+  enable_longhorn: '{{ or (tuple . "longhorn" | include "unit-enabled") (tuple . .Values.units.longhorn.enabled | include "interpret-for-test") | include "as-bool" }}'
 
 capd_docker_host: unix:///var/run/docker.sock
 
