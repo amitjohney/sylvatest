@@ -177,6 +177,7 @@ capm3-rke2-virt-equinix-deploy:
   extends: .default-trigger
   variables:
     ENV_NAME: rke2-capm3-virt
+    METAL3_PROVIDER: sylva
   trigger:
     include: .gitlab/ci/pipeline-deploy-rke2-capm3-virt-equinix.yml
     strategy: depend
@@ -185,6 +186,7 @@ capm3-rke2-virt-equinix-deploy-suse:
   extends: .default-trigger
   variables:
     ENV_NAME: rke2-capm3-virt
+    METAL3_PROVIDER: suse
   trigger:
-    include: .gitlab/ci/pipeline-deploy-rke2-capm3-virt-equinix-suse.yml
+    include: .gitlab/ci/pipeline-deploy-rke2-capm3-virt-equinix.yml
     strategy: depend

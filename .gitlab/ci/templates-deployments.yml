@@ -166,24 +166,8 @@ include:
   tags:
     - $CAPO_PLATFORM_TAG
 
-# the $TEST_WORKLOAD_CLUSTER_NAME-rancher.yaml file below is the kubeconfig downloaded from Rancher server
-# through Selenim, in job .sso-test
-.script-test-workload-cluster: |
-  set -eo pipefail
-  export no_proxy=$no_proxy,.sylva
-  attempts=0
-  max_attempts=5
-  until kubectl run test --image=registry.k8s.io/pause:3.9 --kubeconfig $TEST_WORKLOAD_CLUSTER_NAME-rancher.yaml --overrides='{"apiVersion": "v1","spec": {"containers": [{"name": "test","image": "registry.k8s.io/pause:3.9","securityContext": {"allowPrivilegeEscalation": false,"capabilities": {"drop": ["ALL"]},"runAsNonRoot": true,"runAsGroup": 1000,"runAsUser": 1000,"seccompProfile": {"type": "RuntimeDefault"}}}]}}'; do
-    sleep 3
-    ((attempts++)) && ((attempts==max_attempts)) && exit -1
-  done
-  echo "-- Wait for test pod to be created"
-  kubectl wait --for=condition=Ready pod/test --kubeconfig $TEST_WORKLOAD_CLUSTER_NAME-rancher.yaml --timeout=60s
-  echo "-- Get the sample workload cluster nodes annotations for keys node.longhorn.io/default-node-tags & node.longhorn.io/default-disks-config"
-  kubectl --kubeconfig $TEST_WORKLOAD_CLUSTER_NAME-rancher.yaml get nodes -o yaml | yq '.items[] | (.metadata.name,.metadata.annotations."node.longhorn.io/default-node-tags",.metadata.annotations."node.longhorn.io/default-disks-config")'
-  echo "-- All done"
-
-.sso-test:
+.test-workload-cluster:
+  stage: deployment-test
   script:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_test_loging[collapsed=true]\r\e[0KGet ingress saved into /etc/hosts and set variables\e[0m"
     - kubectl --kubeconfig management-cluster-kubeconfig get ingress -A -o custom-columns=:.status.loadBalancer.ingress[].ip,:.spec.tls[].hosts[] | grep -v '<none>' >> /etc/hosts
@@ -199,20 +183,19 @@ include:
     - echo "-- Testing login using SSO"
     - unset https_proxy http_proxy
     - python3 ./tools/login-test/test-sso.py
-
-.test-workload-cluster:
-  stage: deployment-test
-  rules:
-    - if: $CI_MERGE_REQUEST_LABELS =~ /renovate/
-      allow_failure: true
-      when: manual
-    - if: $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
-      allow_failure: true
-      when: manual
-  script:
-    - !reference [.sso-test, script]
-    - echo "Testing workload cluster. Job started at '$CI_JOB_STARTED_AT'."
-    - !reference [.script-test-workload-cluster]
+    - echo "-- Testing workload cluster. Job started at '$CI_JOB_STARTED_AT'."
+    # the $TEST_WORKLOAD_CLUSTER_NAME-rancher.yaml file below is the kubeconfig previously downloaded from Rancher server through Selenim
+    - |
+      attempts=0; max_attempts=5
+      until kubectl run test --image=registry.k8s.io/pause:3.9 --kubeconfig $TEST_WORKLOAD_CLUSTER_NAME-rancher.yaml --overrides='{"apiVersion": "v1","spec": {"containers": [{"name": "test","image": "registry.k8s.io/pause:3.9","securityContext": {"allowPrivilegeEscalation": false,"capabilities": {"drop": ["ALL"]},"runAsNonRoot": true,"runAsGroup": 1000,"runAsUser": 1000,"seccompProfile": {"type": "RuntimeDefault"}}}]}}'; do
+        sleep 3
+        ((attempts++)) && ((attempts==max_attempts)) && exit -1
+      done
+    - echo "-- Wait for test pod to be created"
+    - kubectl wait --for=condition=Ready pod/test --kubeconfig $TEST_WORKLOAD_CLUSTER_NAME-rancher.yaml --timeout=60s
+    - echo "-- Get the sample workload cluster nodes annotations for keys node.longhorn.io/default-node-tags & node.longhorn.io/default-disks-config"
+    - kubectl --kubeconfig $TEST_WORKLOAD_CLUSTER_NAME-rancher.yaml get nodes -o yaml | yq '.items[] | (.metadata.name,.metadata.annotations."node.longhorn.io/default-node-tags",.metadata.annotations."node.longhorn.io/default-disks-config")'
+    - echo "-- All done"
   tags:
     - $CAPO_PLATFORM_TAG
 
@@ -232,9 +215,7 @@ include:
       - $HURL_JUNIT_REPORT
   tags:
     - $CAPO_PLATFORM_TAG
-
-.hurl-report:
-  script_capo:
+  script:
     - kubectl --kubeconfig management-cluster-kubeconfig get ingress -A -o custom-columns=:.status.loadBalancer.ingress[].ip,:.spec.tls[].hosts[] >> /etc/hosts
     - export HURL_token=$(kubectl --kubeconfig management-cluster-kubeconfig -n vault get secrets/vault-unseal-keys -o jsonpath='{.data.vault-root}' | base64 -d)
     - export HURL_flux_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n flux-system flux-webui-weave-gitops -o jsonpath='{ .spec.tls[].hosts[] }')
@@ -242,4 +223,3 @@ include:
     - export HURL_rancher_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n cattle-system rancher -o jsonpath='{ .spec.tls[].hosts[] }'); export domain=$(echo $HURL_rancher_url | cut -f2 -d .)
     - export HURL_keycloak_url=$(kubectl --kubeconfig management-cluster-kubeconfig  get ingress -n keycloak keycloak-ingress -o jsonpath='{ .spec.tls[].hosts[] }')
     - hurl -k ./tools/login-test/*.hurl --test --color --noproxy=".$domain"  --report-junit $HURL_JUNIT_REPORT --report-html .
-

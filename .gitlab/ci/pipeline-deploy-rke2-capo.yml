@@ -57,8 +57,6 @@ test-workload-cluster-rke2-capo-oci:
 
 .test-login-rke2-capo:
   extends: .test-login
-  script:
-    - !reference [.hurl-report, script_capo ]
 
 test-login-rke2-capo:
   extends: [.test-login-rke2-capo]
