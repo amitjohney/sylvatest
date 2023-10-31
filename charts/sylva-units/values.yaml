@@ -482,6 +482,97 @@ units:
         substitute:
           SCAN_PROFILE: '{{ .Values.cis_benchmark_scan_profile }}'
 
+  neuvector-init:
+    enabled_conditions:
+    - '{{ tuple . "neuvector" | include "unit-enabled" }}'
+    depends_on:
+      sylva-ca: true
+      vault: true
+      vault-config-operator: true
+      kyverno: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/neuvector-init
+      wait: true
+      postBuild:
+        substitute:
+          NEUVECTOR_DNS: '{{ .Values.neuvector.external_hostname }}'
+
+  neuvector:
+    enabled: no
+    depends_on:
+      neuvector-init: true
+      ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
+    annotations:
+      sylvactl/readyMessage: "Neuvector UI can be reached at https://{{ .Values.neuvector.external_hostname }} ({{ .Values.neuvector.external_hostname }} must resolve to {{ .Values.display_external_ip }})"
+    helm_repo_url: https://neuvector.github.io/neuvector-helm
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: core
+          version: 2.6.3
+      targetNamespace: neuvector
+      values:
+        psp: '{{ .Values.cluster.cis_profile | eq "cis-1.6" | include "as-bool" }}'
+        internal:
+          certmanager:
+            enabled: true
+            secretname: neuvector-internal
+        controller:
+          replicas: 1  # PVC only works for 1 replica https://github.com/neuvector/neuvector-helm/issues/110#issuecomment-1251921734
+          strategy:
+            type: RollingUpdate
+            rollingUpdate:
+              maxSurge: 1
+              maxUnavailable: 1
+          image:
+            repository: neuvector/controller
+          pvc:
+            enabled: true # setting PVC to true imposes 1 replica https://github.com/neuvector/neuvector-helm/issues/110#issuecomment-1251921734
+            accessModes:
+              - ReadWriteOnce
+        enforcer:
+          image:
+            repository: neuvector/enforcer
+        manager:
+          image:
+            repository: neuvector/manager
+          runAsUser: 10000
+          ingress:
+            enabled: true
+            host: '{{ .Values.neuvector.external_hostname }}'
+            ingressClassName: nginx
+            path: /
+            annotations:
+              nginx.ingress.kubernetes.io/backend-protocol: https
+            tls: true
+            secretName: neuvector-tls
+        cve:
+          updater:
+            image:
+              repository: neuvector/updater
+          scanner:
+            image:
+              repository: neuvector/scanner
+              env:
+                - name: https_proxy
+                  value: '{{ .Values.proxies.https_proxy }}'
+                - name: no_proxy
+                  value: '{{ include "sylva-units.no_proxy" . }}'
+        containerd:
+          enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "as-bool" }}'
+          path: /var/run/containerd/containerd.sock
+        k3s:
+          enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | include "as-bool" }}'
+          runtimePath: /run/k3s/containerd/containerd.sock
+        resources:
+          limits:
+            cpu: 400m
+            memory: 2792Mi
+          requests:
+            cpu: 100m
+            memory: 2280Mi
+
   keycloak:
     depends_on:
       sylva-ca: true
@@ -668,6 +759,9 @@ units:
       values:
         webhooksCleanup:
           enabled: false
+        features:
+          policyExceptions:
+            enabled: true
         backgroundController:
           rbac:
             clusterRole:
@@ -2422,6 +2516,9 @@ keycloak:
 
 flux:
   external_hostname: 'flux.{{ .Values.cluster_external_domain }}'
+
+neuvector:
+  external_hostname: 'neuvector.{{ .Values.cluster_external_domain }}'
 
 os_image_server:
   external_hostname: ''

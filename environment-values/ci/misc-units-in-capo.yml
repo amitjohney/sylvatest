@@ -62,6 +62,12 @@ units:
     enabled: true
   kubevirt-test-vms:
     enabled: true
+  neuvector-init:
+    enabled: true
+  neuvector:
+    enabled: true
+  kyverno:
+    enabled: true
 
 cluster:
   control_plane_replicas: 3
