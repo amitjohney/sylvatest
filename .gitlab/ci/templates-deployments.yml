@@ -81,6 +81,7 @@ include:
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capo\r\e[0K"
   post_deployment_common:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_post_deployment[collapsed=true]\r\e[0KRunning post deployment step\e[0m"
+    - cat environment-values/${ENV_NAME}/values.yaml
     - export CHECK_RANCHER_JOB_POD=`kubectl --kubeconfig management-cluster-kubeconfig -n kube-job get pod --selector job-name=check-rancher-clusters-job-cattle-system -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}'`
     - |
       if [ -n "$CHECK_RANCHER_JOB_POD" ]; then
