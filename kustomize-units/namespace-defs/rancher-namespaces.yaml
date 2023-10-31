@@ -34,7 +34,7 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: cattle-sriov-system
-    labels:
-      pod-security.kubernetes.io/enforce: privileged
-      pod-security.kubernetes.io/enforce-version: latest
+  name: cattle-logging-system
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/enforce-version: latest
