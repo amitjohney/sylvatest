@@ -624,6 +624,17 @@ properties:
       keycloak_expire_password_days:  # -------------------------------
         type: integer
 
+  neuvector: # -------------------------------
+    type: object
+    additionalProperties: false
+    properties:
+
+      external_hostname:  # -------------------------------
+        anyOf:
+          - type: string
+            format: hostname
+          - $ref: "#/$defs/string-with-gotpl"
+
   flux: # -------------------------------
     type: object
     additionalProperties: false
