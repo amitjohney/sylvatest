@@ -407,7 +407,7 @@ It will fail if the result of the interpretation does not look like a boolean.
         {{- $data | include "as-bool" -}}
     {{- else -}}
         {{- if not (kindIs "string" $data) -}}
-            {{- fail (printf "'interpret-as-bool' called on something which is not boolean nor a string (<%s> is a %s)%s" $debug_context ($data | toString) (typeOf $data)) -}}
+            {{- fail (printf "'interpret-as-bool' called on something which is not boolean nor a string (<%s> is a %s)%s" ($data | toString) (typeOf $data) $debug_context) -}}
         {{- end -}}
 
         {{- if or ($data | eq "true") ($data | eq "false") ($data | eq "") -}}
