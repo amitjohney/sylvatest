@@ -2020,7 +2020,7 @@ units:
       chart:
         spec:
           chart: longhorn-crd
-          version: 102.2.0+up1.4.1
+          version: 102.2.2+up1.4.3
 
   longhorn:
     enabled: false
@@ -2035,7 +2035,7 @@ units:
       chart:
         spec:
           chart: longhorn
-          version: 102.2.0+up1.4.1
+          version: 102.2.2+up1.4.3
       values:
         enablePSP: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") | include "preserve-type" }}'
         defaultSettings:
