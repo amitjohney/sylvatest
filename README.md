@@ -353,6 +353,7 @@ TCP 6385: (BM -> Ironic) Port used for Ironic API
 TCP 161/162: SNMPv3 (BM -> Prometheus) (optional)
 
 > **_IMPORTANT NOTE:_** Depending on your infrastructure provider, the following ports should be passed in the security groups/rules to allow traffic to-and-fro (ingress and egress) from the bootstrap vm to baremetal hosts on the management cluster.
+
 - 80
 - 443
 - 6443
@@ -562,7 +563,6 @@ Before triggering bootstrap.sh, certain prerequisites need to be done/followed
   
   metal3:
     bootstrap_ip: 10.177.129.138
-  
 
   proxies:
     http_proxy: http://your.company.proxy.url  #replace me
@@ -571,9 +571,9 @@ Before triggering bootstrap.sh, certain prerequisites need to be done/followed
   ```
 - Run the bootstrap script:
 
-   ```shell
-   ./bootstrap.sh environment-values/my-capo-env
-   ```
+  ```shell
+   ./bootstrap.sh environment-values/my-rke2-camp3
+  ```
 
 </details>
 
