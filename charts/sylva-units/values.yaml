@@ -2190,6 +2190,7 @@ units:
       timeout: 168h  # leave plenty of time to download OS images in initContainers
       values:
         downloader:
+          oci_timeout: 30m
           proxy: '{{ get .Values.proxies "https_proxy" }}'
           no_proxy: '{{ include "sylva-units.no_proxy" . }}'
           extra_ca_certs: '{{ .Values.oci_registry_extra_ca_certs | include "set-if-defined" }}'
