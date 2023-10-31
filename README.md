@@ -569,6 +569,7 @@ Before triggering bootstrap.sh, certain prerequisites need to be done/followed
     https_proxy: http://your.company.proxy.url  #replace me
     no_proxy: 127.0.0.1,localhost,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8,.sylva
   ```
+
 - Run the bootstrap script:
 
   ```shell
