@@ -152,6 +152,37 @@ For convenience, it also encaspsulates the result like in 'preserve-type' templa
   {{- end -}}
 {{ end }}
 
+
+{{/*
+
+set-if-defined
+
+This is another utility template that enables to conditionally set an item in a list or dict.
+
+If the value passed is null, it will return a very specific value that can be matched in interpret-inner-gotpl to skip the item.
+
+For convenience, it also encaspsulates the result like in 'preserve-type' template in order to properly handle non-string items.
+
+Example:
+
+  foo:
+    bar:  '{{ .cluster.bar | include "set-if-defined" }}
+
+  will set foo.bar only if cluster.bar is not null
+
+  This is equivalent to: FIXME
+
+*/}}
+
+{{ define "set-if-defined" }}
+  {{- if not (eq . nil) -}}
+    {{- dict "encapsulated-result" . | toJson -}}
+  {{- else -}}
+    skip-as-set-only-if-result-was-false
+  {{- end -}}
+{{ end }}
+
+
 {{/*
 
 interpret-inner-gotpl
