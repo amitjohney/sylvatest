@@ -1490,6 +1490,7 @@ units:
         name: cinder-csi-cloud-config
         data:
           cloud.conf: |-
+            {{- if .Values.cluster.capi_providers.infra_provider | eq "capo" -}}
             [Global]
             auth-url = {{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.auth_url | quote }}
             tenant-name = {{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.project_name | quote }}
@@ -1500,6 +1501,7 @@ units:
             tls-insecure = {{ not .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.verify }}
             [BlockStorage]
             ignore-volume-az = true
+            {{- end -}}
 
   sylva-ca-certs:
     depends_on:
@@ -2416,20 +2418,25 @@ cluster:
     #   diskSize: 20 # Size of the VMs root disk
     #   volumeType: '__DEFAULT__' # Type of volume to be created
     # #control_plane_az: # list of OpenStack availability zones to deploy control planes nodes to, otherwise all would be candidates
-    clouds_yaml: # (this is a dict, not a YAML string)
-      clouds:
-        capo_cloud:
-          auth: {}
-          #   auth_url: # replace me
-          #   user_domain_name: # replace me
-          #   project_domain_name: # replace me
-          #   project_name: # replace me
-          #   username: # replace me
-          #   password: # replace me
-          # region_name: # replace me
-          # verify: # e.g. false
+    # clouds_yaml: # (this is a dict, not a YAML string)
+    #   clouds:
+    #     capo_cloud:
+    #       auth:
+    #         auth_url: # replace me
+    #         user_domain_name: # replace me
+    #         project_domain_name: # replace me
+    #         project_name: # replace me
+    #         username: # replace me
+    #         password: # replace me
+    #       region_name: # replace me
+    #       verify: # e.g. false
     # cacert: # cert used to validate CA of OpenStack APIs
-    resources_tag: '{{ eq .Values.cluster.capi_providers.infra_provider "capo" | ternary (printf "sylva-%s" .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.username | default "unset") "" }}' # tag set for OpenStack resources in management and test workload cluster
+
+    # tag set for OpenStack resources in management and test workload cluster:
+    resources_tag: >-
+      {{- if .Values.cluster.capi_providers.infra_provider | eq "capo" -}}
+        sylva-{{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.username }}
+      {{- end -}}
 
   control_plane:
     capo:
