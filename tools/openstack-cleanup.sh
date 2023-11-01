@@ -26,8 +26,6 @@ if [ -n "$SERVERS" ] ; then
   openstack ${OS_ARGS} server pause ${SERVERS//$'\n'/ }
   echo -e "\U0001F5D1 Deleting servers: ${SERVERS//$'\n'/ }"
   openstack ${OS_ARGS} server delete --wait ${SERVERS//$'\n'/ }
-  echo -e "\U0001F5D1 Deleting volumes: ${SERVERS//$'\n'/-root }"
-  openstack ${OS_ARGS} volume delete ${SERVERS//$'\n'/-root } --purge || true
 else
   echo -e "(no server to cleanup)"
 fi
