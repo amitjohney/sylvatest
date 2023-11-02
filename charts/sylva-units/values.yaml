@@ -1003,6 +1003,7 @@ units:
               metallb.universe.tf/allow-shared-ip: cluster-external-ip
           podSecurityContext:
             runAsUser: 475
+            fsGroup: 475
           baremetaloperator:
             ironichostNetwork: false
           persistence:
@@ -1010,8 +1011,9 @@ units:
               storageClass: '{{ .Values._internal.default_storage_class }}'
               accessMode: ReadWriteOnce
         metal3-mariadb:
-          securityContext:
+          podSecurityContext:
             runAsUser: 60
+            fsGroup: 60
           persistence:
             storageClass: '{{ .Values._internal.default_storage_class }}'
 
