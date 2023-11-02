@@ -7,17 +7,7 @@ units:
     enabled: true
   capi:
     enabled: true
-  capm3:
-    enabled: true
-  metal3-init:
-    enabled: true
-  metal3-sync-secrets:
-    enabled: true
-  metal3:
-    enabled: true
   capi-providers-pivot-ready:
-    enabled: true
-  os-image-server:
     enabled: true
   cinder-csi:
     enabled: true
