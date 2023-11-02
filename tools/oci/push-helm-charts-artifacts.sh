@@ -182,8 +182,8 @@ for unit_name in $(yq -r '(.units | ... comments="" | keys())[]' $VALUES_FILE | 
         ## if an invalid tag is found we used a rewrited version of it for the check
         version_to_check=$(check_invalid_semver_tag $version)
         echo "Version to check: $version_to_check"
-        if (flux pull artifact $OCI_REGISTRY/$chart:${version_to_check/+/_} -o /tmp 2>&1 || true) | grep -q created; then
-          echo "Skipping $chart processing, $chart:$version_to_check already exists in $OCI_REGISTRY"
+        if (flux pull artifact $OCI_REGISTRY/$artifact_name:${version_to_check/+/_} -o /tmp 2>&1 || true) | grep -q created; then
+          echo "Skipping $chart processing, $artifact_name:$version_to_check already exists in $OCI_REGISTRY"
 	  echo -e $section_end
           continue
         fi

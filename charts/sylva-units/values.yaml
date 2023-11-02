@@ -509,6 +509,7 @@ units:
     annotations:
       sylvactl/readyMessage: "Neuvector UI can be reached at https://{{ .Values.neuvector.external_hostname }} ({{ .Values.neuvector.external_hostname }} must resolve to {{ .Values.display_external_ip }})"
     helm_repo_url: https://neuvector.github.io/neuvector-helm
+    helm_chart_artifact_name: neuvector-core
     helmrelease_spec:
       chart:
         spec:
