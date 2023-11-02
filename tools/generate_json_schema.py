@@ -83,6 +83,9 @@ def allow_additional_format_for_all_schema_properties(schema, format):
             schema['allOf'][index] = allow_additional_format_for_all_schema_properties(condition, format)
     if "then" in schema:
         schema['then'] = allow_additional_format_for_all_schema_properties(schema['then'], format)
+    if "$defs" in schema:
+        for definition_ref, definition in schema['$defs'].items():
+            schema['$defs'][definition_ref] = _allow_additional_format_for_all(definition, format)
 
     return schema
 

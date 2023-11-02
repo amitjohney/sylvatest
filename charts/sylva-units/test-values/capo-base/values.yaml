@@ -4,8 +4,9 @@ cluster:
     infra_provider: capo
 
   capo:
+    image_name: my image
     ssh_key_name: mykey
-    network_id: abcd-123465
+    network_id: c00lf00l-0000-1111-2222-baaaadc0ffee
     clouds_yaml:
       clouds:
         capo_cloud:
@@ -18,6 +19,10 @@ cluster:
             user_domain_name: foo
             project_domain_name: foo
           region_name: RegionOne
+
+  control_plane:
+    capo:
+      server_group_id: c00lf00l-0000-1111-2222-baaaadc0ffee
 
 openstack:
   storageClass:

@@ -76,7 +76,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.1.10
+        tag: 0.1.12
 
   local-path-provisioner:
     kind: GitRepository
@@ -1489,6 +1489,7 @@ units:
         name: cinder-csi-cloud-config
         data:
           cloud.conf: |-
+            {{- if .Values.cluster.capi_providers.infra_provider | eq "capo" -}}
             [Global]
             auth-url = {{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.auth_url | quote }}
             tenant-name = {{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.project_name | quote }}
@@ -1499,6 +1500,7 @@ units:
             tls-insecure = {{ not .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.verify }}
             [BlockStorage]
             ignore-volume-az = true
+            {{- end -}}
 
   sylva-ca-certs:
     depends_on:
@@ -2179,35 +2181,34 @@ units:
             bootstrap_provider: '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
           k8s_version: '{{ .Values.cluster.k8s_version }}'
           cis_profile: '{{ .Values.cluster.cis_profile }}'
+
           capo:
-            image_name: '{{ .Values.cluster.capo.image_name }}'
-            flavor_name: '{{ .Values.cluster.capo.flavor_name }}'
-            ssh_key_name: '{{ .Values.cluster.capo.ssh_key_name }}'
+            image_name: '{{ .Values.cluster.capo.image_name | include "set-if-defined" }}'
+            flavor_name: '{{ .Values.cluster.capo.flavor_name | include "set-if-defined" }}'
+            ssh_key_name: '{{ .Values.cluster.capo.ssh_key_name | include "set-if-defined" }}'
             resources_tag: '{{ tuple . (.Values.cluster | dig "capo" "resources_tag" "") | include "interpret-as-string" }}'
-            network_id: '{{ .Values.cluster.capo.network_id | default "" }}'
+            network_id: '{{ .Values.cluster.capo.network_id | include "set-if-defined" }}'
             control_plane_az: '{{ tuple (.Values.cluster | dig "capo" "control_plane_az" list | include "preserve-type") (.Values.cluster | dig "capo" "control_plane_az" nil) | include "set-only-if" }}'
-            rootVolume: '{{ .Values.cluster.capo.rootVolume | include "preserve-type" }}'
+            rootVolume: '{{ .Values.cluster.capo.rootVolume | include "set-if-defined" }}'
           capv:
-            image_name: '{{ .Values.cluster.capv.image_name }}'
-            diskGiB: '{{ .Values.cluster.capv.diskGiB | include "preserve-type" }}'
-            memoryMiB: '{{ .Values.cluster.capv.memoryMiB | include "preserve-type" }}'
-            numCPUs: '{{ .Values.cluster.capv.numCPUs | include "preserve-type" }}'
-            dataCenter: '{{ .Values.cluster.capv.dataCenter }}'
-            networks:
-              default:
-                networkName: '{{ .Values.cluster.capv.networks.default.networkName }}'
-            server: '{{ .Values.cluster.capv.server }}'
-            dataStore: '{{ .Values.cluster.capv.dataStore }}'
-            tlsThumbprint: '{{ .Values.cluster.capv.tlsThumbprint }}'
-            ssh_key: '{{ .Values.cluster.capv.ssh_key }}'
-            folder: '{{ .Values.cluster.capv.folder }}'
-            resourcePool: '{{ .Values.cluster.capv.resourcePool }}'
-            storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName }}'
+            image_name: '{{ .Values.cluster.capv.image_name | include "set-if-defined" }}'
+            diskGiB: '{{ .Values.cluster.capv.diskGiB | include "set-if-defined" }}'
+            memoryMiB: '{{ .Values.cluster.capv.memoryMiB | include "set-if-defined" }}'
+            numCPUs: '{{ .Values.cluster.capv.numCPUs | include "set-if-defined" }}'
+            dataCenter: '{{ .Values.cluster.capv.dataCenter | include "set-if-defined" }}'
+            networks: '{{ .Values.cluster.capv.networks | include "set-if-defined" }}'
+            server: '{{ .Values.cluster.capv.server | include "set-if-defined" }}'
+            dataStore: '{{ .Values.cluster.capv.dataStore | include "set-if-defined" }}'
+            tlsThumbprint: '{{ .Values.cluster.capv.tlsThumbprint | include "set-if-defined" }}'
+            ssh_key: '{{ .Values.cluster.capv.ssh_key | include "set-if-defined" }}'
+            folder: '{{ .Values.cluster.capv.folder | include "set-if-defined" }}'
+            resourcePool: '{{ .Values.cluster.capv.resourcePool | include "set-if-defined" }}'
+            storagePolicyName: '{{ .Values.cluster.capv.storagePolicyName | include "set-if-defined" }}'
 
-          rke2: '{{ tuple .Values.cluster.rke2 .Values.cluster.rke2 | include "set-only-if" | include "preserve-type" }}'
-          kubeadm: '{{ tuple .Values.cluster.kubeadm .Values.cluster.kubeadm | include "set-only-if" | include "preserve-type" }}'
+          rke2: '{{ .Values.cluster.rke2 | include "set-if-defined" }}'
+          kubeadm: '{{ .Values.cluster.kubeadm | include "set-if-defined" }}'
 
-          kubelet_extra_args: '{{ tuple .Values.cluster.kubelet_extra_args .Values.cluster.kubelet_extra_args | include "set-only-if" | include "preserve-type" }}'
+          kubelet_extra_args: '{{ .Values.cluster.kubelet_extra_args | include "set-if-defined" }}'
 
           air_gapped: '{{ .Values.cluster.air_gapped | include "preserve-type" }}'
 
@@ -2219,7 +2220,7 @@ units:
 
         cluster_external_domain: '{{ .Values.cluster_external_domain }}'
 
-        openstack: '{{ .Values.openstack | default dict | include "preserve-type" }}'
+        openstack: '{{ .Values.openstack | include "set-if-defined" }}'
 
         units:
 
@@ -2407,29 +2408,34 @@ cluster:
   control_plane_replicas: 3
 
   capo:
-    flavor_name: m1.large # Openstack flavor name
-    image_name: # OpenStack image name
-    ssh_key_name: # OpenStack VM SSH key
-    network_id:  # OpenStack network used for nodes and VIP port
-    rootVolume: {} # Let this parameter empty if you don't intent to use root volume
-    # otherwise, provide following values
-    # diskSize: 20 # Size of the VMs root disk
-    # volumeType: '__DEFAULT__' # Type of volume to be created
-    #control_plane_az: # list of OpenStack availability zones to deploy control planes nodes to, otherwise all would be candidates
-    clouds_yaml: # (this is a dict, not a YAML string)
-      clouds:
-        capo_cloud:
-          auth:
-            auth_url: # replace me
-            user_domain_name: # replace me
-            project_domain_name: # replace me
-            project_name: # replace me
-            username: # replace me
-            password: # replace me
-          region_name: # replace me
-          verify: # e.g. false
-    #cacert: # cert used to validate CA of OpenStack APIs
-    resources_tag: '{{ eq .Values.cluster.capi_providers.infra_provider "capo" | ternary (printf "sylva-%s" .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.username) "" }}' # tag set for OpenStack resources in management and test workload cluster
+    # flavor_name: m1.large # Openstack flavor name
+    # image_name: # OpenStack image name
+    # ssh_key_name: # OpenStack VM SSH key
+    # network_id: # OpenStack network used for nodes and VIP port
+    # rootVolume: {} # Let this parameter empty if you don't intent to use root volume
+    #   # otherwise, provide following values
+    #   diskSize: 20 # Size of the VMs root disk
+    #   volumeType: '__DEFAULT__' # Type of volume to be created
+    # #control_plane_az: # list of OpenStack availability zones to deploy control planes nodes to, otherwise all would be candidates
+    # clouds_yaml: # (this is a dict, not a YAML string)
+    #   clouds:
+    #     capo_cloud:
+    #       auth:
+    #         auth_url: # replace me
+    #         user_domain_name: # replace me
+    #         project_domain_name: # replace me
+    #         project_name: # replace me
+    #         username: # replace me
+    #         password: # replace me
+    #       region_name: # replace me
+    #       verify: # e.g. false
+    # cacert: # cert used to validate CA of OpenStack APIs
+
+    # tag set for OpenStack resources in management and test workload cluster:
+    resources_tag: >-
+      {{- if .Values.cluster.capi_providers.infra_provider | eq "capo" -}}
+        sylva-{{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.username }}
+      {{- end -}}
 
   control_plane:
     capo:
@@ -2457,23 +2463,21 @@ cluster:
   metallb_helm_version: '{{ .Values.units.metallb.helmrelease_spec.chart.spec.version }}'
 
   capv:
-    image_name: # vSphere image name
-    username: ""
-    password: ""
-    dataCenter: ""
-    server: ""
-    dataStore: ""
-    tlsThumbprint: ""
-    folder: ""
-    resourcePool: ""
-    storagePolicyName: ""
-    networks:
-      default:
-        networkName: ""
-    ssh_key: ''
+    # image_name: # vSphere image name
+    # username: ""
+    # password: ""
+    # dataCenter: ""
+    # server: ""
+    # dataStore: ""
+    # tlsThumbprint: ""
+    # folder: ""
+    # resourcePool: ""
+    # storagePolicyName: ""
+    # networks:
+    #   default:
+    #     networkName: ""
+    # ssh_key: ''
     numCPUs: 4
-    memoryMiB: 8192
-    diskGiB: 25
 
   enable_longhorn: '{{ or (tuple . "longhorn" | include "unit-enabled") (tuple . .Values.units.longhorn.enabled | include "interpret-for-test") | include "as-bool" }}'
 
