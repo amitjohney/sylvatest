@@ -2373,6 +2373,14 @@ units:
       USERNAME: '{{ .Values.cluster.capv.username }}'
       PASSWORD: '{{ .Values.cluster.capv.password }}'
 
+# creates the sandbox namespaces used to perform privileged operations like debugging a node
+  sandbox-privileged-namespace:
+    enabled: false
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/sandbox-privileged-namespace
+      wait: true
+      prune: true
 
 ##### stuff related to the 'cluster' unit #####
 #
