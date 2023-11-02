@@ -15,6 +15,17 @@ else
   export IN_CI=0
 fi
 
+if ! [[ $# -eq 1 && -f ${1}/kustomization.yaml ]]; then
+    echo "Usage: $0 [env_name]"
+    echo "This script expects to find a kustomization in [env_name] directory to generate management-cluster configuration and secrets"
+    exit 1
+else
+    export ENV_PATH=$(readlink -f $1)
+fi
+
+export CURRENT_COMMIT=${CI_COMMIT_SHA:-$(git rev-parse HEAD)}
+export SYLVA_CORE_REPO=${SYLVA_CORE_REPO:-$(git remote get-url origin | sed 's|^git@\([^:]\+\):|https://\1/|')}
+
 echo_b() {
   end_section
 
@@ -67,10 +78,15 @@ function retrieve_kubeconfig {
 function ensure_flux {
     if ! kubectl get namespace flux-system &>/dev/null; then
         echo_b "\U0001F503 Install flux"
-        flux install --components "source-controller,kustomize-controller,helm-controller" --namespace=flux-system --export > kustomize-units/flux-system/offline/manifests.yaml
-        kubectl kustomize kustomize-units/flux-system/offline | envsubst | kubectl apply -f -
-        command -v git &>/dev/null && git checkout HEAD -- kustomize-units/flux-system/offline/manifests.yaml
-
+        flux install --components "source-controller,kustomize-controller,helm-controller" --namespace=flux-system --export > ${BASE_DIR}/kustomize-units/flux-system/offline/manifests.yaml
+        if yq -e '.oci_registry_extra_ca_certs' ${ENV_PATH}/values.yaml &>/dev/null; then
+            if ! yq -e '.components[] | select(. == "../components/extra-ca")' ${BASE_DIR}/kustomize-units/flux-system/offline/kustomization.yaml &> /dev/null; then
+                yq -i '.components += ["../components/extra-ca"]' ${BASE_DIR}/kustomize-units/flux-system/offline/kustomization.yaml
+            fi
+            yq '.oci_registry_extra_ca_certs' ${ENV_PATH}/values.yaml > ${BASE_DIR}/kustomize-units/flux-system/components/extra-ca/certs.pem
+        fi
+        kubectl kustomize ${BASE_DIR}/kustomize-units/flux-system/offline | envsubst | kubectl apply -f -
+        command -v git &>/dev/null && git checkout HEAD -- ${BASE_DIR}/kustomize-units/flux-system/
         echo_b "\U000023F3 Wait for Flux to be ready..."
         kubectl wait --for condition=Available --timeout 600s -n flux-system --all deployment
     fi
@@ -106,17 +122,6 @@ function background_watch() {
     kubectl ${kubectl_additional_args:-} get $kind --show-kind --no-headers -A -w | grep -Ev "(Reconciliation in progress|Health check failed after|dependency .* is not ready| 0s *$)" | sed "s/^/$output_prefix /" &
   done
 }
-
-if ! [[ $# -eq 1 && -f ${1}/kustomization.yaml ]]; then
-    echo "Usage: $0 [env_name]"
-    echo "This script expects to find a kustomization in [env_name] directory to generate management-cluster configuration and secrets"
-    exit 1
-else
-    export ENV_PATH=$(readlink -f $1)
-fi
-
-export CURRENT_COMMIT=${CI_COMMIT_SHA:-$(git rev-parse HEAD)}
-export SYLVA_CORE_REPO=${SYLVA_CORE_REPO:-$(git remote get-url origin | sed 's|^git@\([^:]\+\):|https://\1/|')}
 
 function exit_trap() {
     EXIT_CODE=$?
