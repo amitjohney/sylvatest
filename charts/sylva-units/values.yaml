@@ -240,8 +240,8 @@ units:
             - ALL
           privileged: false
           readOnlyRootFilesystem: true
-          runAsGroup: 10000
-          runAsUser: 10000
+          runAsGroup: 10001
+          runAsUser: 10001
         serviceAccount:
           annotations: {}
           create: true
@@ -253,8 +253,8 @@ units:
           severity: UNKNOWN,HIGH,CRITICAL
         trivyOperator:
           scanJobPodTemplatePodSecurityContext:
-            runAsGroup: 10000
-            runAsUser: 10000
+            runAsGroup: 10001
+            runAsUser: 10001
 
 
 # sylva-ca provides a Certificate Authority for Components of the management cluster
@@ -537,7 +537,8 @@ units:
         manager:
           image:
             repository: neuvector/manager
-          runAsUser: 10000
+          runAsUser: 10001
+          runAsGroup: 10001
           ingress:
             enabled: true
             host: '{{ .Values.neuvector.external_hostname }}'
@@ -613,8 +614,8 @@ units:
                     - ALL
                 privileged: false
                 runAsNonRoot: true
-                runAsGroup: 1000
-                runAsUser: 1000
+                runAsGroup: 10001
+                runAsUser: 10001
                 seccompProfile:
                   type: RuntimeDefault
           target:
@@ -644,7 +645,8 @@ units:
                   containers:
                     - name: keycloak-realm-operator
                       securityContext:
-                        runAsUser: 10000
+                        runAsUser: 10001
+                        runAsGroup: 10001
                         allowPrivilegeEscalation: false
                         capabilities:
                           drop:
@@ -991,7 +993,8 @@ units:
         metal3-baremetal-operator:
           securityContext:
             allowPrivilegeEscalation: false
-            runAsUser: 1000
+            runAsUser: 10001
+            runAsGroup: 10001
         metal3-ironic:
           ingress:
             enabled: false
@@ -1089,10 +1092,12 @@ units:
             storageClass: '{{ .Values._internal.default_storage_class }}'
         podSecurityContext:
           runAsNonRoot: true
-          runAsUser: 1000
+          runAsUser: 10001
+          runAsGroup: 10001
         securityContext:
           runAsNonRoot: true
-          runAsUser: 1000
+          runAsUser: 10001
+          runAsGroup: 10001
       valuesFrom:
         - kind: Secret
           name: metal3-secrets
@@ -1159,7 +1164,8 @@ units:
                       containers:
                       - name: local-path-provisioner
                         securityContext:
-                          runAsUser: 1000
+                          runAsUser: 10001
+                          runAsGroup: 10001
 
   cluster:
     repo: sylva-capi-cluster
@@ -1675,8 +1681,8 @@ units:
                             drop:
                             - ALL
                           runAsNonRoot: true
-                          runAsGroup: 1000
-                          runAsUser: 1000
+                          runAsGroup: 10001
+                          runAsUser: 10001
                           seccompProfile:
                             type: RuntimeDefault
 
@@ -1716,8 +1722,8 @@ units:
               - ALL
           privileged: false
           runAsNonRoot: true
-          runAsGroup: 1
-          runAsUser: 1
+          runAsGroup: 10001
+          runAsUser: 10001
           seccompProfile:
             type: RuntimeDefault
         conf:
@@ -1876,8 +1882,8 @@ units:
                           privileged: false
                           readOnlyRootFilesystem: true
                           runAsNonRoot: true
-                          runAsGroup: 1000
-                          runAsUser: 1000
+                          runAsGroup: 10001
+                          runAsUser: 10001
                           seccompProfile:
                             type: RuntimeDefault
 
@@ -2058,8 +2064,8 @@ units:
                   template:
                     spec:
                       securityContext:
-                        runAsGroup: 3000
-                        runAsUser: 2000
+                        runAsGroup: 10001
+                        runAsUser: 10001
 
   sriov-psp:
     enabled_conditions:
@@ -2290,7 +2296,8 @@ units:
               drop:
               - ALL
             runAsNonRoot: true
-            runAsUser: 10000
+            runAsUser: 10001
+            runAsGroup: 10001
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
             seccompProfile:
@@ -2301,7 +2308,8 @@ units:
               drop:
               - ALL
             runAsNonRoot: true
-            runAsUser: 10000
+            runAsUser: 10001
+            runAsGroup: 10001
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
             seccompProfile:
