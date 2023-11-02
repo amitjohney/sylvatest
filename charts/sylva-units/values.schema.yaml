@@ -700,6 +700,9 @@ properties:
         pattern: "^oci://.*$"
       - $ref: "#/$defs/string-with-gotpl"
 
+  oci_registry_extra_ca_certs:  # -------------------------------
+    type: string
+
   registry_mirrors:  # -------------------------------
     type: object
     additionalProperties: false

@@ -76,7 +76,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.1.12
+        tag: 0.1.13
 
   local-path-provisioner:
     kind: GitRepository
@@ -97,7 +97,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/os-image-server.git
       ref:
-        tag: 1.5.0
+        tag: 1.6.0
 
   capo-contrail-bgpaas:
     kind: GitRepository
@@ -200,9 +200,12 @@ units:
       wait: true
       # prevent Flux from uninstalling itself
       prune: false
+      _components:
+      - '{{ tuple "../components/extra-ca" .Values.oci_registry_extra_ca_certs | include "set-only-if" }}'
       postBuild:
         substitute:
           var_substitution_enabled: "true" # To force substitution when configmap does not exist
+          EXTRA_CA_CERTS: '{{ .Values.oci_registry_extra_ca_certs | include "set-if-defined" }}'
         substituteFrom:
         - kind: ConfigMap
           name: proxy-env-vars
@@ -2285,6 +2288,7 @@ units:
         downloader:
           proxy: '{{ get .Values.proxies "https_proxy" }}'
           no_proxy: '{{ include "sylva-units.no_proxy" . }}'
+          extra_ca_certs: '{{ .Values.oci_registry_extra_ca_certs | include "set-if-defined" }}'
           securityContext:
             capabilities:
               drop:
@@ -2461,6 +2465,7 @@ cluster:
 
   metallb_helm_oci_url: ""  # for an OCI-based deployment this is overridden in use-oci-artifacts.values.yaml
   metallb_helm_version: '{{ .Values.units.metallb.helmrelease_spec.chart.spec.version }}'
+  metallb_helm_extra_ca_certs: '{{ .Values.oci_registry_extra_ca_certs | include "set-if-defined" }}'
 
   capv:
     # image_name: # vSphere image name
