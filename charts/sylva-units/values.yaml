@@ -171,7 +171,7 @@ unit_templates:
   dummy:
     repo: sylva-core
     kustomization_spec:
-      path: ./kustomize-units/dummy
+      path: ./kustomize-units/dummy/base
       wait: false
       postBuild:
         substitute:
@@ -1597,23 +1597,17 @@ units:
       suspend-on-pivot: "yes"  # must be suspended before pivot
     kustomization_spec:
       prune: '{{ not (eq .Release.Namespace "sylva-system") | include "preserve-type" }}'
-      healthChecks:
-        - apiVersion: "cluster.x-k8s.io/v1beta1"
-          kind: "Cluster"
-          name: '{{ .Values.cluster.name }}'
-          namespace: '{{ .Release.Namespace }}'
-        # wait for the control plane to be ready (the api/version/kind to look for depends on the bootstrap provider in use)
-        - apiVersion: '{{ (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") | ternary "controlplane.cluster.x-k8s.io/v1beta1" "controlplane.cluster.x-k8s.io/v1alpha1" }}'
-          kind: '{{       (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") | ternary "KubeadmControlPlane"                   "RKE2ControlPlane" }}'
-          name: '{{ .Values.cluster.name }}-control-plane'
-          namespace: '{{ .Release.Namespace }}'
-        # all the above is subject to a race condition: if Flux checks the status too early
-        # it concludes, because CAPI resources aren't fully kstatus compliant, that the resource is ready
-        # waiting for the cluster kubeconfig Secret is a workaround
-        - apiVersion: v1
-          kind: Secret
-          name: '{{ .Values.cluster.name }}-kubeconfig'
-          namespace: '{{ .Release.Namespace }}'
+      # we wait on all important resources built by sylva-capi-cluster,
+      # *except* the MachineDeployments if we're using kubeadm because
+      #  in that case, we would have a deadlock: the default CNI unit would not deploy
+      #  before the cluster unit is ready, and the cluster would not be ready until
+      #  the CNI is deployed because the MachineDeployment nodes need the CNI to become
+      #  ready (for the controlplane nodes, the kubeadm controlplane provider ignores that)
+      healthChecks: >-
+        {{
+        (include "cluster-healthchecks" (dict "ns" .Release.Namespace "cluster" .Values.cluster "includeMDs" false) | fromYaml).result
+        | include "preserve-type"
+        }}
     helmrelease_spec:
       targetNamespace: '{{ .Release.Namespace }}'
       chart:
@@ -1661,6 +1655,29 @@ units:
       wait: true
       _components:
         - '{{ tuple "components/dev-ci-cronjob-schedule" (list "dev" "ci" | has .Values.env_type) | include "set-only-if" }}'
+
+  cluster-ready:
+    info:
+      description: unit to check readiness of cluster CAPI objects
+      internal: true
+    unit_template: dummy
+    enabled_conditions:
+    - '{{ tuple . "cluster" | include "unit-enabled" }}'
+    depends_on:
+      cluster: true
+    kustomization_spec:
+      healthChecks: >-
+        {{
+        (include "cluster-healthchecks" (dict "ns" .Release.Namespace "cluster" .Values.cluster "sleep_job" true) | fromYaml).result
+        | include "preserve-type"
+        }}
+      # we add a sleep to overcome a race condition happening when
+      # from bootstrap cluster, after pivot, the cluster unit is enabled
+      _components:
+        - ../components/sleep-job
+      postBuild:
+        substitute:
+          SLEEP_TIME: 60s
 
   cluster-reachable:
     info:
