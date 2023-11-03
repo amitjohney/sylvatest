@@ -2693,8 +2693,8 @@ shared_workload_clusters_values:
     mgmt_cluster_external_domain: '{{ .Values.cluster_external_domain }}'
     dns_resolver: true
     capo:
-      image_name: '{{ .Values.cluster.capo.image_name }}'
-      network_id: '{{ .Values.cluster.capo.network_id | default "" }}'
+      image_name: '{{ .Values.cluster.capo.image_name | include "set-if-defined" }}'
+      network_id: '{{ .Values.cluster.capo.network_id | include "set-if-defined" }}'
   units:
     cluster-import:
       enabled: '{{ tuple . "rancher" | include "unit-enabled" }}'
@@ -2702,4 +2702,4 @@ shared_workload_clusters_values:
 shared_workload_clusters_secret_values:
   cluster:
     capo:
-      clouds_yaml: '{{ .Values.cluster.capo.clouds_yaml | include "preserve-type" }}'
+      clouds_yaml: '{{ .Values.cluster.capo.clouds_yaml | include "set-if-defined" }}'
