@@ -94,6 +94,7 @@ cluster:
           longhorn: "true"
         annotations:
           disk: /dev/vdb
+          sylvaproject.org/longhorn-disks: disk/by-path/pci-0000:00:0b.0
       bmh_spec:
         bmc:
           address: redfish-virtualmedia://{{ .Values._internal.bootstrap_node_ip }}:8000/redfish/v1/Systems/c0014001-b10b-f001-c0de-feeb1e54ee15
