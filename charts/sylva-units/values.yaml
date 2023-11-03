@@ -420,6 +420,8 @@ units:
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kubevirt
+      wait: true
+      targetNamespace: kubevirt
 
   kubevirt-test-vms:
     depends_on:
