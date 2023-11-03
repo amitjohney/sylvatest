@@ -907,6 +907,8 @@ units:
     repo: sylva-core
     depends_on:
       cert-manager: true
+      metal3: '{{ (and (.Values.cluster.capi_providers.infra_provider | eq "capm3") (.Values.metal3.provider | eq "sylva")) }}'
+      metal3-suse: '{{ (and (.Values.cluster.capi_providers.infra_provider | eq "capm3") (.Values.metal3.provider | eq "suse")) }}'
     kustomization_spec:
       path: ./kustomize-units/capm3
       postBuild:
