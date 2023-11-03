@@ -205,7 +205,7 @@ units:
       postBuild:
         substitute:
           var_substitution_enabled: "true" # To force substitution when configmap does not exist
-          EXTRA_CA_CERTS: '{{ .Values.oci_registry_extra_ca_certs | include "set-if-defined" }}'
+          EXTRA_CA_CERTS: '{{ tuple (.Values.oci_registry_extra_ca_certs | default "" | b64enc) .Values.oci_registry_extra_ca_certs | include "set-only-if" }}'
         substituteFrom:
         - kind: ConfigMap
           name: proxy-env-vars
