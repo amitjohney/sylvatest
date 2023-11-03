@@ -25,7 +25,7 @@ deploying the CNI, and the CNI itself is needed before the MachineDeployment nod
 
 {{- $ns := .ns -}}  {{/* this corresponds to .Release.Namespace */}}
 {{- $cluster := .cluster -}}  {{/* this corresponds to .Values.cluster */}}
-{{- $includeMDs := .includeMDs | default true -}}
+{{- $includeMDs := . | dig "includeMDs" true -}}
 
 {{/* the healtchecks is a list, we wrap it into a dict to overcome the
      fact that fromYaml can't return anything else than a dict
