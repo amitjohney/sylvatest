@@ -57,8 +57,6 @@ test-workload-cluster-kubeadm-capo-oci:
 
 .test-login-kubeadm-capo:
   extends: .test-login
-  script:
-    - !reference [.hurl-report, script_capo ]
 
 test-login-kubeadm-capo:
   extends: [.test-login-kubeadm-capo]
