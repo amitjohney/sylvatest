@@ -5,6 +5,8 @@
 # the workload-cluster unit based on what is in environment-values/rke2-capo-capm3
 # which defines a capm3 workload cluster
 
+cluster_external_domain: '{{ .Values.cluster.cluster_api_cert_extra_SANs | first }}.nip.io'
+
 cluster_external_ip: 192.168.100.2
 
 cluster:

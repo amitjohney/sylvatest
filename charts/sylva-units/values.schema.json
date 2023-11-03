@@ -4825,7 +4825,34 @@
             }
           ]
         },
-        "clusterPublicPort": {
+        "clusterPublicDomain": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "clusterApiPublicPort": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/port"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "clusterServicePublicPort": {
           "anyOf": [
             {
               "$ref": "#/$defs/port"
@@ -4882,7 +4909,7 @@
             {
               "type": "object",
               "additionalProperties": false,
-              "maxProperties": 10,
+              "maxProperties": 100,
               "patternProperties": {
                 "^[a-z0-9][a-z0-9-]*[a-z0-9]$": {
                   "anyOf": [
