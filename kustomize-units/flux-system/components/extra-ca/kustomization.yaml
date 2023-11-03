@@ -11,8 +11,8 @@ patches:
         path: /spec/template/spec/volumes/-
         value:
           name: extra-ca-certs
-          configMap:
-            name: extra-ca-certs
+          secret:
+            secretName: extra-ca-certs
       - op: add
         path: /spec/template/spec/containers/0/volumeMounts/-
         value:
@@ -21,10 +21,5 @@ patches:
           mountPath: /etc/ssl/certs/extra-ca-certs.pem
           readOnly: true
 
-configMapGenerator:
-- name: extra-ca-certs
-  namespace: flux-system
-  options:
-    disableNameSuffixHash: true
-  files:
-  - extra-ca-certs.pem=certs.pem
+resources:
+- certs.yaml
