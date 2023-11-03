@@ -60,6 +60,7 @@ cat <<EOF
         - .gitlab/ci/**/*
         - charts/${f##*/}/values.schema.json
         - charts/${f##*/}/values.schema.yaml
+        - charts/${f##*/}/values.yaml
         - tools/generate_json_schema.py
 EOF
 
