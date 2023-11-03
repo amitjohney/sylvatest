@@ -1385,6 +1385,8 @@ units:
       force: true
 
   calico:
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'  # installed by RKE2 when RKE2 is used
     depends_on:
       calico-crd: true
     helm_repo_url: https://rke2-charts.rancher.io
@@ -1392,8 +1394,6 @@ units:
       - "v3.25.001"  # used for k8s < 1.26.6
       - "v3.26.101"
     helmrelease_spec:
-      releaseName: rke2-calico
-      targetNamespace: kube-system
       chart:
         spec:
           chart: rke2-calico
@@ -1406,7 +1406,7 @@ units:
 
   metallb:
     enabled_conditions:
-      - '{{ or (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.capi_providers.infra_provider | eq "capd") }}'
+      - '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" }}'
     depends_on:
       calico: true
     helm_repo_url: https://metallb.github.io/metallb
@@ -1935,6 +1935,16 @@ units:
           cattle:
             psp:
               enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") | include "as-bool" }}'
+      # Disable drift detection for rancher-monitoring webhooks
+      _postRenderers:
+        - kustomize:
+            patches:
+            - target:
+                kind: (ValidatingWebhookConfiguration|MutatingWebhookConfiguration)
+              patch: |
+                - op: add
+                  path: /metadata/annotations/helm.toolkit.fluxcd.io~1driftDetection
+                  value: disabled
 
   # this is a Job attempt to check successful import of a CAPI workload clusters in Rancher, still incomplete
   # it would be used along with a definition of a 'workload-cluster' unit
