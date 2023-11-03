@@ -400,16 +400,26 @@ units:
                       app.kubernetes.io/component: read
                   topologyKey: kubernetes.io/hostname
 
+  # kubevirt:
+  #   helm_repo_url: https://suse-edge.github.io/charts
+  #   helmrelease_spec:
+  #     chart:
+  #       spec:
+  #         chart: kubevirt
+  #         version: 0.1.0
+
+  # kubevirt:
+  #   helm_repo_url: https://suse-edge.github.io/charts
+  #   helmrelease_spec:
+  #     chart:
+  #       spec:
+  #         chart: kubevirt
+  #         version: 0.1.0
+
   kubevirt:
-    helm_repo_url: https://suse-edge.github.io/charts
-    helmrelease_spec:
-      chart:
-        spec:
-          chart: kubevirt
-          version: 0.2.0
-      targetNamespace: kubevirt
-      install:
-        createNamespace: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/kubevirt
 
   kubevirt-test-vms:
     depends_on:
