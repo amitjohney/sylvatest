@@ -2702,5 +2702,4 @@ shared_workload_clusters_values:
 
 shared_workload_clusters_secret_values:
   cluster:
-    capo:
-      clouds_yaml: '{{ .Values.cluster.capo.clouds_yaml | include "set-if-defined" }}'
+    capo: '{{ tuple (dict "clouds_yaml" (.Values.cluster | dig "capo" "clouds_yaml" dict)) (.Values.cluster | dig "capo" "clouds_yaml" dict) | include "set-only-if" }}'
