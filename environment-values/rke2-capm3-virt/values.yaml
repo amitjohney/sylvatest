@@ -114,7 +114,7 @@ units:
           defaultClassReplicaCount: 1   # don't enable data replication (this is a single node setup)
 
 libvirt_metal:
-  image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/libvirt-metal:0.1.4
+  #image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/libvirt-metal:0.1.4  # customize if wanted
   nodes:
     management-cp:
       redfishPort: 8000
