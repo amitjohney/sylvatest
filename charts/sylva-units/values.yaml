@@ -2204,7 +2204,7 @@ units:
             image_name: '{{ .Values.cluster.capo.image_name | include "set-if-defined" }}'
             flavor_name: '{{ .Values.cluster.capo.flavor_name | include "set-if-defined" }}'
             ssh_key_name: '{{ .Values.cluster.capo.ssh_key_name | include "set-if-defined" }}'
-            resources_tag: '{{ tuple . (.Values.cluster | dig "capo" "resources_tag" "") | include "interpret-as-string" }}'
+            resources_tag: '{{ tuple . (.Values.cluster | dig "capo" "resources_tag" "") | include "interpret-as-string" | include "set-if-defined" }}'
             network_id: '{{ .Values.cluster.capo.network_id | include "set-if-defined" }}'
             control_plane_az: '{{ tuple (.Values.cluster | dig "capo" "control_plane_az" list | include "preserve-type") (.Values.cluster | dig "capo" "control_plane_az" nil) | include "set-only-if" }}'
             rootVolume: '{{ .Values.cluster.capo.rootVolume | include "set-if-defined" }}'
@@ -2265,8 +2265,7 @@ units:
 
     helm_secret_values:
       cluster:
-        capo:
-          clouds_yaml: '{{ .Values.cluster | dig "capo" "clouds_yaml" dict | include "preserve-type" }}'  # for CAPO and cinder-csi
+        capo: '{{ tuple (dict "clouds_yaml" (.Values.cluster | dig "capo" "clouds_yaml" dict)) (.Values.cluster | dig "capo" "clouds_yaml" dict) | include "set-only-if" }}'
         capv:
           username: '{{ .Values.cluster.capv.username }}'
           password: '{{ .Values.cluster.capv.password }}'
