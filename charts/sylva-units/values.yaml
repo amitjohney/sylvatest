@@ -2158,6 +2158,42 @@ units:
           deletingConfirmationFlag: true
           autoCleanupSystemGeneratedSnapshot: true
 
+  cluster-creator-login:
+    enabled_conditions:
+    - '{{ tuple . "rancher" | include "unit-enabled" }}'
+    depends_on:
+      rancher: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/cluster-creator-login
+      wait: false
+      force: true
+      postBuild:
+        substitute:
+          JOB_NAME: cluster-creator-login
+          JOB_TARGET_NAMESPACE: flux-system
+          JOB_CHECKSUM: '{{ .Values | toJson | sha256sum }}'
+      healthChecks:
+        - apiVersion: v1
+          kind: Secret
+          name: cluster-creator-kubeconfig
+          namespace: flux-system
+        - apiVersion: batch/v1
+          kind: Job
+          name: cluster-creator-login-flux-system
+          namespace: kube-job
+
+  cluster-creator-policy:
+    enabled_conditions:
+    - '{{ tuple . "rancher" | include "unit-enabled" }}'
+    depends_on:
+      cluster-creator-login: true
+      kyverno: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/cluster-creator-policy
+      wait: true
+      force: true
 
   # this unit is an example of how to use sylva-units to deploy a workload-cluster
   workload-cluster:

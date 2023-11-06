@@ -4,6 +4,8 @@ units:
   # Disabling some units for lightweight deployment testing
   workload-cluster:
     enabled: false
+  cluster-creator-policy:
+    enabled: false
   monitoring:
     enabled: false
   keycloak:

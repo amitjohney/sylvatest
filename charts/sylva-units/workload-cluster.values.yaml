@@ -246,10 +246,15 @@ units:
     depends_on:
       default/rancher: true  # depends on rancher unit in default ns
       default/capi-rancher-import: true  # depends on capi-rancher-import unit in default ns
+      default/cluster-creator-login: true
+      default/cluster-creator-policy: true
     repo: sylva-core
     kustomization_spec:
       # because this resource lives in the mgmt cluster:
-      kubeConfig: null  # cancel what is inherited from unit_kustomization_spec_default
+      kubeConfig:
+        secretRef:
+          name: cluster-creator-kubeconfig   # (kubeconfig for mgmt cluster)
+          key: kubeconfig
       targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
       wait: false
       path: ./kustomize-units/cluster-import
@@ -257,6 +262,9 @@ units:
         substitute:
           CLUSTER_FLAVOR: '{{ upper .Values.cluster.capi_providers.bootstrap_provider }} {{ upper .Values.cluster.capi_providers.infra_provider }}'
           CLUSTER_NAME: '{{ .Values.cluster.name }}'
+        substituteFrom:
+          - kind: Secret
+            name: cluster-creator-kubeconfig
       healthChecks:
         # this resource is created by capi-rancher-import based on the existence of
         # the Cluster.provisioning.cattle.io produced by the kustomization
