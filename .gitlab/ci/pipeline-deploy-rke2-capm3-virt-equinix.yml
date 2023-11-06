@@ -1,5 +1,4 @@
 ---
----
 include:
   - local: .gitlab/ci/child-pipeline-default.yml
   - local: .gitlab/ci/templates-deployments.yml
