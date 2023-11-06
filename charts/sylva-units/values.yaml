@@ -1285,6 +1285,7 @@ units:
           CONTROL_PLANE_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}'
           WORKER_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}'
           CAPO_CREATE_IRONIC_SECURITY_GROUP: '{{ tuple . (and (.Values.units.metal3.enabled | default false) (.Values.cluster.capi_providers.infra_provider | eq "capo")) "true" "false" | include "interpret-ternary" }}'
+          COMMON_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}'
     kustomization_substitute_secrets:
       CAPO_CLOUD_YAML: '{{ .Values.cluster.capo.clouds_yaml  | toYaml | b64enc }}'
       CAPO_CACERT: '{{ (.Values.cluster.capo.cacert|default "") | b64enc }}'
@@ -2356,10 +2357,12 @@ cluster:
   control_plane:
     capo:
       security_group_name: "capo-{{ .Values.cluster.name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}"
+      common_security_group_name: "capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}"
 
   machine_deployment_default:
     capo:
       security_group_name: "capo-{{ .Values.cluster.name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}"
+      common_security_group_name: "capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}"
 
   cluster_external_ip: '{{ .Values.cluster_external_ip }}'
 
