@@ -2481,7 +2481,10 @@ cluster:
 
   dns_resolver: false
   ntp: '{{ .Values.ntp | include "preserve-type" }}'
-  proxies: '{{ .Values.proxies | include "preserve-type" }}'
+  proxies:
+    http_proxy: '{{ .Values.proxies.http_proxy }}'
+    https_proxy: '{{ .Values.proxies.https_proxy }}'
+    no_proxy: '{{ include "sylva-units.no_proxy" . }}'
 
   registry_mirrors: '{{ .Values.registry_mirrors | include "preserve-type" }}'
 
