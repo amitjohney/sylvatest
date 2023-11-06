@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -vx
 
 source tools/shell-lib/common.sh
 
