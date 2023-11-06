@@ -28,11 +28,20 @@
       "schedule": ["before 4am on monday"]
     },
     {
+      "matchFileNames": ["kustomize-units/vsphere-cloud-controller-manager/**"],
       "matchPackagePrefixes": [
         "gcr.io/cloud-provider-vsphere/csi/release",
         "quay.io/k8scsi"
       ],
       "groupName": "cloud-provider-vsphere"
+    },
+    {
+      "matchFileNames": ["kustomize-units/vsphere-csi-driver/**"],
+      "matchPackagePrefixes": [
+        "gcr.io/cloud-provider-vsphere/csi/release",
+        "quay.io/k8scsi"
+      ],
+      "groupName": "vsphere-csi-driver"
     },
     {
       "matchPackageNames": [
