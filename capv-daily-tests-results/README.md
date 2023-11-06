@@ -8,7 +8,7 @@ The results are summarized by the following table:
 
 | Date                      | Management Cluster CAPI Providers | Sylva-Core main commit ID        | Result                                       | Test logs (only for failed tests) |
 |---------------------------|-----------------------------------|----------------------------------|----------------------------------------------|-----------------------------------|
-|2023-11-06 01:01|kubeadm-capv|aed747e2ba2b88f824f2cbe18352d8ba41ca5b02|:x: failed|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/7743988cc79fb4472250443361895682/test-kubeadm-capv.zip)|
+|2023-11-06 10:11|kubeadm-capv|aed747e2ba2b88f824f2cbe18352d8ba41ca5b02|:white_check_mark: success||
 |2023-11-05 01:01|kubeadm-capv|4376759247fad9ff8f5561f0081e677e949d128c|:x: failed|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/cc2766a90f2b323ce915d90e25c5c1ac/test-kubeadm-capv.zip)|
 |2023-11-04 01:01|kubeadm-capv|dd7205db314392ba11fb2c932a88076bfbc8d7d5|:x: failed|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/a64b7f15dacf6c45d0187cefb03f6601/test-kubeadm-capv.zip)|
 |2023-11-03 01:01|kubeadm-capv|cfc157a554ef8b2cd877d5d2ec6ad3d9b0f401ae|:x: failed|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/bbe265ff311e567d4be8ab8abbabfa0e/test-kubeadm-capv.zip)|
