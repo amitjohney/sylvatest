@@ -4649,7 +4649,6 @@
                       "password",
                       "tlsThumbprint",
                       "resourcePool",
-                      "template_clone_mode",
                       "folder",
                       "networks",
                       "server"
