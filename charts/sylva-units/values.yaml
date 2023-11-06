@@ -1670,6 +1670,7 @@ units:
 
   cilium:
     enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'  # installed by RKE2 when RKE2 is used
     - '{{ .Values.cluster.default_cni | eq "cilium" | include "preserve-type" }}'
     helm_repo_url: https://rke2-charts.rancher.io
     helm_chart_versions:
@@ -2241,7 +2242,7 @@ units:
   multus:
     enabled: false
     depends_on:
-      '{{ .Values.cluster.default_cni }}': true
+      '{{ .Values.cluster.default_cni }}': '{{ tuple . .Values.cluster.default_cni | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io/
     helmrelease_spec:
       chart:
