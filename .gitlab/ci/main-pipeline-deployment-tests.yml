@@ -118,6 +118,8 @@ capo-kubeadm-deploy:
 
 capo-kubeadm-oci-deploy:
   extends: .default-trigger-oci
+  rules:
+    - when: on_success
   variables:
     CAPO_TAG: $ENV_TAG_OCI
     E2E_JOB_MR_PARITY: odd
@@ -128,6 +130,8 @@ capo-kubeadm-oci-deploy:
 
 capo-rke2-deploy:
   extends: .default-trigger
+  rules:
+    - when: always
   variables:
     CAPO_TAG: $ENV_TAG
     E2E_JOB_MR_PARITY: odd

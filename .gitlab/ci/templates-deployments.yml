@@ -138,6 +138,7 @@ include:
     - !reference [.common-deployment, script_common]
     - !reference [.common-deployment, os_cloud]
     - !reference [.common-deployment, script_capo]
+    - cat $values_file
     - ./bootstrap.sh environment-values/${ENV_NAME}
     - !reference [.common-deployment, post_deployment_common]
   tags:
