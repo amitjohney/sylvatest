@@ -58,7 +58,7 @@ unit_templates:
     depends_on:
       cluster: true
       namespace-defs: true
-      '{{ .Values.cluster.default_cni }}': true
+      '{{ .Values.cluster.default_cni }}': '{{ tuple . .Values.cluster.default_cni | include "unit-enabled" }}'
 
 # here we select which units we want to enable for a workload cluster
 units:
