@@ -1,9 +1,5 @@
 # This example environment values files will let you build
 # a Sylva two-node (1 control-plane + 1 worker) mgmt baremetal cluster
-#
-# To also have a workload-cluster, you can configure
-# the workload-cluster unit based on what is in environment-values/rke2-capo-capm3
-# which defines a capm3 workload cluster
 
 cluster_external_domain: '{{ .Values.cluster.cluster_api_cert_extra_SANs | first }}.nip.io'
 

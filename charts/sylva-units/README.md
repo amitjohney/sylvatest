@@ -116,8 +116,6 @@ The [`environment-values`](../../environment-values/README.md) directory is the 
 **TBC: This section needs to be completed with information about what values can be overridden
 when instantiating this chart**
 
-Using `env_type: ci` will trigger the enablement of a `workload-cluster` (and its dependent units), plus the `worker-cluster-calico` unit if kubeadm bootstrap is chosen. This would have a test workload cluster created and imported into management cluster Rancher server.
-
 Additional checks can be added to via the `_internal` variable:
 
 ```yaml

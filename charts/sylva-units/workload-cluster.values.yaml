@@ -28,7 +28,7 @@ unit_kustomization_spec_default:
   kubeConfig:
     secretRef:
       name: '{{ .Values.cluster.name }}-kubeconfig'
-  targetNamespace: default  # (in workload-cluster)
+  targetNamespace: default  # (in workload cluster)
 
 # for units that rely on Helm, the Kustomization will
 # produce a HelmRelease which needs to be in the workload cluster ns
@@ -45,8 +45,8 @@ unit_helmrelease_spec_default:
   kubeConfig:
     secretRef:
       name: '{{ .Values.cluster.name }}-kubeconfig'
-  targetNamespace: default  # (in workload-cluster)
-  storageNamespace: default # (in workload-cluster)
+  targetNamespace: default  # (in workload cluster)
+  storageNamespace: default # (in workload cluster)
 
 
 unit_templates:
