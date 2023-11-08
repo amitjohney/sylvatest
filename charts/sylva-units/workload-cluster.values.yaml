@@ -14,13 +14,14 @@
 # - the 'cluster' unit produces CAPI resource for the cluster _in the mgmt cluster_
 
 # when this values override file is used, it is assumed that
-# - `cluster.name` contains the name of the workload cluster to work on
 # - `cluster.capi_providers.(infra|bootstrap)_provider` are set to relevant values
 # - `openstack` for Openstack settings needed by cinder-csi
 # - etc.
 # any settings at the root of values, or under 'cluster', which is
 # needed for any unit listed below, will have to be specified
 
+cluster:
+  name: cluster
 
 # ensure that our unit Kustomizations are deployed
 # in the workload cluster

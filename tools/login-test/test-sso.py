@@ -15,7 +15,7 @@ password=os.getenv('PASSWORD_SSO')
 rancher_url=os.getenv('rancher_url')
 vault_url=os.getenv('vault_url')
 flux_url=os.getenv('flux_url')
-workload_name=os.getenv('TEST_WORKLOAD_CLUSTER_NAME')
+workload_name=os.getenv('WORKLOAD_CLUSTER_NAME')
 download_file=os.getenv('PWD')
 
 options = FirefoxOptions()
@@ -34,7 +34,7 @@ def rancher_sso(endpoint, username, password, workload_name):
   print(browser.current_url)
   print(browser.title)
   browser.implicitly_wait(10)
-  delay = 30 
+  delay = 30
   try:
     element_present = EC.presence_of_element_located((By.XPATH, '//button[@class="btn bg-primary"]'))
     WebDriverWait(browser, delay).until(element_present)
@@ -186,4 +186,3 @@ def flux_sso(endpoint, username, password):
 rancher_sso( rancher_url, user, password, workload_name )
 vault_sso( vault_url, user, password )
 flux_sso( flux_url, user, password )
-

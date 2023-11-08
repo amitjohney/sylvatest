@@ -6,6 +6,7 @@ workflow:
 stages:
   - deploy
   - update
+  - deploy-wc
   - deployment-test
   - delete
 
@@ -18,4 +19,3 @@ default:
       echo "CAPO_TAG = $CAPO_TAG"
       echo "KIND_CLUSTER_NAME = $KIND_CLUSTER_NAME"
       echo "MANAGEMENT_CLUSTER_NAME = $MANAGEMENT_CLUSTER_NAME"
-      echo "TEST_WORKLOAD_CLUSTER_NAME = $TEST_WORKLOAD_CLUSTER_NAME"
