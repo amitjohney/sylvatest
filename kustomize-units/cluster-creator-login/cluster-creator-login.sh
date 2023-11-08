@@ -2,7 +2,9 @@
 set -e
 set -o pipefail
 
-RANCHER_API=https://rancher.cattle-system.svc.cluster.local/v3
+echo "Looking for a kubeconfig for importing clusters"
+
+RANCHER_API=https://${RANCHER_EXTERNAL_URL}/v3
 RANCHER_PUBLIC_API=$RANCHER_API-public
 USERNAME=cluster-creator
 GLOBAL_ROLE=global-cluster-creator
@@ -37,10 +39,18 @@ if [ $USER_CREATED -eq 0 ]; then
   # Assign role
   curl -k -s -H "Authorization: Bearer $ADMINTOKEN" $RANCHER_API/globalrolebinding -H 'content-type: application/json' --data-binary '{"type":"globalRoleBinding","globalRoleId":"'$GLOBAL_ROLE'","userId":"'$USERID'"}' > /dev/null
   if [ $? -ne 0 ]; then
-    echo "Could not assign the $GLOBAL_ROLE role to the cluster-creator user"
+    echo "Could not assign the $GLOBAL_ROLE role to the cluster-creator user with id $USERID"
     exit 1
   fi
   echo "Role $GLOBAL_ROLE assigned to the cluster-creator user"
+else
+  # The user is already created, we pick its id
+  USERID=$(curl -k -s -H "Authorization: Bearer $ADMINTOKEN" $RANCHER_API/users -H 'content-type: application/json' | jq -r '.data[]|select(.username=="'$USERNAME'")|.id')
+  echo "The user $USERNAME already exists with userid $USERID"
+fi
+if [ "$USERID" = "" ]; then
+  echo "Could not obtain the user id of the $USERNAME user"
+  exit 1
 fi
 
 # Login token that never expires for the sake of being fully declarative
@@ -59,10 +69,16 @@ if [ $? -ne 0 -o "$KUBECONFIG" = "null" ]; then
 fi
 echo "Obtained a kubeconfig for the cluster-creator user"
 
-kubectl delete secret cluster-creator-kubeconfig -n $TARGET_NAMESPACE --ignore-not-found=true
-kubectl create secret generic cluster-creator-kubeconfig --from-literal=kubeconfig="$KUBECONFIG" --from-literal=USER_NAME=$USERID -n $TARGET_NAMESPACE
-if [ $? -ne 0 ]; then
-  echo "Could not save the kubeconfig in the cluster-creator-kubeconfig secret"
-  exit 1
+if ! kubectl get secret cluster-creator-kubeconfig -n flux-system > /dev/null 2>&1; then
+  kubectl create secret generic cluster-creator-kubeconfig --from-literal=kubeconfig="$KUBECONFIG" --from-literal=USER_NAME=$USERID -n $TARGET_NAMESPACE
+  echo "Creating the cluster-creator-kubeconfig secret"
+  if [ $? -ne 0 ]; then
+    echo "Could not save the kubeconfig in the cluster-creator-kubeconfig secret"
+    exit 1
+  fi
+  echo "Saved the kubeconfig in the cluster-creator-kubeconfig secret"
+else
+  echo "Updating the cluster-creator-kubeconfig secret"
+  kubectl patch secret cluster-creator-kubeconfig -n flux-system --type 'merge' -p '{"data":{"USER_NAME":"'$(echo $USERID | base64)'","kubeconfig":"'$(echo "$KUBECONFIG" | base64 -w0)'"}}' -n $TARGET_NAMESPACE
+  echo "Updated the kubeconfig in the cluster-creator-kubeconfig secret"
 fi
-echo "Saved the kubeconfig in the cluster-creator-kubeconfig secret"
