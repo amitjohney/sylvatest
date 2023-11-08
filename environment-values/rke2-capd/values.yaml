@@ -26,6 +26,7 @@ cluster:
     infra_provider: capd
     bootstrap_provider: cabpr
 
+  # CAPD only supports 1 CP machine
   control_plane_replicas: 1
 
 capd_docker_host: unix:///var/run/docker.sock  # dynamically replaced in CI
