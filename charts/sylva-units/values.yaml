@@ -301,6 +301,7 @@ units:
           auth:
             username: postgres
         nameOverride: postgres
+        architecture: replication
 
   kubevirt:
     helm_repo_url: https://suse-edge.github.io/charts
