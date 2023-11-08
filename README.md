@@ -103,7 +103,7 @@ cluster:
 
 This mechanism is quite powerful, as it enables to adapt values to various contexts. In this project, we intend to maintain several configuration references that are provided as references in the [environment-values](environment-values) directory.
 
-### Process to be followed for various infrastructure provider
+### Process to be followed for various infrastructure providers
 
 <details><summary>
 Deploying clusters in Docker using CAPD (click to expand)
@@ -359,31 +359,68 @@ In previous deployment examples we use an intermediate temporary/disposable boot
 
 ### Deploying the sample workload cluster
 
-Deploying a workload cluster the gitops way means that some specific kustomizations defining the workload clusters have to be defined. This is done by the unit named `workload-cluster`. If this unit is enabled in the user values given to the `sylva-units` Helm chart, then a workload cluster will be deployed.
+Creating or updating a workload cluster on a Sylva deployment consists in creating (or updating) the corresponding FluxCD resources.
 
-For CAPD, you will need to explicitly enable the `workload-cluster` unit:
+Similarly as for the Sylva management cluster, the tooling that we currently propose to define those is:
 
-```yaml
-units:
-  cluster:
-    [...]
+- a set of Kustomize directories under `environment-values/workload-clusters`
 
-  workload-cluster:
-    enabled: true
+- the `apply-workload-cluster.sh` to deploy one of them
 
-  [...]
-```
+<details>
+<summary>
+:arrows_counterclockwise: before v0.3, Sylva tooling only offered the possiblility to deploy a single workload cluster. This "sample" workload cluster was enabled via the `workload-cluster` unit defined in the main set of environment values. This does not exist anymore in Sylva >= 0.3. :no_good:
+</summary>
+That "sample" workload cluster always had been a "minimum viable" expedient to let users and our CI
+have some workload cluster, never the longterm target because it didn't allow to create multiple workload clusters, and because it coupled too much the lifecycle of workload clusters with the lifecycle of the management cluster units. Having the environment values for a workload cluster live in the environment values of the management cluster was also bringing drawbacks, in particular with deep YAML prone to trigger confusion and mistakes.
+</details>
 
-You'll be able to see it and access it from the Rancher Web UI after completing the deployment (note that for this to work with `capd` you'll need to explicitly enable the `rancher` and `capi-rancher-import` units).
+<br/>
 
-You can also retrieve it's `kubeconfig` with:
+One convention is enforced for workload clusters: the kustomization for a workload cluster _must_ be under a sub-directory of `environment-values/workload-clusters/`: `environment-values/workload-clusters/<name of your workload cluster>`.
+
+To deploy a workload cluster:
+
+- define your workload cluster kustomization in a new `environment-values/workload-clusters/name-of-your-workload-cluster` directory
+
+  You can for instance copy one of the provided examples:
+
+  ```shell
+  cp -r environment-values/workload-clusters/xxx environment-values/workload-clusters/my-workload-cluster
+  ```
+
+  Then you can customize any setting in this directory, in `values.yaml` or `secrets.yaml`.
+
+  The typical things that you may need to customize are roughly the same as for the management cluster, as explained in [this section](#process-to-be-followed-for-various-infrastructure-providers).
+
+- run `apply-workload-cluster.sh`:
+
+  ```
+  apply-workload-cluster.sh environment-values/workload-clusters/my-workload-cluster
+  ```
+
+  This tool will simply validate and apply the FluxCD resource definitions,
+  and then wait for their reconciliation.
+
+  Once all reconciliations are done, your workload cluster is ready.
+
+  In case this script times out, if the installation is stuck you'll have to investigate,
+  or else you can simply run the same command again to re-enter the wait loop.
+
+Once the workload cluster is deployed, you'll be able to see it and access it from the Rancher Web UI (note that for this to work with `capd` you'll need to explicitly enable the `rancher` and `capi-rancher-import` units).
+
+:bulb: The namespace in which all resources are living for a workload cluster is the name of the
+sub-directory used under `environment-values/workload-clusters`, i.e. the `my-workload-cluster` namespace for the `environment-values/workload-clusters/my-workload-cluster` directory in the example above.
+
+You can retrieve the workload cluster admin-rights `kubeconfig` with:
 
 ```shell
-kubectl -n workload-cluster get secret first-workload-cluster-kubeconfig -o jsonpath='{.data.value}' | base64 -d > first-workload-cluster-kubeconfig
+kubectl -n name-of-your-workload-cluster get secret cluster-kubeconfig -o jsonpath='{.data.value}' | base64 -d > workload-cluster-kubeconfig
 ```
 
-**Note well** that using this way to define one workload cluster is an expedient for early versions of Sylva.
-The target is to manage lifecycle of multiple workload clusters, independently from the lifecycle of the management cluster and relying on GitOps patterns.
+If Rancher is enabled you can use Rancher UI to retrieve a per-user `kubeconfig` making use of Rancher authentication/RBAC proxy.
+
+Updating the workload cluster is done by running `apply-workload-cluster.sh` in the same way.
 
 ### Security Considerations
 
