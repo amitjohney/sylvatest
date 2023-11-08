@@ -2122,6 +2122,20 @@ units:
       install:
         createNamespace: false
       values:
+        serviceMonitor:
+          enabled: true
+          namespace: cattle-monitoring-system
+          params: |
+            {{- $result := list -}}
+            {{- range $device := .Values.snmp.devices }}
+            {{- $service_monitor := dict "name" $device.name  -}}
+            {{- $module := list -}}
+            {{- $module := append $module "dell_idrac" -}}
+            {{- $_ := set $service_monitor "module" $module -}}
+            {{- $_ := set $service_monitor "target" $device.ip -}}
+            {{- $result = append $result $service_monitor -}}
+            {{- end }}
+            {{- $result | include "preserve-type" -}}
         config: |
           dell_idrac:
             version: {{ .Values.snmp.version }}
