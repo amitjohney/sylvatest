@@ -21,7 +21,3 @@ spec:
   - kind: ConfigMap
     name: sylva-units-values
     valuesKey: values
-
-  values:
-    cluster:
-      name: "{{ .Release.Namespace }}"

@@ -1,23 +1,5 @@
 ---
 
-units:
-  workload-cluster:
-    enabled: false
-    helmrelease_spec:
-      values:
-        cluster:
-          machine_deployments:
-            md0:
-              replicas: 1
-              # network_interfaces:
-              #   additional:
-              #     networkName:
-              #     dhcp4:
-              capv:
-                numCPUs: 4
-                memoryMiB: 8192
-                diskGiB: 40
-
 cluster:
   control_plane_replicas: 1
 

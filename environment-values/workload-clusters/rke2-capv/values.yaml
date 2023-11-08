@@ -1,13 +1,10 @@
----
 cluster:
-  control_plane_replicas: 1
-
   capi_providers:
     infra_provider: capv
-    bootstrap_provider: cabpr
-
+    bootstrap_provider: cabpk
+  control_plane_replicas: 1
   capv:
-    image_name: "tpl-ubuntu-2204-rke2-v1.24.12+rke2r1"
+    image_name: "ubuntu-2004-kube-v1.24.10"
     dataCenter: # Datacenter to use
     networks:
       default:
@@ -22,7 +19,7 @@ cluster:
 
   machine_deployments:
     md0:
-      replicas: 3
+      replicas: 1
       # network_interfaces:
       #   additional:
       #     networkName:
@@ -41,7 +38,7 @@ proxies:
   no_proxy: ""
 
 # configure containerd registry mirrors following https://github.com/containerd/containerd/blob/main/docs/hosts.md
-# see charts/syla-units/values.yaml for a more detailled example
+# see charts/syla-units/values.yaml for a more detailed example
 # registry_mirrors:
 #   hosts_config:
 #     docker.io:

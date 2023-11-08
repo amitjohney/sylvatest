@@ -71,6 +71,36 @@ deploy-rke2-virt-m3-suse:
 
 #----------------------------------------------------------
 
+.deploy-wc-in-equinix:
+  extends: .deploy-wc-base
+  timeout: 2h
+  variables:
+    DOCKER_HOST: ""
+  tags:
+    - $CI_PIPELINE_IID
+    - equinix
+  script:
+    - !reference [.common-deployment, script_common]
+    - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
+    - !reference [.common-deployment, post_deployment_common]
+
+
+deploy-wc-rke2-virt-m3:
+  extends: .deploy-wc-in-equinix
+  rules:
+    - if: $METAL3_PROVIDER == "sylva"
+  artifacts:
+    expose_as: wc-rke2-capm3-virt-sylva
+
+deploy-wc-rke2-virt-m3-suse:
+  extends: .deploy-wc-in-equinix
+  rules:
+    - if: $METAL3_PROVIDER == "suse"
+  artifacts:
+    expose_as: wc-rke2-capm3-virt-suse
+
+#----------------------------------------------------------
+
 .ensure_sylva_toolbox:
   - . tools/shell-lib/common.sh environment-values/${ENV_NAME}; echo_b
   - . ./bin/env

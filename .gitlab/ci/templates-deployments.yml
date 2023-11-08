@@ -8,15 +8,25 @@ include:
 .common-deployment:
   script_common:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_common[collapsed=true]\r\e[0KRunning common deployment steps\e[0m"
-    - export ENV_PATH=environment-values/${ENV_NAME}
-    - values_file=environment-values/${ENV_NAME}/values.yaml
-    - docker network create --attachable kind
+    - |
+      if [[ ${CLUSTER_TYPE} == 'workload' ]]; then
+          ENV_SUB_PATH="environment-values/workload-clusters"
+          export OCI_COMPONENT_PATH="../../components/workload-cluster-oci-artifacts"
+          export CLUSTER_CI_NAME=${WORKLOAD_CLUSTER_NAME}
+      else
+          ENV_SUB_PATH="environment-values"
+          export OCI_COMPONENT_PATH="../components/oci-artifacts"
+          export CLUSTER_CI_NAME=${MANAGEMENT_CLUSTER_NAME}
+      fi
+    - export ENV_PATH=${ENV_SUB_PATH}/${ENV_NAME}
+    - values_file=$ENV_PATH/values.yaml
     - |
       if [ -n "$METAL3_PROVIDER" ]; then
         yq -i ".metal3.provider = \"$METAL3_PROVIDER\"" $values_file
       fi
     - |
       if [ -n "$DOCKER_HOST" ]; then
+        docker network create --attachable kind
         export DOCKER_IP=$(getent ahostsv4 docker | awk '{print $1}' | sort -u)
         KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
         ip route add $KIND_PREFIX via $DOCKER_IP
@@ -24,8 +34,10 @@ include:
     - |
       if [ ${OCI_TAG} ]; then
         echo -e "Applying OCI configuration for tag: ${OCI_TAG}"
-        if [ $(yq '.components | length' environment-values/$ENV_NAME/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' environment-values/$ENV_NAME/kustomization.yaml; fi
-        yq -i '.components += "../components/oci-artifacts"' $ENV_PATH/kustomization.yaml
+        if [ $(yq '.components | length' $ENV_PATH/kustomization.yaml) -eq "0" ]; then
+          yq -i '.components = []' $ENV_PATH/kustomization.yaml
+        fi
+        yq -i '.components += strenv(OCI_COMPONENT_PATH)' $ENV_PATH/kustomization.yaml
       cat <<EOF>> $ENV_PATH/kustomization.yaml
       patches:
       - target:
@@ -40,8 +52,7 @@ include:
         export METALLB_HELM_OCI_URL='{{ lookup "source.toolkit.fluxcd.io/v1beta2" "HelmRepository" "default" "sylva-core" | dig "spec" "url" "oci://registry.gitlab.com/sylva-projects/sylva-core" | dir | replace "oci:/" "oci://" }}/sylva-core/metallb'
         yq -i '.cluster.metallb_helm_oci_url = strenv(METALLB_HELM_OCI_URL)' $values_file
       fi
-    - yq -i '.cluster.name = strenv(MANAGEMENT_CLUSTER_NAME)' $values_file
-    - yq -i '.test_workload_cluster_name = strenv(TEST_WORKLOAD_CLUSTER_NAME)' $values_file
+    - yq -i '.cluster.name = strenv(CLUSTER_CI_NAME)' $values_file
     - yq -i '.env_type = "ci"' $values_file
     - |
       if [ ${CUSTOM_VALUES_FILE} ]; then
@@ -66,18 +77,25 @@ include:
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capd\r\e[0K"
   script_capo:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capo[collapsed=true]\r\e[0KApplying specific capo configuration\e[0m"
-    - yq -i eval-all 'select(fileIndex==0).cluster.capo.clouds_yaml = select(fileIndex==1) | select(fileIndex==0)' environment-values/${ENV_NAME}/secrets.yaml ~/.config/openstack/clouds.yml
+    - |
+      if [[ ${CLUSTER_TYPE} == 'management' ]]; then
+        yq -i eval-all 'select(fileIndex==0).cluster.capo.clouds_yaml = select(fileIndex==1) | select(fileIndex==0)' $ENV_PATH/secrets.yaml ~/.config/openstack/clouds.yml
+      fi
     - yq -i '.cluster.capo.resources_tag = strenv(CAPO_TAG)' $values_file
     - git config --global credential.helper cache
     # the CI_COMPONENT_* variables below are set in the gitlab runner configuration
     # and allow to enable extra kustomize components needed in the context of the platform
     # on which this test actually runs
     - git clone --depth=1 https://foo:${CI_COMPONENT_REPO_PAT}@${CI_COMPONENT_REPO}
-    - export CI_COMPONENT="https://${CI_COMPONENT_REPO}//${CI_COMPONENT_REPO_PATH}-${ENV_NAME}?ref=2023-10-20"
-    - if [ $(yq '.components | length' environment-values/$ENV_NAME/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' environment-values/$ENV_NAME/kustomization.yaml; fi
-    - yq -i '.components += strenv(CI_COMPONENT)' environment-values/$ENV_NAME/kustomization.yaml
+    - export CI_COMPONENT="https://${CI_COMPONENT_REPO}//${CI_COMPONENT_REPO_PATH}-${ENV_NAME}?ref=2023-11-07"
+    - if [ $(yq '.components | length' $ENV_PATH/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' $ENV_PATH/kustomization.yaml; fi
+    - yq -i '.components += strenv(CI_COMPONENT)' $ENV_PATH/kustomization.yaml
     - yq -e '.registry_mirrors' $(basename ${CI_COMPONENT_REPO} .git)/${CI_COMPONENT_REPO_PATH}-base/values.yaml > registry_mirrors.yml
     - yq -i eval-all 'select(fileIndex==0).registry_mirrors = select(fileIndex==1) | select(fileIndex==0)' $values_file registry_mirrors.yml
+    - |
+      if [[ ${CLUSTER_TYPE} == 'workload' ]]; then
+        yq -i '.namespace = "WORKLOAD_CLUSTER_NAMESPACE"' $ENV_PATH/kustomization.yaml
+      fi
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capo\r\e[0K"
   post_deployment_common:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_post_deployment[collapsed=true]\r\e[0KRunning post deployment step\e[0m"
@@ -113,6 +131,8 @@ include:
 .deploy-base:
   extends: .docker-service
   stage: deploy
+  variables:
+    CLUSTER_TYPE: management
   timeout: 60min
   artifacts:
     expire_in: 6 hour
@@ -157,6 +177,36 @@ include:
   tags:
     - $CAPO_PLATFORM_TAG
 
+.deploy-wc-base:
+  extends: .docker-service
+  stage: deploy-wc
+  variables:
+    CLUSTER_TYPE: workload
+  timeout: 60min
+  artifacts:
+    expire_in: 6 hour
+    when: always
+    paths:
+      - debug-on-exit.log
+      - management-cluster-dump/
+      - management-cluster-units-report.xml
+      - management-cluster-timeline.html
+      - management-cluster-kubeconfig
+    reports:
+      junit:
+      - management-cluster-units-report.xml
+
+.deploy-wc-capo:
+  extends: .deploy-wc-base
+  script:
+    - !reference [.common-deployment, script_common]
+    - !reference [.common-deployment, os_cloud]
+    - !reference [.common-deployment, script_capo]
+    - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
+    - !reference [.common-deployment, post_deployment_common]
+  tags:
+    - $CAPO_PLATFORM_TAG
+
 .cleanup-capo:
   stage: delete
   image:
@@ -196,17 +246,17 @@ include:
     - unset https_proxy http_proxy
     - python3 ./tools/login-test/test-sso.py
     - echo "-- Testing workload cluster. Job started at '$CI_JOB_STARTED_AT'."
-    # the $TEST_WORKLOAD_CLUSTER_NAME-rancher.yaml file below is the kubeconfig previously downloaded from Rancher server through Selenim
+    # the $WORKLOAD_CLUSTER_NAME-rancher.yaml file below is the kubeconfig previously downloaded from Rancher server through Selenim
     - |
       attempts=0; max_attempts=5
-      until kubectl run test --image=registry.k8s.io/pause:3.9 --kubeconfig $TEST_WORKLOAD_CLUSTER_NAME-rancher.yaml --overrides='{"apiVersion": "v1","spec": {"containers": [{"name": "test","image": "registry.k8s.io/pause:3.9","securityContext": {"allowPrivilegeEscalation": false,"capabilities": {"drop": ["ALL"]},"runAsNonRoot": true,"runAsGroup": 1000,"runAsUser": 1000,"seccompProfile": {"type": "RuntimeDefault"}}}]}}'; do
+      until kubectl run test --image=registry.k8s.io/pause:3.9 --kubeconfig $WORKLOAD_CLUSTER_NAME-rancher.yaml --overrides='{"apiVersion": "v1","spec": {"containers": [{"name": "test","image": "registry.k8s.io/pause:3.9","securityContext": {"allowPrivilegeEscalation": false,"capabilities": {"drop": ["ALL"]},"runAsNonRoot": true,"runAsGroup": 1000,"runAsUser": 1000,"seccompProfile": {"type": "RuntimeDefault"}}}]}}'; do
         sleep 3
         ((attempts++)) && ((attempts==max_attempts)) && exit -1
       done
     - echo "-- Wait for test pod to be created"
-    - kubectl wait --for=condition=Ready pod/test --kubeconfig $TEST_WORKLOAD_CLUSTER_NAME-rancher.yaml --timeout=60s
+    - kubectl wait --for=condition=Ready pod/test --kubeconfig $WORKLOAD_CLUSTER_NAME-rancher.yaml --timeout=60s
     - echo "-- Get the sample workload cluster nodes annotations for keys node.longhorn.io/default-node-tags & node.longhorn.io/default-disks-config"
-    - kubectl --kubeconfig $TEST_WORKLOAD_CLUSTER_NAME-rancher.yaml get nodes -o yaml | yq '.items[] | (.metadata.name,.metadata.annotations."node.longhorn.io/default-node-tags",.metadata.annotations."node.longhorn.io/default-disks-config")'
+    - kubectl --kubeconfig $WORKLOAD_CLUSTER_NAME-rancher.yaml get nodes -o yaml | yq '.items[] | (.metadata.name,.metadata.annotations."node.longhorn.io/default-node-tags",.metadata.annotations."node.longhorn.io/default-disks-config")'
     - echo "-- All done"
   tags:
     - $CAPO_PLATFORM_TAG
