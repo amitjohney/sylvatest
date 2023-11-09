@@ -109,12 +109,14 @@ units:
       '{{ .Values.cluster.capi_providers.infra_provider }}': false
       '{{ .Values.cluster.capi_providers.bootstrap_provider }}': false
       metal3: false
+      metal3-suse: false
 
       # we need to wait for the CAPI-related units from the main sylva-units release
       default/capi: true
       default/{{ .Values.cluster.capi_providers.infra_provider }}: true
       default/{{ .Values.cluster.capi_providers.bootstrap_provider }}: true
-      default/metal3: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+      default/metal3: '{{ (and (.Values.cluster.capi_providers.infra_provider | eq "capm3") (.Values.metal3.provider | eq "sylva")) }}'
+      default/metal3-suse: '{{ (and (.Values.cluster.capi_providers.infra_provider | eq "capm3") (.Values.metal3.provider | eq "suse")) }}'
 
     helmrelease_spec:
       # because this resource lives in the mgmt cluster:

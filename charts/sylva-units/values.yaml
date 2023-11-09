@@ -997,7 +997,7 @@ units:
         metal3-baremetal-operator:
           securityContext:
             allowPrivilegeEscalation: false
-            runAsUser: 1000
+            runAsUser: 11000
         metal3-ironic:
           ingress:
             enabled: false
@@ -1008,8 +1008,8 @@ units:
             annotations:
               metallb.universe.tf/allow-shared-ip: cluster-external-ip
           podSecurityContext:
-            runAsUser: 475
-            fsGroup: 475
+            runAsUser: 10475
+            fsGroup: 10475
           baremetaloperator:
             ironichostNetwork: false
           persistence:
@@ -1018,8 +1018,8 @@ units:
               accessMode: ReadWriteOnce
         metal3-mariadb:
           podSecurityContext:
-            runAsUser: 60
-            fsGroup: 60
+            runAsUser: 10060
+            fsGroup: 10060
           persistence:
             storageClass: '{{ .Values._internal.default_storage_class }}'
 
@@ -2591,6 +2591,8 @@ shared_workload_clusters_values:
       enabled: '{{ tuple . "rancher" | include "unit-enabled" }}'
     check-rancher-clusters:
       enabled: '{{ tuple . "rancher" | include "unit-enabled" }}'
+  metal3:
+    provider: '{{ .Values.metal3.provider }}'
 
 shared_workload_clusters_secret_values:
   cluster:
