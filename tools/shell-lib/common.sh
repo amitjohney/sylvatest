@@ -3,6 +3,7 @@ set -o pipefail
 
 export BASE_DIR="$(realpath $(dirname $0))"
 export PATH=${BASE_DIR}/bin:${PATH}
+export KIND_CLUSTER_NAME=${KIND_CLUSTER_NAME:-sylva}
 
 CALLER_SCRIPT_NAME=$(basename ${BASH_SOURCE[1]})
 SYLVA_TOOLBOX_VERSION=${SYLVA_TOOLBOX_VERSION:-"v0.2.12"}
@@ -167,6 +168,9 @@ function exit_trap() {
         end_section
     fi
 
+    echo_b "\U0001F5D1 Delete bootstrap cluster"
+    cleanup_bootstrap_cluster
+
     # Kill all child processes (kubectl watches) on exit
     pids="$(jobs -rp)"
     [ -n "$pids" ] && kill $pids || true
@@ -262,6 +266,13 @@ function cleanup_preview() {
   kubectl delete namespace sylva-units-preview
 }
 
+function cleanup_bootstrap_cluster() {
+  : ${CLEANUP_BOOTSTRAP_CLUSTER:='yes'}
+  kind_cluster=`kind get clusters`
+  if [[ $CLEANUP_BOOTSTRAP_CLUSTER == 'yes' && $kind_cluster == $KIND_CLUSTER_NAME ]] ; then
+    kind delete cluster -n $KIND_CLUSTER_NAME
+  fi
+}
 
 function ci_remaining_minutes_and_at_most() {
   at_most=$1
