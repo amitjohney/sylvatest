@@ -168,7 +168,6 @@ function exit_trap() {
         end_section
     fi
 
-    echo_b "\U0001F5D1 Delete bootstrap cluster"
     cleanup_bootstrap_cluster
 
     # Kill all child processes (kubectl watches) on exit
@@ -270,6 +269,7 @@ function cleanup_bootstrap_cluster() {
   : ${CLEANUP_BOOTSTRAP_CLUSTER:='yes'}
   kind_cluster=`kind get clusters`
   if [[ $CLEANUP_BOOTSTRAP_CLUSTER == 'yes' && $kind_cluster == $KIND_CLUSTER_NAME ]] ; then
+    echo_b "\U0001F5D1 Delete bootstrap cluster"
     kind delete cluster -n $KIND_CLUSTER_NAME
   fi
 }
