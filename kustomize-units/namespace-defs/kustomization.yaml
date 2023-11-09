@@ -10,4 +10,3 @@ resources:
   - cinder-csi-namespace.yaml
   - longhorn-namespace.yaml
   - metal3-namespace.yaml
-  - workload-cluster.yaml

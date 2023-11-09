@@ -42,8 +42,6 @@ units:
         operator:
           vulnerabilityScannerEnabled: true
           scanJobsConcurrentLimit: 1
-  workload-cluster:
-    enabled: false # explicitly disabled, since env_type_ci is set in .gitlab-ci.yml
   multus:
     enabled: true
   multus-ready:
