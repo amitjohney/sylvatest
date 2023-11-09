@@ -401,10 +401,17 @@ units:
               kubectl -n $TARGET_NAMESPACE annotate --overwrite kustomizations.kustomize.toolkit.fluxcd.io cluster pivot/started-
 
               # if infra_provider is capm3 delete unused available bmh from pivot to avoid them to be managed by two operators that will compete to manage their power state
-              if kubectl -n $TARGET_NAMESPACE get kustomizations capm3 ; then
-                echo "-- delete unused available bmh from bootstrap cluster"
-                kubectl -n $TARGET_NAMESPACE  get bmh -o=jsonpath='{.items[*].metadata.name}' | xargs -tr -n1  kubectl delete bmh -n $TARGET_NAMESPACE
-              fi
+              #if kubectl -n $TARGET_NAMESPACE get kustomizations capm3 ; then
+              #  echo "-- delete unused available bmh from bootstrap cluster"
+              #  kubectl -n $TARGET_NAMESPACE  get bmh -o=jsonpath='{.items[*].metadata.name}' | xargs -tr -n1  kubectl delete bmh -n $TARGET_NAMESPACE
+              #fi
+              for workload_bmh in $(kubectl -n $TARGET_NAMESPACE get bmh -o jsonpath='{ $.items[?(@.metadata.ownerReferences[0].kind != "Metal3Machine")].metadata.name}'); do \
+                echo "Moving BareMetalHost $workload_bmh, unused for management cluster machines, to the management cluster, to avoid another introspection"; \
+                kubectl -n $TARGET_NAMESPACE get bmh $workload_bmh -o json | \
+                  jq '. | del(.metadata.uid) | del(.metadata.ownerReferences) | del(.metadata.resourceVersion) | del(.metadata.creationTimestamp)' |\
+                  kubectl --kubeconfig /tmp/management-cluster-kubeconfig apply -f -                
+              done
+              kubectl -n $TARGET_NAMESPACE delete bmh --all
 
               echo "-- All done"
 
