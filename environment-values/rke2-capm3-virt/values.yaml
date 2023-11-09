@@ -1,9 +1,5 @@
 # This example environment values files will let you build
 # a Sylva two-node (1 control-plane + 1 worker) mgmt baremetal cluster
-#
-# To also have a workload-cluster, you can configure
-# the workload-cluster unit based on what is in environment-values/rke2-capo-capm3
-# which defines a capm3 workload cluster
 
 cluster_external_domain: '{{ .Values.cluster.cluster_api_cert_extra_SANs | first }}.nip.io'
 
@@ -100,10 +96,8 @@ cluster:
           address: redfish-virtualmedia://{{ .Values._internal.bootstrap_node_ip }}:8000/redfish/v1/Systems/c0014001-b10b-f001-c0de-feeb1e54ee15
         bootMACAddress: 48:df:37:e7:82:94 # This mac doesn't correspond to any interface, it only needs to be unique amon baremetalHosts
 
-units:
 
-  workload-cluster:
-    enabled: false  # (no workload cluster is described in this example)
+units:
 
   longhorn:
     # this setting can be overridden to true to enable Longhorn

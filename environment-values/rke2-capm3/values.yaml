@@ -1,9 +1,5 @@
 # This example environment values files will let you build
 # a Sylva two-node (1 control-plane + 1 worker) mgmt baremetal cluster
-#
-# To also have a workload-cluster, you can configure
-# the workload-cluster unit based on what is in environment-values/rke2-capo-capm3
-# which defines a capm3 workload cluster
 
 cluster_external_ip: 10.188.36.149
 
@@ -141,9 +137,6 @@ units:
 
   longhorn:
     enabled: true
-
-  workload-cluster:
-    enabled: false  # (no workload cluster is described in this example)
 
 metal3:
   bootstrap_ip: 10.177.129.138

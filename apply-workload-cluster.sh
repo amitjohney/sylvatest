@@ -1,7 +1,6 @@
 #!/bin/bash
 #
-# This script can be used to:
-# * install the workload-clusters defined at path environment-values/workload-clusters/x using Kustomize
+# This script can be used to install the workload clusters defined at path environment-values/workload-clusters/x using Kustomize
 #
 # This script will act on the kubectl context of a Sylva management cluster,
 # if the 'management-cluster-kubeconfig' file is found, in which case it will use it, otherwise exit.

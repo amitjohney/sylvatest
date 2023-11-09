@@ -5592,10 +5592,6 @@
       "format": "uri",
       "pattern": "^(unix|tcp)://.*"
     },
-    "test_workload_cluster_name": {
-      "type": "string",
-      "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
-    },
     "sriov": {
       "type": "object",
       "additionalProperties": false,
