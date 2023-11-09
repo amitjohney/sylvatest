@@ -2399,6 +2399,9 @@ cluster:
     # ssh_key: ''
     numCPUs: 4
 
+  capm3:
+    nodeReuse: '{{ not (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") | include "as-bool" }}'  # until https://gitlab.com/sylva-projects/sylva-core/-/issues/705 is solved
+
   enable_longhorn: '{{ or (tuple . "longhorn" | include "unit-enabled") (tuple . .Values.units.longhorn.enabled | include "interpret-for-test") | include "as-bool" }}'
 
 capd_docker_host: unix:///var/run/docker.sock
