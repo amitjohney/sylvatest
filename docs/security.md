@@ -54,11 +54,10 @@ The Sylva units offering a web UI (**Keycloak**, **Rancher**, **Hashicorp vault*
 
 The passwords for **Keycloak**, **Rancher** and **flux-webui** can be retrieved from **Vault** (see next section).
 
-In addition, Sylva is shipped with a Single-Sign-On (SSO) service provided by **Keycloak**. The user can thus connect to **Vault**, **Rancher** and **Flux-Webui** after being redirected once to **Keycloak** authentication. The SSO account to use is `sylva-admin` (login `sylva-admin`) from the  **Keycloak** realm `sylva`. The password for this account can be provided in your environment file `secrets.yaml` :
+In addition, Sylva is shipped with a Single-Sign-On (SSO) service provided by **Keycloak**. The user can thus connect to **Vault**, **Rancher** and **Flux-Webui** after being redirected once to **Keycloak** authentication. The SSO account to use is `sylva-admin` (login `sylva-admin`) from the  **Keycloak** realm `sylva`. The password for this account can be provided in your environment-values file `secrets.yaml` like showed below, but this not encouraged, except possibly for dev, test or CI environments.
 
 ```yaml
-cluster:
-  admin_password:  < a password following the password policy >
+admin_password:  < a password following the password policy >
 ```
 
 > **_IMPORTANT NOTICE:_** this password must follow the **Keycloak** password policy: length(12) and upperCase(1) and lowerCase(1) and digits(1), otherwise the user `sylva-admin` is not created.
@@ -77,9 +76,9 @@ If you don't set a password here, helm shall pick a random one. You can retrieve
 
 ## Hashicorp Vault
 
-The passwords for **Keycloak**, **Rancher** and **flux-webui** can be retrieved from **Vault**. You can authenticate against **Vault** through the OIDC authentication method or by using the **Vault** root token. For a comfortable user experience, we recommend to set  `.cluster.admin_password` in your `secrets.yaml` environment file and to connect through the OIDC authentication method.
+The passwords for **Keycloak**, **Rancher** and **flux-webui** can be retrieved from **Vault**. You can authenticate against **Vault** through the OIDC authentication method or by using the **Vault** root token. <br/>
 
-> **_NOTE:_** If you don't provide `.cluster.admin_password` in the environment file `secrets.yaml`, connect to Vault by using the **Vault** root token and retrieve the randomly generated password for the SSO account in the vault path `/secret/sso-account`.
+> **_NOTE:_** If you don't provide `.admin_password` in the environment file `secrets.yaml`, connect to Vault by using the **Vault** root token and retrieve the randomly generated password for the SSO account in the vault path `/secret/sso-account`.
 
 Note also that the OIDC authentication has restricted rights on **Vault** paths in comparison to the root token authentication, which, by nature, has full privileges on **Vault** resources:
 
