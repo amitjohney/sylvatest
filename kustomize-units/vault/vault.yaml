@@ -134,6 +134,11 @@ spec:
       # The storeRootToken flag enables storing of root token in chosen storage
       # This is true by default
       storeRootToken: true
+      # There are no unseal keys when using the vo-vault kms
+      # These settings ensure that the vault init is requested without the secret-shares and secret-threashold parameters
+      # Vault then returns recovery keys that are stored in the secret along with the root token
+      secretShares: 0
+      secretThreshold: 0
     kubernetes:
       secretNamespace: vault
 

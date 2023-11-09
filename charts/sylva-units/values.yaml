@@ -303,12 +303,12 @@ units:
       targetNamespace: kubevirt-tests
 
   vault-operator:
-    helm_repo_url: https://kubernetes-charts.banzaicloud.com
+    helm_repo_url: oci://ghcr.io/bank-vaults/helm-charts
     helmrelease_spec:
       chart:
         spec:
           chart: vault-operator
-          version: 1.19.0
+          version: 1.21.2
       targetNamespace: vault
       install:
         createNamespace: true
