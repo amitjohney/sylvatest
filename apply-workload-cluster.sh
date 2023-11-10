@@ -42,6 +42,6 @@ echo_b "\U0001F3AF Trigger reconciliation of Flux units"
 force_reconcile helmrelease sylva-units $(basename ${ENV_PATH})
 
 echo_b "\U000023F3 Wait for Flux units becoming ready"
-sylvactl watch --kubeconfig management-cluster-kubeconfig --reconcile --timeout $(ci_remaining_minutes_and_at_most 20) -n $(basename ${ENV_PATH})
+sylvactl watch --kubeconfig management-cluster-kubeconfig --reconcile --timeout $(ci_remaining_minutes_and_at_most 30) -n $(basename ${ENV_PATH})
 
 echo_b "\U0001F389 All done"
