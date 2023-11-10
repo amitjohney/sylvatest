@@ -13,14 +13,42 @@ function dump_flux_resources() {
     done
 }
 
+additional_resources="
+  StatefulSets
+  Clusters.*cluster.x-k8s.io
+  MachineDeployments
+  Machines
+  KubeadmControlPlanes
+  KubeadmConfigTemplates
+  KubeadmConfigs
+  RKE2ControlPlanes
+  RKE2ConfigTemplates
+  RKE2Configs
+  DockerClusters
+  DockerMachineTemplates
+  DockerMachines
+  VSphereClusters
+  VSphereMachineTemplates
+  VSphereMachines
+  OpenStackClusters
+  OpenStackMachineTemplates
+  OpenStackMachines
+  Metal3Clusters
+  Metal3MachineTemplates
+  Metal3Machines
+  Metal3DataTemplates
+  BaremetalHosts
+"
+
 function dump_additional_resources() {
     local cluster_dir=$1
     shift
     for cr in $@; do
       echo "Dumping resources $cr in the whole cluster"
-      if kubectl api-resources | grep -q $cr ; then
-        kubectl get $cr -A -o wide >  $cluster_dir/$cr.txt
-        kubectl get $cr -A -o yaml >> $cluster_dir/$cr.yaml
+      if kubectl api-resources | grep -qi $cr ; then
+        base_filename=$cluster_dir/${cr/.\**/}
+        kubectl get $cr -A -o wide > $base_filename.txt
+        kubectl get $cr -A -o yaml > $base_filename.yaml
       fi
     done
 }
@@ -36,7 +64,7 @@ echo "Performing dump on bootstrap cluster"
 kubectl cluster-info dump -A -o yaml --output-directory=bootstrap-cluster-dump
 
 dump_flux_resources bootstrap-cluster-dump
-dump_additional_resources bootstrap-cluster-dump statefulsets baremetalhosts clusters.cluster
+dump_additional_resources bootstrap-cluster-dump $additional_resources
 
 if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
     export KUBECONFIG=${KUBECONFIG:-$BASE_DIR/management-cluster-kubeconfig}
@@ -51,7 +79,7 @@ if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
     kubectl cluster-info dump -A -o yaml --output-directory=management-cluster-dump
 
     dump_flux_resources management-cluster-dump
-    dump_additional_resources management-cluster-dump statefulsets baremetalhosts clusters.cluster
+    dump_additional_resources management-cluster-dump $additional_resources
 fi
 
 echo "Dump node logs"
