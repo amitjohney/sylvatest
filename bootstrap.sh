@@ -47,7 +47,7 @@ fi
 echo_b "\U000023F3 Wait for units installed on management cluster to be ready"
 sylvactl watch --reconcile --kubeconfig management-cluster-kubeconfig --timeout $(ci_remaining_minutes_and_at_most ${MGMT_WATCH_TIMEOUT_MIN:-45}) ${SYLVACTL_SAVE:+--save management-cluster-timeline.html}
 
-echo_b "\U00002714 Sylva is ready, everything deployed in management cluster (including test workload cluster definition, if enabled)"
+echo_b "\U00002714 Sylva is ready, everything deployed in management cluster"
 echo "   Management cluster nodes:"
 kubectl --kubeconfig management-cluster-kubeconfig get nodes
 
