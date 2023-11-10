@@ -153,9 +153,10 @@ units_enabled_default: false
 
 # unit_template define unit settings
 #   a unit can inherit from one of those
-unit_templates:
-  sylva-units:
-    repo: sylva-core
+# unit_templates:
+#   sylva-units:
+#     <partial definition of a unit>
+# (example use in workload-cluster.values.yaml)
 
 # this defines Flux HelmRelease objects, and for each  # FIXME
 # a corresponding GitRepository or OCIRepository (and Secret, TODO: the Secret don't need to be generated for each unit)
