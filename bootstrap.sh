@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Dummy change
 source tools/shell-lib/common.sh
 
 if [[ ${KUBECONFIG:-} =~ management-cluster-kubeconfig ]]; then

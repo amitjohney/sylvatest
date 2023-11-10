@@ -68,6 +68,7 @@ done
 
 for f in $(find environment-values kustomize-units -type f -name 'kustomization.yaml' | sed -r 's|/[^/]+$||')
 do
+ [ "$f" == "kustomize-units/dummy" ] && continue
 cat <<EOF
 
 '${f}:kustomize-build':
