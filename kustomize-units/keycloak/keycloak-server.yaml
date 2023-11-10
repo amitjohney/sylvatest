@@ -21,6 +21,13 @@ spec:
   ingress:
     enabled: false
   instances: 1
+  additionalOptions:
+    - name: spi-truststore-file-file
+      value: /mnt/certificates/myTrustStore.jks
+    - name: spi-truststore-file-password
+      value: password
+    - name: spi-truststore-file-hostname-verification-policy
+      value: ANY
   unsupported:
     podTemplate:
       spec:
