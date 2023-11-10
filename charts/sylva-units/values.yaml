@@ -576,6 +576,26 @@ units:
           requests:
             cpu: 100m
             memory: 2280Mi
+      _postRenderers:
+        - kustomize:
+            patchesStrategicMerge:
+              - kind: CronJob
+                apiVersion: batch/v1
+                metadata:
+                  name: neuvector-updater-pod
+                  namespace: neuvector
+                spec:
+                  startingDeadlineSeconds: 21600
+
+#  neuvector-cronjobs:
+#    enabled_conditions:
+#    - '{{ tuple . "neuvector" | include "unit-enabled" }}'
+#    depends_on:
+#      neuvector: true
+#    repo: sylva-core
+#    kustomization_spec:
+#      path: ./kustomize-units/neuvector-cronjobs
+#      wait: true
 
   keycloak:
     depends_on:
@@ -811,6 +831,16 @@ units:
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kyverno-policies
+      wait: true
+
+  kyverno-cronjobs:
+    enabled_conditions:
+    - '{{ tuple . "kyverno" | include "unit-enabled" }}'
+    depends_on:
+      kyverno: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/kyverno-cronjobs
       wait: true
 
   rancher-monitoring-clusterid-inject:
@@ -2597,3 +2627,5 @@ shared_workload_clusters_values:
 shared_workload_clusters_secret_values:
   cluster:
     capo: '{{ tuple (dict "clouds_yaml" (.Values.cluster | dig "capo" "clouds_yaml" dict)) (.Values.cluster | dig "capo" "clouds_yaml" dict) | include "set-only-if" }}'
+
+
