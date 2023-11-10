@@ -2347,7 +2347,7 @@ cluster:
     #       verify: # e.g. false
     # cacert: # cert used to validate CA of OpenStack APIs
 
-    # tag set for OpenStack resources in management and test workload cluster:
+    # tag set for OpenStack resources in management cluster:
     resources_tag: >-
       {{- if .Values.cluster.capi_providers.infra_provider | eq "capo" -}}
         sylva-{{ .Values.cluster.capo.clouds_yaml.clouds.capo_cloud.auth.username }}

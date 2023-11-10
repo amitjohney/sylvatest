@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Helper script used to clean management and test workload clusters OpenStack resources. USE WITH CARE, AT YOU OWN RISK
+# Helper script used to clean management and workload clusters OpenStack resources. USE WITH CARE, AT YOU OWN RISK
 
 OS_ARGS=""
 PLATFORM=$1
