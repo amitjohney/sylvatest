@@ -400,6 +400,12 @@ units:
               echo "-- Signal to bootstrap.sh that the pivot job has ended"
               kubectl -n $TARGET_NAMESPACE annotate --overwrite kustomizations.kustomize.toolkit.fluxcd.io cluster pivot/started-
 
+              # if infra_provider is capm3 delete unused available bmh from pivot to avoid them to be managed by two operators that will compete to manage their power state
+              if kubectl -n $TARGET_NAMESPACE get kustomizations capm3 ; then
+                echo "-- delete all unused bmh from bootstrap cluster"
+                kubectl -n $TARGET_NAMESPACE delete bmh --all
+              fi
+
               echo "-- All done"
 
   multus:
