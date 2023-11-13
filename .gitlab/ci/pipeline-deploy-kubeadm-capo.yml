@@ -30,14 +30,14 @@ deploy-kubeadm-capo-oci:
 update-kubeadm-capo:
   extends: [.apply-kubeadm-capo]
   rules:
-    - if: $OCI_TAG == null
+    - if: $OCI_TAG == null && $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
   artifacts:
     expose_as: apply-kubeadm-capo
 
 update-kubeadm-capo-oci:
   extends: [.apply-kubeadm-capo]
   rules:
-    - if: $OCI_TAG
+    - if: $OCI_TAG && $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
   artifacts:
     expose_as: apply-kubeadm-capo-oci
 
@@ -49,14 +49,14 @@ update-kubeadm-capo-oci:
 deploy-wc-kubeadm-capo:
   extends: [.deploy-wc-kubeadm-capo]
   rules:
-    - if: $OCI_TAG == null
+    - if: $OCI_TAG == null && $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
   artifacts:
     expose_as: deploy-wc-kubeadm-capo
 
 deploy-wc-kubeadm-capo-oci:
   extends: [.deploy-wc-kubeadm-capo]
   rules:
-    - if: $OCI_TAG
+    - if: $OCI_TAG && $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
   artifacts:
     expose_as: deploy-wc-kubeadm-capo-oci
 
@@ -66,12 +66,12 @@ deploy-wc-kubeadm-capo-oci:
 test-workload-cluster-kubeadm-capo:
   extends: [.test-workload-cluster]
   rules:
-    - if: $OCI_TAG == null
+    - if: $OCI_TAG == null && $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
 
 test-workload-cluster-kubeadm-capo-oci:
   extends: [.test-workload-cluster]
   rules:
-    - if: $OCI_TAG
+    - if: $OCI_TAG && $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
 
 #----------------------------------------------------------
 
