@@ -19,7 +19,10 @@
       {{/* the GitRepository or OCIRepository used here are generated in 'sources.yaml' */}}
 
       {{- $repo_name := $unit_def.repo -}}
-      {{- $repo_def := index $envAll.Values.source_templates $repo_name -}}{{/* ??? */}}
+      {{- if not $repo_name -}}
+        {{- fail (printf "repo_name is empty for unit %s: '%s'\nunit_def:\n%s" $unit_name $repo_name ($unit_def | toYaml)) -}}
+      {{- end -}}
+      {{- $repo_def := index $envAll.Values.source_templates $repo_name -}}
 
       {{- $sourceRef := dict -}}
       {{- if get $repo_def "existing_source" -}}
