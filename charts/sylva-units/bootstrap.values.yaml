@@ -286,25 +286,6 @@ units:
        # the cluster-wide CRD resources in order to move CAPI objects to management cluster
       _patches:
       - target:
-          kind: Job
-        patch: |
-          - op: replace
-            path: /spec/template/spec/containers/0/securityContext
-            value:
-              allowPrivilegeEscalation: false
-              capabilities:
-                drop:
-                - ALL
-              runAsNonRoot: false
-              seccompProfile:
-                type: RuntimeDefault
-          - op: replace
-            path: /spec/template/spec/securityContext
-            value:
-              runAsNonRoot: false
-              seccompProfile:
-                type: RuntimeDefault
-      - target:
           kind: Role
         patch: |
           - op: replace
@@ -331,6 +312,7 @@ units:
               #!/bin/bash
 
               set -e
+              export HOME=/tmp
               echo "-- Signal that the pivot job has started. This is used in bootstrap.sh to prevent accidental re-runs"
               kubectl -n $TARGET_NAMESPACE  annotate --overwrite kustomizations.kustomize.toolkit.fluxcd.io cluster pivot/started=true
 
