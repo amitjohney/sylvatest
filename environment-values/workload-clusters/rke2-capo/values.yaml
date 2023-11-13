@@ -3,6 +3,8 @@ cluster:
     infra_provider: capo
     bootstrap_provider: cabpr
   control_plane_replicas: 1
+  capo:
+    ssh_key_name: # put the name of your nova SSH keypair here
   rke2:
     nodeLabels:
       sylva.org/annotate-node-from-label: "true"
