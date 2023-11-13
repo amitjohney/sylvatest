@@ -1,6 +1,10 @@
+---
 # ==========================================
 # Scheduled cleanup
 # ==========================================
+
+variables:
+  MAX_DEPLOY_CAPO_TIMEOUT: 80
 
 scheduled-cleanup-capo:
   stage: delete
@@ -9,8 +13,9 @@ scheduled-cleanup-capo:
   script:
     - !reference [.common-deployment, os_cloud]
     - touch tags.txt exclude-tags.txt
-    - MAX_DEPLOY_CAPO_TIMEOUT=80  # eq to capo deployment timeout + 20minutes for testing
-    - STACK_TTL=$(((MAX_DEPLOY_CAPO_TIMEOUT+5)*60))
+    - STACK_TTL=$((($MAX_DEPLOY_CAPO_TIMEOUT+5)*60))
+    - |
+      echo "Heat Stack TTL: $STACK_TTL"
     - |
       for STACK in $(openstack stack list -f value -c "Stack Name" | grep -E '^(management|workload|capo)-cluster' ); do
         STACK_TIME=$(date -d "$(openstack stack show ${STACK} -c creation_time -f value | tr T ' ' | tr -d Z )" +%s)
