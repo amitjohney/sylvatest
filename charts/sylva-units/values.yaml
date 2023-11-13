@@ -2581,7 +2581,15 @@ _internal:
   metal3_unit: '{{ .Values.metal3.provider | eq "suse" | ternary "metal3-suse" "metal3" }}'
 
 shared_workload_clusters_values:
+  ntp: '{{ .Values.ntp | include "set-if-defined" }}'
+  proxies: '{{ .Values.proxies | include "set-if-defined" }}'
+  registry_mirrors: '{{ .Values.registry_mirrors | include "set-if-defined" }}'
+
+  sylva_base_oci_registry: '{{ .Values.sylva_base_oci_registry }}'
+
   cluster:
+    air_gapped: '{{ .Values.air_gapped | include "set-if-defined" }}'
+    capi_providers: '{{ .Values.cluster.capi_providers | include "preserve-type" }}'
     mgmt_cluster_external_ip: '{{ .Values.cluster_external_ip }}'
     mgmt_cluster_external_domain: '{{ .Values.cluster_external_domain }}'
     dns_resolver: true
