@@ -47,13 +47,14 @@ function check_invalid_semver_tag {
       medium=${BASH_REMATCH[2]}
       minor=${BASH_REMATCH[3]}
       others=${BASH_REMATCH[4]}
-      new_version=$major.$medium.9$minor$others+$version    
+      version=$major.$medium.9$minor$others+$version
       if [[ -n "$rewrite_chart" ]]; then
-        tar -xzvf $tgz_file
-        yq -i '.version = "'$new_version'"' $chart_name/Chart.yaml
-        tar -czvf $chart_name-$new_version.tgz $chart_name/
+        echo rewriting version in Chart.yaml
+        tar -xzf $tgz_file
+        yq -i '.version = "'$version'"' $chart_name/Chart.yaml
+        tar -czf $chart_name-$version.tgz $chart_name/
         rm -rf $chart_name $tgz_file
-        tgz_file="$chart_name-$new_version.tgz"
+        tgz_file="$chart_name-$version.tgz"
       fi
     fi
   fi
@@ -138,6 +139,11 @@ function show_status {
   fi
 }
 
+function artifact_exists {
+  echo "Checking if artifact $1 exists..."
+  flux pull artifact $1 -o /tmp > /dev/null 2>&1
+}
+
 
 ### Helm registry login with credentials of Gitlab job environment
 if [[ -n ${CI_REGISTRY_USER:-} ]]; then
@@ -177,14 +183,15 @@ for unit_name in $(yq -r '(.units | ... comments="" | keys())[]' $VALUES_FILE | 
         versions+=$(echo "$helmchart_spec" | yq '.version' -)
       fi
       for version in "${versions[@]}"; do
+        echo "- processing version $version from sylva-units values"
         ## no processing is needed if the OCI artifact already exist in the OCI repository
         ## looking for invalid semver tag
         ## if an invalid tag is found we used a rewrited version of it for the check
         version_to_check=$(check_invalid_semver_tag $version)
         echo "Version to check: $version_to_check"
-        if (flux pull artifact $OCI_REGISTRY/$artifact_name:${version_to_check/+/_} -o /tmp 2>&1 || true) | grep -q created; then
+        artifact_url=$OCI_REGISTRY/$artifact_name:${version_to_check/+/_}
+        if (artifact_exists $artifact_url); then
           echo "Skipping $chart processing, $artifact_name:$version_to_check already exists in $OCI_REGISTRY"
-	  echo -e $section_end
           continue
         fi
 
@@ -201,7 +208,8 @@ for unit_name in $(yq -r '(.units | ... comments="" | keys())[]' $VALUES_FILE | 
       git_revision=$(echo "${source_templates[@]}" | yq ".$repo.spec.ref.tag" )
 
       ## no processing is needed if the OCI artifact already exist in the OCI repository
-      if (flux pull artifact $OCI_REGISTRY/$chart_name:${git_revision/+/_} -o /tmp 2>&1 || true) | grep -q created; then     
+      artifact_url=$OCI_REGISTRY/$chart_name:${git_revision/+/_}
+      if (artifact_exists $artifact_url); then
         echo "Skipping $chart_name processing, $chart_name:$git_revision already exists in $OCI_REGISTRY"
         echo -e $section_end
         continue
