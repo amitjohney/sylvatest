@@ -31,7 +31,7 @@ echo_b "\U0001F5D1 Delete preview chart and namespace"
 cleanup_preview
 
 echo_b "\U0001F4DC Update sylva-units Helm release and associated resources"
-kubectl kustomize ${ENV_PATH} | define_source | kubectl apply -f -
+_kustomize ${ENV_PATH} | define_source | kubectl apply -f -
 
 echo_b "\U0001F3AF Trigger reconciliation of units"
 

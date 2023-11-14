@@ -34,7 +34,7 @@ echo_b "\U0001F5D1 Delete preview chart and namespace"
 cleanup_preview
 
 echo_b "\U0001F4DC Install a sylva-units Helm release for workload cluster $(basename ${ENV_PATH})"
-kubectl kustomize ${ENV_PATH} | define_source | set_wc_namespace | kubectl apply -f -
+_kustomize ${ENV_PATH} | define_source | set_wc_namespace | kubectl apply -f -
 
 echo_b "\U0001F3AF Trigger reconciliation of units"
 
