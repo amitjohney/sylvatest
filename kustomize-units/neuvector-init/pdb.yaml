@@ -1,0 +1,11 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: neuvector-scanner-pdb
+  labels:
+    app: neuvector-scanner-pod
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: neuvector-scanner-pod
