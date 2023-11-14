@@ -1653,8 +1653,15 @@ units:
           RANCHER_EXTERNAL_URL: '{{ .Values.rancher.external_hostname }}'
       wait: true
 
+  k8s-gateway-pdb:
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/k8s-gateway-pdb
+      wait: true
+
   k8s-gateway:
     depends_on:
+      k8s-gateway-pdb: true
       capd-metallb-config: '{{ tuple . "capd-metallb-config" | include "unit-enabled" }}'
     helm_repo_url: https://ori-edge.github.io/k8s_gateway/
     helmrelease_spec:
