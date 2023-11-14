@@ -2084,6 +2084,8 @@ units:
         node_policies: '{{ .Values.sriov.node_policies | include "preserve-type" }}'
 
   coredns:
+    depends_on:
+      rke2-coredns-pdb: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/coredns
@@ -2100,6 +2102,12 @@ units:
         substitute:
           CLUSTER_EXTERNAL_IP: '{{ .Values.cluster_external_ip }}'
           CLUSTER_EXTERNAL_DOMAIN: '{{ .Values.cluster_external_domain }}'
+
+  rke2-coredns-pdb:
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/rke2-coredns-pdb
+      wait: true
 
   longhorn-crd:
     enabled_conditions:
