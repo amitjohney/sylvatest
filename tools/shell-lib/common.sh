@@ -15,7 +15,7 @@ else
   export IN_CI=0
 fi
 
-if ! [[ $# -eq 1 && -f ${1}/kustomization.yaml ]]; then
+if ! [[ $# -eq 1 && (-f ${1}/kustomization.yaml || -L ${1}/kustomization.yaml) ]]; then
     echo "Usage: $0 [env_name]"
     echo "This script expects to find a kustomization in [env_name] directory to generate management-cluster configuration and secrets"
     exit 1
@@ -41,6 +41,10 @@ end_section() {
   fi
 }
 
+function _kustomize {
+  kustomize build --load-restrictor LoadRestrictionsNone $1
+}
+
 function check_pivot_has_ran() {
   if kubectl wait --for condition=complete --timeout=0s job pivot-job-default -n kube-job > /dev/null 2>&1; then
       if [ ! -f "management-cluster-kubeconfig" ]; then
@@ -58,7 +62,7 @@ function check_pivot_has_ran() {
 
 function validate_input_values {
   echo_b "\U0001F50E Validate input files"
-  yq --header-preprocess=false $ENV_PATH/*.yaml 1> /dev/null
+  find $ENV_PATH -name "*.yaml" -exec yq --header-preprocess=false {} \; 1> /dev/null
 }
 
 function retrieve_kubeconfig {
@@ -86,7 +90,7 @@ function ensure_flux {
             B64_CERTS=$(yq '.oci_registry_extra_ca_certs | @base64' ${ENV_PATH}/values.yaml)
             yq -i ".data[\"extra-ca-certs.pem\"]=\"$B64_CERTS\"" ${BASE_DIR}/kustomize-units/flux-system/components/extra-ca/certs.yaml
         fi
-        kubectl kustomize ${BASE_DIR}/kustomize-units/flux-system/offline | envsubst | kubectl apply -f -
+        _kustomize ${BASE_DIR}/kustomize-units/flux-system/offline | envsubst | kubectl apply -f -
         command -v git &>/dev/null && git checkout HEAD -- ${BASE_DIR}/kustomize-units/flux-system/
         echo_b "\U000023F3 Wait for Flux to be ready..."
         kubectl wait --for condition=Available --timeout 600s -n flux-system --all deployment
@@ -155,7 +159,7 @@ function set_wc_namespace() {
 }
 
 function inject_bootstrap_values() {
-  # this function transforms the output of 'kubectl kustomize ${ENV_PATH}'
+  # this function transforms the output of '_kustomize ${ENV_PATH}'
   # to add bootstrap.values.yaml into the valuesFiles field of the HelmRelease
   #
   # this field is not exactly the same depending on whether we use a GitRepository as sources
@@ -207,7 +211,7 @@ EOF
 
   # for bootstrap cluster, we need to inject bootstrap values
   # (for mgmt cluster, we do not so we "pipe through" with "cat")
-  kubectl kustomize ${PREVIEW_DIR} \
+  _kustomize ${PREVIEW_DIR} \
     | define_source \
     | (if [[ ${KUBECONFIG:-} =~ management-cluster-kubeconfig$ ]]; then cat ; else inject_bootstrap_values ; fi) \
     | kubectl apply -f -

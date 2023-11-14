@@ -4,7 +4,7 @@ It is not the only way to instanciate the chart, neither the simplest one, but i
 
 # Managing sylva-units helmrelease values
 
-We use [Kustomize](https://kubectl.docs.kubernetes.io/references/kustomize/kustomization/) to generate ConfigMaps and Secrets that are used to instantiate the `sylva-units` Helm chart [helm-release.yaml](../kustomize-units/sylva-units/base/helm-release.yaml) as override values over the chart default values [values.yaml](../charts/sylva-units/values.yaml). These kustomizations are just provided as samples to help users build resources that follow the expected format, feel free to build them to see how they look like (you can use `kubectl kustomize environment-values/kubeadm-capd` for example)
+We use [Kustomize](https://kubectl.docs.kubernetes.io/references/kustomize/kustomization/) to generate ConfigMaps and Secrets that are used to instantiate the `sylva-units` Helm chart [helm-release.yaml](../kustomize-units/sylva-units/base/helm-release.yaml) as override values over the chart default values [values.yaml](../charts/sylva-units/values.yaml). These kustomizations are just provided as samples to help users build resources that follow the expected format, feel free to build them to see how they look like (you can use `kubectl kustomize environment-values/kubeadm-capd` for example, or `kustomize build --load-restrictor LoadRestrictionsNone environment-values/rke2-capo` if your `environment-values/rke2-capo/kustomization.yaml` is a symbolic link).
 
 The typical pattern used to inject values consists in creating a ConfigMap or a Secret, and append it to the list of values used by the chart, for example:
 

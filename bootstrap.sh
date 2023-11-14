@@ -23,7 +23,7 @@ echo_b "\U0001F5D1 Delete preview chart and namespace"
 cleanup_preview
 
 echo_b "\U0001F4DC Install sylva-units Helm release and associated resources"
-kubectl kustomize ${ENV_PATH} | \
+_kustomize ${ENV_PATH} | \
   define_source | \
   inject_bootstrap_values | \
   kubectl apply -f -
