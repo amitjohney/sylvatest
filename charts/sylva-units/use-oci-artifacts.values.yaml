@@ -71,8 +71,6 @@
 _internal:
   sylva_core_version: '{{ regexReplaceAll "[+][0-9]+$" .Chart.Version "" }}'
 
-sylva_core_oci_registry: '{{ .Values.sylva_base_oci_registry }}/sylva-core'
-
 source_templates:
 
   sylva-core:
