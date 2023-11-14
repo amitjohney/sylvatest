@@ -28,7 +28,7 @@ kubectl kustomize ${ENV_PATH} | \
   inject_bootstrap_values | \
   kubectl apply -f -
 
-echo_b "\U0001F3AF Trigger reconciliation of Flux units"
+echo_b "\U0001F3AF Trigger reconciliation of units"
 # this is just to force-refresh on refreshed parameters
 force_reconcile helmrelease sylva-units
 

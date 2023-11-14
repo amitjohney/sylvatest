@@ -33,12 +33,12 @@ cleanup_preview
 echo_b "\U0001F4DC Update sylva-units Helm release and associated resources"
 kubectl kustomize ${ENV_PATH} | define_source | kubectl apply -f -
 
-echo_b "\U0001F3AF Trigger reconciliation of Flux units"
+echo_b "\U0001F3AF Trigger reconciliation of units"
 
 # this is just to force-refresh on refreshed parameters
 force_reconcile helmrelease sylva-units
 
-echo_b "\U000023F3 Wait for Flux units becoming ready"
+echo_b "\U000023F3 Wait for units to be ready"
 
 sylvactl watch --kubeconfig management-cluster-kubeconfig --reconcile --timeout $(ci_remaining_minutes_and_at_most 20) -n default
 
