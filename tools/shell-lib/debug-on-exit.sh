@@ -1,26 +1,60 @@
 # Grab some info in case of failure, essentially usefull to troubleshoot CI, fell free to add your own commands while troubleshooting
 
-function dump_flux_resources() {
-    local cluster_dir=$1
-    echo "Dumping Flux resources to $cluster_dir"
-    for kind in gitrepositories helmcharts helmrepositories helmreleases kustomizations ; do
-        if [[ $kind == helmreleases || $kind == kustomizations ]]; then
-            flux get $kind -A > $cluster_dir/flux-$kind.summary.txt
-        else
-            kubectl get $kind -o wide -A > $cluster_dir/flux-$kind.summary.txt
-        fi
-        kubectl get $kind -o yaml -A > $cluster_dir/flux-$kind.yaml
-    done
-}
+# list of kinds to dump
+#
+# for Cluster, we add the apiGroup because we want to dump the CAPI Cluster
+# (Clusters.*cluster.x-k8s.io) not the Rancher one (Clusters.provisioning.cattle.io)
+additional_resources="
+  HelmReleases
+  Kustomizations
+  StatefulSets
+  Jobs
+  CronJobs
+  PersistentVolumes
+  PersistentVolumeClaims
+  ConfigMaps
+  Clusters.*cluster.x-k8s.io
+  MachineDeployments
+  Machines
+  KubeadmControlPlanes
+  KubeadmConfigTemplates
+  KubeadmConfigs
+  RKE2ControlPlanes
+  RKE2ConfigTemplates
+  RKE2Configs
+  DockerClusters
+  DockerMachineTemplates
+  DockerMachines
+  VSphereClusters
+  VSphereMachineTemplates
+  VSphereMachines
+  OpenStackClusters
+  OpenStackMachineTemplates
+  OpenStackMachines
+  Metal3Clusters
+  Metal3MachineTemplates
+  Metal3Machines
+  Metal3DataTemplates
+  BaremetalHosts
+"
 
 function dump_additional_resources() {
     local cluster_dir=$1
     shift
     for cr in $@; do
       echo "Dumping resources $cr in the whole cluster"
-      if kubectl api-resources | grep -q $cr ; then
-        kubectl get $cr -A -o wide >  $cluster_dir/$cr.txt
-        kubectl get $cr -A -o yaml >> $cluster_dir/$cr.yaml
+      if kubectl api-resources | grep -qi $cr ; then
+        base_filename=$cluster_dir/${cr/.\**/}
+        kind=${cr/\*/}  # transform the .* used for matching kubectl api-resource, into a plain '.'
+                        # (see Clusters.*cluster.x-k8s.io above)
+
+        if [[ $kind == HelmReleases || $kind == Kustomizations ]]; then
+            flux get $kind -A > $base_filename.txt
+        else
+            kubectl get $kind -A -o wide > $base_filename.txt
+        fi
+
+        kubectl get $kind -A -o yaml > $base_filename.yaml
       fi
     done
 }
@@ -35,8 +69,7 @@ df -h || true
 echo "Performing dump on bootstrap cluster"
 kubectl cluster-info dump -A -o yaml --output-directory=bootstrap-cluster-dump
 
-dump_flux_resources bootstrap-cluster-dump
-dump_additional_resources bootstrap-cluster-dump statefulsets baremetalhosts clusters.cluster
+dump_additional_resources bootstrap-cluster-dump $additional_resources
 
 if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
     export KUBECONFIG=${KUBECONFIG:-$BASE_DIR/management-cluster-kubeconfig}
@@ -50,8 +83,7 @@ if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
     echo "Performing dump on management cluster"
     kubectl cluster-info dump -A -o yaml --output-directory=management-cluster-dump
 
-    dump_flux_resources management-cluster-dump
-    dump_additional_resources management-cluster-dump statefulsets baremetalhosts clusters.cluster
+    dump_additional_resources management-cluster-dump $additional_resources
 fi
 
 echo "Dump node logs"
