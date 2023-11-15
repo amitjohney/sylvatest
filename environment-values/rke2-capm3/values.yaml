@@ -28,7 +28,6 @@ cluster:
     machine_image_url: http://{{ .Values.display_external_ip }}/ubuntu-22.04-plain.qcow2
     machine_image_format: qcow2
     machine_image_checksum: http://{{ .Values.display_external_ip }}/ubuntu-22.04-plain.qcow2.sha256sum
-    machine_image_checksum_type: sha256
     public_pool_network: 10.188.36.128
     public_pool_gateway: 10.188.36.129
     public_pool_start: 10.188.36.148

@@ -2401,6 +2401,7 @@ cluster:
 
   capm3:
     nodeReuse: '{{ not (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") | include "as-bool" }}'  # until https://gitlab.com/sylva-projects/sylva-core/-/issues/705 is solved
+    machine_image_checksum_type: sha256
 
   enable_longhorn: '{{ or (tuple . "longhorn" | include "unit-enabled") (tuple . .Values.units.longhorn.enabled | include "interpret-for-test") | include "as-bool" }}'
 
