@@ -1098,6 +1098,34 @@
                   "type": "null"
                 }
               ]
+            },
+            "provisioning_pool_interface": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "$ref": "#/$defs/linux-ifname"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "public_pool_interface": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "$ref": "#/$defs/linux-ifname"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             }
           }
         },
@@ -3248,6 +3276,34 @@
                     }
                   ]
                 },
+                "provisioning_pool_interface": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "$ref": "#/$defs/linux-ifname"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "public_pool_interface": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "$ref": "#/$defs/linux-ifname"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
                 "public_pool_name": {
                   "anyOf": [
                     {
@@ -4683,13 +4739,11 @@
                 "anyOf": [
                   {
                     "required": [
-                      "public_pool_name",
                       "public_pool_network",
                       "public_pool_gateway",
                       "public_pool_end",
                       "public_pool_start",
                       "public_pool_prefix",
-                      "provisioning_pool_name",
                       "provisioning_pool_network",
                       "provisioning_pool_gateway",
                       "provisioning_pool_end",

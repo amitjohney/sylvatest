@@ -35,13 +35,11 @@ cluster:
     machine_image_format: qcow2
     machine_image_checksum: http://os-image-server-ubuntu-jammy-plain-rke2-1-26-9.os-images.svc.cluster.local:8080/ubuntu-jammy-plain-rke2-1.26.9.qcow2.sha256sum
     machine_image_checksum_type: sha256
-    public_pool_name: "public-pool"
     public_pool_network: 192.168.100.0
     public_pool_gateway: 192.168.100.1
     public_pool_start: 192.168.100.20
     public_pool_end: 192.168.100.50
     public_pool_prefix: "24"
-    provisioning_pool_name: "provisioning-pool"
     provisioning_pool_network: 192.168.10.0
     provisioning_pool_gateway: 192.168.10.1
     provisioning_pool_start: 192.168.10.20

@@ -29,13 +29,11 @@ cluster:
     machine_image_format: qcow2
     machine_image_checksum: http://{{ .Values.display_external_ip }}/ubuntu-22.04-plain.qcow2.sha256sum
     machine_image_checksum_type: sha256
-    public_pool_name: "public-pool"
     public_pool_network: 10.188.36.128
     public_pool_gateway: 10.188.36.129
     public_pool_start: 10.188.36.148
     public_pool_end: 10.188.36.148
     public_pool_prefix: "26"
-    provisioning_pool_name: "provisioning-pool"
     provisioning_pool_network: 10.199.39.192
     provisioning_pool_gateway: 10.199.39.193
     provisioning_pool_start: 10.199.39.219
