@@ -7,3 +7,4 @@ resources:
   - neuvector-tls.yaml
   - neuvector-config.yaml
   - kyverno-exception.yaml
+  - pdb.yaml
