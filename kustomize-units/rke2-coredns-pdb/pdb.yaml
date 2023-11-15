@@ -1,0 +1,13 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: rke2-coredns-pdb
+  labels:
+    app.kubernetes.io/instance: rke2-coredns
+    app.kubernetes.io/name: rke2-coredns
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: rke2-coredns
+      app.kubernetes.io/name: rke2-coredns

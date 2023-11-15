@@ -2069,7 +2069,15 @@ units:
       values:
         node_policies: '{{ .Values.sriov.node_policies | include "preserve-type" }}'
 
+  rke2-coredns-pdb:
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/rke2-coredns-pdb
+      wait: true
+
   coredns:
+    depends_on:
+      rke2-coredns-pdb: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/coredns
