@@ -1538,10 +1538,17 @@ units:
         substitute:
           FLUX_ADMIN_USERNAME: '{{ .Values.flux_webui.admin_user }}'
 
+  rancher-pdb:
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/rancher-pdb
+      wait: true
+
   rancher:
     depends_on:
       cert-manager: true
       k8s-gateway: true
+      rancher-pdb: true
       sylva-ca-certs: true
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
       synchronize-secrets: true
