@@ -5,6 +5,7 @@
 # for Cluster, we add the apiGroup because we want to dump the CAPI Cluster
 # (Clusters.*cluster.x-k8s.io) not the Rancher one (Clusters.provisioning.cattle.io)
 additional_resources="
+  Namespaces
   HelmReleases
   Kustomizations
   StatefulSets
