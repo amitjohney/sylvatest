@@ -126,11 +126,13 @@ units:
     enabled: true
     kustomization_spec:
       kubeConfig: null
+      targetNamespace: null
 
   pause-cluster-reconciliation:
     enabled: true
     kustomization_spec:
       kubeConfig: null
+      targetNamespace: null
 
   namespace-defs:
     enabled: true
@@ -264,6 +266,9 @@ units:
       - target:
           kind: ConfigMap
         patch: |
+          - op: replace
+            path: /metadata/name
+            value: check-rancher-clusters-job-cattle-system-cm
           - op: replace
             path: /data/kube-job.sh
             value: |

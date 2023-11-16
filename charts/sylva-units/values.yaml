@@ -722,7 +722,7 @@ units:
         patch: |
           - op: replace
             path: /metadata/name
-            value: keycloak-add-client-scope-job-cm
+            value: keycloak-add-client-scope-job-keycloak-cm
           - op: replace
             path: /data/kube-job.sh
             value: |
@@ -1313,6 +1313,9 @@ units:
           kind: ConfigMap
         patch: |
           - op: replace
+            path: /metadata/name
+            value: '{{ .Values.cluster.name }}-pause-cluster-reconciliation-job-{{ .Release.Namespace }}-cm'
+          - op: replace
             path: /data/kube-job.sh
             value: |
               #!/bin/bash
@@ -1339,6 +1342,9 @@ units:
       - target:
           kind: ConfigMap
         patch: |
+          - op: replace
+            path: /metadata/name
+            value: '{{ .Values.cluster.name }}-resume-cluster-reconciliation-job-{{ .Release.Namespace }}-cm'
           - op: replace
             path: /data/kube-job.sh
             value: |

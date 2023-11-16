@@ -17,7 +17,7 @@ metadata:
   namespace: cattle-system
 subjects:
 - kind: ServiceAccount
-  name: ${JOB_NAME}-sa
+  name: ${JOB_NAME}-${JOB_TARGET_NAMESPACE:-default}-sa
   namespace: kube-job
 roleRef:
   kind: Role
