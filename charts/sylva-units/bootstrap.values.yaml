@@ -72,7 +72,9 @@ units:
           ironic:
             # Address of the host, that will be reachable from the outside
             ironicIP: >-
-              {{- if (tuple . "capm3" | include "unit-enabled") -}}
+              {{- if  .Values.emulate_bm | include "preserve-type" -}}
+                {{- .Values.metal3.bootstrap_ip -}}
+              {{- else if (tuple . "capm3" | include "unit-enabled") -}}
                 {{- if .Values._internal.ironic_ip -}}
                   {{- .Values._internal.ironic_ip -}}
                 {{- else -}}
@@ -94,6 +96,19 @@ units:
         ironicInspectorPassword: '{{ .Values._internal.default_password }}'
     labels:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
+
+  m3capo-sushy:
+    enabled_conditions:
+      - '{{ tuple . "capm3" | include "unit-enabled" }}'
+      - '{{ .Values.emulate_bm | include "preserve-type" }}'
+    depends_on:
+      cert-manager: true
+    kustomization_spec:
+      path: ./kustomize-units/m3capo-sushy
+      wait: true
+      postBuild:
+        substitute:
+          BOOTSTRAP_IP: '{{ .Values.metal3.bootstrap_ip }}'
 
   bootstrap-local-path:
     enabled_conditions:
@@ -413,7 +428,8 @@ units:
         secretRef:
           name: '{{ .Values.cluster.name }}-kubeconfig'
 
-display_external_ip: '{{ .Values.metal3 | dig "external_bootstrap_ip" (.Values.metal3 | dig "bootstrap_ip" "127.0.0.1") }}'
+#display_external_ip: '{{ .Values.metal3 | dig "external_bootstrap_ip" (.Values.metal3 | dig "bootstrap_ip" "127.0.0.1") }}'
+display_external_ip: '{{ .Values.metal3 | dig "bootstrap_ip" (.Values.metal3 | dig "bootstrap_ip" "127.0.0.1") }}'
 
 cluster_public_endpoint: '{{ tuple (printf "https://%s:%s" .Values._internal.bootstrap_node_ip "8443") (tuple . "libvirt-metal" | include "unit-enabled") | include "set-only-if" }}'
 
@@ -432,6 +448,8 @@ units_override_enabled:
   - calico-crd
   - calico
   - tigera-clusterrole
+  - m3capo-cluster-resources
+  - m3capo-sushy
   - management-cluster-flux
   - management-cluster-configs
   - management-sylva-units

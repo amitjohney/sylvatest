@@ -62,7 +62,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3.git
       ref:
-        tag: 0.7.0
+        branch: manage_pxe
 
   metal3-suse:
     kind: GitRepository
@@ -76,7 +76,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.1.18
+        branch: introduce_m3_on_capo
 
   local-path-provisioner:
     kind: GitRepository
@@ -990,6 +990,55 @@ units:
                 capabilities:
                   drop:
                     - ALL
+
+  m3capo-sushy:
+   enabled_conditions:
+   - '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+   - '{{ .Values.emulate_bm | include "preserve-type" }}'
+   repo: sylva-core
+   depends_on:
+     cert-manager: true
+     heat-operator: true
+     capo-cluster-resources: true
+     m3capo-cluster-resources: true
+   kustomization_spec:
+     path: ./kustomize-units/m3capo-sushy
+     wait: true
+     postBuild:
+       substituteFrom:
+       - kind: ConfigMap
+         name: m3capo-cluster-resources
+         optional: true
+   kustomization_substitute_secrets:
+     CAPO_CLOUD_YAML: '{{ .Values.cluster.capo.clouds_yaml  | toYaml | b64enc }}'
+     CAPO_CACERT: '{{ (.Values.cluster.capo.cacert|default "") | b64enc }}'
+
+  m3capo-cluster-resources:
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+    - '{{ .Values.emulate_bm | include "preserve-type" }}'
+    repo: sylva-core
+    depends_on:
+      heat-operator: true
+      capo-cluster-resources: true
+    kustomization_spec:
+      path: ./kustomize-units/m3capo-cluster-resources
+      targetNamespace: default
+      wait: true
+      postBuild:
+        substitute:
+          M3CAPO_STACK_NAME_PREFIX: '{{ .Values.cluster.name }}-m3capo-cluster-{{ tuple . .Values.cluster.capo.resources_tag | include "interpret-as-string" | replace "." "-" }}'
+          M3CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
+          M3CAPO_FLAVOR_NAME: '{{ .Values.cluster.capo.flavor_name }}'
+          M3CAPO_IMAGE_NAME: '{{ .Values.cluster.capo.image_name }}'
+          M3CAPO_TAG: '{{ .Values.cluster.capo.resources_tag }}'
+          M3CAPO_SERVERS_NUMBER: '{{ .Values.cluster.control_plane_replicas }}'
+          M3CAPO_PREFIX_SERVER_NAME: "{{ .Values.cluster.name }}"
+        substituteFrom:
+        - kind: ConfigMap
+          name: capo-cluster-resources
+          optional: true
+
   metal3-suse:
     enabled: false
     depends_on:
@@ -1103,10 +1152,10 @@ units:
         services:
           ironic:
             # Specify the IP address used by Ironic service
-            ironicIP: '{{ .Values.cluster_external_ip }}'
+            ironicIP: '{{ .Values.emulate_bm | ternary .Values.metal3.external_bootstrap_ip .Values.cluster.cluster_external_ip }}'
             # We allow shared IPs because we are exposing (by design) a single cluster external IP
             annotations:
-              metallb.universe.tf/allow-shared-ip: cluster-external-ip
+              metallb.universe.tf/allow-shared-ip: '{{ .Values.emulate_bm | ternary "external-bootstrap-ip" "cluster-external-ip" }}'
         mariadb:
           persistence:
             storageClass: '{{ .Values._internal.default_storage_class }}'
@@ -1191,7 +1240,8 @@ units:
       capi: true
       '{{ .Values.cluster.capi_providers.infra_provider }}': true
       '{{ .Values.cluster.capi_providers.bootstrap_provider }}': true
-      capo-cluster-resources: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+      capo-cluster-resources: '{{ or (.Values.cluster.capi_providers.infra_provider | eq "capo") (.Values.emulate_bm | include "preserve-type") }}'
+      m3capo-cluster-resources: '{{ and (.Values.emulate_bm | include "preserve-type") (tuple . "m3capo-cluster-resources" | include "unit-enabled") }}'
       '{{ .Values._internal.metal3_unit }}': '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
       default/os-image-server: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
     labels:
@@ -1225,29 +1275,34 @@ units:
           name: capo-cluster-resources
           valuesKey: allocated_ip
           targetPath: cluster_external_ip
-          optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
+          optional: '{{ (and (not (eq .Values.cluster.capi_providers.infra_provider "capo")) (not (.Values.emulate_bm | include "preserve-type")) ) | include "as-bool" }}'
         - kind: ConfigMap
           name: capo-cluster-resources
           valuesKey: allocated_fip
           targetPath: cluster_public_ip
-          optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
+          optional: '{{ (and (not (eq .Values.cluster.capi_providers.infra_provider "capo")) (not (.Values.emulate_bm | include "preserve-type")) ) | include "as-bool" }}'
         - kind: ConfigMap
           name: capo-cluster-resources
           valuesKey: control_plane_servergroup_id
           targetPath: control_plane.capo.server_group_id
-          optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
+          optional: '{{ (and (not (eq .Values.cluster.capi_providers.infra_provider "capo")) (not (.Values.emulate_bm | include "preserve-type")) ) | include "as-bool" }}'
         - kind: ConfigMap
           name: capo-cluster-resources
           valuesKey: worker_servergroup_id
           targetPath: machine_deployment_default.capo.server_group_id
-          optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
+          optional: '{{ (and (not (eq .Values.cluster.capi_providers.infra_provider "capo")) (not (.Values.emulate_bm | include "preserve-type")) ) | include "as-bool" }}'
+        - kind: ConfigMap
+          name: m3capo-cluster-resources
+          valuesKey: BOOTSTRAP_IP
+          targetPath: capm3.cluster_provision_external_ip
+          optional: true
     # we pass everything that is under `cluster` to this unit that uses sylva-capi-cluster chart
     # (we do it via a secret because some of the values are credentials in many scenarios)
     helm_secret_values: '{{ .Values.cluster | include "preserve-type" }}'
 
   heat-operator:
     enabled_conditions:
-    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+    - '{{ or (.Values.cluster.capi_providers.infra_provider | eq "capo") (.Values.emulate_bm | include "preserve-type") }}'
     repo: sylva-core
     depends_on:
       cert-manager: true
@@ -1280,7 +1335,7 @@ units:
 
   capo-cluster-resources:
     enabled_conditions:
-    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+    - '{{ or (.Values.cluster.capi_providers.infra_provider | eq "capo") (.Values.emulate_bm | include "preserve-type") }}'
     repo: sylva-core
     depends_on:
       heat-operator: true
@@ -2442,6 +2497,8 @@ openstack:
   control_plane_affinity_policy: soft-anti-affinity
   worker_affinity_policy: soft-anti-affinity
 
+emulate_bm: true
+
 metal3:
   provider: sylva # sylva or suse
   # external_bootstrap_ip:
@@ -2644,6 +2701,8 @@ shared_workload_clusters_values:
   units:
     cluster-import:
       enabled: '{{ tuple . "rancher" | include "unit-enabled" }}'
+    m3capo-cluster-resources:
+      enabled: '{{ .Values.emulate_bm }}'
   metal3:
     provider: '{{ .Values.metal3.provider }}'
 

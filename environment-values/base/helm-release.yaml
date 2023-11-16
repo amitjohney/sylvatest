@@ -53,6 +53,11 @@ spec:
     valuesKey: endpoint
     targetPath: cluster_public_endpoint
     optional: true
+  - kind: ConfigMap
+    name: m3capo-cluster-resources
+    valuesKey: BOOTSTRAP_IP
+    targetPath: metal3.external_bootstrap_ip
+    optional: true
   values:
     source_templates:
       sylva-core:

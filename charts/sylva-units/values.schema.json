@@ -3481,6 +3481,33 @@
                       "type": "null"
                     }
                   ]
+                },
+                "cluster_provision_external_ip": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "ipv4"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "dhcp_enable": {
+                  "anyOf": [
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 }
               }
             },
@@ -5637,6 +5664,9 @@
     },
     "openstack": {
       "type": "object"
+    },
+    "emulate_bm": {
+      "type": "boolean"
     },
     "metal3": {
       "type": "object"

@@ -62,6 +62,20 @@ unit_templates:
 
 # here we select which units we want to enable for a workload cluster
 units:
+  m3capo-cluster-resources:
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+    - '{{ .Values.emulate_bm | include "preserve-type" }}'
+    repo: sylva-core
+    depends_on:
+      heat-operator: false
+      default/heat-operator: true
+      capo-cluster-resources: true
+    kustomization_spec:
+      # because this resource lives in the mgmt cluster:
+      kubeConfig: null
+      targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
+
   capo-cluster-resources:
     enabled: on
     depends_on:

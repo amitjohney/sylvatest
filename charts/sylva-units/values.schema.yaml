@@ -503,6 +503,9 @@ properties:
     type: object
     # actual constraints are later in this file under '# additional constraints for .openstack'
 
+  emulate_bm:  # -------------------------------
+    type: boolean
+
   metal3:  # -------------------------------
     type: object
     # actual constraints are later in this file under '# additional constraints for .metal3'

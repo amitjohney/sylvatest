@@ -85,7 +85,7 @@ fi
 # Try to retrieve bootstrap_ip config in values.yaml and expose ironic and os-image-server ports if defined
 if yq -e '.metal3.bootstrap_ip' ${VALUES_FILE} &>/dev/null; then
     BOOTSTRAP_IP=$(yq -e '.metal3.bootstrap_ip' ${VALUES_FILE})
-    for port in "5050/TCP" "6180/TCP" "6385/TCP" "80/TCP" "443/TCP"; do
+    for port in "5050/TCP" "6180/TCP" "6385/TCP" "9999/TCP" "80/TCP" "443/TCP"; do
         KIND_CONFIG=$(echo "$KIND_CONFIG" | yq '.nodes[0].extraPortMappings += [{"containerPort": '${port%/*}', "hostPort": '${port%/*}', "listenAddress": "'$BOOTSTRAP_IP'", "protocol": "'${port#*/}'"}]')
     done
 fi
