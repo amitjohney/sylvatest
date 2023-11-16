@@ -126,13 +126,13 @@ units:
     enabled: true
     kustomization_spec:
       kubeConfig: null
-      targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
+      targetNamespace: null
 
   pause-cluster-reconciliation:
     enabled: true
     kustomization_spec:
       kubeConfig: null
-      targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
+      targetNamespace: null
 
   namespace-defs:
     enabled: true
@@ -268,7 +268,7 @@ units:
         patch: |
           - op: replace
             path: /metadata/name
-            value: check-rancher-clusters-job-cm
+            value: check-rancher-clusters-job-cattle-system-cm
           - op: replace
             path: /data/kube-job.sh
             value: |

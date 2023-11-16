@@ -17,7 +17,7 @@ scheduled-cleanup-capo:
     - |
       echo "Heat Stack TTL: $STACK_TTL"
     - |
-      for STACK in $(openstack stack list -f value -c "Stack Name" | grep -E '^(management|workload|capo)-cluster' ); do
+      for STACK in $(openstack stack list -f value -c "Stack Name" | grep -E '^(mgmt-|wc-|capo-cluster)' ); do
         STACK_TIME=$(date -d "$(openstack stack show ${STACK} -c creation_time -f value | tr T ' ' | tr -d Z )" +%s)
         THIS_TIME=$(date +%s)
         # we'll only consider for cleanup tags applied to resources created more than STACK_TTL seconds ago

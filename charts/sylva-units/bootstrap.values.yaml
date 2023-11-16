@@ -197,7 +197,7 @@ units:
         patch: |
           - op: replace
             path: /metadata/name
-            value: copy-configs-job-cm
+            value: copy-configs-job-default-cm
           - op: replace
             path: /data/kube-job.sh
             value: |
@@ -305,7 +305,7 @@ units:
         patch: |
           - op: replace
             path: /metadata/name
-            value: pivot-job-cm
+            value: pivot-job-default-cm
           - op: replace
             path: /data/kube-job.sh
             value: |

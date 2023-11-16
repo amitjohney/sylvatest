@@ -722,7 +722,7 @@ units:
         patch: |
           - op: replace
             path: /metadata/name
-            value: keycloak-add-client-scope-job-cm
+            value: keycloak-add-client-scope-job-keycloak-cm
           - op: replace
             path: /data/kube-job.sh
             value: |
@@ -1305,7 +1305,7 @@ units:
       force: true
       postBuild:
         substitute:
-          JOB_NAME: pause-cluster-reconciliation-job
+          JOB_NAME: '{{ .Values.cluster.name }}-pause-cluster-job'
           JOB_TARGET_NAMESPACE: '{{ .Release.Namespace }}'
           JOB_CHECKSUM: '{{ .Values | toJson | sha256sum }}'
       _patches:
@@ -1314,7 +1314,7 @@ units:
         patch: |
           - op: replace
             path: /metadata/name
-            value: pause-cluster-reconciliation-job-cm
+            value: '{{ .Values.cluster.name }}-pause-cluster-job-{{ .Release.Namespace }}-cm'
           - op: replace
             path: /data/kube-job.sh
             value: |
@@ -1335,7 +1335,7 @@ units:
       force: true
       postBuild:
         substitute:
-          JOB_NAME: resume-cluster-reconciliation-job
+          JOB_NAME: '{{ .Values.cluster.name }}-resume-cluster-job'
           JOB_TARGET_NAMESPACE: '{{ .Release.Namespace }}'
           JOB_CHECKSUM: '{{ .Values | toJson | sha256sum }}'
       _patches:
@@ -1344,7 +1344,7 @@ units:
         patch: |
           - op: replace
             path: /metadata/name
-            value: resume-cluster-reconciliation-job-cm
+            value: '{{ .Values.cluster.name }}-resume-cluster-job-{{ .Release.Namespace }}-cm'
           - op: replace
             path: /data/kube-job.sh
             value: |

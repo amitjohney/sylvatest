@@ -14,8 +14,8 @@ variables:
   ENV_TAG: "${CI_PIPELINE_ID}-${ENV_NAME}"
   ENV_TAG_OCI: "${CI_PIPELINE_ID}-${ENV_NAME}-oci"
   KIND_CLUSTER_NAME: bootstrap-${ENV_TAG}
-  MANAGEMENT_CLUSTER_NAME: management-cluster-${ENV_TAG}
-  WORKLOAD_CLUSTER_NAME: workload-cluster-${ENV_TAG}
+  MANAGEMENT_CLUSTER_NAME: mgmt-${ENV_TAG}
+  WORKLOAD_CLUSTER_NAME: wc-${ENV_TAG}
 
 .deployment_rules:
   - if: $CI_MERGE_REQUEST_LABELS =~ /renovate/ && $CAPO_TAG
@@ -54,8 +54,8 @@ variables:
   variables:
     OCI_TAG: $OCI_TAG_FORMAT
     KIND_CLUSTER_NAME: bootstrap-${ENV_TAG_OCI}
-    MANAGEMENT_CLUSTER_NAME: management-cluster-${ENV_TAG_OCI}
-    WORKLOAD_CLUSTER_NAME: workload-cluster-${ENV_TAG_OCI}
+    MANAGEMENT_CLUSTER_NAME: mgmt-${ENV_TAG_OCI}
+    WORKLOAD_CLUSTER_NAME: wc-${ENV_TAG_OCI}
   needs: !reference [.needs-publish-jobs]
 
 capd-preview-deploy:
