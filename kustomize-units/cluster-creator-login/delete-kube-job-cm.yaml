@@ -2,5 +2,5 @@ $patch: delete
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: kube-job-cm
+  name: ${JOB_NAME}-${JOB_TARGET_NAMESPACE:-default}-cm
   namespace: kube-job

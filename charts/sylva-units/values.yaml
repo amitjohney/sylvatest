@@ -1305,16 +1305,13 @@ units:
       force: true
       postBuild:
         substitute:
-          JOB_NAME: pause-cluster-reconciliation-job
+          JOB_NAME: '{{ .Values.cluster.name }}-pause-cluster-reconciliation-job'
           JOB_TARGET_NAMESPACE: '{{ .Release.Namespace }}'
           JOB_CHECKSUM: '{{ .Values | toJson | sha256sum }}'
       _patches:
       - target:
           kind: ConfigMap
         patch: |
-          - op: replace
-            path: /metadata/name
-            value: pause-cluster-reconciliation-job-cm
           - op: replace
             path: /data/kube-job.sh
             value: |
@@ -1335,16 +1332,13 @@ units:
       force: true
       postBuild:
         substitute:
-          JOB_NAME: resume-cluster-reconciliation-job
+          JOB_NAME: '{{ .Values.cluster.name }}-resume-cluster-reconciliation-job'
           JOB_TARGET_NAMESPACE: '{{ .Release.Namespace }}'
           JOB_CHECKSUM: '{{ .Values | toJson | sha256sum }}'
       _patches:
       - target:
           kind: ConfigMap
         patch: |
-          - op: replace
-            path: /metadata/name
-            value: resume-cluster-reconciliation-job-cm
           - op: replace
             path: /data/kube-job.sh
             value: |

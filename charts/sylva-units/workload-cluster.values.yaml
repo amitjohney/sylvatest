@@ -126,13 +126,11 @@ units:
     enabled: true
     kustomization_spec:
       kubeConfig: null
-      targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
 
   pause-cluster-reconciliation:
     enabled: true
     kustomization_spec:
       kubeConfig: null
-      targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
 
   namespace-defs:
     enabled: true
@@ -266,9 +264,6 @@ units:
       - target:
           kind: ConfigMap
         patch: |
-          - op: replace
-            path: /metadata/name
-            value: check-rancher-clusters-job-cm
           - op: replace
             path: /data/kube-job.sh
             value: |
