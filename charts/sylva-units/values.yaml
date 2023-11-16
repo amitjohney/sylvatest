@@ -350,92 +350,92 @@ units:
             trivy:
               storageClass: cinder-ceph-ssd
               size: 1Gi
-      _postRenderers:
-        - kustomize:
-            patchesStrategicMerge:
-              - kind: Deployment
-                apiVersion: apps/v1
-                spec:
-                  template:
-                    spec:
-                      containers:
-                      - name: harbor-chartmuseum
-                        securityContext:
-                          allowPrivilegeEscalation: false
-                          capabilities:
-                            drop:
-                            - ALL
-                          runAsNonRoot: true
-                          runAsGroup: 1000
-                          runAsUser: 1000
-                          seccompProfile:
-                            type: RuntimeDefault
-                      - name: harbor-core
-                        securityContext:
-                          allowPrivilegeEscalation: false
-                          capabilities:
-                            drop:
-                            - ALL
-                          runAsNonRoot: true
-                          runAsGroup: 1000
-                          runAsUser: 1000
-                          seccompProfile:
-                            type: RuntimeDefault
-                      - name: harbor-jobservice
-                        securityContext:
-                          allowPrivilegeEscalation: false
-                          capabilities:
-                            drop:
-                            - ALL
-                          runAsNonRoot: true
-                          runAsGroup: 1000
-                          runAsUser: 1000
-                          seccompProfile:
-                            type: RuntimeDefault
-                      - name: harbor-notary-server
-                        securityContext:
-                          allowPrivilegeEscalation: false
-                          capabilities:
-                            drop:
-                            - ALL
-                          runAsNonRoot: true
-                          runAsGroup: 1000
-                          runAsUser: 1000
-                          seccompProfile:
-                            type: RuntimeDefault
-                      - name: harbor-notary-signer
-                        securityContext:
-                          allowPrivilegeEscalation: false
-                          capabilities:
-                            drop:
-                            - ALL
-                          runAsNonRoot: true
-                          runAsGroup: 1000
-                          runAsUser: 1000
-                          seccompProfile:
-                            type: RuntimeDefault
-                      - name: harbor-portal
-                        securityContext:
-                          allowPrivilegeEscalation: false
-                          capabilities:
-                            drop:
-                            - ALL
-                          runAsNonRoot: true
-                          runAsGroup: 1000
-                          runAsUser: 1000
-                          seccompProfile:
-                            type: RuntimeDefault
-                      - name: harbor-registry
-                        securityContext:
-                          allowPrivilegeEscalation: false
-                          capabilities:
-                            drop:
-                            - ALL
-                          runAsNonRoot: true
-                          runAsGroup: 1000
-                          runAsUser: 1000
-                          seccompProfile:
-                            type: RuntimeDefault
+#      _postRenderers:
+#        - kustomize:
+#            patchesStrategicMerge:
+#              - kind: Deployment
+#                apiVersion: apps/v1
+#                spec:
+#                  template:
+#                    spec:
+#                      containers:
+#                      - name: harbor-chartmuseum
+#                        securityContext:
+#                          allowPrivilegeEscalation: false
+#                          capabilities:
+#                            drop:
+#                            - ALL
+#                          runAsNonRoot: true
+#                          runAsGroup: 1000
+#                          runAsUser: 1000
+#                          seccompProfile:
+#                            type: RuntimeDefault
+#                      - name: harbor-core
+#                        securityContext:
+#                          allowPrivilegeEscalation: false
+#                          capabilities:
+#                            drop:
+#                            - ALL
+#                          runAsNonRoot: true
+#                          runAsGroup: 1000
+#                          runAsUser: 1000
+#                          seccompProfile:
+#                            type: RuntimeDefault
+#                      - name: harbor-jobservice
+#                        securityContext:
+#                          allowPrivilegeEscalation: false
+#                          capabilities:
+#                            drop:
+#                            - ALL
+#                          runAsNonRoot: true
+#                          runAsGroup: 1000
+#                          runAsUser: 1000
+#                          seccompProfile:
+#                            type: RuntimeDefault
+#                      - name: harbor-notary-server
+#                        securityContext:
+#                          allowPrivilegeEscalation: false
+#                          capabilities:
+#                            drop:
+#                            - ALL
+#                          runAsNonRoot: true
+#                          runAsGroup: 1000
+#                          runAsUser: 1000
+#                          seccompProfile:
+#                            type: RuntimeDefault
+#                      - name: harbor-notary-signer
+#                        securityContext:
+#                          allowPrivilegeEscalation: false
+#                          capabilities:
+#                            drop:
+#                            - ALL
+#                          runAsNonRoot: true
+#                          runAsGroup: 1000
+#                          runAsUser: 1000
+#                          seccompProfile:
+#                            type: RuntimeDefault
+#                      - name: harbor-portal
+#                        securityContext:
+#                          allowPrivilegeEscalation: false
+#                          capabilities:
+#                            drop:
+#                            - ALL
+#                          runAsNonRoot: true
+#                          runAsGroup: 1000
+#                          runAsUser: 1000
+#                          seccompProfile:
+#                            type: RuntimeDefault
+#                      - name: harbor-registry
+#                        securityContext:
+#                          allowPrivilegeEscalation: false
+#                          capabilities:
+#                            drop:
+#                            - ALL
+#                          runAsNonRoot: true
+#                          runAsGroup: 1000
+#                          runAsUser: 1000
+#                          seccompProfile:
+#                            type: RuntimeDefault
       install:
         createNamespace: true
 
