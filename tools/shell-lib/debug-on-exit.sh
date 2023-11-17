@@ -2,8 +2,10 @@
 
 # list of kinds to dump
 #
-# for Cluster, we add the apiGroup because we want to dump the CAPI Cluster
-# (Clusters.*cluster.x-k8s.io) not the Rancher one (Clusters.provisioning.cattle.io)
+# for some resources, we add the apiGroup because there are resources
+# with same names in CAPI and Rancher provisioning.cattle.io/management.cattle.io API groups
+# we want the CAPI Cluster ones (e.g. Clusters.*cluster.x-k8s.io) rather than
+# the Rancher one (e.g Clusters.provisioning.cattle.io)
 additional_resources="
   Namespaces
   HelmReleases
@@ -26,9 +28,9 @@ additional_resources="
   DockerClusters
   DockerMachineTemplates
   DockerMachines
-  VSphereClusters
-  VSphereMachineTemplates
-  VSphereMachines
+  VSphereClusters.*cluster.x-k8s.io
+  VSphereMachineTemplates.*cluster.x-k8s.io
+  VSphereMachines.*cluster.x-k8s.io
   OpenStackClusters
   OpenStackMachineTemplates
   OpenStackMachines
