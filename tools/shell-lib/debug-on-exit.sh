@@ -50,9 +50,9 @@ function dump_additional_resources() {
                         # (see Clusters.*cluster.x-k8s.io above)
 
         if [[ $kind == HelmReleases || $kind == Kustomizations ]]; then
-            flux get $kind -A > $base_filename.txt
+            flux get ${kind,,} -A > $base_filename.summary.txt
         else
-            kubectl get $kind -A -o wide > $base_filename.txt
+            kubectl get $kind -A -o wide > $base_filename.summary.txt
         fi
 
         kubectl get $kind -A -o yaml > $base_filename.yaml
