@@ -126,13 +126,13 @@ units:
     enabled: true
     kustomization_spec:
       kubeConfig: null
-      targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
+      targetNamespace: null
 
   pause-cluster-reconciliation:
     enabled: true
     kustomization_spec:
       kubeConfig: null
-      targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
+      targetNamespace: null
 
   namespace-defs:
     enabled: true
