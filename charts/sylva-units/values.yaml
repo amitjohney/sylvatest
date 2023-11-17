@@ -2602,6 +2602,8 @@ shared_workload_clusters_values:
 
   sylva_base_oci_registry: '{{ .Values.sylva_base_oci_registry }}'
 
+  env_type: '{{ .Values.env_type }}'
+
   cluster:
     air_gapped: '{{ .Values.air_gapped | include "set-if-defined" }}'
     capi_providers: '{{ .Values.cluster.capi_providers | include "preserve-type" }}'
@@ -2618,6 +2620,8 @@ shared_workload_clusters_values:
       enabled: '{{ tuple . "rancher" | include "unit-enabled" }}'
   metal3:
     provider: '{{ .Values.metal3.provider }}'
+
+  openstack: '{{ omit .Values.openstack "floating_ip" | include "set-if-defined" }}'
 
 shared_workload_clusters_secret_values:
   cluster:
