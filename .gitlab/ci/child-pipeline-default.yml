@@ -7,6 +7,7 @@ stages:
   - deploy
   - update
   - deploy-wc
+  - update-wc
   - deployment-test
   - delete
 

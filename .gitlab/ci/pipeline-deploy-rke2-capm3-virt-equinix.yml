@@ -84,7 +84,6 @@ deploy-rke2-virt-m3-suse:
     - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
     - !reference [.common-deployment, post_deployment_common]
 
-
 deploy-wc-rke2-virt-m3:
   extends: .deploy-wc-in-equinix
   rules:
@@ -98,6 +97,38 @@ deploy-wc-rke2-virt-m3-suse:
     - if: $METAL3_PROVIDER == "suse"
   artifacts:
     expose_as: wc-rke2-capm3-virt-suse
+
+#----------------------------------------------------------
+
+.apply-wc-in-equinix:
+  extends: .deploy-wc-base
+  timeout: 1h
+  stage: update-wc
+  script:
+    - !reference [.common-deployment, script_common]
+    - !reference [.common-deployment, update_values]
+    - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
+    - !reference [.common-deployment, post_deployment_common]
+  variables:
+    DOCKER_HOST: ""
+    UPDATE_VALUES_FILE: $WC_APPLY_VALUES_FILE
+  tags:
+    - $CI_PIPELINE_IID
+    - equinix
+
+update-wc-rke2-virt-m3:
+  extends: [.apply-wc-in-equinix]
+  rules:
+    - if: $METAL3_PROVIDER == "sylva"
+  artifacts:
+    expose_as: update-wc-rke2-capm3-virt-sylva
+
+update-wc-rke2-virt-m3-suse:
+  extends: [.apply-wc-in-equinix]
+  rules:
+    - if: $METAL3_PROVIDER == "suse"
+  artifacts:
+    expose_as: update-wc-rke2-capm3-virt-suse
 
 #----------------------------------------------------------
 

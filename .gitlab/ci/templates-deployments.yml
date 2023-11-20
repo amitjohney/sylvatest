@@ -107,6 +107,12 @@ include:
         echo "No workload clusters here"
       fi
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_post_deployment\r\e[0K"
+  update_values:
+    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_update_values[collapsed=true]\r\e[0KApply specific values\e[0m"
+    - echo "Applying values from $UPDATE_VALUES_FILE "
+    - yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file $UPDATE_VALUES_FILE
+    - cat $values_file
+    - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_update_values\r\e[0K"
   os_cloud:
     # the OS_* variables below are set in the gitlab runner configuration
     # and contain information to connect to the OpenStack instance used
@@ -170,10 +176,11 @@ include:
     - !reference [.common-deployment, script_common]
     - !reference [.common-deployment, os_cloud]
     - !reference [.common-deployment, script_capo]
-    - yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file $APPLY_VALUES_FILE
-    - cat $values_file
+    - !reference [.common-deployment, update_values]
     - ./apply.sh environment-values/${ENV_NAME}
     - !reference [.common-deployment, post_deployment_common]
+  variables:
+    UPDATE_VALUES_FILE: $APPLY_VALUES_FILE
   tags:
     - $CAPO_PLATFORM_TAG
 
@@ -204,6 +211,24 @@ include:
     - !reference [.common-deployment, script_capo]
     - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
     - !reference [.common-deployment, post_deployment_common]
+  tags:
+    - $CAPO_PLATFORM_TAG
+
+.apply-wc-capo:
+  extends: .deploy-wc-base
+  stage: update-wc
+  script:
+    - !reference [.common-deployment, script_common]
+    - !reference [.common-deployment, os_cloud]
+    - !reference [.common-deployment, script_capo]
+    - !reference [.common-deployment, update_values]
+    - echo "WC values - $WC_APPLY_VALUES_FILE"
+    - echo "APPLY values - $APPLY_VALUES_FILE"
+    - echo "UPDATE VALUES FILE - $UPDATE_VALUES_FILE"
+    - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
+    - !reference [.common-deployment, post_deployment_common]
+  variables:
+    UPDATE_VALUES_FILE: $WC_APPLY_VALUES_FILE
   tags:
     - $CAPO_PLATFORM_TAG
 

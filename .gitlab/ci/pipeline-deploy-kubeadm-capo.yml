@@ -62,6 +62,22 @@ deploy-wc-kubeadm-capo-oci:
 
 #----------------------------------------------------------
 
+update-wc-kubeadm-capo:
+  extends: [.apply-wc-capo]
+  rules:
+    - if: $OCI_TAG == null
+  artifacts:
+    expose_as: update-wc-kubeadm-capo
+
+update-wc-kubeadm-capo-oci:
+  extends: [.apply-wc-capo]
+  rules:
+    - if: $OCI_TAG
+  artifacts:
+    expose_as: update-wc-kubeadm-capo-oci
+
+#----------------------------------------------------------
+
 
 test-workload-cluster-kubeadm-capo:
   extends: [.test-workload-cluster]
