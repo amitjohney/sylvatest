@@ -2265,6 +2265,19 @@
                         }
                       ]
                     },
+                    "common_security_group_name": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "$ref": "#/$defs/string-with-gotpl"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "identity_ref_secret": {
                       "anyOf": [
                         {
@@ -4339,6 +4352,19 @@
                               "type": "null"
                             }
                           ]
+                        },
+                        "common_security_group_name": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
                         }
                       }
                     },
@@ -4607,7 +4633,8 @@
                         "anyOf": [
                           {
                             "required": [
-                              "security_group_name"
+                              "security_group_name",
+                              "common_security_group_name"
                             ]
                           },
                           {
