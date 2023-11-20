@@ -126,7 +126,7 @@ spec:
         security-group-worker:
           type: OS::Neutron::SecurityGroup
           properties:
-            description: "Heat Stack managed security group for worker VMs"
+            description: "Heat Stack managed common security group for control_plane and worker VMs"
             name: { get_param: worker_security_group_name }
             rules:
               repeat:
