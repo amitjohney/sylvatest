@@ -9,6 +9,8 @@ source $(dirname $0)/tools/shell-lib/common.sh
 
 validate_input_values
 
+check_apply_kustomizations
+
 if [[ -f management-cluster-kubeconfig ]]; then
     export KUBECONFIG=${KUBECONFIG:-management-cluster-kubeconfig}
 else

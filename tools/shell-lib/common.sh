@@ -4,6 +4,7 @@ set -o pipefail
 export BASE_DIR="$(realpath $(dirname $0))"
 export PATH=${BASE_DIR}/bin:${PATH}
 
+CALLER_SCRIPT_NAME=$(basename ${BASH_SOURCE[1]})
 SYLVA_TOOLBOX_VERSION=${SYLVA_TOOLBOX_VERSION:-"v0.2.12"}
 SYLVA_TOOLBOX_IMAGE=${SYLVA_TOOLBOX_IMAGE:-container-images/sylva-toolbox}
 SYLVA_TOOLBOX_REGISTRY=${SYLVA_TOOLBOX_REGISTRY:-registry.gitlab.com/sylva-projects/sylva-elements}
@@ -23,6 +24,42 @@ else
     export ENV_PATH=$(readlink -f $1)
 fi
 
+function _kustomize {
+  kustomize build --load-restrictor LoadRestrictionsNone $1
+}
+
+function set_wc_namespace() {
+  local WORKLOAD_CLUSTER_NAMESPACE=$(basename ${ENV_PATH})
+  sed "s/WORKLOAD_CLUSTER_NAMESPACE/${WORKLOAD_CLUSTER_NAMESPACE}/g"
+}
+
+function check_apply_kustomizations() {
+  if [[ $CALLER_SCRIPT_NAME == *"apply.sh"* ]]; then
+    if [[ "$ENV_PATH" == *workload-clusters* ]]; then
+      echo "Error: you shouldn't be running apply.sh against a workload cluster directory ($ENV_PATH)."
+      exit 1
+    fi
+    result=$(_kustomize $ENV_PATH | yq eval-all -e 'select(.kind == "HelmRelease").spec.chart.spec.valuesFiles | any_c(. | test("(^|/)management.values.yaml$")) and select(.kind == "Namespace").metadata.name == "default"' 2>/dev/null ||:)
+    if [[ $result != *"true"* ]]; then
+      echo "The directory passed does not contain a management cluster kustomization."
+      exit 1
+    fi
+  fi
+
+  if [[ $CALLER_SCRIPT_NAME == *"apply-workload-cluster.sh"* ]]; then
+    wc_dir_name=$(basename "$ENV_PATH")
+    if [[ "$wc_dir_name" == "default" ]]; then
+      echo "Error: Please provide a valid workload cluster directory name, other than \"default\"."
+      exit 1
+    fi
+    result=$(_kustomize ${ENV_PATH} | set_wc_namespace | yq eval-all -e 'select(.kind == "HelmRelease").spec.chart.spec.valuesFiles | any_c(. | test("(^|/)workload-cluster.values.yaml$")) and select(.kind == "Namespace").metadata.name != "default"' 2>/dev/null ||:)
+    if [[ $result != *"true"* ]]; then
+      echo "The directory passed does not contains a workload cluster kustomization."
+      exit 1
+    fi
+  fi
+}
+
 export CURRENT_COMMIT=${CI_COMMIT_SHA:-$(git rev-parse HEAD)}
 export SYLVA_CORE_REPO=${SYLVA_CORE_REPO:-$(git remote get-url origin | sed 's|^git@\([^:]\+\):|https://\1/|')}
 
@@ -39,10 +76,6 @@ end_section() {
   if (( ${current_section_number:-0} > 0 )) ; then
     echo -e "\e[0Ksection_end:`date +%s`:section_$current_section_number\r\e[0K"
   fi
-}
-
-function _kustomize {
-  kustomize build --load-restrictor LoadRestrictionsNone $1
 }
 
 function check_pivot_has_ran() {
@@ -151,11 +184,6 @@ function force_reconcile() {
 
 function define_source() {
   sed "s/CURRENT_COMMIT/${CURRENT_COMMIT}/" "$@" | sed "s,SYLVA_CORE_REPO,${SYLVA_CORE_REPO},g" "$@"
-}
-
-function set_wc_namespace() {
-  local WORKLOAD_CLUSTER_NAMESPACE=$(basename ${ENV_PATH})
-  sed "s/WORKLOAD_CLUSTER_NAMESPACE/${WORKLOAD_CLUSTER_NAMESPACE}/g"
 }
 
 function inject_bootstrap_values() {
