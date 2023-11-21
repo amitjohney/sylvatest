@@ -53,7 +53,6 @@ create_runner:
   script:
     - !reference [.common-deployment, script_common]
     - ./bootstrap.sh environment-values/${ENV_NAME}
-    - !reference [.common-deployment, post_deployment_common]
 
 deploy-rke2-virt-m3:
   extends: .deploy-in-equinix
@@ -82,7 +81,6 @@ deploy-rke2-virt-m3-suse:
   script:
     - !reference [.common-deployment, script_common]
     - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
-    - !reference [.common-deployment, post_deployment_common]
 
 deploy-wc-rke2-virt-m3:
   extends: .deploy-wc-in-equinix
@@ -108,7 +106,6 @@ deploy-wc-rke2-virt-m3-suse:
     - !reference [.common-deployment, script_common]
     - !reference [.common-deployment, update_values]
     - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
-    - !reference [.common-deployment, post_deployment_common]
   variables:
     DOCKER_HOST: ""
     UPDATE_VALUES_FILE: $WC_APPLY_VALUES_FILE

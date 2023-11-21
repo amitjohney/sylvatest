@@ -2614,8 +2614,6 @@ shared_workload_clusters_values:
   units:
     cluster-import:
       enabled: '{{ tuple . "rancher" | include "unit-enabled" }}'
-    check-rancher-clusters:
-      enabled: '{{ tuple . "rancher" | include "unit-enabled" }}'
   metal3:
     provider: '{{ .Values.metal3.provider }}'
 
