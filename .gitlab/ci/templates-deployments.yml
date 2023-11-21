@@ -97,16 +97,6 @@ include:
         yq -i '.namespace = "WORKLOAD_CLUSTER_NAMESPACE"' $ENV_PATH/kustomization.yaml
       fi
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capo\r\e[0K"
-  post_deployment_common:
-    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_post_deployment[collapsed=true]\r\e[0KRunning post deployment step\e[0m"
-    - export CHECK_RANCHER_JOB_POD=`kubectl --kubeconfig management-cluster-kubeconfig -n kube-job get pod --selector job-name=check-rancher-clusters-job-cattle-system -o=jsonpath='{.items[?(@.status.phase=="Succeeded")].metadata.name}'`
-    - |
-      if [ -n "$CHECK_RANCHER_JOB_POD" ]; then
-        kubectl --kubeconfig management-cluster-kubeconfig -n kube-job logs $CHECK_RANCHER_JOB_POD
-      else
-        echo "No workload clusters here"
-      fi
-    - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_post_deployment\r\e[0K"
   update_values:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_update_values[collapsed=true]\r\e[0KApply specific values\e[0m"
     - echo "Applying values from $UPDATE_VALUES_FILE "
@@ -165,7 +155,6 @@ include:
     - !reference [.common-deployment, os_cloud]
     - !reference [.common-deployment, script_capo]
     - ./bootstrap.sh environment-values/${ENV_NAME}
-    - !reference [.common-deployment, post_deployment_common]
   tags:
     - $CAPO_PLATFORM_TAG
 
@@ -178,7 +167,6 @@ include:
     - !reference [.common-deployment, script_capo]
     - !reference [.common-deployment, update_values]
     - ./apply.sh environment-values/${ENV_NAME}
-    - !reference [.common-deployment, post_deployment_common]
   variables:
     UPDATE_VALUES_FILE: $APPLY_VALUES_FILE
   tags:
@@ -210,7 +198,6 @@ include:
     - !reference [.common-deployment, os_cloud]
     - !reference [.common-deployment, script_capo]
     - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
-    - !reference [.common-deployment, post_deployment_common]
   tags:
     - $CAPO_PLATFORM_TAG
 
@@ -226,7 +213,6 @@ include:
     - echo "APPLY values - $APPLY_VALUES_FILE"
     - echo "UPDATE VALUES FILE - $UPDATE_VALUES_FILE"
     - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
-    - !reference [.common-deployment, post_deployment_common]
   variables:
     UPDATE_VALUES_FILE: $WC_APPLY_VALUES_FILE
   tags:

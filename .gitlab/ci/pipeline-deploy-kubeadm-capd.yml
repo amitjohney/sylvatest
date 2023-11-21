@@ -9,7 +9,6 @@ include:
     - !reference [.common-deployment, script_common]
     - !reference [.common-deployment, script_capd]
     - ./bootstrap.sh environment-values/${ENV_NAME}
-    - !reference [.common-deployment, post_deployment_common]
 
 
 deploy-kubeadm-capd:
