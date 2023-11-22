@@ -130,8 +130,8 @@ update-wc-rke2-virt-m3-suse:
 #----------------------------------------------------------
 
 .ensure_sylva_toolbox:
-  - . tools/shell-lib/common.sh environment-values/${ENV_NAME}; echo_b
-  - . ./bin/env
+  - source tools/shell-lib/common.sh environment-values/${ENV_NAME}; echo_b
+  - source ./bin/env
 
 # Currently no workload cluster are created in capm3-virt test case
 # test-workload-cluster-rke2-virt-m3:
