@@ -8,6 +8,8 @@ The results are summarized by the following table:
 
 | Date                      | Management Cluster CAPI Providers | Sylva-Core main commit ID        | Result                                       | Test logs (only for failed tests) |
 |---------------------------|-----------------------------------|----------------------------------|----------------------------------------------|-----------------------------------|
+|2023-11-22 01:56|rke2-capv|b5d2d72674a4658e71f83715aa1435302d99ba5b|:x: failed|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/456f04b5fb9797f8d322b840d6006898/capv-logs.gz)|
+|2023-11-22 01:15|kubeadm-capv|b5d2d72674a4658e71f83715aa1435302d99ba5b|:white_check_mark: success||
 |2023-11-21 01:54|rke2-capv|7ac4ba571486d39a0cef1d3d0d59361433da391a|:x: failed|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/3872fef4a35683465ee81c81312f2d95/capv-logs.gz)|
 |2023-11-21 01:17|kubeadm-capv|7ac4ba571486d39a0cef1d3d0d59361433da391a|:white_check_mark: success||
 |2023-11-18 01:57|rke2-capv|76742d714bdb992f6f4c41f8fa5018a52fd6e074|:x: failed|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/62c2f8459dd1551ae83d175310f01ce9/capv-logs.gz)|
@@ -27,6 +29,4 @@ The results are summarized by the following table:
 |2023-11-12 01:14|kubeadm-capv|8294bc26f6443e771778cb6bce0b338bfd6e59bd|:white_check_mark: success||
 |2023-11-12 01:18|rke2-capv|8294bc26f6443e771778cb6bce0b338bfd6e59bd|:white_check_mark: success||
 |2023-11-12 01:14|kubeadm-capv|8294bc26f6443e771778cb6bce0b338bfd6e59bd|:white_check_mark: success||
-|2023-11-11 01:18|rke2-capv|5a326d02f1a7262320aef195023782b0d2ed2d5d|:white_check_mark: success||
-|2023-11-11 01:15|kubeadm-capv|5a326d02f1a7262320aef195023782b0d2ed2d5d|:white_check_mark: success||
 
