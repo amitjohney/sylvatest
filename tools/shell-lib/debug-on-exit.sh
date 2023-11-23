@@ -16,6 +16,7 @@ additional_resources="
   PersistentVolumes
   PersistentVolumeClaims
   ConfigMaps
+  HeatStacks
   Clusters.*cluster.x-k8s.io
   MachineDeployments
   Machines
