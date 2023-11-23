@@ -356,6 +356,7 @@ units:
               - kind: Deployment
                 apiVersion: apps/v1
                 metadata:
+                  name: harbor-chartmuseum
                   namespace: harbor
                 spec:
                   template:
