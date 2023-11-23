@@ -30,9 +30,31 @@ spec:
         worker_affinity_policy:
           type: string
           description: "Worker affinity policy"
+        control_plane_security_group_name:
+          type: string
+          description: "Control plane security group name"
+        worker_security_group_name:
+          type: string
+          description: "Worker security group name"
         common_security_group_name:
           type: string
           description: "Common security group name"
+        control_plane_rules:
+          type: json
+          description: "Security group rules associated with the control plane VMs"
+          default:
+            direction: [ingress, ingress, ingress, ingress]
+            port: ['80', '443', '22', '53']
+            protocol: [tcp, tcp, tcp, udp]
+            remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
+        worker_rules:
+          type: json
+          description: "Security group rules associated with worker VMs"
+          default:
+            direction: [ingress, ingress, ingress, ingress]
+            port: ['80', '443', '22', '53']
+            protocol: [tcp, tcp, tcp, udp]
+            remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
         common_sg_rules:
           type: json
           description: "Common security group rules associated with the control plane and worker VMs"
@@ -53,17 +75,6 @@ spec:
             port: ['5050', '6180', '6385', '9999']
             protocol: [tcp, tcp, tcp, tcp]
             remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
-        common_sg_rules:
-          type: json
-          description: "Common security group rules for control plane and worker VMs"
-          default:
-            direction: [ingress, ingress, ingress, ingress]
-            port: ['80', '443', '22', '53']
-            protocol: [tcp, tcp, tcp, tcp]
-            remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
-        common_security_group_name:
-          type: string
-          description: "Common security group name for contrl plane and worker VM's"
 
       conditions:
         external_network_cond:
@@ -93,11 +104,11 @@ spec:
           properties:
             policies:
               - get_param: worker_affinity_policy
-        security-group-common:
+        security-group-ctrl-plane:
           type: OS::Neutron::SecurityGroup
           properties:
-            description: "Heat Stack managed common security group for control plane and worker VMs"
-            name: { get_param: common_security_group_name }
+            description: "Heat Stack managed security group for control plane VMs"
+            name: { get_param: control_plane_security_group_name }
             rules:
               repeat:
                 for_each:
@@ -115,7 +126,7 @@ spec:
         security-group-worker:
           type: OS::Neutron::SecurityGroup
           properties:
-            description: "Heat Stack managed common security group for control_plane and worker VMs"
+            description: "Heat Stack managed security group for worker VMs"
             name: { get_param: worker_security_group_name }
             rules:
               repeat:
@@ -134,7 +145,7 @@ spec:
         security-group-common:
           type: OS::Neutron::SecurityGroup
           properties:
-            description: "Heat Stack managed security group for worker VMs"
+            description: "Heat Stack managed common security group for control_plane and worker VMs"
             name: { get_param: common_security_group_name }
             rules:
               repeat:
@@ -170,6 +181,8 @@ spec:
         external_network: "${CAPO_EXTERNAL_NETWORK_ID}"
         control_plane_affinity_policy: "${CONTROL_PLANE_AFFINITY_POLICY}"
         worker_affinity_policy: "${WORKER_AFFINITY_POLICY}"
+        control_plane_security_group_name: "${CONTROL_PLANE_SECURITY_GROUP_NAME}"
+        worker_security_group_name: "${WORKER_SECURITY_GROUP_NAME}"
         create_ironic_security_group: ${CAPO_CREATE_IRONIC_SECURITY_GROUP}
         common_security_group_name: "${COMMON_SECURITY_GROUP_NAME}"
   outputConfigMap:
