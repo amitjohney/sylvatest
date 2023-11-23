@@ -4,7 +4,6 @@ set -o pipefail
 export BASE_DIR="$(realpath $(dirname $0))"
 export PATH=${BASE_DIR}/bin:${PATH}
 
-CALLER_SCRIPT_NAME=$(basename ${BASH_SOURCE[1]})
 SYLVA_TOOLBOX_VERSION=${SYLVA_TOOLBOX_VERSION:-"v0.2.12"}
 SYLVA_TOOLBOX_IMAGE=${SYLVA_TOOLBOX_IMAGE:-container-images/sylva-toolbox}
 SYLVA_TOOLBOX_REGISTRY=${SYLVA_TOOLBOX_REGISTRY:-registry.gitlab.com/sylva-projects/sylva-elements}
@@ -34,6 +33,7 @@ function set_wc_namespace() {
 }
 
 function check_apply_kustomizations() {
+  CALLER_SCRIPT_NAME=$(basename ${BASH_SOURCE[1]})
   if [[ $CALLER_SCRIPT_NAME == *"apply.sh"* ]]; then
     if [[ "$ENV_PATH" == *workload-clusters* ]]; then
       echo "Error: you shouldn't be running apply.sh against a workload cluster directory ($ENV_PATH)."
