@@ -357,32 +357,35 @@ units:
                 apiVersion: apps/v1
                 metadata:
                   name: harbor-chartmuseum
+                  namespace: harbor
+                  labels:
+                    component: chartmuseum
                 spec:
                   template:
                     spec:
-                      containers:
-                      - name: harbor-chartmuseum
-                        securityContext:
-                          allowPrivilegeEscalation: false
-                          capabilities:
-                            drop:
-                            - ALL
-                          runAsNonRoot: true
-                          runAsGroup: 1000
-                          runAsUser: 1000
-                          seccompProfile:
-                            type: RuntimeDefault
-#                      securityContext:
-#                        allowPrivilegeEscalation: false
-#                        capabilities:
-#                          drop:
-#                          - ALL
-#                        runAsNonRoot: true
-#                        runAsGroup: 1000
-#                        runAsUser: 1000
-#                        seccompProfile:
-#                          type: RuntimeDefault
-#
+#                      containers:
+#                      - name: harbor-chartmuseum
+#                        securityContext:
+#                          allowPrivilegeEscalation: false
+#                          capabilities:
+#                            drop:
+#                            - ALL
+#                          runAsNonRoot: true
+#                          runAsGroup: 1000
+#                          runAsUser: 1000
+#                          seccompProfile:
+#                            type: RuntimeDefault
+                      securityContext:
+                        allowPrivilegeEscalation: false
+                        capabilities:
+                          drop:
+                          - ALL
+                        runAsNonRoot: true
+                        runAsGroup: 1000
+                        runAsUser: 1000
+                        seccompProfile:
+                          type: RuntimeDefault
+
 #      _postRenderers:
 #        - kustomize:
 #            patchesStrategicMerge:
