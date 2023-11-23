@@ -364,6 +364,19 @@
                 }
               ]
             },
+            "nodeAnnotations": {
+              "anyOf": [
+                {
+                  "type": "object"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "node_annotations": {
               "anyOf": [
                 {
