@@ -85,6 +85,7 @@ fi
 
 # Inject nomasquerade service if libvirt-metal is enabled
 if yq -e '.libvirt_metal.nodes | length > 0' ${VALUES_FILE} &>/dev/null; then
+    export CLEANUP_BOOTSTRAP_CLUSTER='no'
     export MASQ_SERVICE_PATH=${BASE_DIR}/tools/kind/systemd/nomasquerade.service
     KIND_CONFIG=$(echo "$KIND_CONFIG" | yq '.nodes[0].extraMounts += [{"hostPath": env(MASQ_SERVICE_PATH), "containerPath": "/etc/systemd/system/nomasquerade.service"}]')
     export MASQ_SCRIPT_PATH=${BASE_DIR}/tools/kind/systemd/iptables.sh
