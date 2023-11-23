@@ -5658,7 +5658,8 @@
             "required": [
               "resourceName",
               "numVfs",
-              "nicSelector"
+              "nicSelector",
+              "deviceType"
             ],
             "properties": {
               "nodeSelector": {
@@ -5670,6 +5671,10 @@
               },
               "numVfs": {
                 "type": "integer"
+              },
+              "deviceType": {
+                "type": "string",
+                "pattern": "^(netdevice|vfio-pci)$"
               },
               "nicSelector": {
                 "type": "object",

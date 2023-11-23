@@ -2465,7 +2465,7 @@ sriov:
 #     nodeSelector: {}  # <<< lets you further limit the SR-IOV capable nodes on which the VFs have to be created in a certain config; if not set it applies to all SR-IOV nodes
 #     resourceName: ""
 #     numVfs: ""
-#     deviceType: ""
+#     deviceType: ""  # supported values: "netdevice" or "vfio-pci"
 #     nicSelector:
 #       deviceID: ""
 #       vendor: ""
