@@ -63,6 +63,12 @@ containerdConfigPatchesJSON6902:
 EOF
 )
 
+if [[ $# -eq 1 && -f $1 ]]; then
+    VALUES_FILE=$1
+else
+    VALUES_FILE=${ENV_PATH}/values.yaml
+fi
+
 # Try to retrieve registry config in values.yaml and prepare KIND_CONFIG consequently
 if yq -e '.registry_mirrors.hosts_config | length > 0' ${VALUES_FILE} &>/dev/null; then
     function helm() { $(which helm) $@ 2> >(grep -v 'found symbolic link' >&2); }

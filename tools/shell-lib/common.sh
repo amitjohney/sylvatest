@@ -25,12 +25,6 @@ else
     export ENV_PATH=$(readlink -f $1)
 fi
 
-if [[ $# -eq 1 && -f $1 ]]; then
-    VALUES_FILE=$1
-else
-    VALUES_FILE=${ENV_PATH}/values.yaml
-fi
-
 function _kustomize {
   kustomize build --load-restrictor LoadRestrictionsNone $1
 }
@@ -274,7 +268,7 @@ function cleanup_preview() {
 function cleanup_bootstrap_cluster() {
   : ${CLEANUP_BOOTSTRAP_CLUSTER:='yes'}
   kind_cluster=`kind get clusters`
- if [[ `yq '.metal3' ${VALUES_FILE}` == null ]]; then
+ if [[ `yq '.metal3' ${VALUES_FILE} 2>/dev/null` == null || $METAL3_PROVIDER == 'sylva' ]]; then
   # if cleanup bootstrap cluster variable is set to yes and the curent kind cluster is the name of the kind cluster created in this deployment
     if [[ $CLEANUP_BOOTSTRAP_CLUSTER == 'yes' && $kind_cluster == $KIND_CLUSTER_NAME ]] ; then
       echo_b "\U0001F5D1 Delete bootstrap cluster"
