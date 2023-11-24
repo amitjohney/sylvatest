@@ -268,13 +268,19 @@ function cleanup_preview() {
 function cleanup_bootstrap_cluster() {
   : ${CLEANUP_BOOTSTRAP_CLUSTER:='yes'}
   kind_cluster=`kind get clusters`
- if [[ ( -v "${VALUES_FILE}" && `yq '.metal3' ${VALUES_FILE} 2>/dev/null` == null) || -v "$METAL3_PROVIDER" ]]; then
-  # if cleanup bootstrap cluster variable is set to yes and the curent kind cluster is the name of the kind cluster created in this deployment
-    if [[ $CLEANUP_BOOTSTRAP_CLUSTER == 'yes' && $kind_cluster == $KIND_CLUSTER_NAME ]] ; then
+  # if deployment is not on baremetal on manual
+  if [[ -v "${VALUES_FILE}" ]]; then
+    if [[ `yq '.metal3' ${VALUES_FILE} 2>/dev/null` != null ]]; then
+     export CLEANUP_BOOTSTRAP_CLUSTER = 'no'
+    fi
+  fi
+  # if cleanup bootstrap cluster variable is set to yes
+  # if the curent kind cluster is the name of the kind cluster created in this deployment
+  # if deployment is not CI on capm3
+    if [[ $CLEANUP_BOOTSTRAP_CLUSTER == 'yes' && $kind_cluster == $KIND_CLUSTER_NAME && ! -v "$METAL3_PROVIDER"]] ; then
       echo_b "\U0001F5D1 Delete bootstrap cluster"
       kind delete cluster -n $KIND_CLUSTER_NAME
     fi
-  fi
 }
 
 function ci_remaining_minutes_and_at_most() {
