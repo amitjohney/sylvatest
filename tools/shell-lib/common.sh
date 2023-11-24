@@ -274,10 +274,12 @@ function cleanup_preview() {
 function cleanup_bootstrap_cluster() {
   : ${CLEANUP_BOOTSTRAP_CLUSTER:='yes'}
   kind_cluster=`kind get clusters`
-# if cleanup bootstrap cluster variable is set to yes and the curent kind cluster is the name of the kind cluster created in this deployment
-  if [[ $CLEANUP_BOOTSTRAP_CLUSTER == 'yes' && $kind_cluster == $KIND_CLUSTER_NAME ]] ; then
-    echo_b "\U0001F5D1 Delete bootstrap cluster"
-    kind delete cluster -n $KIND_CLUSTER_NAME
+ if [[ `yq '.metal3' ${VALUES_FILE}` == null ]]; then
+  # if cleanup bootstrap cluster variable is set to yes and the curent kind cluster is the name of the kind cluster created in this deployment
+    if [[ $CLEANUP_BOOTSTRAP_CLUSTER == 'yes' && $kind_cluster == $KIND_CLUSTER_NAME ]] ; then
+      echo_b "\U0001F5D1 Delete bootstrap cluster"
+      kind delete cluster -n $KIND_CLUSTER_NAME
+    fi
   fi
 }
 
