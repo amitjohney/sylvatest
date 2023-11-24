@@ -10,8 +10,6 @@ SYLVA_TOOLBOX_VERSION=${SYLVA_TOOLBOX_VERSION:-"v0.2.12"}
 SYLVA_TOOLBOX_IMAGE=${SYLVA_TOOLBOX_IMAGE:-container-images/sylva-toolbox}
 SYLVA_TOOLBOX_REGISTRY=${SYLVA_TOOLBOX_REGISTRY:-registry.gitlab.com/sylva-projects/sylva-elements}
 
-env
-
 if [[ -n "${CI_JOB_NAME:-}" ]]; then
   export IN_CI=1
   SYLVACTL_SAVE=1

@@ -150,6 +150,7 @@ test-login-rke2-virt-m3:
   extends:
     - .test-login
   before_script:
+    - env
     - !reference [.ensure_sylva_toolbox]
     - |
       # install hurl
