@@ -328,10 +328,15 @@
                         }
                       ]
                     },
-                    "config": {
+                    "data": {
                       "anyOf": [
                         {
-                          "type": "object"
+                          "type": "object",
+                          "not": {
+                            "required": [
+                              "bootcmd"
+                            ]
+                          }
                         },
                         {
                           "$ref": "#/$defs/string-with-gotpl"
@@ -431,6 +436,22 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
+            "first_boot_commands": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "pre_bootstrap_commands": {
               "anyOf": [
                 {
