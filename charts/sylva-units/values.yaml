@@ -514,7 +514,7 @@ units:
       chart:
         spec:
           chart: core
-          version: 2.6.4
+          version: 2.6.6
       targetNamespace: neuvector
       values:
         psp: '{{ .Values.cluster.cis_profile | eq "cis-1.6" | include "as-bool" }}'
