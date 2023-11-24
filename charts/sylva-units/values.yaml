@@ -327,29 +327,29 @@ units:
           chart: harbor
           version: v1.11.1
       targetNamespace: harbor
-      values:
-        persistence:
-          enabled: true
-          resourcePolicy: "keep"
-          persistentVolumeClaim:
-            registry:
-              storageClass: cinder-ceph-ssd
-              size: 1Gi
-            chartmuseum:
-              storageClass: cinder-ceph-ssd
-              size: 1Gi
-            jobservice:
-              storageClass: cinder-ceph-ssd
-              size: 1Gi
-            database:
-              storageClass: cinder-ceph-ssd
-              size: 1Gi
-            redis:
-              storageClass: cinder-ceph-ssd
-              size: 1Gi
-            trivy:
-              storageClass: cinder-ceph-ssd
-              size: 1Gi
+      # values:
+      #   persistence:
+      #     enabled: true
+      #     resourcePolicy: "keep"
+      #     persistentVolumeClaim:
+      #       registry:
+      #         storageClass: cinder-ceph-ssd
+      #         size: 1Gi
+      #       chartmuseum:
+      #         storageClass: cinder-ceph-ssd
+      #         size: 1Gi
+      #       jobservice:
+      #         storageClass: cinder-ceph-ssd
+      #         size: 1Gi
+      #       database:
+      #         storageClass: cinder-ceph-ssd
+      #         size: 1Gi
+      #       redis:
+      #         storageClass: cinder-ceph-ssd
+      #         size: 1Gi
+      #       trivy:
+      #         storageClass: cinder-ceph-ssd
+      #         size: 1Gi
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:

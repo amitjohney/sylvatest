@@ -437,24 +437,25 @@ cluster_public_endpoint: '{{ tuple (printf "https://%s:%s" .Values._internal.boo
 # note that this list does *not* override enabled_conditions set on the units, those are still applied
 units_override_enabled:
   - cert-manager
-  - capi
-  - '{{ .Values.cluster.capi_providers.infra_provider }}'
-  - '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
-  - '{{ .Values.metal3.provider | eq "sylva" | ternary "metal3" "metal3-suse" }}'
-  - bootstrap-local-path
-  - ingress-nginx
-  - os-image-server
-  - cluster
-  - calico-crd
-  - calico
-  - tigera-clusterrole
-  - management-cluster-flux
-  - management-cluster-configs
-  - management-sylva-units
-  - pivot
-  - heat-operator
-  - capo-cluster-resources
-  - multus
-  - multus-ready
-  - libvirt-metal
-  - vsphere-cloud-controller-manager
+  # - capi
+  # - '{{ .Values.cluster.capi_providers.infra_provider }}'
+  # - '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
+  # - '{{ .Values.metal3.provider | eq "sylva" | ternary "metal3" "metal3-suse" }}'
+  # - bootstrap-local-path
+  # - ingress-nginx
+  - harbor
+  # - os-image-server
+  # - cluster
+  # - calico-crd
+  # - calico
+  # - tigera-clusterrole
+  # - management-cluster-flux
+  # - management-cluster-configs
+  # - management-sylva-units
+  # - pivot
+  # - heat-operator
+  # - capo-cluster-resources
+  # - multus
+  # - multus-ready
+  # - libvirt-metal
+  # - vsphere-cloud-controller-manager
