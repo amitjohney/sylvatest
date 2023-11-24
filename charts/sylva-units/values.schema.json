@@ -2252,23 +2252,10 @@
                         }
                       ]
                     },
-                    "security_group_name": {
+                    "security_group_names": {
                       "anyOf": [
                         {
-                          "type": "string"
-                        },
-                        {
-                          "$ref": "#/$defs/string-with-gotpl"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
-                    "common_security_group_name": {
-                      "anyOf": [
-                        {
-                          "type": "string"
+                          "type": "array"
                         },
                         {
                           "$ref": "#/$defs/string-with-gotpl"
@@ -4340,23 +4327,10 @@
                             }
                           ]
                         },
-                        "security_group_name": {
+                        "security_group_names": {
                           "anyOf": [
                             {
-                              "type": "string"
-                            },
-                            {
-                              "$ref": "#/$defs/string-with-gotpl"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                        },
-                        "common_security_group_name": {
-                          "anyOf": [
-                            {
-                              "type": "string"
+                              "type": "array"
                             },
                             {
                               "$ref": "#/$defs/string-with-gotpl"
@@ -4633,8 +4607,7 @@
                         "anyOf": [
                           {
                             "required": [
-                              "security_group_name",
-                              "common_security_group_name"
+                              "security_group_names"
                             ]
                           },
                           {
