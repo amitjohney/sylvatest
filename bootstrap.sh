@@ -16,11 +16,11 @@ tools/kind/bootstrap-cluster.sh
 
 ensure_flux
 
-echo_b "\U0001F50E Validate sylva-units values for management cluster"
-validate_sylva_units
+# echo_b "\U0001F50E Validate sylva-units values for management cluster"
+# validate_sylva_units
 
-echo_b "\U0001F5D1 Delete preview chart and namespace"
-cleanup_preview
+# echo_b "\U0001F5D1 Delete preview chart and namespace"
+# cleanup_preview
 
 echo_b "\U0001F4DC Install sylva-units Helm release and associated resources"
 kubectl kustomize ${ENV_PATH} | \

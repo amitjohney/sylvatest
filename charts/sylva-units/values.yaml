@@ -357,7 +357,6 @@ units:
                 apiVersion: apps/v1
                 metadata:
                   name: harbor-chartmuseum
-                  namespace: harbor
                   labels:
                     component: chartmuseum
                 spec:
