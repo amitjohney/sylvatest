@@ -237,9 +237,20 @@ include:
         echo "-- Get ingress saved into /etc/hosts"
         kubectl --kubeconfig management-cluster-kubeconfig get ingress -A -o custom-columns=:.status.loadBalancer.ingress[].ip,:.spec.tls[].hosts[] | grep -v '<none>' >> /etc/hosts
       fi
+  test_no_sso:
+    - |
+      echo "-- Getting kubeconfig workload cluster"
+      unset https_proxy http_proxy
+      export rancher_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n cattle-system rancher -o jsonpath='{ .spec.tls[].hosts[] }')
+      BOOTSTRAP_PASSWORD=$(kubectl --kubeconfig management-cluster-kubeconfig -n cattle-system get secret bootstrap-secret -o jsonpath='{.data.bootstrapPassword}' | base64 -d)
+      TOKEN=$(curl --insecure -s https://$rancher_url/v3-public/localProviders/local?action=login -H 'content-type: application/json' --data-binary '{"username":"admin","password":"'$BOOTSTRAP_PASSWORD'","ttl":60000}' | jq -r .token)
+      KUBECONFIG=$(curl --insecure -s https://$rancher_url/v3/clusters/  -H "Authorization: Bearer $TOKEN" | jq '.data[] | select (.name=="'$WORKLOAD_CLUSTER_NAME-capi'") | .actions.generateKubeconfig'  | tr -d '"')
+      curl --insecure -s -X POST $KUBECONFIG -H "Authorization: Bearer $TOKEN" | jq -r .config > $WORKLOAD_CLUSTER_NAME-rancher.yaml
 
 .test-workload-cluster:
   stage: deployment-test
+  retry:
+    max: 2
   script:
     - !reference [.test_scripts, edit_hosts_file]
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_test_loging[collapsed=true]\r\e[0KGet ingress saved into /etc/hosts and set variables\e[0m"
@@ -260,17 +271,40 @@ include:
     # the $WORKLOAD_CLUSTER_NAME-rancher.yaml file below is the kubeconfig previously downloaded from Rancher server through Selenim
     - |
       attempts=0; max_attempts=5
-      until kubectl run test --image=registry.k8s.io/pause:3.9 --kubeconfig $WORKLOAD_CLUSTER_NAME-rancher.yaml --overrides='{"apiVersion": "v1","spec": {"containers": [{"name": "test","image": "registry.k8s.io/pause:3.9","securityContext": {"allowPrivilegeEscalation": false,"capabilities": {"drop": ["ALL"]},"runAsNonRoot": true,"runAsGroup": 1000,"runAsUser": 1000,"seccompProfile": {"type": "RuntimeDefault"}}}]}}'; do
+      until kubectl run test-sso --image=registry.k8s.io/pause:3.9 --kubeconfig $WORKLOAD_CLUSTER_NAME-rancher.yaml --overrides='{"apiVersion": "v1","spec": {"containers": [{"name": "test","image": "registry.k8s.io/pause:3.9","securityContext": {"allowPrivilegeEscalation": false,"capabilities": {"drop": ["ALL"]},"runAsNonRoot": true,"runAsGroup": 1000,"runAsUser": 1000,"seccompProfile": {"type": "RuntimeDefault"}}}]}}'; do
         sleep 3
         ((attempts++)) && ((attempts==max_attempts)) && exit -1
       done
-    - echo "-- Wait for test pod to be created"
-    - kubectl wait --for=condition=Ready pod/test --kubeconfig $WORKLOAD_CLUSTER_NAME-rancher.yaml --timeout=60s
+    - echo "-- Wait for test-sso pod to be created"
+    - kubectl wait --for=condition=Ready pod/test-sso --kubeconfig $WORKLOAD_CLUSTER_NAME-rancher.yaml --timeout=60s
     - echo "-- Get the sample workload cluster nodes annotations for keys node.longhorn.io/default-node-tags & node.longhorn.io/default-disks-config"
     - kubectl --kubeconfig $WORKLOAD_CLUSTER_NAME-rancher.yaml get nodes -o yaml | yq '.items[] | (.metadata.name,.metadata.annotations."node.longhorn.io/default-node-tags",.metadata.annotations."node.longhorn.io/default-disks-config")'
     - echo "-- All done"
   tags:
     - $CAPO_PLATFORM_TAG
+
+.test-workload-cluster-no-sso:
+  stage: deployment-test
+  tags:
+    - $CAPO_PLATFORM_TAG
+  before_script:
+    - apk add jq
+  script:
+    - !reference [.test_scripts, edit_hosts_file]
+    - !reference [.test_scripts, test_no_sso]
+    - echo "-- Testing workload cluster. Job started at '$CI_JOB_STARTED_AT'."
+    # the $WORKLOAD_CLUSTER_NAME-rancher.yaml file below is the kubeconfig previously downloaded from Rancher server through Rancher API
+    - |
+      attempts=0; max_attempts=5
+      until kubectl run test-no-sso --image=registry.k8s.io/pause:3.9 --kubeconfig $WORKLOAD_CLUSTER_NAME-rancher.yaml --overrides='{"apiVersion": "v1","spec": {"containers": [{"name": "test","image": "registry.k8s.io/pause:3.9","securityContext": {"allowPrivilegeEscalation": false,"capabilities": {"drop": ["ALL"]},"runAsNonRoot": true,"runAsGroup": 1000,"runAsUser": 1000,"seccompProfile": {"type": "RuntimeDefault"}}}]}}'; do
+        sleep 3
+        ((attempts++)) && ((attempts==max_attempts)) && exit -1
+      done
+    - echo "-- Wait for test-no-sso pod to be created"
+    - kubectl wait --for=condition=Ready pod/test-no-sso --kubeconfig $WORKLOAD_CLUSTER_NAME-rancher.yaml --timeout=60s
+    - echo "-- Get the sample workload cluster nodes annotations for keys node.longhorn.io/default-node-tags & node.longhorn.io/default-disks-config"
+    - kubectl --kubeconfig $WORKLOAD_CLUSTER_NAME-rancher.yaml get nodes -o yaml | yq '.items[] | (.metadata.name,.metadata.annotations."node.longhorn.io/default-node-tags",.metadata.annotations."node.longhorn.io/default-disks-config")'
+    - echo "-- All done"
 
 .test-login:
   stage: deployment-test

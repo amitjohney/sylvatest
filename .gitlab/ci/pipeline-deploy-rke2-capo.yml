@@ -88,6 +88,16 @@ test-workload-cluster-rke2-capo-oci:
   rules:
     - if: $OCI_TAG
 
+test-workload-cluster-no-sso-rke2-capo:
+  extends: [.test-workload-cluster-no-sso]
+  rules:
+    - if: $OCI_TAG == null
+
+test-workload-cluster-no-sso-rke2-capo-oci:
+  extends: [.test-workload-cluster-no-sso]
+  rules:
+    - if: $OCI_TAG
+
 #----------------------------------------------------------
 
 .test-login-rke2-capo:
