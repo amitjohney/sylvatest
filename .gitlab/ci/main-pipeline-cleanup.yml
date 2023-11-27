@@ -3,9 +3,6 @@
 # Scheduled cleanup
 # ==========================================
 
-variables:
-  MAX_DEPLOY_CAPO_TIMEOUT: 80
-
 scheduled-cleanup-capo:
   stage: delete
   image:
@@ -13,15 +10,17 @@ scheduled-cleanup-capo:
   script:
     - !reference [.common-deployment, os_cloud]
     - touch tags.txt exclude-tags.txt
-    - STACK_TTL=$((($MAX_DEPLOY_CAPO_TIMEOUT+5)*60))
     - |
-      echo "Heat Stack TTL: $STACK_TTL"
-    - |
+      set -eo pipefail
       for STACK in $(openstack stack list -f value -c "Stack Name" | grep -E '^(mgmt-|wc-|capo-cluster)' ); do
         STACK_TIME=$(date -d "$(openstack stack show ${STACK} -c creation_time -f value | tr T ' ' | tr -d Z )" +%s)
         THIS_TIME=$(date +%s)
-        # we'll only consider for cleanup tags applied to resources created more than STACK_TTL seconds ago
-        if [ $((THIS_TIME-STACK_TIME)) -gt ${STACK_TTL} ]; then
+        # deduce pipeline ID from stack tag
+        # we'll only consider for cleanup tags for which the corresponding gitlab pipeline status is not running
+        STACK_TAG=$(openstack stack show ${STACK} -c tags -f json  | jq '.tags[0]' -r)
+        STACK_PIPELINE_ID=${STACK_TAG/-*/}
+        echo "Checking if stack with tag $STACK_TAG still have some job running in pipeline $STACK_PIPELINE_ID"
+        if curl -s -f ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/pipelines/${STACK_PIPELINE_ID} | jq -e '.status != "running"'; then
             # and we'll delay the cleanup for tags of stacks where second tag is "please-delay-cleanup"; patched with `openstack stack update --existing --tag sylva-foo.bar,please-delay-cleanup ${STACK}
             if openstack stack show ${STACK} -c tags -f json | jq .tags[] -r | grep -xq "please-delay-cleanup"; then
                 # but only for an period of 12 hours after its creation
