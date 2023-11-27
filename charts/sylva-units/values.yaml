@@ -532,7 +532,6 @@ units:
       targetNamespace: neuvector
       values:
         psp: '{{ .Values.cluster.cis_profile | eq "cis-1.6" | include "as-bool" }}'
-        serviceAccount: neuvector
         leastPrivilege: true
         internal:
           certmanager:
