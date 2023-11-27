@@ -1,0 +1,66 @@
+---
+include:
+  - local: .gitlab/ci/child-pipeline-default.yml
+  - local: .gitlab/ci/templates-deployments.yml
+
+# ----------------------------------------------------------
+# Specific rules to run only
+# deploy-management-cluster & cleanup
+# used for eg by capo-fip-deploy, capo-misc-units-deploy
+
+.rules:skip-if-only-deploy-mgmt:
+  rules:
+    - if: $ONLY_DEPLOY_MGMT
+      when: never
+    - when: on_success
+
+# ----------------------------------------------------------
+
+deploy-management-cluster:
+  extends: [.deploy-capo]
+
+# ----------------------------------------------------------
+
+update-management-cluster:
+  extends:
+    - .apply-capo
+    - .rules:skip-if-only-deploy-mgmt
+
+# ----------------------------------------------------------
+
+deploy-workload-cluster:
+  extends:
+    - .deploy-wc-capo
+    - .rules:skip-if-only-deploy-mgmt
+
+# ----------------------------------------------------------
+
+update-workload-cluster:
+  extends:
+    - .apply-wc-capo
+    - .rules:skip-if-only-deploy-mgmt
+
+# ----------------------------------------------------------
+
+test-workload-cluster:
+  extends:
+    - .test-workload-cluster
+    - .rules:skip-if-only-deploy-mgmt
+
+test-workload-cluster-no-sso:
+  extends:
+    - .test-workload-cluster-no-sso
+    - .rules:skip-if-only-deploy-mgmt
+
+# ----------------------------------------------------------
+
+test-login:
+  extends:
+    - .test-login
+    - .rules:skip-if-only-deploy-mgmt
+
+# ----------------------------------------------------------
+
+cleanup-openstack:
+  extends: .cleanup-capo
+  when: always
