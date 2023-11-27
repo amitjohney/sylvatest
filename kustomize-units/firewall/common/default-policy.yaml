@@ -1,0 +1,11 @@
+apiVersion: crd.projectcalico.org/v1
+kind: GlobalNetworkPolicy
+metadata:
+  name: default-policy
+spec:
+  selector: has(node.kubernetes.io/instance-type)
+  order: 100
+  ingress:
+  - action: Log
+  - action: ${DEFAULT_POLICY}
+
