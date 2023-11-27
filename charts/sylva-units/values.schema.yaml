@@ -525,6 +525,7 @@ properties:
             - resourceName
             - numVfs
             - nicSelector
+            - deviceType
           properties:
             nodeSelector: # -------------------------------
               type: object
@@ -533,6 +534,9 @@ properties:
               pattern: "^[a-z0-9][a-z0-9_.]*[a-z0-9]$"
             numVfs: # -------------------------------
               type: integer
+            deviceType: # -------------------------------
+              type: string
+              pattern: "^(netdevice|vfio-pci)$"
             nicSelector: # -------------------------------
               type: object
               additionalProperties: false
