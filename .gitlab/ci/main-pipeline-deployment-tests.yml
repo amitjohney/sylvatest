@@ -116,7 +116,7 @@ capo-kubeadm-deploy:
     E2E_JOB_MR_PARITY: even
     ENV_NAME: kubeadm-capo
   trigger:
-    include: .gitlab/ci/pipeline-deploy-kubeadm-capo.yml
+    include: .gitlab/ci/pipeline-deploy-capo.yml
     strategy: depend
 
 capo-kubeadm-oci-deploy:
@@ -126,7 +126,7 @@ capo-kubeadm-oci-deploy:
     E2E_JOB_MR_PARITY: odd
     ENV_NAME: kubeadm-capo
   trigger:
-    include: .gitlab/ci/pipeline-deploy-kubeadm-capo.yml
+    include: .gitlab/ci/pipeline-deploy-capo.yml
     strategy: depend
 
 capo-rke2-deploy:
@@ -136,7 +136,7 @@ capo-rke2-deploy:
     E2E_JOB_MR_PARITY: odd
     ENV_NAME: rke2-capo
   trigger:
-    include: .gitlab/ci/pipeline-deploy-rke2-capo.yml
+    include: .gitlab/ci/pipeline-deploy-capo.yml
     strategy: depend
 
 capo-rke2-oci-deploy:
@@ -146,7 +146,7 @@ capo-rke2-oci-deploy:
     E2E_JOB_MR_PARITY: even
     ENV_NAME: rke2-capo
   trigger:
-    include: .gitlab/ci/pipeline-deploy-rke2-capo.yml
+    include: .gitlab/ci/pipeline-deploy-capo.yml
     strategy: depend
 
 capo-misc-units-deploy:
@@ -155,8 +155,11 @@ capo-misc-units-deploy:
   variables:
     ENV_NAME: kubeadm-capo
     CAPO_TAG: "${ENV_TAG_OCI}-misc"
+    CUSTOM_VALUES_FILE: environment-values/ci/misc-units-in-capo.yml
+    MGMT_WATCH_TIMEOUT_MIN: 45
+    ONLY_DEPLOY_MGMT: "TRUE"
   trigger:
-    include: .gitlab/ci/pipeline-deploy-misc-units-in-capo.yml
+    include: .gitlab/ci/pipeline-deploy-capo.yml
     strategy: depend
 
 capo-fip-deploy:
@@ -172,8 +175,11 @@ capo-fip-deploy:
   variables:
     ENV_NAME: kubeadm-capo
     CAPO_TAG: "${ENV_TAG_OCI}-fip"
+    CUSTOM_VALUES_FILE: environment-values/ci/capo-fip.yml
+    MGMT_WATCH_TIMEOUT_MIN: 20
+    ONLY_DEPLOY_MGMT: "TRUE"
   trigger:
-    include: .gitlab/ci/pipeline-deploy-capo-fip.yml
+    include: .gitlab/ci/pipeline-deploy-capo.yml
     strategy: depend
 
 capm3-rke2-virt-equinix-deploy:

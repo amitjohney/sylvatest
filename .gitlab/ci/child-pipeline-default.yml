@@ -18,5 +18,11 @@ default:
   before_script:
     - |
       echo "CAPO_TAG = $CAPO_TAG"
+      echo "OCI_TAG = ${OCI_TAG:-'N/A'}"
+      echo "ENV_NAME = $ENV_NAME"
       echo "KIND_CLUSTER_NAME = $KIND_CLUSTER_NAME"
       echo "MANAGEMENT_CLUSTER_NAME = $MANAGEMENT_CLUSTER_NAME"
+      echo "WORKLOAD_CLUSTER_NAME = $WORKLOAD_CLUSTER_NAME"
+      echo "CUSTOM_VALUES_FILE = ${CUSTOM_VALUES_FILE:-'N/A'}"
+      echo "APPLY_VALUES_FILE = $APPLY_VALUES_FILE"
+      echo "WC_APPLY_VALUES_FILE = $WC_APPLY_VALUES_FILE"
