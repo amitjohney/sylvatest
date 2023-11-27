@@ -163,21 +163,14 @@ capo-misc-units-deploy:
     strategy: depend
 
 capo-fip-deploy:
-  extends: .default-trigger
-  rules:
-    - if: $CI_MERGE_REQUEST_LABELS =~ /renovate/
-      allow_failure: true
-      when: manual
-    - if: $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/
-      allow_failure: true
-      when: manual
-    - !reference [.default-trigger, rules]
+  extends: .default-trigger-oci
   variables:
     ENV_NAME: kubeadm-capo
     CAPO_TAG: "${ENV_TAG_OCI}-fip"
     CUSTOM_VALUES_FILE: environment-values/ci/capo-fip.yml
     MGMT_WATCH_TIMEOUT_MIN: 20
     ONLY_DEPLOY_MGMT: "TRUE"
+    E2E_JOB_MR_PARITY: none
   trigger:
     include: .gitlab/ci/pipeline-deploy-capo.yml
     strategy: depend
