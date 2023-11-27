@@ -1631,22 +1631,6 @@ units:
           kind: Service
           name: rancher-webhook
           namespace: cattle-system
-            spec:
-              template:
-                spec:
-                  containers:
-                    - name: rancher-webhook
-                      readinessProbe:
-                        httpGet:
-                          path: /healthz
-                          port: https
-                          scheme: HTTPS
-                        httpHeaders:
-                        - name: Custom-Header
-                          value: Awesome
-                        initialDelaySeconds: 3
-                        periodSeconds: 3
-
 
   rancher-keycloak-oidc-provider:
     enabled_conditions:
