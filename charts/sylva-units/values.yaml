@@ -1616,26 +1616,6 @@ units:
                             initialDelaySeconds: 120
                             periodSeconds: 30
                             failureThreshold: 20
-              - kind: Pod
-                apiVersion: pod/v1
-                metadata:
-                  name: rancher-webhook
-                spec:
-                  template:
-                    spec:
-                      containers:
-                        - name: rancher-webhook
-                          readinessProbe:
-                            httpGet:
-                              path: /healthz
-                              port: https
-                              scheme: HTTPS
-                            httpHeaders:
-                            - name: Custom-Header
-                              value: Awesome
-                            initialDelaySeconds: 3
-                            periodSeconds: 3
-
     kustomization_spec:
       # these healthchecks are added so that this unit does not become ready before
       # a few things that Rancher sets up behind the scene is ready
@@ -1651,6 +1631,22 @@ units:
           kind: Service
           name: rancher-webhook
           namespace: cattle-system
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: rancher-webhook
+                      readinessProbe:
+                        httpGet:
+                          path: /healthz
+                          port: https
+                          scheme: HTTPS
+                        httpHeaders:
+                        - name: Custom-Header
+                          value: Awesome
+                        initialDelaySeconds: 3
+                        periodSeconds: 3
+
 
   rancher-keycloak-oidc-provider:
     enabled_conditions:
