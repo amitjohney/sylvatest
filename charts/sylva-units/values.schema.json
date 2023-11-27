@@ -2965,6 +2965,23 @@
       "type": "string",
       "pattern": "(.|\\n)*{{(.|\\n)*}}(.|\\n)*"
     },
+    "list-of-subnets-or-ips": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "const": "0.0.0.0/0"
+          },
+          {
+            "type": "string",
+            "format": "ipv4"
+          },
+          {
+            "$ref": "#/$defs/ipv4-cidr-full"
+          }
+        ]
+      }
+    },
     "sylva-capi-cluster-values": {
       "$schema": "https://json-schema.org/draft-07/schema#",
       "title": "Schema for sylva-capi-cluster chart values",
@@ -8402,19 +8419,42 @@
                 }
               },
               "then": {
-                "required": [
-                  "security_level",
-                  "username",
-                  "password",
-                  "auth_protocol",
-                  "priv_protocol",
-                  "priv_password"
-                ]
+                "properties": {
+                  "auth": {
+                    "required": [
+                      "security_level",
+                      "username",
+                      "password",
+                      "auth_protocol",
+                      "priv_protocol",
+                      "priv_password"
+                    ]
+                  }
+                }
               }
             }
           }
         }
       }
+    },
+    "allowed_public_subnets": {
+      "$ref": "#/$defs/list-of-subnets-or-ips"
+    },
+    "allowed_public_subnets_for_gui": {
+      "$ref": "#/$defs/list-of-subnets-or-ips"
+    },
+    "allowed_public_subnets_for_kubeapi": {
+      "$ref": "#/$defs/list-of-subnets-or-ips"
+    },
+    "allowed_public_subnets_for_ssh": {
+      "$ref": "#/$defs/list-of-subnets-or-ips"
+    },
+    "default_policy": {
+      "type": "string",
+      "enum": [
+        "Deny",
+        "Allow"
+      ]
     }
   },
   "allOf": [
