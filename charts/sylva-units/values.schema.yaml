@@ -405,7 +405,7 @@ properties:
               - $ref: "#/$defs/gotpl"
 
           helm_chart_versions:  # -------------------------------
-            type: array
+            type: object
             items:
               type: string
 
