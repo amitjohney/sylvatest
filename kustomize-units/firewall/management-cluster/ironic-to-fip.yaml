@@ -1,0 +1,19 @@
+apiVersion: crd.projectcalico.org/v1
+kind: GlobalNetworkPolicy
+metadata:
+  name: ironic-to-fip
+spec:
+  order: 40
+  preDNAT: true
+  applyOnForward: true
+  ingress:
+  - action: Allow
+    protocol: TCP
+    source:
+      selector: app.kubernetes.io/name == 'metal3-ironic'
+    destination:
+      nets:
+      - ${CLUSTER_EXTERNAL_IP}
+      ports:
+      - 80
+      - 443

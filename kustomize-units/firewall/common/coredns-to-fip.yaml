@@ -1,0 +1,20 @@
+apiVersion: crd.projectcalico.org/v1
+kind: GlobalNetworkPolicy
+metadata:
+  name: coredns-to-fip
+spec:
+  selector: node-role.kubernetes.io/control-plane == 'true'
+  order: 40
+  preDNAT: true
+  applyOnForward: true
+  ingress:
+  # coredns forwards queries to the DNS port on the cluster IP address
+  - action: Allow
+    protocol: UDP
+    source:
+      selector: app.kubernetes.io/instance == 'rke2-coredns'
+    destination:
+      nets:
+      - ${CLUSTER_EXTERNAL_IP}
+      ports:
+      - 53

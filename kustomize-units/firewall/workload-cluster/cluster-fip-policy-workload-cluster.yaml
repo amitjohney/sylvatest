@@ -1,0 +1,19 @@
+apiVersion: crd.projectcalico.org/v1
+kind: GlobalNetworkPolicy
+metadata:
+  name: cluster-fip-policy-management-cluster
+spec:
+  selector: node-role.kubernetes.io/control-plane == 'true'
+  order: 45
+  preDNAT: true
+  applyOnForward: true
+  ingress:
+  - action: Allow
+    protocol: TCP
+    source:
+      selector: role == 'management-cluster-node'
+    destination:
+      nets:
+      - ${CLUSTER_EXTERNAL_IP}
+      ports:
+      - 6443

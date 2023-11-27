@@ -62,7 +62,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.2.18
+        branch: ath/firewall
 
   local-path-provisioner:
     kind: GitRepository
@@ -5204,6 +5204,130 @@ units:
               path: /spec/template/spec/volumes/2/configMap/name
               value: {{ .Values._internal.os_images_info_configmap }}  # this configmap is a byproduct of the os-images-info unit
 
+  firewall-common:
+    info:
+      description: >
+        configures global network policies applying
+        on the management cluster and on workload clusters
+      internal: true
+    unit_templates:
+    - base-deps
+    enabled: false
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/firewall/common
+      wait: true
+      postBuild:
+        substitute:
+          # Substitute with the cluster_virtual_ip value if it is defined to another value than the default, mandatory with capm3
+          # Otherwise, the value is substituted from the capo-cluster-resources when using capo
+          CLUSTER_EXTERNAL_IP: '{{ .Values.cluster_virtual_ip | eq "55.55.55.55" | ternary nil .Values.cluster_virtual_ip | include "set-if-defined" }}'
+          ALLOWED_PUBLIC_SUBNETS_TO_GUI: '{{ printf "[%s]" (join "," (.Values.allowed_public_subnets_for_gui | default .Values.allowed_public_subnets)) }}'
+          ALLOWED_PUBLIC_SUBNETS_TO_KUBEAPI: '{{ printf "[%s]" (join "," (.Values.allowed_public_subnets_for_kubeapi | default .Values.allowed_public_subnets)) }}'
+          ALLOWED_PUBLIC_SUBNETS_TO_SSH: '{{ printf "[%s]" (join "," (.Values.allowed_public_subnets_for_ssh | default .Values.allowed_public_subnets)) }}'
+          DEFAULT_POLICY: '{{ .Values.default_policy }}'
+          NTP_SERVERS: '{{ printf "[%s]" (join "," .Values.ntp.servers) }}'
+          CLUSTER_PODS_CIDR: '{{ printf "[%s]" (join "," .Values.cluster.cluster_pods_cidrs) }}'
+        substituteFrom:
+        - kind: ConfigMap
+          name: capo-cluster-resources
+          optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
+        - kind: ConfigMap
+          name: management-cluster-addresses
+        - kind: ConfigMap
+          name: cluster-provisioning-addresses
+          optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capm3") | include "as-bool" }}'
+
+  firewall-management-cluster:
+    info:
+      description: >
+        configures global network policies applying
+        only on the management cluster
+      internal: true
+    unit_templates:
+    - base-deps
+    enabled: false
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/firewall/management-cluster
+      wait: true
+      postBuild:
+        substitute:
+          CLUSTER_EXTERNAL_IP: '{{ .Values.cluster_virtual_ip | eq "55.55.55.55" | ternary nil .Values.cluster_virtual_ip | include "set-if-defined" }}'
+        substituteFrom:
+        - kind: ConfigMap
+          name: capo-cluster-resources
+          optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
+
+  firewall-workload-cluster:
+    info:
+      description: >
+        configures global network policies applying
+        only on the management cluster
+      internal: true
+    unit_templates:
+    - base-deps
+    enabled: false
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/firewall/workload-cluster
+      wait: true
+      postBuild:
+        substitute:
+          CLUSTER_EXTERNAL_IP: '{{ .Values.cluster_virtual_ip | eq "55.55.55.55" | ternary nil .Values.cluster_virtual_ip | include "set-if-defined" }}'
+        substituteFrom:
+        - kind: ConfigMap
+          name: capo-cluster-resources
+          optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
+
+  # only on the management cluster with capo enabled
+  firewall-kyverno-capo:
+    info:
+      description: >
+        configures a kyverno policy to create global network sets
+        with the IP address assigned to the nodes of the Openstack workload clusters
+      internal: true
+    unit_templates:
+    - base-deps
+    enabled: false
+    repo: sylva-core
+    depends_on:
+      firewall-kyverno-calico-role: true
+    kustomization_spec:
+      path: ./kustomize-units/firewall/kyverno-capo
+      wait: true
+
+  # only on the management cluster with capm3 enabled
+  firewall-kyverno-capm3:
+    info:
+      description: >
+        configures a kyverno policy to create global network sets
+        with the IP address assigned to the nodes of the baremetal workload clusters
+      internal: true
+    unit_templates:
+    - base-deps
+    enabled: false
+    repo: sylva-core
+    depends_on:
+      firewall-kyverno-calico-role: true
+    kustomization_spec:
+      path: ./kustomize-units/firewall/kyverno-capm3
+      wait: true
+
+  firewall-kyverno-calico-role:
+    info:
+      description: >
+        configures the permissions allowing kyverno to manage calico resources
+      internal: true
+    unit_templates:
+    - base-deps
+    enabled: false
+    repo: sylva-core
+    depends_on:
+      kyverno: true
+    kustomization_spec:
+      path: ./kustomize-units/firewall/kyverno-calico-role
+      wait: true
 ##### stuff related to the 'cluster' unit #####
 #
 # all these values under 'cluster' are passed as values to sylva-capi-cluster chart
@@ -5890,3 +6014,16 @@ snmp:
 #     snmpv2:
 #       version: 2
 #       community: public
+
+# By default, allow external ingress traffic from all sources
+allowed_public_subnets:
+  - 0.0.0.0/0
+
+# Specify the following values to use different subnets for each type of flow
+# allowed_public_subnets_for_gui:
+# allowed_public_subnets_for_kubeapi:
+# allowed_public_subnets_for_ssh
+
+# We drop packets by default
+# This value can be set to Allow for troubleshooting
+default_policy: Deny
