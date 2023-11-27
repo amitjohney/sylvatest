@@ -106,7 +106,6 @@ unit_templates:
           version: '{{ .Values._internal.sylva_core_version }}'
 
 units:
-
   capi-rancher-import:
     helmrelease_spec:
       values:

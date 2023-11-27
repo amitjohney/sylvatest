@@ -31,4 +31,4 @@ push-helm-artifacts:
 publish-sylva-units-artifact:
   extends: .build-base
   script:
-    - tools/oci/build-sylva-units-artifact.sh ${OCI_TAG}
+    - tools/oci/build-sylva-units-artifact.py ${OCI_TAG}

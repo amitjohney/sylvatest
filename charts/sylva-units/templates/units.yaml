@@ -80,6 +80,7 @@ spec: {{ $helm_repo_spec | toYaml | nindent 2 }}
 
     {{/******************* Generation of the Kustomization */}}
 
+
     {{- $patches := list -}}
 
     {{/* here, if "helmrelease_spec" is used, we define the spec of the inner HelmRelease */}}
@@ -138,6 +139,28 @@ spec: {{ $helm_repo_spec | toYaml | nindent 2 }}
                                               (regexReplaceAll ".*?([^/]+)$" $chart_spec.chart "${1}")
                                           ) -}}
       {{- end -}}
+
+      {{/* here, if "helm_chart_versions" is used, we extract the chart version
+      that would be used in case no specific 'helmrelease_spec.chart.spec.version' is defined
+      */}}
+      {{- if hasKey $unit_def "helm_chart_versions" -}}
+        {{- $helm_chart_versions_selection := "" -}}
+        {{- range $ver, $enabled := $unit_def.helm_chart_versions }}
+          {{- if eq $enabled "true" -}}
+            {{- if $helm_chart_versions_selection -}}
+              {{- fail (printf "unit '%s' has 'true' set on more than one version inside 'helm_chart_versions'" $unit_name) }}
+            {{- else -}}
+              {{- $helm_chart_versions_selection = $ver -}}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+        {{- if not $helm_chart_versions_selection }}
+          {{- fail (printf "unit '%s' has no version set to true inside 'helm_chart_versions'" $unit_name)}}
+        {{- end }}
+        {{- if not $unit_def.helmrelease_spec.chart.spec.version -}}
+          {{- $_ := set $unit_def.helmrelease_spec.chart.spec "version" $helm_chart_versions_selection -}}
+        {{- end }}             
+      {{- end }}
 
       {{/* produce the HelmRelease specification, merging the different sources we have */}}
       {{- $helmrelease_spec := dict "releaseName" $unit_name -}}

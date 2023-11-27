@@ -178,7 +178,7 @@ for unit_name in $(yq -r '(.units | ... comments="" | keys())[]' $VALUES_FILE | 
       artifact_name=$(echo "$unit" | yq '.helm_chart_artifact_name // .helmrelease_spec.chart.spec.chart')
       echo "artifact name will be $artifact_name"
 
-      readarray versions < <(echo "$unit" | yq '.helm_chart_versions[]')
+      readarray versions < <(echo "$unit" | yq -r '.helm_chart_versions | select(.) | keys | .[]')
       if [[ ${#versions[@]} -eq 0 ]]; then
         versions+=$(echo "$helmchart_spec" | yq '.version' -)
       fi

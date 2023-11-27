@@ -176,6 +176,10 @@ units:
   #                             helm_chart_artifact_name will be used as chart name instead of helmrelease_spec.chart.spec.chart last path item
   #                             this is required if helmrelease_spec.chart.spec.chart is empty, '.' or '/'
   #                             (also used by tools/oci/push-helm-chart to generate the artifact)
+  #   helm_chart_versions: optional, if specified, when deploying the Helm chart from an OCI artifact or Helm registry,
+  #                             it will drive the version to be used from a dict of <version>:<boolean>
+  #                             in case if helmrelease_spec.chart.spec.chart.version is not set
+  #                             (also used by tools/oci/push-helm-charts-artifacts.sh to generate the artifact)
   #   kustomization_spec:  # contains a partial spec for a FluxCD Kustomization, most of the
   #                        # things are generated from unit_kustomization_spec_default
   #     # sourceRef is generated from .git_repo field
@@ -1356,15 +1360,16 @@ units:
     - '{{ tuple . "calico" | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io
     helm_chart_versions:
-      - "v3.25.001"  # used for k8s < 1.26.6
-      - "v3.26.101"
+      v3.25.001: '{{ not .Values._internal.k8s_post_1_26_6  }}'
+      v3.26.101: '{{ .Values._internal.k8s_post_1_26_6 }}'
     helmrelease_spec:
       releaseName: rke2-calico-crd
       targetNamespace: kube-system
       chart:
         spec:
           chart: rke2-calico-crd
-          version: '{{ semver (tuple . .Values.cluster.k8s_version | include "interpret-as-string") | (semver "v1.26.6").Compare | le 0 | ternary "v3.25.001" "v3.26.101" }}'
+          version: "" # will be defined by helm_chart_versions
+
 
   # this unit is here to allow for upgrading Calico chart when upgrading cluster
   # v1.25.x to v1.26.x, see https://gitlab.com/sylva-projects/sylva-core/-/issues/664
@@ -1384,13 +1389,13 @@ units:
       calico-crd: true
     helm_repo_url: https://rke2-charts.rancher.io
     helm_chart_versions:
-      - "v3.25.001"  # used for k8s < 1.26.6
-      - "v3.26.101"
+      v3.25.001: '{{ not .Values._internal.k8s_post_1_26_6  }}'
+      v3.26.101: '{{ .Values._internal.k8s_post_1_26_6 }}'
     helmrelease_spec:
       chart:
         spec:
           chart: rke2-calico
-          version: '{{ semver (tuple . .Values.cluster.k8s_version | include "interpret-as-string") | (semver "v1.26.6").Compare | le 0 | ternary "v3.25.001" "v3.26.101" }}'
+          version: "" # will be defined by helm_chart_versions
       values:
         installation:
           calicoNetwork:
@@ -1746,15 +1751,15 @@ units:
       calico: '{{ tuple . "calico" | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io
     helm_chart_versions:
-      - "4.5.202"  # used with k8s < 1.26.6
-      - "4.6.101"
+      4.5.202: '{{ not .Values._internal.k8s_post_1_26_6  }}'
+      4.6.101: '{{ .Values._internal.k8s_post_1_26_6 }}'
     helmrelease_spec:
       releaseName: rke2-ingress-nginx
       targetNamespace: kube-system
       chart:
         spec:
           chart: rke2-ingress-nginx
-          version: '{{ semver (tuple . .Values.cluster.k8s_version | include "interpret-as-string") | (semver "v1.26.6").Compare | le 0 | ternary "4.5.202" "4.6.101" }}'
+          version: "" # will be defined by helm_chart_versions
       values:
         fullnameOverride: rke2-ingress-nginx
         controller:
@@ -2595,6 +2600,8 @@ _internal:
       checksum: ffdc81fcdc0104151aa792a508eefe0d47660b18683949edcd734b3a4f938f20
 
   metal3_unit: '{{ .Values.metal3.provider | eq "suse" | ternary "metal3-suse" "metal3" }}'
+
+  k8s_post_1_26_6: '{{ semverCompare ">1.26.6" (tuple . .Values.cluster.k8s_version | include "interpret-as-string") | include "preserve-type" }}'
 
 shared_workload_clusters_values:
   ntp: '{{ .Values.ntp | include "set-if-defined" }}'
