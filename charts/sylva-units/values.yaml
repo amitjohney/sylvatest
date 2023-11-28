@@ -1943,6 +1943,54 @@ units:
           cattle:
             psp:
               enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") | include "as-bool" }}'
+        grafana:
+          sidecar:
+            dashboards:
+              enabled: true
+              searchNamespace: ALL
+              # ???
+              multicluster:
+                global:
+                  enabled: true
+                # ???
+                #etcd:
+                #  enabled: true
+            datasources:
+              enabled: true
+              defaultDatasourceEnabled: true
+          additionalDataSources:
+            - name: thanos
+              editable: false
+              access: proxy
+              jsonData:
+                tlsSkipverify: true
+                timeInterval: 15s
+              orgId: 1
+              type: prometheus
+              url: "https://thanos.sylva"
+            - name: loki
+              editable: true
+              access: proxy
+              jsonData:
+                tlsSkipverify: true
+                timeInterval: 15s
+              # todo
+              #secureJsonData:
+                #httpHeaderValue1: '{{ .Values.loki.tenant_id }}'
+              orgId: 1
+              type: loki
+              url: "https://loki.sylva"
+        # ./templates/grafana/configmaps-datasources.yaml
+        prometheus:
+          prometheusSpec:
+            # https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#remotewritespec
+            remoteWrite:
+              - url: "https://thanos-receive.sylva:443/api/v1/receive"
+                queue_config:
+                  batch_send_deadline: 5s
+                  min_backoff: 1s
+                  max_backoff: 30s
+            remoteWriteDashboards: true
       # Disable drift detection for rancher-monitoring webhooks
       _postRenderers:
         - kustomize:
@@ -2307,81 +2355,73 @@ units:
 
 ### monitoring stuff
 
-minio-operator:
-    enabled: true
-    #enabled_conditions:
-    # use logging enable?
-    #  - '{{ tuple . "monitoring" | include "unit-enabled" }}'
-    annotations:
-      sylvactl/readyMessage: "minio console can be reached at https://minio-operator-console.{{ .Values.cluster_external_domain }} (minio-operator-console.{{ .Values.cluster_external_domain }} must resolve to {{ .Values.display_external_ip }})"
-    repo: minio-operator
-    helmrelease_spec:
-      releaseName: minio-operator
-      targetNamespace: minio-operator
-      chart:
-        spec:
-          chart: helm/operator
-          version: v5.0.10
-      install:
-        createNamespace: true
-      values:
-        operator:
-          containerSecurityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          resources:
-            requests:
-              cpu: 200m
-              memory: 256Mi
-              ephemeral-storage: 500Mi
-        console:
-          enabled: true
-          containerSecurityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            runAsNonRoot: true
-            seccompProfile:
-              type: RuntimeDefault
-          ingress:
+  minio-operator:
+      enabled: true
+      annotations:
+        sylvactl/readyMessage: "minio console can be reached at https://minio-operator-console.{{ .Values.cluster_external_domain }} (minio-operator-console.{{ .Values.cluster_external_domain }} must resolve to {{ .Values.display_external_ip }})"
+      repo: minio-operator
+      helmrelease_spec:
+        releaseName: minio-operator
+        targetNamespace: minio-operator
+        chart:
+          spec:
+            chart: helm/operator
+            version: v5.0.10
+        install:
+          createNamespace: true
+        values:
+          operator:
+            containerSecurityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              seccompProfile:
+                type: RuntimeDefault
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              seccompProfile:
+                type: RuntimeDefault
+            resources:
+              requests:
+                cpu: 200m
+                memory: 256Mi
+                ephemeral-storage: 500Mi
+          console:
             enabled: true
-            ingressClassName: nginx
-            #labels: { }
-            #annotations: { }
-            host: 'minio-operator-console.{{ .Values.cluster_external_domain }}'
-            path: /
-            pathType: Prefix
-            tls:
-              - hosts:
-                  - 'minio-operator-console.{{ .Values.cluster_external_domain }}'
-                secretName: minio-operator-console-tls
+            containerSecurityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              seccompProfile:
+                type: RuntimeDefault
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
+            ingress:
+              enabled: true
+              ingressClassName: nginx
+              host: 'minio-operator-console.{{ .Values.cluster_external_domain }}'
+              path: /
+              pathType: Prefix
+              tls:
+                - hosts:
+                    - 'minio-operator-console.{{ .Values.cluster_external_domain }}'
+                  secretName: minio-operator-console-tls
 
   minio-tenant-monitoring:
     enabled: true
     depends_on:
       minio-operator: true
-    enabled_conditions:
-    # use logging enable?
-      - '{{ tuple . "monitoring" | include "unit-enabled" }}'
     annotations:
       sylvactl/readyMessage: "minio tenant monitoring console can be reached at https://minio-monitoring-console.{{ .Values.cluster_external_domain }} (minio--monitoring-console.{{ .Values.cluster_external_domain }} must resolve to {{ .Values.display_external_ip }})"
     repo: minio-operator
@@ -2391,23 +2431,12 @@ minio-operator:
       chart:
         spec:
           chart: helm/tenant
-          # must match the version of minio-operator!!!
           version: v5.0.10
       install:
         createNamespace: true
       values:
-        ## Secret with credentials and configurations to be used by MinIO Tenant.
         configuration:
           name: storage-configuration
-        ## Secret with default environment variable configurations to be used by MinIO Tenant.
-        ## Not recommended for production deployments! Create the secret manually instead.
-        secrets:
-          name: minio-root
-          #namespace: minio-tenant-monitoring
-          # MinIO root user and password
-          # not working, remove
-          accessKey: root
-          secretKey: minio123
         tenant:
           name: monitoring
           configuration:
@@ -2415,9 +2444,7 @@ minio-operator:
           pools:
             - servers: 4
               name: pool-0
-              ## volumesPerServer specifies the number of volumes attached per MinIO Tenant Pod / Server.
               volumesPerserver: 2
-              ## size specifies the capacity per volume
               size: 2Gi
               storageClassName: '{{ .Values._internal.default_storage_class }}'
               containerSecurityContext:
@@ -2430,33 +2457,17 @@ minio-operator:
                   type: RuntimeDefault
               securityContext:
                 fsGroupChangePolicy: "OnRootMismatch"
-                # not declared in schema
-                #allowPrivilegeEscalation: false
-                #capabilities:
-                #  drop:
-                #    - ALL
-                #runAsNonRoot: true
-                #runAsGroup: 1000
-                #runAsUser: 1000
-                #fsGroup: 1000
                 seccompProfile:
                   type: RuntimeDefault
           metrics:
             enabled: enable
             port: 9000
             protocol: http
-          ## MinIO features to enable or disable in the MinIO Tenant
-          ## https://github.com/minio/operator/blob/master/docs/tenant_crd.adoc#features
           features:
             bucketDNS: false
-            #domains: { }
             enableSFTP: false
           users:
-            # ok, validated
             - name: minio-user
-            # when multiple users exists, buckets are not created??
-            #- name: loki-user
-            #- name: thanos-user
           buckets:
             - name: "prometheus"
               region: "monitoring-cluster"
@@ -2478,14 +2489,6 @@ minio-operator:
               #objectLock: false
           ## Prometheus Operator's Service Monitor for MinIO Tenant Pods.
           prometheusOperator: true
-          #  labels:
-          #    app: minio-moitorig
-          # Enable JSON, Anonymous logging for MinIO tenants.
-          # Refer https://github.com/minio/operator/blob/master/pkg/apis/minio.min.io/v2/types.go#L303
-          # How logs will look:
-          # $ k logs myminio-pool-0-0 -n default
-          # {"level":"INFO","errKind":"","time":"2022-04-07T21:49:33.740058549Z","message":"All MinIO sub-systems initialized successfully"}
-          # Notice they are in JSON format to be consumed
           logging:
             anonymous: true
             json: true
@@ -2494,8 +2497,6 @@ minio-operator:
           api:
             enabled: false
             ingressClassName: nginx
-            #labels: { }
-            #annotations: { }
             host: 'minio-monitoring.{{ .Values.cluster_external_domain }}'
             path: /
             pathType: Prefix
@@ -2506,16 +2507,9 @@ minio-operator:
           console:
             enabled: false
             ingressClassName: nginx
-            #labels: { }
-            #annotations: { }
             host: 'minio-monitoring-console.{{ .Values.cluster_external_domain }}'
             path: /
             pathType: Prefix
-            #backend:
-            #  service:
-            #    name: {{ .Values.tenant.name }}-console
-            #    port:
-            #      number: 9443
             tls:
               - hosts:
                   - 'minio-monitoring-console.{{ .Values.cluster_external_domain }}'
@@ -2549,12 +2543,6 @@ minio-operator:
     enabled: true
     depends_on:
       minio-tenant-monitoring: true
-    #depends_on:
-      #grafana-agent: true
-    #enabled_conditions:
-    # use logging enable?
-    #  - '{{ tuple . "monitoring" | include "unit-enabled" }}'
-    # external_hostname: 'loki.{{ .Values.cluster_external_domain }}'
     annotations:
       sylvactl/readyMessage: "loki can be reached at https://loki.{{ .Values.cluster_external_domain }} (loki.{{ .Values.cluster_external_domain }} must resolve to {{ .Values.display_external_ip }})"
     repo: loki
@@ -2570,57 +2558,14 @@ minio-operator:
       values:
         global:
           dnsService: "rke2-coredns-rke2-coredns"
-        # not fixed yet: https://github.com/grafana/loki/issues/10660
         sidecar:
           rules:
             enabled: false
         loki:
-          # todo: true
           auth_enabled: false
-          readinessProbe:
-            httpGet:
-              path: /ready
-              port: http-metrics
-            initialDelaySeconds: 30
-            timeoutSeconds: 1
           containerSecurityContext:
             seccompProfile:
               type: RuntimeDefault
-          podsecurityContext:
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            runAsNonRoot: true
-            seccompProfile:
-              type: RuntimeDefault
-          #persistence:
-          #  enabled: true
-          #  size: 50Gi
-          #  storageClass: '{{ .Values._internal.default_storage_class }}'
-          #storage_config:
-          #  boltdb_shipper:
-          #    active_index_directory: /loki/index
-          #    cache_location: /loki/index_cache
-          #    resync_interval: 5s
-          #    shared_store: s3
-          #  aws:
-          #    # python3 ~/minio-test-upload.py -> works
-          #    #s3: http://minio-user:minio123@minio.minio-tenant-monitoring.svc.cluster.local.:9000/loki
-          #    s3: https://minio:minio1234@minio-monitoring.sylva.:443/loki
-          #    s3forcepathstyle: true
-          #    Config:
-          #      CredentialsChainVerboseErrors: true
-          # todo
-          # analytics
-          # querier
-          # frontend
-          # frontend_worker
-          # distribuitor
-          # compactor
-          # ingester
-          # tenants !!!!
           analytics:
             reporting_enabled: false
           server:
@@ -2648,31 +2593,12 @@ minio-operator:
             chunk_block_size: 262144
             chunk_idle_period: 3m
             chunk_retain_period: 1m
-            # mpb
-            # Loki read returning always empty ring #9839 
-            # https://github.com/grafana/loki/issues/9839
-            #lifecycler:
-            #  ring:
-            #    kvstore:
-            #      store: inmemory
-            #    replication_factor: 1
             max_transfer_retries: 0
-            # readonly issue
             wal:
-              # todo
-              #  msg="error running loki" err="creating WAL folder at \"/data/wal\": mkdir /data: read-only file system\
               enabled: true
               dir: /data/wal
-          # missing in our helm chart
-          #ingester_client:
-          #  grpc_client_config:
-          #    max_send_msg_size: 52428800
-          #    max_recv_msg_size: 52428800
           commonConfig:
             replication_factor: 1
-          # -- Storage config. Providing this will automatically populate all necessary storage configs in the templated config.
-          # https://github.com/grafana/loki/blob/main/docs/sources/configure/examples/yaml/10-Expanded-S3-Snippet.yaml
-          # https://raw.githubusercontent.com/grafana/loki/main/production/helm/loki/values.yaml
           storage:
             bucketNames:
               chunks: "loki-chunks"
@@ -2680,9 +2606,7 @@ minio-operator:
               admin: "loki-admin"
             type: s3
             s3:
-              #s3: s3://loki
               s3: null
-              # write directly to service, bypass ingress
               endpoint: "minio.minio-tenant-monitoring.svc.cluster.local:443"
               region: null
               secretAccessKey: "minio1234"
@@ -2692,15 +2616,7 @@ minio-operator:
               insecure: false
               http_config:
                 idle_conn_timeout: 90s
-                #response_header_timeout: 0s
                 insecure_skip_verify: true
-          # todo
-          #memcached:
-          # readonly error
-          #compactor:
-          #  working_directory: /loki/compactor
-          #  shared_store: s3 
-          # need to disable test if selfMonitoring is disabled
         test:
           enabled: false
         monitoring:
@@ -2733,8 +2649,6 @@ minio-operator:
                 type: RuntimeDefault
           serviceMonitor:
             enabled: true
-            #relabelings: []
-            #metricRelabelings: []
             metricsInstance:
               enabled: true
           # todo: need GrafanaAgent
@@ -2743,14 +2657,7 @@ minio-operator:
             tenant:
               name: "self-monitoring"
             grafanaAgent:
-              # Note that helm will not install CRDs if this flag is enabled during an upgrade.
-              # In that case install the CRDs manually from https://github.com/grafana/agent/tree/main/production/operator/crds
               installOperator: false
-          # The Loki canary pushes logs to and queries from this loki installation to test
-          # that it's working correctly
-          # todo
-          # disabled for now - is using a hardcoded url - need gateway svc enabled ??
-          # [loki-canary-q8gt2] failed to connect to ws://loki-gateway.loki.svc.cluster.local.:80/loki/api/v1/tail?query=%7Bstream%3D%22stdout%22%2Cpod%3D%22loki-canary-q8gt2%22%7D with err dial tcp: lookup loki-gateway.loki.svc.cluster.local. on 10.43.0.10:53: no such host
           lokiCanary:
             enabled: false
             labelname: pod
@@ -2762,8 +2669,6 @@ minio-operator:
               runAsNonRoot: true
               seccompProfile:
                 type: RuntimeDefault
-          # Configuration for the write pod(s)
-          # todo: more parameters
         write:
           replicas: 3
           autoscaling:
@@ -2792,12 +2697,9 @@ minio-operator:
               mountPath: /data
             - name: loki
               mountPath: /loki            
-        # todo
         tablemanager:
           enabled: false
-        # Configuration for the read pod(s)
         read:
-          # -- Number of replicas for the read
           replicas: 3
           podSecurityContext:
             seccompProfile:
@@ -2810,9 +2712,7 @@ minio-operator:
             runAsNonRoot: true
             seccompProfile:
               type: RuntimeDefault
-        # Configuration for the backend pod(s)
         backend:
-          # -- Number of replicas for the backend
           replicas: 3
           podSecurityContext:
             seccompProfile:
@@ -2830,17 +2730,10 @@ minio-operator:
             publishNotReadyAddresses: true
           join_members:
             - loki-memberlist
-        # Configuration for the gateway - own nginx ingress
-        # there is an issue and we will disabled it and relay on kube-system/nginx
         gateway:
-          # -- Specifies whether the gateway should be enabled
           enabled: false
           verboseLogging: true
-          # -- Number of replicas for the gateway
           replicas: 3
-          #  Error from Hardcoded "client_max_body_size" in HTTPSnippet #8736
-          # https://github.com/grafana/loki/issues/8736
-          # still open
           nginxConfig:
             httpSnippet: |-
               client_max_body_size 50M;
@@ -2857,16 +2750,11 @@ minio-operator:
             runAsNonRoot: true
             seccompProfile:
               type: RuntimeDefault
-        # Use either this ingress or the gateway, but not both at once.
-        # If you enable this, make sure to disable the gateway.
         ingress:
           enabled: true
-          #enabled: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
           ingressClassName: "nginx"
           annotations:
-            # fix "413 Request Entity Too Large" on clients
             nginx.ingress.kubernetes.io/proxy-body-size: "0"
-            #kubernetes.io/ingress.class: nginx
           hosts:
             - 'loki.{{ .Values.cluster_external_domain }}'
           tls:
@@ -2876,7 +2764,6 @@ minio-operator:
 
   thanos:
     enabled: true
-    #enabled: '{{ .Values.units.thanos.enabled | include "preserve-type" }}'
     depends_on:
       minio-tenant-monitoring: true
     helm_repo_url: https://charts.bitnami.com/bitnami
@@ -2907,8 +2794,6 @@ minio-operator:
               insecure_skip_verify: true
             #trace:
               #enabled: true
-        # https://github.com/thanos-io/thanos/blob/main/docs/components/query.md
-        # The thanos query command (also known as "Querier") implements the Prometheus HTTP v1 API to query data in a Thanos cluster via PromQL.
         query:
           enabled: true
           logLevel: debug
@@ -2931,9 +2816,6 @@ minio-operator:
             capabilities:
               drop:
                 - ALL
-            #runAsNonRoot: true
-            #runAsGroup: 1000
-            #runAsUser: 1000
             seccompProfile:
               type: RuntimeDefault
           securityContext:
@@ -2941,9 +2823,6 @@ minio-operator:
             capabilities:
               drop:
                 - ALL
-            #runAsNonRoot: true
-            #runAsGroup: 1000
-            #runAsUser: 1000
             seccompProfile:
               type: RuntimeDefault
         queryFrontend:
@@ -2977,16 +2856,13 @@ minio-operator:
             runAsNonRoot: true
             seccompProfile:
               type: RuntimeDefault
-        # https://github.com/thanos-io/thanos/blob/main/docs/components/store.md#flags
         storegateway:
           enabled: true
           logLevel: debug
           persistence:
-            # todo: really ???
             enabled: false
             storageClass: '{{ .Values._internal.default_storage_class }}'
             size: 8Gi
-          # need all 3
           containerSecurityContext:
             capabilities:
               drop:
@@ -3020,7 +2896,6 @@ minio-operator:
           retentionResolutionRaw: 2d
           retentionResolution5m: 30d
           retentionResolution1h: 1y
-          # need all 3
           containerSecurityContext:
             capabilities:
               drop:
@@ -3041,7 +2916,6 @@ minio-operator:
             seccompProfile:
               type: RuntimeDefault
         bucketweb:
-          # really ???
           enabled: false
         ruler:
           enabled: false
@@ -3071,7 +2945,6 @@ minio-operator:
                 - ALL
             seccompProfile:
               type: RuntimeDefault
-        # https://github.com/thanos-io/thanos/blob/release-0.22/docs/proposals-accepted/202012-receive-split.md
         receive:
           enabled: true
           mode: standalone
@@ -3101,71 +2974,11 @@ minio-operator:
                   - 'thanos-receive.{{ .Values.cluster_external_domain }}'
                 secretName: thanos-tls
 
-
-  monitoring:
-    enabled: true
-    helmrelease_spec:
-      values:
-        grafana:
-          sidecar:
-            dashboards:
-              enabled: true
-              searchNamespace: ALL
-              # ???
-              multicluster:
-                global:
-                  enabled: true
-                # ???
-                #etcd:
-                #  enabled: true
-            datasources:
-              enabled: true
-              defaultDatasourceEnabled: true
-              # todo: enable those only for management cluster
-              # todo: protect with password
-          additionalDataSources:
-            - name: thanos
-              editable: false
-              access: proxy
-              jsonData:
-                tlsSkipverify: true
-                timeInterval: 15s
-              orgId: 1
-              type: prometheus
-              url: "https://thanos.sylva"
-            - name: loki
-              editable: true
-              access: proxy
-              jsonData:
-                tlsSkipverify: true
-                timeInterval: 15s
-              # todo
-              #secureJsonData:
-                #httpHeaderValue1: '{{ .Values.loki.tenant_id }}'
-              orgId: 1
-              type: loki
-              url: "https://loki.sylva"
-        # ./templates/grafana/configmaps-datasources.yaml
-        prometheus:
-          prometheusSpec:
-            # https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#remotewritespec
-            remoteWrite:
-              # todo use external cluster url for workload clusters
-              #- url: "https://thanos-receive.thanos.svc.cluster.local:19291/api/v1/receive"
-              - url: "https://thanos-receive.sylva:443/api/v1/receive"
-                queue_config:
-                  batch_send_deadline: 5s
-                  min_backoff: 1s
-                  max_backoff: 30s
-            remoteWriteDashboards: true
-
-  # fix me: version, namespace confirmation, test, config loki server, test wth loki
   rancher-logging-crd:
     depends_on:
       namespace-defs: true
     enabled: true
     enabled_conditions:
-    # use logging enable?
       - '{{ tuple . "monitoring" | include "unit-enabled" }}'
     helm_repo_url: https://charts.rancher.io/
     helmrelease_spec:
