@@ -12,7 +12,7 @@ scheduled-cleanup-capo:
     - touch tags.txt exclude-tags.txt
     - |
       set -eo pipefail
-      for STACK in $(openstack stack list -f value -c "Stack Name" | grep -E '^(mgmt-|wc-|capo-cluster)' ); do
+      for STACK in $(openstack stack list -f value -c "Stack Name" | grep -E '^(management-|mgmt-|workload-|wc-|capo-cluster)' ); do
         STACK_TIME=$(date -d "$(openstack stack show ${STACK} -c creation_time -f value | tr T ' ' | tr -d Z )" +%s)
         THIS_TIME=$(date +%s)
         # deduce pipeline ID from stack tag
