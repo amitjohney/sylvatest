@@ -2255,7 +2255,10 @@
                     "security_group_names": {
                       "anyOf": [
                         {
-                          "type": "array"
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
                         },
                         {
                           "$ref": "#/$defs/string-with-gotpl"
@@ -4330,7 +4333,10 @@
                         "security_group_names": {
                           "anyOf": [
                             {
-                              "type": "array"
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
                             },
                             {
                               "$ref": "#/$defs/string-with-gotpl"
