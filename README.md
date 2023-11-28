@@ -515,17 +515,6 @@ Before triggering bootstrap.sh, certain prerequisites need to be done/followed
           ens2f1:
             type: phy
   
-    baremetal_host_default:
-      bmh_spec:
-        online: true
-        externallyProvisioned: false
-        bmc:
-          disableCertificateVerification: true
-        automatedCleaningMode: metadata
-        bootMode: legacy
-        rootDeviceHints:  # https://github.com/metal3-io/baremetal-operator/blob/main/docs/api.md#rootdevicehints
-          deviceName: /dev/sda
-  
     baremetal_hosts:  # corresponding credentials need to be set in secrets.yaml
   
       # this example is based on what worked on an HP Proliant DL360 Gen10
@@ -552,14 +541,6 @@ Before triggering bootstrap.sh, certain prerequisites need to be done/followed
           bmc:
             address: idrac-virtualmedia://77.77.77.77/redfish/v1/Systems/System.Embedded.1  # put the real BMC address here!
           bootMACAddress: ba:ad:00:c0:ff:ee    # put the real address here!
-  
-  units:
-  
-    longhorn:
-      enabled: true
-  
-    workload-cluster:
-      enabled: false  # (no workload cluster is described in this example)
   
   metal3:
     bootstrap_ip: 10.177.129.138
