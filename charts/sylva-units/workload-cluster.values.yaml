@@ -83,20 +83,20 @@ units:
                 type: json
                 description: "Security group rules associated with the control plane VMs"
                 default:
-                  direction: [ingress, ingress, ingress, egress]
-                  port: ['80', '443', '22', '53']
-                  protocol: [tcp, tcp, tcp, udp]
-                  remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
+                  direction: []
+                  port: []
+                  protocol: []
+                  remote_ip_prefix: []
             - op: replace
               path: /spec/heatStack/template/parameters/worker_rules
               value:
                 type: json
                 description: "Security group rules associated with the worker VMs"
                 default:
-                  direction: [ingress, ingress, ingress, egress]
-                  port: ['80', '443', '22', '53']
-                  protocol: [tcp, tcp, tcp, udp]
-                  remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
+                  direction: []
+                  port: []
+                  protocol: []
+                  remote_ip_prefix: []
 
   cluster:
     enabled: true
