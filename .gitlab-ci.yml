@@ -33,3 +33,4 @@ include:
 
 variables:
   GITLEAKS_ARGS: '--verbose --log-opts=$CI_COMMIT_SHA'
+  RUNNER_GENERATE_ARTIFACTS_METADATA: "true"
