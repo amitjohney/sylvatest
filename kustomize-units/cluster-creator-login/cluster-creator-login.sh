@@ -70,7 +70,7 @@ fi
 echo "Obtained a kubeconfig for the cluster-creator user"
 
 if ! kubectl get secret cluster-creator-kubeconfig -n flux-system > /dev/null 2>&1; then
-  kubectl create secret generic cluster-creator-kubeconfig --from-literal=kubeconfig="$KUBECONFIG" --from-literal=USER_NAME=$USERID -n $TARGET_NAMESPACE
+  kubectl create secret generic cluster-creator-kubeconfig --from-literal=kubeconfig="$KUBECONFIG" --from-literal=USER_NAME=$USERID -n ${JOB_TARGET_NAMESPACE}
   echo "Creating the cluster-creator-kubeconfig secret"
   if [ $? -ne 0 ]; then
     echo "Could not save the kubeconfig in the cluster-creator-kubeconfig secret"
@@ -79,6 +79,6 @@ if ! kubectl get secret cluster-creator-kubeconfig -n flux-system > /dev/null 2>
   echo "Saved the kubeconfig in the cluster-creator-kubeconfig secret"
 else
   echo "Updating the cluster-creator-kubeconfig secret"
-  kubectl patch secret cluster-creator-kubeconfig -n flux-system --type 'merge' -p '{"data":{"USER_NAME":"'$(echo $USERID | base64)'","kubeconfig":"'$(echo "$KUBECONFIG" | base64 -w0)'"}}' -n $TARGET_NAMESPACE
+  kubectl patch secret cluster-creator-kubeconfig -n flux-system --type 'merge' -p '{"data":{"USER_NAME":"'$(echo $USERID | base64)'","kubeconfig":"'$(echo "$KUBECONFIG" | base64 -w0)'"}}' -n ${JOB_TARGET_NAMESPACE}
   echo "Updated the kubeconfig in the cluster-creator-kubeconfig secret"
 fi

@@ -35,9 +35,6 @@ spec:
           privileged: false
           seccompProfile:
             type: RuntimeDefault
-        env:
-        - name: TARGET_NAMESPACE
-          value: ${JOB_TARGET_NAMESPACE:-default}
         volumeMounts:
         - mountPath: /opt/
           name: script-volume

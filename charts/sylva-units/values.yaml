@@ -1318,8 +1318,8 @@ units:
             value: |
               #!/bin/bash
               set -e
-              kubectl -n $TARGET_NAMESPACE wait MachineDeployment -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }} --for condition=Ready --timeout 600s
-              kubectl -n $TARGET_NAMESPACE patch cluster.cluster.x-k8s.io  {{ .Values.cluster.name }} --type merge -p '{"spec":{"paused": true}}'
+              kubectl -n ${JOB_TARGET_NAMESPACE} wait MachineDeployment -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }} --for condition=Ready --timeout 600s
+              kubectl -n ${JOB_TARGET_NAMESPACE} patch cluster.cluster.x-k8s.io  {{ .Values.cluster.name }} --type merge -p '{"spec":{"paused": true}}'
 
   resume-cluster-reconciliation:
     enabled_conditions:
@@ -1344,7 +1344,7 @@ units:
             path: /data/kube-job.sh
             value: |
               #!/bin/bash
-              kubectl -n $TARGET_NAMESPACE patch cluster.cluster.x-k8s.io {{ .Values.cluster.name }} --type merge -p '{"spec":{"paused": false}}'
+              kubectl -n ${JOB_TARGET_NAMESPACE} patch cluster.cluster.x-k8s.io {{ .Values.cluster.name }} --type merge -p '{"spec":{"paused": false}}'
 
   calico-crd:
     enabled_conditions:
