@@ -2126,6 +2126,9 @@ units:
         serviceMonitor:
           enabled: true
           namespace: cattle-monitoring-system
+          relabelings: 
+            - sourceLabels: [__param_module]
+              targetLabel: module
           params: |
             {{- $result := list -}}
             {{- range $device := .Values.snmp.devices }}
