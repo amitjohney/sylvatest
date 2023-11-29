@@ -113,6 +113,13 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: 0.1.6
 
+  vault-operator:
+    kind: GitRepository
+    spec:
+      url: https://github.com/bank-vaults/vault-operator.git
+      ref:
+        tag: v1.21.2
+
 helm_repo_spec_default:
   interval: 60m0s
 
@@ -324,15 +331,18 @@ units:
       targetNamespace: kubevirt-tests
 
   vault-operator:
-    helm_repo_url: https://kubernetes-charts.banzaicloud.com
+    repo: vault-operator
     helmrelease_spec:
       chart:
         spec:
-          chart: vault-operator
-          version: 1.19.0
+          chart: deploy/charts/vault-operator
       targetNamespace: vault
       install:
         createNamespace: true
+      values:
+        image:
+          repository: ghcr.io/bank-vaults/vault-operator
+          tag: '{{ .Values.source_templates | dig "vault-operator" "spec" "ref" "tag" "" | required "source_templates.vault-operator.spec.ref.tag is unset" }}'
 
 # Vault assumes that the certificate vault-tls has been issued
   vault:
