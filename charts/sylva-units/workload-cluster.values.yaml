@@ -83,7 +83,7 @@ units:
                 type: json
                 description: "Security group rules associated with the control plane VMs"
                 default:
-                  direction: []
+                  direction: [ingress, ingress, ingress, egress]
                   port: []
                   protocol: []
                   remote_ip_prefix: []
@@ -93,7 +93,7 @@ units:
                 type: json
                 description: "Security group rules associated with the worker VMs"
                 default:
-                  direction: []
+                  direction: [ingress, ingress, ingress, egress]
                   port: []
                   protocol: []
                   remote_ip_prefix: []
