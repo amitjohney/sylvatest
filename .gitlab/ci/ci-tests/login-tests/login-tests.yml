@@ -1,0 +1,12 @@
+---
+test-workload-cluster:
+  extends:
+    - .test-workload-cluster
+
+test-workload-cluster-no-sso:
+  extends:
+    - .test-workload-cluster-no-sso
+
+test-login:
+  extends:
+    - .test-login

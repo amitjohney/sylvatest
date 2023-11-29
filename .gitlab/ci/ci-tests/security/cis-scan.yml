@@ -1,0 +1,16 @@
+---
+# This test gather the cis scan report from the management cluster and upload it as an artifact
+# Only run for rke2-capo/rke2-capm3-virt as it required the cis-scan-operator unit to be enable
+cis-scan-report:
+  stage: deployment-test
+  script:
+    - pip install tabulate
+    - apk add jq
+    - REPORT=$(kubectl --kubeconfig management-cluster-kubeconfig -n cis-operator-system get clusterscanreports -o name)
+    - kubectl --kubeconfig management-cluster-kubeconfig -n cis-operator-system get $REPORT -o jsonpath={.spec.reportJSON} | jq | .gitlab/ci/ci-tests/security/report-ascii.py | tee cis-report.log
+  artifacts:
+    expire_in: 6 hour
+    paths:
+      - cis-report.log
+  rules:
+    - if: $ENV_NAME == "rke2-capo" || $ENV_NAME == "rke2-capm3-virt"

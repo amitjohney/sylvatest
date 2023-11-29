@@ -178,6 +178,7 @@ include:
   variables:
     SPECIFIC_VALUES_FILE: $MGMT_DEPLOYMENT_CUSTOM
 
+
 .update-management:
   extends: .management-base
   stage: update
@@ -215,6 +216,7 @@ include:
   variables:
     SPECIFIC_VALUES_FILE: $WC_DEPLOYMENT_CUSTOM
 
+
 .update-workload:
   extends: .workload-base
   stage: update-wc
@@ -223,6 +225,7 @@ include:
     - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
   variables:
     SPECIFIC_VALUES_FILE: $WC_UPDATE_CUSTOM
+
 
 .cleanup-capo:
   stage: delete

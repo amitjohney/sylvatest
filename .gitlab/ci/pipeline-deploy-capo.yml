@@ -2,6 +2,12 @@
 include:
   - local: .gitlab/ci/child-pipeline-default.yml
   - local: .gitlab/ci/templates-deployments.yml
+  - local: .gitlab/ci/ci-tests/**.yml
+    rules:
+      - if: $ONLY_DEPLOY_MGMT
+        when: never
+      - when: always
+
 
 # ----------------------------------------------------------
 # Specific rules to run only
@@ -47,22 +53,22 @@ update-workload-cluster:
 
 # ----------------------------------------------------------
 
-test-workload-cluster:
-  extends:
-    - .test-workload-cluster
-    - .rules:skip-if-only-deploy-mgmt
-
-test-workload-cluster-no-sso:
-  extends:
-    - .test-workload-cluster-no-sso
-    - .rules:skip-if-only-deploy-mgmt
-
-# ----------------------------------------------------------
-
-test-login:
-  extends:
-    - .test-login
-    - .rules:skip-if-only-deploy-mgmt
+#test-workload-cluster:
+#  extends:
+#    - .test-workload-cluster
+#    - .rules:skip-if-only-deploy-mgmt
+#
+#test-workload-cluster-no-sso:
+#  extends:
+#    - .test-workload-cluster-no-sso
+#    - .rules:skip-if-only-deploy-mgmt
+#
+## ----------------------------------------------------------
+#
+#test-login:
+#  extends:
+#    - .test-login
+#    - .rules:skip-if-only-deploy-mgmt
 
 # ----------------------------------------------------------
 
