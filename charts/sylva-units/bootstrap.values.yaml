@@ -196,9 +196,6 @@ units:
           kind: ConfigMap
         patch: |
           - op: replace
-            path: /metadata/name
-            value: copy-configs-job-default-cm
-          - op: replace
             path: /data/kube-job.sh
             value: |
               #!/bin/bash
@@ -303,9 +300,6 @@ units:
       - target:
           kind: ConfigMap
         patch: |
-          - op: replace
-            path: /metadata/name
-            value: pivot-job-default-cm
           - op: replace
             path: /data/kube-job.sh
             value: |

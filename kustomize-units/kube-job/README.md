@@ -11,16 +11,23 @@ metadata:
   name: podinfo
   namespace: flux-system
 spec:
-  # ...ommitted for brevity
+  postBuild:
+    substitute:
+      JOB_NAME: podinfo-job
+      JOB_TARGET_NAMESPACE: kube-job
+      MY_VAR: my_value
   patches:
-    - patch: |-
-        apiVersion: v1
+    - target:
         kind: ConfigMap
-        metadata:
-          name: job-scripts
-          namespace: default
-        data:
-          kube-job.sh: |
-            #!/bin/sh
+      patch: |
+        - op: replace
+          path: /data/kube-job.sh
+          value: |
+            #!/bin/bash
             kubectl get pods
+            echo ${MY_VAR}
 ```
+
+Note: as explained in Flux documentation [here](https://fluxcd.io/flux/components/kustomize/kustomizations/#post-build-variable-substitution),
+if you want to avoid var substitutions in scripts embedded in ConfigMaps or container commands,
+you must use the format $var instead of ${var}. If you want to keep the curly braces you can use $${var} which will print out ${var}.
