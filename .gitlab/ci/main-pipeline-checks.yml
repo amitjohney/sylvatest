@@ -11,7 +11,11 @@
         - charts/**/*
         - kustomize-units/**/*
         - environment-values/**/*
-        - .gitlab/ci/**/*
+        - .gitlab/ci/scripts/generate-pipeline.sh
+        - .gitlab/ci/configuration/*
+        - .gitlab/ci/main-pipeline-checks.yml
+        - .gitlab/ci/chart-jobs.yml
+        - .gitlab-ci.yml
         - tools/generate_json_schema.py
 
 chart-generator:
