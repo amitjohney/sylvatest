@@ -314,6 +314,9 @@ units:
           auth:
             username: postgres
         nameOverride: postgres
+        serviceAccount:
+          create: true
+          name: postgresql
 
   kubevirt:
     helm_repo_url: https://suse-edge.github.io/charts
