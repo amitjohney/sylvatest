@@ -80,7 +80,7 @@ function push_and_sign {
       local digest=$(grep 'Digest:' output | sed 's/^.*: //')
       if [[ -v COSIGN_PRIVATE_KEY ]]; then
       # Sign the Helm chart, it adds a new tag
-         cosign sign -y --key  env://COSIGN_PRIVATE_KEY  $REGISTRY_URI/$chart_name@$digest
+         cosign sign -y --key  env://COSIGN_PRIVATE_KEY  $REGISTRY_URI/"${chart_name}"@$"{digest}"
       fi
       rm -f output
 }
