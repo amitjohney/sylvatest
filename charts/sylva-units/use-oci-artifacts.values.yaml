@@ -117,6 +117,26 @@ units:
             spec: '{{ mergeOverwrite .Values.oci_repo_spec_default (dig "capi-rancher-import" "spec" "undefined spec" .Values.source_templates) | include "preserve-type" }}'
           cattle_agent_kustomize_path: .
 
+  flux-system:
+    kustomization_spec:
+      _patches:
+        - patch: |
+            kind: Deployment
+            apiVersion: apps/v1
+            metadata:
+              name: kustomize-controller
+              namespace: flux-system
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: manager
+                      env:
+                        - name: http_proxy
+                          $patch: delete
+                        - name: https_proxy
+                          $patch: delete
+
 cluster:
   # we need metallb installation done from RKE2 manifests specified in RKE2ControlPlane
   # to use an OCI artifact as well:
