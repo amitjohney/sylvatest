@@ -83,7 +83,7 @@ units:
                 type: json
                 description: "Security group rules associated with the control plane VMs"
                 default:
-                  direction: [ingress, ingress, ingress, egress]
+                  direction: []
                   port: []
                   protocol: []
                   remote_ip_prefix: []
@@ -92,6 +92,16 @@ units:
               value:
                 type: json
                 description: "Security group rules associated with the worker VMs"
+                default:
+                  direction: []
+                  port: []
+                  protocol: []
+                  remote_ip_prefix: []
+            - op: replace
+              path: /spec/heatStack/template/parameters/common_sg_rules
+              value:
+                type: json
+                description: "Heat Stack managed common security group for control_plane and worker VMs in workload-cluster"
                 default:
                   direction: [ingress, ingress, ingress, egress]
                   port: []
