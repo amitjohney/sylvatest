@@ -76,7 +76,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.1.18
+        branch: tmon/issue-519
 
   local-path-provisioner:
     kind: GitRepository
@@ -2338,6 +2338,14 @@ cluster:
   # Nodes number for control-plane
   control_plane_replicas: 3
 
+  # Default boot mode of nodes composing the cluster
+  default_boot_mode: UEFISecureBoot
+
+  # Set the default BMH def with the default bootMode value
+  baremetal_host_default:
+    bmh_spec:
+      bootMode: '{{ .Values.cluster.default_boot_mode | include "set-if-defined" }}'
+
   capo:
     # flavor_name: m1.large # Openstack flavor name
     # image_name: # OpenStack image name
@@ -2630,6 +2638,7 @@ shared_workload_clusters_values:
     capo:
       image_name: '{{ .Values.cluster.capo.image_name | include "set-if-defined" }}'
       network_id: '{{ .Values.cluster.capo.network_id | include "set-if-defined" }}'
+    default_boot_mode: '{{ .Values.cluster.default_boot_mode | include "set-if-defined" }}'
   units:
     cluster-import:
       enabled: '{{ tuple . "rancher" | include "unit-enabled" }}'
