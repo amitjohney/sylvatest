@@ -142,7 +142,6 @@ function process_chart_in_git {
     if [[ -e $tgz_file ]]; then
       # Push Helm chart to OCI, then sign if signing material is available
       push_and_sign $tgz_file $chart_name
-      rm -f $tgz_file
       #flux push artifact $OCI_REGISTRY/$chart_name:$git_revision --path=$chart_path --source=$git_repo --revision=$git_revision ${creds:-}
     else
       error $chart_name "The $tgz_file is not present after the 'helm package' operation, check that the chart version is correct"
