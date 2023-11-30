@@ -10,6 +10,8 @@ test:
   variables:
     DOCKER_HOST: tcp://docker:2375/
     DOCKER_TLS_CERTDIR: ""
+    HTTP_PROXY=http://172.20.73.196:3128
+    HTTPS_PROXY=http://172.20.73.196:3128
   script:
     - docker info
     - docker run hello-world
