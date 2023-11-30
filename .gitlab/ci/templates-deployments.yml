@@ -139,8 +139,7 @@ include:
       - management-cluster-dump/
       - bootstrap-cluster-units-report.xml
       - management-cluster-units-report.xml
-      - bootstrap-timeline.html
-      - management-cluster-timeline.html
+      - "*-timeline.html"
       - management-cluster-kubeconfig
     reports:
       junit:
@@ -186,7 +185,7 @@ include:
       - management-cluster-dump/
       - workload-cluster-dump/
       - management-cluster-units-report.xml
-      - management-cluster-timeline.html
+      - "*-timeline.html"
       - management-cluster-kubeconfig
     reports:
       junit:
