@@ -17,6 +17,7 @@ additional_resources="
   PersistentVolumeClaims
   ConfigMaps
   Nodes
+  Services
   Ingresses
   HeatStacks
   Clusters.*cluster.x-k8s.io
