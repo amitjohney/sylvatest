@@ -1,36 +1,17 @@
 ---
-include:
-  - project: "to-be-continuous/gitleaks"
-    ref: 2.2.3
-    file: "templates/gitlab-ci-gitleaks.yml"
-    rules:
-      - if: '$CI_PIPELINE_SOURCE == "pipeline"'
-        when: never
-  - project: 'renovate-bot/renovate-runner'
-    ref: v16.22.6
-    file: '/templates/renovate-config-validator.gitlab-ci.yml'
-    rules:
-      - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-        changes:
-          paths:
-            - .gitlab-ci.yml
-            - renovate.json
-  - project: 'sylva-projects/sylva-elements/renovate'
-    ref: 1.0.0
-    file: '/templates/renovate-dry-run.gitlab-ci.yml'
-    rules:
-      - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-        changes:
-          paths:
-            - renovate.json
+stages:
+  - test
 
-  - local: .gitlab/ci/common.yml
-  - local: .gitlab/ci/main-pipeline-workflow-and-globals.yml
-  - local: .gitlab/ci/main-pipeline-checks.yml
-  - local: .gitlab/ci/main-pipeline-builds.yml
-  - local: .gitlab/ci/main-pipeline-deployment-tests.yml
-  - local: .gitlab/ci/main-pipeline-cleanup.yml
-
-variables:
-  GITLEAKS_ARGS: '--verbose --log-opts=$CI_COMMIT_SHA'
-  RUNNER_GENERATE_ARTIFACTS_METADATA: "true"
+test:
+  stage: test
+  image: docker:24.0.7
+  services:
+    - docker:24.0.7-dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - docker info
+    - docker run hello-world
+  tags:
+    - sylva-ci-rocket
