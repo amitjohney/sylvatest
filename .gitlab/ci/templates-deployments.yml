@@ -184,6 +184,7 @@ include:
     paths:
       - debug-on-exit.log
       - management-cluster-dump/
+      - workload-cluster-dump/
       - management-cluster-units-report.xml
       - management-cluster-timeline.html
       - management-cluster-kubeconfig

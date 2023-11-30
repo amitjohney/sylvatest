@@ -16,6 +16,8 @@ additional_resources="
   PersistentVolumes
   PersistentVolumeClaims
   ConfigMaps
+  Nodes
+  Ingresses
   HeatStacks
   Clusters.*cluster.x-k8s.io
   MachineDeployments
@@ -88,6 +90,20 @@ if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
     kubectl cluster-info dump -A -o yaml --output-directory=management-cluster-dump
 
     dump_additional_resources management-cluster-dump $additional_resources
+
+    workload_cluster_name=$(kubectl get cluster.cluster -A -o jsonpath='{ $.items[?(@.metadata.namespace != "default")].metadata.name }') # ns to be changed with sylva-system once https://gitlab.com/sylva-projects/sylva-core/-/merge_requests/1182 merges
+    if [[ -z "$workload_cluster_name" ]]; then
+        echo -e "There's no workload cluster for this deployment. All done"
+    else
+        workload_cluster_namespace=$(kubectl get cluster.cluster --all-namespaces -o=custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace | grep "$workload_cluster_name" | awk -F ' ' '{print $2}')
+        kubectl -n $workload_cluster_namespace get secret $workload_cluster_name-kubeconfig -o jsonpath='{.data.value}' | base64 -d > $BASE_DIR/workload-cluster-kubeconfig
+        export KUBECONFIG=$BASE_DIR/workload-cluster-kubeconfig
+
+        echo "Performing dump on workload cluster"
+        kubectl cluster-info dump -A -o yaml --output-directory=workload-cluster-dump
+
+        dump_additional_resources workload-cluster-dump $additional_resources
+    fi
 fi
 
 echo "Dump node logs"
