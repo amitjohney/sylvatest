@@ -48,7 +48,7 @@ sylvactl watch \
   --kubeconfig management-cluster-kubeconfig \
   --reconcile \
   --timeout $(ci_remaining_minutes_and_at_most ${APPLY_WC_WATCH_TIMEOUT_MIN:-30}) \
-  ${SYLVACTL_SAVE:+--save apply-workload-cluster-timeline.html}
+  ${SYLVACTL_SAVE:+--save apply-workload-cluster-timeline.html} \
   -n $(basename ${ENV_PATH})
 
 echo_b "\U0001F389 All done"
