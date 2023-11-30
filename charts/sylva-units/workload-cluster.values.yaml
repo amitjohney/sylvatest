@@ -104,9 +104,9 @@ units:
                 description: "Heat Stack managed common security group for control_plane and worker VMs in workload-cluster"
                 default:
                   direction: [ingress, ingress, ingress, egress]
-                  port: []
-                  protocol: []
-                  remote_ip_prefix: []
+                  port: ['80', '443', '22', '53']
+                  protocol: [tcp, tcp, tcp, udp]
+                  remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
 
   cluster:
     enabled: true
