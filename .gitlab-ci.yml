@@ -15,6 +15,7 @@ test:
   script:
     - date
     - echo 'hi'
+    - docker run hello-world
     - touch new.yaml
   tags:
     - sylva-ci-rocket
