@@ -24,8 +24,8 @@ set -o pipefail
 SECONDS=0
 
 BASE_DIR="$(realpath $(dirname $0)/../..)"
-REGISTRY_URI="registry.gitlab.com/sylva-projects/sylva-core"
-OCI_REGISTRY="${1:-oci://$REGISTRY_URI/}"
+OCI_REGISTRY="${1:-oci://registry.gitlab.com/sylva-projects/sylva-core/}"
+REGISTRY_URI="${OCI_REGISTRY/oci:\/\//}"
 LOG_ERROR_FILE=$(mktemp)
 VALUES_FILE="$BASE_DIR/charts/sylva-units/values.yaml"
 
@@ -78,7 +78,7 @@ function push_and_sign {
       helm push $tgz_file $OCI_REGISTRY >output 2>&1
       cat output
       local digest=$(grep 'Digest:' output | sed 's/^.*: //')
-      if [[ -v COSIGN_PRIVATE_KEY ]]; then
+      if [[ -v COSIGN_PRIVATE_KEY ]] && [[ -v COSIGN_PASSWORD ]]; then
       # Sign the Helm chart, it adds a new tag
          cosign sign -y --key  env://COSIGN_PRIVATE_KEY  "$REGISTRY_URI/${chart_name}@${digest}"
       fi
@@ -163,6 +163,23 @@ function show_status {
 }
 
 function artifact_exists {
+  # if the environment variable FORCE_HELM_CHART_PROCESSING is set to true, the helm vhart is processed even if it exists
+  if [[ $FORCE_HELM_CHART_PROCESSING == "true" ]]; then
+          echo "Force processing artifact $1 ..."
+          return 1
+  fi
+
+  # Don't process the artifact if it exists and properly signed
+
+  if [[ -v COSIGN_PRIVATE_KEY ]] && [[ -v COSIGN_PASSWORD ]]; then
+    echo "Check is artifact $1 is signed with the correct key"
+    if cosign verify --key env://COSING_PUBLIC_KEY $1; then
+      echo "Artifact $1 exists and is already signed with the correct key, skipping it"
+    else
+      return 1
+    fi
+  fi
+
   echo "Checking if artifact $1 exists..."
   flux pull artifact $1 -o /tmp > /dev/null 2>&1
 }
@@ -175,6 +192,10 @@ fi
 
 if ! [[ -v COSIGN_PRIVATE_KEY ]]; then
    echo "[WARNING] Unable to sign the Helm Charts, the private key is not set"
+fi
+
+if ! [[ -v COSIGN_PASSWORD ]]; then
+   echo "[WARNING] Unable to sign the Helm Charts, the private key password is not available"
 fi
 
 ### Parse values file ###
