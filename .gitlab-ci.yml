@@ -4,7 +4,7 @@ stages:
 
 test:
   stage: test
-  image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image:v1.0.14
+  image: docker:24.0.7
   services:
     - docker:24.0.7-dind
   variables:
