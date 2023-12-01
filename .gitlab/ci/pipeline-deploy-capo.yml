@@ -20,6 +20,7 @@ include:
 
 default:
   tags:
+    - capo-ci
     - $CAPO_PLATFORM_TAG
 
 # ----------------------------------------------------------
