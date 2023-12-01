@@ -12,13 +12,6 @@ test:
     DOCKER_TLS_CERTDIR: ""
   script:
     - date
-    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:docker_setup[collapsed=true]\r\e[0KRunning docker setup steps\e[0m"
-    - export DOCKER_IP=$(getent hosts docker | awk '{print $1}')
-    - docker network create --attachable kind
-    - KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
-    - ip route add $KIND_PREFIX via $DOCKER_IP
-    - echo -e "\e[0Ksection_end:`date +%s`:docker_setup\r\e[0K"
-    - echo 'hi'
     - touch new.yaml
     - sleep 1000
   tags:
