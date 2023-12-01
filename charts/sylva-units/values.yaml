@@ -312,6 +312,9 @@ units:
           auth:
             username: postgres
         nameOverride: postgres
+        serviceAccount:
+          create: true
+          name: postgresql
 
   kubevirt:
     helm_repo_url: https://suse-edge.github.io/charts
@@ -532,6 +535,7 @@ units:
       targetNamespace: neuvector
       values:
         psp: '{{ .Values.cluster.cis_profile | eq "cis-1.6" | include "as-bool" }}'
+        leastPrivilege: true
         internal:
           certmanager:
             enabled: true
