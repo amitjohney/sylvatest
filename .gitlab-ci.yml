@@ -13,7 +13,7 @@ test:
     HTTP_PROXY: http://172.20.73.196:3128
     HTTPS_PROXY: http://172.20.73.196:3128
   script:
-    - docker run hello-world
+    - date
     - echo 'hi'
     - touch new.yaml
   tags:
