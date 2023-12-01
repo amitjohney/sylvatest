@@ -15,7 +15,6 @@ test:
   script:
     - date
     - echo 'hi'
-    - docker run -d hello-world
     - touch new.yaml
     - sleep 1000
   tags:
