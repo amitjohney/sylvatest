@@ -59,8 +59,14 @@ def rancher_sso(endpoint, username, password, workload_name):
   print("Waiting to be redirect towards rancher UI home page")
   cluster=workload_name + '-capi'
   try:
-    element_present = EC.presence_of_element_located((By.LINK_TEXT,cluster))
-    WebDriverWait(browser, delay).until(element_present)
+    mgmt_present = EC.presence_of_element_located((By.LINK_TEXT, 'local'))
+    WebDriverWait(browser, delay).until(mgmt_present)
+    workload_present = EC.presence_of_element_located((By.LINK_TEXT,cluster))
+    WebDriverWait(browser, delay).until(workload_present)
+    mgmt_clickable = EC.element_to_be_clickable((By.LINK_TEXT, 'local'))
+    WebDriverWait(browser, delay).until(mgmt_clickable)
+    workload_clickable = EC.element_to_be_clickable((By.LINK_TEXT,cluster))
+    WebDriverWait(browser, delay).until(workload_clickable)
   except TimeoutException:
     print ("Cannot access the Rancher UI")
     exit(1)
@@ -75,6 +81,9 @@ def rancher_sso(endpoint, username, password, workload_name):
   browser.find_elements(By.XPATH, '//button[@class="btn header-btn role-tertiary has-tooltip"]')[2].click()
   rancher_config = workload_name  + '-rancher' + '.yaml'
   file = cluster + '.yaml'
+  while not os.path.exists(file):
+    print ("Waiting until kubeconfig is successfully downloaded")  
+    time.sleep(5)
   os.rename( file, rancher_config)
   print("Check if the kubeconfig has been downloaded")
   path_to_file = rancher_config
