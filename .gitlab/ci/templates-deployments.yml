@@ -1,12 +1,13 @@
-#=============================
+---
+# =============================
 # Templates for deployments
-#=============================
+# =============================
 
 include:
   - local: .gitlab/ci/common.yml
 
 .common-deployment:
-  script_common:
+  setup_ci_values:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_common[collapsed=true]\r\e[0KRunning common deployment steps\e[0m"
     - |
       if [[ ${CLUSTER_TYPE} == 'workload' ]]; then
@@ -68,40 +69,62 @@ include:
         cat $values_file
       fi
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_common\r\e[0K"
-  script_capd:
-    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capd[collapsed=true]\r\e[0KApplying specific capd configuration\e[0m"
-    - export DOCKER_HOST=tcp://$DOCKER_IP:2375
-    - yq -i '.capd_docker_host = strenv(DOCKER_HOST)' $values_file
-    - export CLUSTER_EXTERNAL_IP=$(echo $KIND_PREFIX | awk -F"." '{print $1"."$2"."$3".100"}')
-    - yq -i '.cluster_external_ip = strenv(CLUSTER_EXTERNAL_IP)' $values_file
-    - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capd\r\e[0K"
-  script_capo:
-    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capo[collapsed=true]\r\e[0KApplying specific capo configuration\e[0m"
     - |
-      if [[ ${CLUSTER_TYPE} == 'management' ]]; then
-        yq -i eval-all 'select(fileIndex==0).cluster.capo.clouds_yaml = select(fileIndex==1) | select(fileIndex==0)' $ENV_PATH/secrets.yaml ~/.config/openstack/clouds.yml
-      fi
-    - yq -i '.cluster.capo.resources_tag = strenv(CAPO_TAG)' $values_file
-    - git config --global credential.helper cache
-    # the CI_COMPONENT_* variables below are set in the gitlab runner configuration
-    # and allow to enable extra kustomize components needed in the context of the platform
-    # on which this test actually runs
-    - git clone --depth=1 https://foo:${CI_COMPONENT_REPO_PAT}@${CI_COMPONENT_REPO}
-    - export CI_COMPONENT="https://${CI_COMPONENT_REPO}//${CI_COMPONENT_REPO_PATH}-${ENV_NAME}?ref=2023-11-07"
-    - if [ $(yq '.components | length' $ENV_PATH/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' $ENV_PATH/kustomization.yaml; fi
-    - yq -i '.components += strenv(CI_COMPONENT)' $ENV_PATH/kustomization.yaml
-    - yq -e '.registry_mirrors' $(basename ${CI_COMPONENT_REPO} .git)/${CI_COMPONENT_REPO_PATH}-base/values.yaml > registry_mirrors.yml
-    - yq -i eval-all 'select(fileIndex==0).registry_mirrors = select(fileIndex==1) | select(fileIndex==0)' $values_file registry_mirrors.yml
-    - |
-      if [[ ${CLUSTER_TYPE} == 'workload' ]]; then
-        yq -i '.namespace = "WORKLOAD_CLUSTER_NAMESPACE"' $ENV_PATH/kustomization.yaml
-      fi
-    - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capo\r\e[0K"
-  update_values:
+      case "$ENV_NAME" in
+        *capd*)
+           echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capd[collapsed=true]\r\e[0KApplying specific capd configuration\e[0m"
+           export DOCKER_HOST=tcp://$DOCKER_IP:2375
+           yq -i '.capd_docker_host = strenv(DOCKER_HOST)' $values_file
+           export CLUSTER_EXTERNAL_IP=$(echo $KIND_PREFIX | awk -F"." '{print $1"."$2"."$3".100"}')
+           yq -i '.cluster_external_ip = strenv(CLUSTER_EXTERNAL_IP)' $values_file
+           echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capd\r\e[0K"
+        ;;
+        *capo*)
+          echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capo[collapsed=true]\r\e[0KApplying specific capo configuration\e[0m"
+          mkdir -p ~/.config/openstack
+      cat <<EOF>> ~/.config/openstack/clouds.yml
+      clouds:
+        capo_cloud:
+          auth:
+            auth_url: '${OS_AUTH_URL}'
+            user_domain_name: '${OS_USER_DOMAIN_ID}'
+            project_domain_name: '${OS_PROJECT_DOMAIN_ID}'
+            project_name: '${OS_TENANT_NAME}'
+            username: '${OS_USERNAME}'
+            password: '${OS_PASSWORD}'
+          region_name: '${OS_REGION_NAME}'
+          verify: false
+      EOF
+          if [[ ${CLUSTER_TYPE} == 'management' ]]; then
+            yq -i eval-all 'select(fileIndex==0).cluster.capo.clouds_yaml = select(fileIndex==1) | select(fileIndex==0)' $ENV_PATH/secrets.yaml ~/.config/openstack/clouds.yml
+          fi
+          yq -i '.cluster.capo.resources_tag = strenv(CAPO_TAG)' $values_file
+          git config --global credential.helper cache
+          #the CI_COMPONENT_* variables below are set in the gitlab runner configuration
+          #and allow to enable extra kustomize components needed in the context of the platform
+          #on which this test actually runs
+          git clone --depth=1 https://foo:${CI_COMPONENT_REPO_PAT}@${CI_COMPONENT_REPO}
+          export CI_COMPONENT="https://${CI_COMPONENT_REPO}//${CI_COMPONENT_REPO_PATH}-${ENV_NAME}?ref=2023-11-07"
+          if [ $(yq '.components | length' $ENV_PATH/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' $ENV_PATH/kustomization.yaml; fi
+          yq -i '.components += strenv(CI_COMPONENT)' $ENV_PATH/kustomization.yaml
+          yq -e '.registry_mirrors' $(basename ${CI_COMPONENT_REPO} .git)/${CI_COMPONENT_REPO_PATH}-base/values.yaml > registry_mirrors.yml
+          yq -i eval-all 'select(fileIndex==0).registry_mirrors = select(fileIndex==1) | select(fileIndex==0)' $values_file registry_mirrors.yml
+          if [[ ${CLUSTER_TYPE} == 'workload' ]]; then
+            yq -i '.namespace = "WORKLOAD_CLUSTER_NAMESPACE"' $ENV_PATH/kustomization.yaml
+          fi
+          echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capo\r\e[0K"
+        ;;
+      esac
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_update_values[collapsed=true]\r\e[0KApply specific values\e[0m"
-    - echo "Applying values from $UPDATE_VALUES_FILE "
-    - yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file $UPDATE_VALUES_FILE
-    - cat $values_file
+    - |
+      if [ -n "${SPECIFIC_VALUES_FILE}" ]; then
+        echo -e "Applying values from \\e[1;94m$SPECIFIC_VALUES_FILE\\e[0m to \\e[1;92m$values_file\\e[0m"
+        yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file $SPECIFIC_VALUES_FILE
+      else
+        echo -e "No specific values to apply"
+      fi
+      echo "Content of $values_file:"
+      cat $values_file
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_update_values\r\e[0K"
   os_cloud:
     # the OS_* variables below are set in the gitlab runner configuration
@@ -124,9 +147,8 @@ include:
       EOF
 
 
-.deploy-base:
+.management-base:
   extends: .docker-service
-  stage: deploy
   variables:
     CLUSTER_TYPE: management
   timeout: 60min
@@ -147,33 +169,26 @@ include:
       - management-cluster-units-report.xml
     # expose_as: $CI_JOB_NAME  # not allowed https://gitlab.com/gitlab-org/gitlab/-/issues/427149
 
-.deploy-capo:
-  extends: .deploy-base
+.deploy-management:
+  extends: .management-base
+  stage: deploy
   script:
-    - !reference [.common-deployment, script_common]
-    - !reference [.common-deployment, os_cloud]
-    - !reference [.common-deployment, script_capo]
+    - !reference [.common-deployment, setup_ci_values]
     - ./bootstrap.sh environment-values/${ENV_NAME}
-  tags:
-    - $CAPO_PLATFORM_TAG
+  variables:
+    SPECIFIC_VALUES_FILE: $MGMT_DEPLOYMENT_CUSTOM
 
-.apply-capo:
-  extends: .deploy-base
+.update-management:
+  extends: .management-base
   stage: update
   script:
-    - !reference [.common-deployment, script_common]
-    - !reference [.common-deployment, os_cloud]
-    - !reference [.common-deployment, script_capo]
-    - !reference [.common-deployment, update_values]
+    - !reference [.common-deployment, setup_ci_values]
     - ./apply.sh environment-values/${ENV_NAME}
   variables:
-    UPDATE_VALUES_FILE: $APPLY_VALUES_FILE
-  tags:
-    - $CAPO_PLATFORM_TAG
+    SPECIFIC_VALUES_FILE: $MGMT_UPDATE_CUSTOM
 
-.deploy-wc-base:
+.workload-base:
   extends: .docker-service
-  stage: deploy-wc
   variables:
     CLUSTER_TYPE: workload
   timeout: 60min
@@ -191,32 +206,23 @@ include:
       junit:
       - management-cluster-units-report.xml
 
-.deploy-wc-capo:
-  extends: .deploy-wc-base
+.deploy-workload:
+  stage: deploy-wc
+  extends: .workload-base
   script:
-    - !reference [.common-deployment, script_common]
-    - !reference [.common-deployment, os_cloud]
-    - !reference [.common-deployment, script_capo]
-    - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
-  tags:
-    - $CAPO_PLATFORM_TAG
-
-.apply-wc-capo:
-  extends: .deploy-wc-base
-  stage: update-wc
-  script:
-    - !reference [.common-deployment, script_common]
-    - !reference [.common-deployment, os_cloud]
-    - !reference [.common-deployment, script_capo]
-    - !reference [.common-deployment, update_values]
-    - echo "WC values - $WC_APPLY_VALUES_FILE"
-    - echo "APPLY values - $APPLY_VALUES_FILE"
-    - echo "UPDATE VALUES FILE - $UPDATE_VALUES_FILE"
+    - !reference [.common-deployment, setup_ci_values]
     - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
   variables:
-    UPDATE_VALUES_FILE: $WC_APPLY_VALUES_FILE
-  tags:
-    - $CAPO_PLATFORM_TAG
+    SPECIFIC_VALUES_FILE: $WC_DEPLOYMENT_CUSTOM
+
+.update-workload:
+  extends: .workload-base
+  stage: update-wc
+  script:
+    - !reference [.common-deployment, setup_ci_values]
+    - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
+  variables:
+    SPECIFIC_VALUES_FILE: $WC_UPDATE_CUSTOM
 
 .cleanup-capo:
   stage: delete
@@ -285,8 +291,6 @@ include:
 
 .test-workload-cluster-no-sso:
   stage: deployment-test
-  tags:
-    - $CAPO_PLATFORM_TAG
   before_script:
     - apk add jq
   script:
@@ -320,8 +324,6 @@ include:
     reports:
       junit:
       - $HURL_JUNIT_REPORT
-  tags:
-    - $CAPO_PLATFORM_TAG
   script:
     - !reference [.test_scripts, edit_hosts_file]
     - export HURL_token=$(kubectl --kubeconfig management-cluster-kubeconfig -n vault get secrets/vault-unseal-keys -o jsonpath='{.data.vault-root}' | base64 -d)

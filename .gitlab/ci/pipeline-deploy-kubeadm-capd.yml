@@ -4,8 +4,4 @@ include:
   - local: .gitlab/ci/templates-deployments.yml
 
 deploy-management-cluster:
-  extends: .deploy-base
-  script:
-    - !reference [.common-deployment, script_common]
-    - !reference [.common-deployment, script_capd]
-    - ./bootstrap.sh environment-values/${ENV_NAME}
+  extends: .deploy-management
