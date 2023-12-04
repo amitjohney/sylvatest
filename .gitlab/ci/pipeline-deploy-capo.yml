@@ -14,30 +14,35 @@ include:
       when: never
     - when: on_success
 
+default:
+  tags:
+    - $CAPO_PLATFORM_TAG
+
 # ----------------------------------------------------------
 
 deploy-management-cluster:
-  extends: [.deploy-capo]
+  extends:
+    - .deploy-management
 
 # ----------------------------------------------------------
 
 update-management-cluster:
   extends:
-    - .apply-capo
+    - .update-management
     - .rules:skip-if-only-deploy-mgmt
 
 # ----------------------------------------------------------
 
 deploy-workload-cluster:
   extends:
-    - .deploy-wc-capo
+    - .deploy-workload
     - .rules:skip-if-only-deploy-mgmt
 
 # ----------------------------------------------------------
 
 update-workload-cluster:
   extends:
-    - .apply-wc-capo
+    - .update-workload
     - .rules:skip-if-only-deploy-mgmt
 
 # ----------------------------------------------------------
@@ -62,5 +67,6 @@ test-login:
 # ----------------------------------------------------------
 
 cleanup-openstack:
-  extends: .cleanup-capo
+  extends:
+    - .cleanup-capo
   when: always

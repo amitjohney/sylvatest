@@ -3,6 +3,11 @@ include:
   - local: .gitlab/ci/child-pipeline-default.yml
   - local: .gitlab/ci/templates-deployments.yml
 
+default:
+  tags:
+    - $CI_PIPELINE_IID
+    - equinix
+
 #----------------------------------------------------------
 
 create-runner:
@@ -16,6 +21,7 @@ create-runner:
     RUNNER_HOSTNAME: syla-core-$CI_PIPELINE_ID
     RUNNER_TAG: $CI_PIPELINE_IID
     RUNNER_PROJECT_ID: $CI_PROJECT_ID
+  tags: []
   image:
     name: registry.gitlab.com/gitlab-org/cli:v1.35.0
     entrypoint: [""]
@@ -40,60 +46,34 @@ create-runner:
         sleep 5
       done
 
+
 #----------------------------------------------------------
 
-.deploy-in-equinix:
-  extends: .deploy-base
+deploy-management-cluster:
+  extends:
+    - .deploy-management
   timeout: 2h
-  variables:
-    DOCKER_HOST: ""
-  tags:
-    - $CI_PIPELINE_IID
-    - equinix
-  script:
-    - !reference [.common-deployment, script_common]
-    - ./bootstrap.sh environment-values/${ENV_NAME}
 
-deploy-rke2-virt-m3:
-  extends: .deploy-in-equinix
-  rules:
-    - if: $METAL3_PROVIDER == "sylva"
+#----------------------------------------------------------
 
-deploy-rke2-virt-m3-suse:
-  extends: .deploy-in-equinix
-  rules:
-    - if: $METAL3_PROVIDER == "suse"
+update-management-cluster:
+  extends:
+    - .update-management
+  timeout: 2h
 
 #----------------------------------------------------------
 
 deploy-workload-cluster:
-  extends: .deploy-wc-base
+  extends:
+    - .deploy-workload
   timeout: 2h
-  variables:
-    DOCKER_HOST: ""
-  tags:
-    - $CI_PIPELINE_IID
-    - equinix
-  script:
-    - !reference [.common-deployment, script_common]
-    - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
 
 #----------------------------------------------------------
 
 update-workload-cluster:
-  extends: .deploy-wc-base
+  extends:
+    - .update-workload
   timeout: 1h
-  stage: update-wc
-  script:
-    - !reference [.common-deployment, script_common]
-    - !reference [.common-deployment, update_values]
-    - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
-  variables:
-    DOCKER_HOST: ""
-    UPDATE_VALUES_FILE: $WC_APPLY_VALUES_FILE
-  tags:
-    - $CI_PIPELINE_IID
-    - equinix
 
 #----------------------------------------------------------
 
@@ -121,9 +101,6 @@ test-login:
       HURL_VERSION=4.1.0
       curl -SsL https://github.com/Orange-OpenSource/hurl/releases/download/${HURL_VERSION}/hurl-${HURL_VERSION}-x86_64-unknown-linux-gnu.tar.gz | tar xvz -C /tmp
       mv /tmp/hurl-${HURL_VERSION}-x86_64-unknown-linux-gnu/hurl ./bin/hurl
-  tags:
-    - $CI_PIPELINE_IID
-    - equinix
 
 #----------------------------------------------------------
 

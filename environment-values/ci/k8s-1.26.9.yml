@@ -1,0 +1,5 @@
+cluster:
+  k8s_version: "v1.26.9+rke2r1"       # after apply-workload-cluster.sh
+  control_plane_replicas: 3
+  capo:
+    image_name: "ubuntu-jammy-plain-rke2-1.26.9-0.0.12"       # after apply-workload-cluster.sh
