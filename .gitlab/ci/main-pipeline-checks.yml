@@ -15,7 +15,6 @@
         - .gitlab/ci/configuration/*
         - .gitlab/ci/main-pipeline-checks.yml
         - .gitlab/ci/chart-jobs.yml
-        - .gitlab-ci.yml
         - tools/generate_json_schema.py
 
 chart-generator:
