@@ -2123,6 +2123,7 @@ units:
       install:
         createNamespace: false
       values:
+        fullnameOverride: 'snmp-exporter'
         serviceMonitor:
           enabled: true
           namespace: cattle-monitoring-system
