@@ -166,7 +166,7 @@ function cleanup_bootstrap_cluster() {
   # if cleanup bootstrap cluster variable is set to yes
   # if the curent kind cluster is the name of the kind cluster created in this deployment
   # if deployment is not CI on capm3
-  if [[ $CLEANUP_BOOTSTRAP_CLUSTER == 'yes' && $kind_cluster == $KIND_CLUSTER_NAME && ! -v "$METAL3_PROVIDER"]] ; then
+  if [[ $CLEANUP_BOOTSTRAP_CLUSTER == 'yes' && $kind_cluster == $KIND_CLUSTER_NAME && ! -v "$METAL3_PROVIDER"]]; then
     echo_b "\U0001F5D1 Delete bootstrap cluster"
     kind delete cluster -n $KIND_CLUSTER_NAME
   fi
