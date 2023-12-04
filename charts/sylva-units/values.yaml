@@ -1944,7 +1944,6 @@ units:
               enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") | include "as-bool" }}'
 
   monitoring:
-    enabled: true
     depends_on:
       monitoring-crd: true
     helm_repo_url: https://charts.rancher.io/
@@ -2385,73 +2384,74 @@ units:
       prune: true
 
 ### monitoring stuff
-
   minio-operator:
-      enabled: true
-      annotations:
-        sylvactl/readyMessage: "minio console can be reached at https://minio-operator-console.{{ .Values.cluster_external_domain }} (minio-operator-console.{{ .Values.cluster_external_domain }} must resolve to {{ .Values.display_external_ip }})"
-      repo: minio-operator
-      helmrelease_spec:
-        releaseName: minio-operator
-        targetNamespace: minio-operator
-        chart:
-          spec:
-            chart: helm/operator
-            version: v5.0.10
-        install:
-          createNamespace: true
-        values:
-          operator:
-            containerSecurityContext:
-              allowPrivilegeEscalation: false
-              capabilities:
-                drop:
-                  - ALL
-              seccompProfile:
-                type: RuntimeDefault
-            securityContext:
-              allowPrivilegeEscalation: false
-              capabilities:
-                drop:
-                  - ALL
-              seccompProfile:
-                type: RuntimeDefault
-            resources:
-              requests:
-                cpu: 200m
-                memory: 256Mi
-                ephemeral-storage: 500Mi
-          console:
+    enabled_conditions:
+      - '{{ tuple . "minio" | include "unit-enabled" }}'
+    annotations:
+      sylvactl/readyMessage: "minio console can be reached at https://minio-operator-console.{{ .Values.cluster_external_domain }} (minio-operator-console.{{ .Values.cluster_external_domain }} must resolve to {{ .Values.display_external_ip }})"
+    repo: minio-operator
+    helmrelease_spec:
+      releaseName: minio-operator
+      targetNamespace: minio-operator
+      chart:
+        spec:
+          chart: helm/operator
+          version: v5.0.10
+      install:
+        createNamespace: true
+      values:
+        operator:
+          containerSecurityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+              ephemeral-storage: 500Mi
+        console:
+          enabled: true
+          containerSecurityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          ingress:
             enabled: true
-            containerSecurityContext:
-              allowPrivilegeEscalation: false
-              capabilities:
-                drop:
-                  - ALL
-              seccompProfile:
-                type: RuntimeDefault
-            securityContext:
-              allowPrivilegeEscalation: false
-              capabilities:
-                drop:
-                  - ALL
-              runAsNonRoot: true
-              seccompProfile:
-                type: RuntimeDefault
-            ingress:
-              enabled: true
-              ingressClassName: nginx
-              host: 'minio-operator-console.{{ .Values.cluster_external_domain }}'
-              path: /
-              pathType: Prefix
-              tls:
-                - hosts:
-                    - 'minio-operator-console.{{ .Values.cluster_external_domain }}'
-                  secretName: minio-operator-console-tls
+            ingressClassName: nginx
+            host: 'minio-operator-console.{{ .Values.cluster_external_domain }}'
+            path: /
+            pathType: Prefix
+            tls:
+              - hosts:
+                  - 'minio-operator-console.{{ .Values.cluster_external_domain }}'
+                secretName: minio-operator-console-tls
 
   minio-tenant-monitoring:
-    enabled: true
-    depends_on:
+    enabled_conditions:
+      - '{{ tuple . "monitoring" | include "unit-enabled" }}'
+    depend on:
       minio-operator: true
     annotations:
       sylvactl/readyMessage: "minio tenant monitoring console can be reached at https://minio-monitoring-console.{{ .Values.cluster_external_domain }} (minio--monitoring-console.{{ .Values.cluster_external_domain }} must resolve to {{ .Values.display_external_ip }})"
@@ -2571,7 +2571,8 @@ units:
               CONSOLE_SECRET_KEY: minio123
 
   loki:
-    enabled: true
+    enabled_conditions:
+      - '{{ tuple . "monitoring" | include "unit-enabled" }}'    
     depends_on:
       minio-tenant-monitoring: true
     annotations:
@@ -2794,7 +2795,8 @@ units:
               secretName: loki-tls
 
   thanos:
-    enabled: true
+    enabled_conditions:
+      - '{{ tuple . "monitoring" | include "unit-enabled" }}'    
     depends_on:
       minio-tenant-monitoring: true
     helm_repo_url: https://charts.bitnami.com/bitnami
@@ -3006,6 +3008,8 @@ units:
                 secretName: thanos-tls
 
   rancher-logging-crd:
+    enabled_conditions:
+      - '{{ tuple . "monitoring" | include "unit-enabled" }}'
     depends_on:
       namespace-defs: true
     enabled: true
@@ -3021,7 +3025,6 @@ units:
         createNamespace: false
 
   rancher-logging:
-    enabled: true
     depends_on:
       rancher-logging-crd: true
     helm_repo_url: https://charts.rancher.io/
