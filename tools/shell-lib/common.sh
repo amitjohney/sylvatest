@@ -17,18 +17,18 @@ else
   export IN_CI=0
 fi
 
-if [[ $# -eq 1 && -f $1 ]]; then
-    VALUES_FILE=$1
-else
-    VALUES_FILE=${ENV_PATH}/values.yaml
-fi
-
 if ! [[ $# -eq 1 && (-f ${1}/kustomization.yaml || -L ${1}/kustomization.yaml) ]]; then
     echo "Usage: $0 [env_name]"
     echo "This script expects to find a kustomization in [env_name] directory to generate management-cluster configuration and secrets"
     exit 1
 else
     export ENV_PATH=$(readlink -f $1)
+fi
+
+if [[ $# -eq 1 && -f $1 ]]; then
+    VALUES_FILE=$1
+else
+    VALUES_FILE=${ENV_PATH}/values.yaml
 fi
 
 function _kustomize {
