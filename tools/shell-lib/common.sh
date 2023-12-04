@@ -29,6 +29,8 @@ if [[ $# -eq 1 && -f $1 ]]; then
     VALUES_FILE=$1
 elif [[ ! -z ${ENV_PATH:-} ]]; then
     VALUES_FILE=${ENV_PATH}/values.yaml
+else
+    VALUES_FILE=""
 fi
 
 function _kustomize {
