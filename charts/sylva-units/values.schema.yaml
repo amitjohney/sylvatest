@@ -797,6 +797,12 @@ properties:
             - type: string
               format: hostname
 
+  sylva_diskimagebuilder_version:  # -------------------------------
+    type: string
+
+  sylva_diskimagebuilder_images:
+    type: object
+
   _internal:  # -------------------------------
     type: object
 
