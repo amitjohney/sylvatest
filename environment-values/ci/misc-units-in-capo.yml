@@ -42,6 +42,10 @@ units:
         operator:
           vulnerabilityScannerEnabled: true
           scanJobsConcurrentLimit: 1
+  sriov-crd:
+    enabled: true
+  sriov:
+    enabled: true
   multus:
     enabled: true
   multus-ready:
