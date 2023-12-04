@@ -154,6 +154,24 @@ function ensure_sylvactl {
 }
 ensure_sylvactl
 
+function cleanup_bootstrap_cluster() {
+  : ${CLEANUP_BOOTSTRAP_CLUSTER:='yes'}
+  kind_cluster=`kind get clusters`
+  # if deployment is not on baremetal on manual
+  if [[ -v "${VALUES_FILE}" ]]; then
+    if [[ `yq '.metal3' ${VALUES_FILE} 2>/dev/null` != null ]]; then
+     export CLEANUP_BOOTSTRAP_CLUSTER = 'no'
+    fi
+  fi
+  # if cleanup bootstrap cluster variable is set to yes
+  # if the curent kind cluster is the name of the kind cluster created in this deployment
+  # if deployment is not CI on capm3
+  if [[ $CLEANUP_BOOTSTRAP_CLUSTER == 'yes' && $kind_cluster == $KIND_CLUSTER_NAME && ! -v "$METAL3_PROVIDER"]] ; then
+    echo_b "\U0001F5D1 Delete bootstrap cluster"
+    kind delete cluster -n $KIND_CLUSTER_NAME
+  fi
+}
+
 function exit_trap() {
     EXIT_CODE=$?
 
@@ -263,24 +281,6 @@ function cleanup_preview() {
        2> >(grep -v 'not found' >&2) || true \
     | xargs --no-run-if-empty kubectl delete -n sylva-units-preview
   kubectl delete namespace sylva-units-preview
-}
-
-function cleanup_bootstrap_cluster() {
-  : ${CLEANUP_BOOTSTRAP_CLUSTER:='yes'}
-  kind_cluster=`kind get clusters`
-  # if deployment is not on baremetal on manual
-  if [[ -v "${VALUES_FILE}" ]]; then
-    if [[ `yq '.metal3' ${VALUES_FILE} 2>/dev/null` != null ]]; then
-     export CLEANUP_BOOTSTRAP_CLUSTER = 'no'
-    fi
-  fi
-  # if cleanup bootstrap cluster variable is set to yes
-  # if the curent kind cluster is the name of the kind cluster created in this deployment
-  # if deployment is not CI on capm3
-  if [[ $CLEANUP_BOOTSTRAP_CLUSTER == 'yes' && $kind_cluster == $KIND_CLUSTER_NAME && ! -v "$METAL3_PROVIDER"]] ; then
-    echo_b "\U0001F5D1 Delete bootstrap cluster"
-    kind delete cluster -n $KIND_CLUSTER_NAME
-  fi
 }
 
 function ci_remaining_minutes_and_at_most() {
