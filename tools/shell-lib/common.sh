@@ -157,11 +157,9 @@ ensure_sylvactl
 function cleanup_bootstrap_cluster() {
   : ${CLEANUP_BOOTSTRAP_CLUSTER:='yes'}
   kind_cluster=`kind get clusters`
-  # if deployment is not on baremetal on manual
-  if [[ -v "${VALUES_FILE}" ]]; then
-    if [[ `yq '.metal3' ${VALUES_FILE} 2>/dev/null` != null ]]; then
-     export CLEANUP_BOOTSTRAP_CLUSTER = 'no'
-    fi
+  # if deployment is on baremetal on manual
+  if [[ -v "${VALUES_FILE}" && `yq '.metal3' ${VALUES_FILE} 2>/dev/null` != null ]]; then
+    export CLEANUP_BOOTSTRAP_CLUSTER = 'no'
   fi
   # if cleanup bootstrap cluster variable is set to yes
   # if the curent kind cluster is the name of the kind cluster created in this deployment
