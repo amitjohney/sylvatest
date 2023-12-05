@@ -2804,6 +2804,8 @@ units:
     helm_repo_url: https://charts.bitnami.com/bitnami
     helmrelease_spec:
       targetNamespace: thanos
+      install:
+        createNamespace: true      
       chart:
         spec:
           chart: thanos
