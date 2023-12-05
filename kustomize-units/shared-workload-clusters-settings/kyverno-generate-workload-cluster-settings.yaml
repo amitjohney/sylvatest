@@ -21,7 +21,7 @@ spec:
       synchronize: true
       clone:
         name: shared-workload-clusters-settings
-        namespace: default
+        namespace: sylva-system
   - name: generate-secret
     match:
       any:
@@ -39,4 +39,4 @@ spec:
       synchronize: true
       clone:
         name: shared-workload-clusters-settings
-        namespace: default
+        namespace: sylva-system

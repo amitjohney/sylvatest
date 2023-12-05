@@ -337,7 +337,7 @@ Sylva tooling will generate a random default admin password, used for accessing 
 This password can be found in Vault (path secret/sso-account) or with the following command:
 
 ```shell
-kubectl get secrets sylva-units-values -o yaml | yq .data.values | base64 -d | yq .admin_password
+kubectl get secrets sylva-units-values -n sylva-system -o yaml | yq .data.values | base64 -d | yq .admin_password
 ```
 
 You can also force a predefined password in `secrets.yaml`, but this not encouraged, except possibly for dev, test or CI environments (if you choose to do this, be aware that this password must follow the Sylva password policy (default: length(12) and upperCase(1) and lowerCase(1) and digits(1)), otherwise the default SSO account is not created.
@@ -443,7 +443,7 @@ In order to make them accessible in current shell, it is recommended to use prov
 # (run this from sylva-core directory)
 source bin/env
 
-# alternative: export FLUX_SYSTEM_NAMESPACE=default
+# alternative: export FLUX_SYSTEM_NAMESPACE=sylva-system
 ```
 
 After setting this environment variable, you'll be able to issue flux commands without having to provide the namespace each time.
@@ -534,10 +534,10 @@ The information in this ConfigMap can be compared with the annotations of the `s
 these annotations contain the target values of any in progress deployment.
 
 ```terminal
-$ kubectl get kustomizations.kustomize.toolkit.fluxcd.io/sylva-units-status -o jsonpath='{.metadata.annotations}' | jq
+$ kubectl get kustomizations.kustomize.toolkit.fluxcd.io/sylva-units-status -n sylva-system -o jsonpath='{.metadata.annotations}' | jq
   {
     "meta.helm.sh/release-name": "sylva-units",
-    "meta.helm.sh/release-namespace": "default",
+    "meta.helm.sh/release-namespace": "sylva-system",
     "reconcile.fluxcd.io/requestedAt": "2023-02-28T12:14:56.267009104+01:00",
     "release-time": "2023-02-28 14:30:16.847929741 +0100 CET m=+0.638859234"
     "target-release-revision": "16",

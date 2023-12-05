@@ -29,7 +29,7 @@ unit_kustomization_spec_default:
   kubeConfig:
     secretRef:
       name: '{{ .Values.cluster.name }}-kubeconfig'
-  targetNamespace: default  # (in workload cluster)
+  targetNamespace: sylva-system  # (in workload cluster)
 
 # for units that rely on Helm, the Kustomization will
 # produce a HelmRelease which needs to be in the workload cluster ns
@@ -41,13 +41,13 @@ unit_helmrelease_kustomization_spec_default:
 
 # ... and it's at the level of the HelmRelease that we ensure
 # that the Helm release is deployed in the workload cluster
-# (in default ns)
+# (in sylva-system ns)
 unit_helmrelease_spec_default:
   kubeConfig:
     secretRef:
       name: '{{ .Values.cluster.name }}-kubeconfig'
-  targetNamespace: default  # (in workload cluster)
-  storageNamespace: default # (in workload cluster)
+  targetNamespace: sylva-system  # (in workload cluster)
+  storageNamespace: sylva-system  # (in workload cluster)
 
 
 unit_templates:
@@ -67,7 +67,7 @@ units:
     depends_on:
       # the heat-operator that we depend on is not in the per-cluster namespace
       heat-operator: false
-      default/heat-operator: true
+      sylva-system/heat-operator: true
     kustomization_spec:
       # because this resource lives in the mgmt cluster:
       kubeConfig: null
@@ -111,10 +111,10 @@ units:
       '{{ .Values._internal.metal3_unit }}': false
 
       # we need to wait for the CAPI-related units from the main sylva-units release
-      default/capi: true
-      default/{{ .Values.cluster.capi_providers.infra_provider }}: true
-      default/{{ .Values.cluster.capi_providers.bootstrap_provider }}: true
-      default/{{ .Values._internal.metal3_unit }}: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+      sylva-system/capi: true
+      sylva-system/{{ .Values.cluster.capi_providers.infra_provider }}: true
+      sylva-system/{{ .Values.cluster.capi_providers.bootstrap_provider }}: true
+      sylva-system/{{ .Values._internal.metal3_unit }}: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
 
     helmrelease_spec:
       # because this resource lives in the mgmt cluster:
@@ -168,6 +168,7 @@ units:
     enabled: true
     depends_on:
       cluster: true
+      namespace-defs: true
       capo-cluster-resources: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     helmrelease_spec:
       values:
@@ -188,7 +189,7 @@ units:
   monitoring:
     enabled: true
     depends_on:
-      default/rancher-monitoring-clusterid-inject: '{{ tuple . "default/rancher-monitoring-clusterid-inject" | include "unit-enabled" }}'
+      sylva-system/rancher-monitoring-clusterid-inject: '{{ tuple . "sylva-system/rancher-monitoring-clusterid-inject" | include "unit-enabled" }}'
       cluster-import: '{{ tuple . "cluster-import" | include "unit-enabled" }}'
     unit_template: base-deps
 
@@ -245,10 +246,10 @@ units:
     enabled: false  # overriden depending on whether Rancher is enabled or not (eg. via shared-workload-clusters-settings)
     unit_template: base-deps
     depends_on:
-      default/rancher: true  # depends on rancher unit in default ns
-      default/capi-rancher-import: true  # depends on capi-rancher-import unit in default ns
-      default/cluster-creator-login: true
-      default/cluster-creator-policy: true
+      sylva-system/rancher: true  # depends on rancher unit in sylva-system ns
+      sylva-system/capi-rancher-import: true  # depends on capi-rancher-import unit in sylva-system ns
+      sylva-system/cluster-creator-login: true
+      sylva-system/cluster-creator-policy: true
     repo: sylva-core
     kustomization_spec:
       # because this resource lives in the mgmt cluster:

@@ -3,7 +3,6 @@ apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
   name: sylva-core
-  namespace: default
   labels:
     copy-from-bootstrap-to-management: ""
 spec:
@@ -16,7 +15,6 @@ apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
   name: sylva-units
-  namespace: default
 spec:
   chart:
     spec:
