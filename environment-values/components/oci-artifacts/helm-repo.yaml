@@ -2,7 +2,7 @@ apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
   name: sylva-core
-  namespace: default
+  namespace: sylva-system
 spec:
   interval: 5m0s
   type: oci

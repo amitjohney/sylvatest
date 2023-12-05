@@ -111,7 +111,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/container-images/libvirt-metal.git
       ref:
-        tag: 0.1.6
+        tag: 0.1.7
 
   vault-operator:
     kind: GitRepository
@@ -297,7 +297,7 @@ units:
       targetNamespace: cert-manager
       wait: true
 
-# namespace-defs creates the namespaces to be used by various units
+# namespace-defs creates sylav-unit namespace and other namespaces to be used by various units
   namespace-defs:
     repo: sylva-core
     kustomization_spec:
@@ -418,7 +418,7 @@ units:
       chart:
         spec:
           chart: vault-config-operator
-          version: v0.8.24
+          version: v0.8.25
       targetNamespace: vault
       values:
         enableCertManager: true
@@ -865,7 +865,7 @@ units:
     kustomization_spec:
       path: ./kustomize-units/shared-workload-clusters-settings
       wait: true
-      targetNamespace: default
+      targetNamespace: sylva-system
       _patches:
         - target:
             kind: ConfigMap
@@ -1212,7 +1212,7 @@ units:
       '{{ .Values.cluster.capi_providers.bootstrap_provider }}': true
       capo-cluster-resources: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
       '{{ .Values._internal.metal3_unit }}': '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
-      default/os-image-server: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+      sylva-system/os-image-server: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
     labels:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
     kustomization_spec:
@@ -1338,7 +1338,7 @@ units:
       force: true
       postBuild:
         substitute:
-          JOB_NAME: '{{ .Values.cluster.name }}-pause-cluster-job'
+          JOB_NAME: '{{ .Values.cluster.name }}-pause-cluster'
           JOB_TARGET_NAMESPACE: '{{ .Release.Namespace }}'
           JOB_CHECKSUM: '{{ .Values | toJson | sha256sum }}'
       _patches:
@@ -1347,7 +1347,7 @@ units:
         patch: |
           - op: replace
             path: /metadata/name
-            value: '{{ .Values.cluster.name }}-pause-cluster-job-{{ .Release.Namespace }}-cm'
+            value: '{{ .Values.cluster.name }}-pause-cluster-{{ .Release.Namespace }}-cm'
           - op: replace
             path: /data/kube-job.sh
             value: |
@@ -1368,7 +1368,7 @@ units:
       force: true
       postBuild:
         substitute:
-          JOB_NAME: '{{ .Values.cluster.name }}-resume-cluster-job'
+          JOB_NAME: '{{ .Values.cluster.name }}-resume-cluster'
           JOB_TARGET_NAMESPACE: '{{ .Release.Namespace }}'
           JOB_CHECKSUM: '{{ .Values | toJson | sha256sum }}'
       _patches:
@@ -1377,7 +1377,7 @@ units:
         patch: |
           - op: replace
             path: /metadata/name
-            value: '{{ .Values.cluster.name }}-resume-cluster-job-{{ .Release.Namespace }}-cm'
+            value: '{{ .Values.cluster.name }}-resume-cluster-{{ .Release.Namespace }}-cm'
           - op: replace
             path: /data/kube-job.sh
             value: |
@@ -1387,6 +1387,8 @@ units:
   calico-crd:
     enabled_conditions:
     - '{{ tuple . "calico" | include "unit-enabled" }}'
+    depends_on:
+      namespace-defs: true
     helm_repo_url: https://rke2-charts.rancher.io
     helm_chart_versions:
       v3.25.001: '{{ not .Values._internal.k8s_post_1_26_6  }}'
@@ -1771,7 +1773,7 @@ units:
           cattle_agent_kustomize_source_ref:
             kind: GitRepository
             name: capi-rancher-import
-            namespace: default
+            namespace: sylva-system
           cattle_agent_kustomize_path: ./cattle-kustomize
 
   ingress-nginx:
@@ -2172,12 +2174,12 @@ units:
   longhorn-crd:
     enabled_conditions:
     - '{{ tuple . "longhorn" | include "unit-enabled" }}'
+    depends_on:
+      namespace-defs: true
     helm_repo_url: https://charts.rancher.io/
     helmrelease_spec:
       releaseName: longhorn-crd
       targetNamespace: longhorn-system
-      install:
-        createNamespace: true
       chart:
         spec:
           chart: longhorn-crd
@@ -3341,7 +3343,7 @@ _internal:
   sylva_core_existing_source: '{{ .Values.unit_helmrelease_kustomization_spec_default.sourceRef }}'
 
   # We need to retrieve bootstrap_node_ip in management-cluster while using libvirt-metal emulation, it is stored in a ConfigMap by libvirt-metal unit in that case
-  bootstrap_node_ip: '{{ lookup "v1" "ConfigMap" "default" "cluster-public-endpoint" | dig "data" "address" "not found" | default "not found" }}'
+  bootstrap_node_ip: '{{ lookup "v1" "ConfigMap" "sylva-system" "cluster-public-endpoint" | dig "data" "address" "not found" | default "not found" }}'
 
   # These values are used only if `os_images` is empty
   default_os_images:

@@ -22,6 +22,8 @@ validate_sylva_units
 echo_b "\U0001F5D1 Delete preview chart and namespace"
 cleanup_preview
 
+set_current_namespace sylva-system
+
 echo_b "\U0001F4DC Install sylva-units Helm release and associated resources"
 _kustomize ${ENV_PATH} | \
   define_source | \
@@ -41,7 +43,7 @@ sylvactl watch \
   --reconcile \
   --timeout $(ci_remaining_minutes_and_at_most ${BOOTSTRAP_WATCH_TIMEOUT_MIN:-30}) \
   ${SYLVACTL_SAVE:+--save bootstrap-timeline.html} \
-  Kustomization/default/management-sylva-units
+  Kustomization/sylva-system/management-sylva-units
 
 if kill $KUBECONFIG_PID &>/dev/null; then
     echo_b "\U00002717 Failed to retrieve management-cluster kubeconfig"

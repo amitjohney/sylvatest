@@ -18,7 +18,7 @@ spec:
         kind: ConfigMap
         metadata:
           name: job-scripts
-          namespace: default
+          namespace: sylva-system
         data:
           kube-job.sh: |
             #!/bin/sh
