@@ -2805,7 +2805,7 @@ units:
     helmrelease_spec:
       targetNamespace: thanos
       install:
-        createNamespace: true      
+        createNamespace: true
       chart:
         spec:
           chart: thanos
