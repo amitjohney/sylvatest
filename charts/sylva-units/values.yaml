@@ -403,7 +403,7 @@ units:
       chart:
         spec:
           chart: vault-config-operator
-          version: v0.8.24
+          version: v0.8.25
       targetNamespace: vault
       values:
         enableCertManager: true
