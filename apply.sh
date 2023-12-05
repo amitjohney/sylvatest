@@ -47,6 +47,6 @@ sylvactl watch \
   --reconcile \
   --timeout $(ci_remaining_minutes_and_at_most ${APPLY_WATCH_TIMEOUT_MIN:-20}) \
   ${SYLVACTL_SAVE:+--save apply-management-cluster-timeline.html} \
-  -n default
+  -n sylva-system
 
 echo_b "\U0001F389 All done"

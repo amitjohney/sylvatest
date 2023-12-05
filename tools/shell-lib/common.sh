@@ -4,7 +4,7 @@ set -o pipefail
 export BASE_DIR="$(realpath $(dirname $0))"
 export PATH=${BASE_DIR}/bin:${PATH}
 
-SYLVA_TOOLBOX_VERSION=${SYLVA_TOOLBOX_VERSION:-"v0.2.12"}
+SYLVA_TOOLBOX_VERSION=${SYLVA_TOOLBOX_VERSION:-"v0.2.13"}
 SYLVA_TOOLBOX_IMAGE=${SYLVA_TOOLBOX_IMAGE:-container-images/sylva-toolbox}
 SYLVA_TOOLBOX_REGISTRY=${SYLVA_TOOLBOX_REGISTRY:-registry.gitlab.com/sylva-projects/sylva-elements}
 
@@ -39,7 +39,7 @@ function check_apply_kustomizations() {
       echo "Error: you shouldn't be running apply.sh against a workload cluster directory ($ENV_PATH)."
       exit 1
     fi
-    result=$(_kustomize $ENV_PATH | yq eval-all -e 'select(.kind == "HelmRelease").spec.chart.spec.valuesFiles | any_c(. | test("(^|/)management.values.yaml$")) and select(.kind == "Namespace").metadata.name == "default"' 2>/dev/null ||:)
+    result=$(_kustomize $ENV_PATH | yq eval-all -e 'select(.kind == "HelmRelease").spec.chart.spec.valuesFiles | any_c(. | test("(^|/)management.values.yaml$")) and select(.kind == "Namespace").metadata.name == "sylva-system"' 2>/dev/null ||:)
     if [[ $result != *"true"* ]]; then
       echo "The directory passed does not contain a management cluster kustomization."
       exit 1
@@ -48,11 +48,11 @@ function check_apply_kustomizations() {
 
   if [[ $CALLER_SCRIPT_NAME == *"apply-workload-cluster.sh"* ]]; then
     wc_dir_name=$(basename "$ENV_PATH")
-    if [[ "$wc_dir_name" == "default" ]]; then
-      echo "Error: Please provide a valid workload cluster directory name, other than \"default\"."
+    if [[ "$wc_dir_name" == "sylva-system" ]]; then
+      echo "Error: Please provide a valid workload cluster directory name, other than \"sylva-system\"."
       exit 1
     fi
-    result=$(_kustomize ${ENV_PATH} | set_wc_namespace | yq eval-all -e 'select(.kind == "HelmRelease").spec.chart.spec.valuesFiles | any_c(. | test("(^|/)workload-cluster.values.yaml$")) and select(.kind == "Namespace").metadata.name != "default"' 2>/dev/null ||:)
+    result=$(_kustomize ${ENV_PATH} | set_wc_namespace | yq eval-all -e 'select(.kind == "HelmRelease").spec.chart.spec.valuesFiles | any_c(. | test("(^|/)workload-cluster.values.yaml$")) and select(.kind == "Namespace").metadata.name != "sylva-system"' 2>/dev/null ||:)
     if [[ $result != *"true"* ]]; then
       echo "The directory passed does not contains a workload cluster kustomization."
       exit 1
@@ -78,8 +78,12 @@ end_section() {
   fi
 }
 
+function set_current_namespace {
+  kubectl config set-context --current --namespace=$1
+}
+
 function check_pivot_has_ran() {
-  if kubectl wait --for condition=complete --timeout=0s job pivot-job-default -n kube-job > /dev/null 2>&1; then
+  if kubectl wait --for condition=complete --timeout=0s job pivot-job-sylva-system -n kube-job > /dev/null 2>&1; then
       if [ ! -f "management-cluster-kubeconfig" ]; then
           kubectl get secret management-cluster-kubeconfig-copy -o jsonpath='{.data.value}' 2>/dev/null | base64 -d > management-cluster-kubeconfig
       fi
@@ -109,6 +113,7 @@ function retrieve_kubeconfig {
         CLUSTER_PUBLIC_ENDPOINT=$(kubectl get secret sylva-units-values -o template='{{ .data.values }}' | base64 -d | yq -e .cluster_public_endpoint)
         yq -i ".clusters[0].cluster.server=\"${CLUSTER_PUBLIC_ENDPOINT}\"" management-cluster-kubeconfig
     fi
+    kubectl --kubeconfig=management-cluster-kubeconfig config set-context --current --namespace=sylva-system
     umask $orig_umask
 }
 
@@ -177,7 +182,7 @@ trap exit_trap EXIT
 function force_reconcile() {
   local kinds=$1
   local name_or_selector=$2
-  local namespace=${3:-default}
+  local namespace=${3:-sylva-system}
   echo "force reconciliation of $1 $2"
   kubectl annotate -n $namespace --overwrite $kinds $name_or_selector reconcile.fluxcd.io/requestedAt=$(date -uIs) | sed -e 's/^/  /'
 }

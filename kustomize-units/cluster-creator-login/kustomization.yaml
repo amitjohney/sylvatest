@@ -9,7 +9,7 @@ patches:
   - path: delete-kube-job-cm.yaml
 
 configMapGenerator:
-- name: '${JOB_NAME}-${JOB_TARGET_NAMESPACE:-default}-cm'
+- name: '${JOB_NAME}-${JOB_TARGET_NAMESPACE:-sylva-system}-cm'
   namespace: kube-job
   options:
     disableNameSuffixHash: true

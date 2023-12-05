@@ -72,7 +72,7 @@ patches:
       - op: replace
         path: /metadata
         value:
-          namespace: default
+          namespace: sylva-system
           name: {{ $unit_name }}
           labels: {{ $labels | toYaml | nindent 12 }}
       - op: replace
@@ -85,7 +85,7 @@ patches:
       - op: replace
         path: /metadata
         value:
-          namespace: default
+          namespace: sylva-system
           name: helm-unit-values-{{ $unit_name }}-{{ $secretHash }}
           labels: {{ $labels | toYaml | nindent 12 }}
   - target:
