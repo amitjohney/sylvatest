@@ -1807,6 +1807,12 @@ units:
             bgp: Enabled
           registry: UseDefault
 
+  calico-wireguard:
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/calico-wireguard
+      wait: true
+
   metallb:
     info:
       description: installs MetalLB operator
