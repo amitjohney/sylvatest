@@ -25,14 +25,6 @@ else
     export ENV_PATH=$(readlink -f $1)
 fi
 
-if [[ $# -eq 1 && -f $1 ]]; then
-    VALUES_FILE=$1
-elif [[ ! -z ${ENV_PATH:-} ]]; then
-    VALUES_FILE=${ENV_PATH}/values.yaml
-else
-    VALUES_FILE=""
-fi
-
 function _kustomize {
   kustomize build --load-restrictor LoadRestrictionsNone $1
 }
@@ -165,14 +157,8 @@ ensure_sylvactl
 function cleanup_bootstrap_cluster() {
   : ${CLEANUP_BOOTSTRAP_CLUSTER:='yes'}
   kind_cluster=`kind get clusters`
-  # if deployment is on baremetal on manual
-  if [[ -v "${VALUES_FILE}" && `yq '.metal3' ${VALUES_FILE} 2>/dev/null` != null ]]; then
-    export CLEANUP_BOOTSTRAP_CLUSTER = 'no'
-  fi
-  # if cleanup bootstrap cluster variable is set to yes
-  # if the curent kind cluster is the name of the kind cluster created in this deployment
-  # if deployment is not CI and is on capm3
-  if [[ $CLEANUP_BOOTSTRAP_CLUSTER == 'yes' && $kind_cluster == $KIND_CLUSTER_NAME && -z "${METAL3_PROVIDER:-}" ]]; then
+  metal3machines=`kubectl get metal3machines -A `
+  if [[ $CLEANUP_BOOTSTRAP_CLUSTER == 'yes' && $kind_cluster == $KIND_CLUSTER_NAME && -z $metalmachines ]]; then
     echo_b "\U0001F5D1 Delete bootstrap cluster"
     kind delete cluster -n $KIND_CLUSTER_NAME
   fi
