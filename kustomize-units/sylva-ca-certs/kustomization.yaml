@@ -10,4 +10,3 @@ resources:
   - minio-tenant-tls.yaml
   - loki-tls.yaml
   - thanos-tls.yaml
-  
