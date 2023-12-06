@@ -646,6 +646,83 @@ properties:
             format: hostname
           - $ref: "#/$defs/string-with-gotpl"
 
+  minio-operator-console: # -------------------------------
+    type: object
+    additionalProperties: false
+    properties:
+
+      external_hostname:  # -------------------------------
+        anyOf:
+          - type: string
+            format: hostname
+          - $ref: "#/$defs/string-with-gotpl"
+
+  minio-monitoring: # -------------------------------
+    type: object
+    additionalProperties: false
+    properties:
+
+      external_hostname:  # -------------------------------
+        anyOf:
+          - type: string
+            format: hostname
+          - $ref: "#/$defs/string-with-gotpl"
+
+  minio-monitoring-console: # -------------------------------
+    type: object
+    additionalProperties: false
+    properties:
+
+      external_hostname:  # -------------------------------
+        anyOf:
+          - type: string
+            format: hostname
+          - $ref: "#/$defs/string-with-gotpl"
+
+  loki: # -------------------------------
+    type: object
+    additionalProperties: false
+    properties:
+
+      external_hostname:  # -------------------------------
+        anyOf:
+          - type: string
+            format: hostname
+          - $ref: "#/$defs/string-with-gotpl"
+
+  thanos: # -------------------------------
+    type: object
+    additionalProperties: false
+    properties:
+
+      external_hostname:  # -------------------------------
+        anyOf:
+          - type: string
+            format: hostname
+          - $ref: "#/$defs/string-with-gotpl"
+
+  thanos-storegateway: # -------------------------------
+    type: object
+    additionalProperties: false
+    properties:
+
+      external_hostname:  # -------------------------------
+        anyOf:
+          - type: string
+            format: hostname
+          - $ref: "#/$defs/string-with-gotpl"
+
+  thanos-receive: # -------------------------------
+    type: object
+    additionalProperties: false
+    properties:
+
+      external_hostname:  # -------------------------------
+        anyOf:
+          - type: string
+            format: hostname
+          - $ref: "#/$defs/string-with-gotpl"
+
   os_image_server: # -------------------------------
     type: object
     additionalProperties: false

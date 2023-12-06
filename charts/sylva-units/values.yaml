@@ -2462,10 +2462,9 @@ units:
   loki:
     depends_on:
       sylva-ca-certs: true
+      minio-tenant-monitoring: true
     enabled_conditions:
       - '{{ tuple . "monitoring" | include "unit-enabled" }}'
-    depends_on:
-      minio-tenant-monitoring: true
     annotations:
       sylvactl/readyMessage: "loki can be reached at https://loki.{{ .Values.cluster_external_domain }} (loki.{{ .Values.cluster_external_domain }} must resolve to {{ .Values.display_external_ip }})"
     repo: loki
@@ -3093,6 +3092,7 @@ flux:
 neuvector:
   external_hostname: 'neuvector.{{ .Values.cluster_external_domain }}'
 
+# monitoring
 minio-operator-console:
   external_hostname: 'minio-operator-console.{{ .Values.cluster_external_domain }}'
 
@@ -3114,6 +3114,7 @@ thanos-storegateway:
 thanos-receive:
   external_hostname: 'thanos-receive.{{ .Values.cluster_external_domain }}'
 
+# # # end monitoring
 
 os_image_server:
   external_hostname: ''
