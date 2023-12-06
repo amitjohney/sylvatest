@@ -12,7 +12,7 @@ spec:
   issuerRef:
     name: ca-issuer
     kind: ClusterIssuer
-  commonName: loki.sylva
+  commonName: ${LOKI_DNS}
   duration: 2160h # 90d
   renewBefore: 360h # 15d
   emailAddresses:
@@ -25,7 +25,7 @@ spec:
     organizationalUnits:
     - DEV
   dnsNames:
-  - loki.sylva
+  - ${LOKI_DNS}
   - localhost
   ipAddresses:
   - 127.0.0.1

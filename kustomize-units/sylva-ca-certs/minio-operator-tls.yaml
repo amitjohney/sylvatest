@@ -12,7 +12,7 @@ spec:
   issuerRef:
     name: ca-issuer
     kind: ClusterIssuer
-  commonName: minio-operator.sylva
+  commonName: ${MINIO_OPERATOR_CONSOLE_DNS}
   duration: 2160h # 90d
   renewBefore: 360h # 15d
   emailAddresses:
@@ -25,8 +25,7 @@ spec:
     organizationalUnits:
     - DEV
   dnsNames:
-  - minio-operator-console.sylva
-  - minio-operator.sylva
+  - ${MINIO_OPERATOR_CONSOLE_DNS}
   - localhost
   ipAddresses:
   - 127.0.0.1

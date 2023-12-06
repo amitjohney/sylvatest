@@ -1560,6 +1560,13 @@ units:
           VAULT_DNS: '{{ .Values.vault.external_hostname }}'
           KEYCLOAK_DNS: '{{ .Values.keycloak.external_hostname }}'
           FLUX_WEBUI_DNS: '{{ .Values.flux.external_hostname }}'
+          MINIO_OPERATOR_CONSOLE_DNS: '{{ .Values.minio-operator-console.external_hostname }}'
+          MINIO_MONITORING_DNS: '{{ .Values.minio-monitoring.external_hostname }}'
+          MINIO_MONITORING_CONSOLE_DNS: '{{ .Values.minio-monitoring-console.external_hostname }}'
+          LOKI_DNS: '{{ .Values.loki.external_hostname }}'
+          THANOS_DNS: '{{ .Values.thanos.external_hostname }}'
+          THANOS_STOREGATEWAY_DNS: '{{ .Values.thanos-storegateway.external_hostname }}'
+          THANOS_RECEIVE_DNS: '{{ .Values.thanos-receive.external_hostname }}'
       wait: true
 
   synchronize-secrets:
@@ -2387,6 +2394,8 @@ units:
 
 ### monitoring stuff
   minio-operator:
+    depends_on:
+      sylva-ca-certs: true
     enabled_conditions:
       - '{{ tuple . "minio" | include "unit-enabled" }}'
     annotations:
@@ -2448,9 +2457,11 @@ units:
             tls:
               - hosts:
                   - 'minio-operator-console.{{ .Values.cluster_external_domain }}'
-                secretName: minio-operator-console-tls
+                secretName: minio-operator-tls
 
   loki:
+    depends_on:
+      sylva-ca-certs: true
     enabled_conditions:
       - '{{ tuple . "monitoring" | include "unit-enabled" }}'
     depends_on:
@@ -2521,8 +2532,8 @@ units:
               s3: null
               endpoint: "minio.minio-tenant-monitoring.svc.cluster.local:443"
               region: null
-              secretAccessKey: "minio1234"
               accessKeyId: "minio"
+              secretAccessKey: "minio1234"
               signatureVersion: null
               s3ForcePathStyle: true
               insecure: false
@@ -2679,6 +2690,7 @@ units:
       - '{{ tuple . "monitoring" | include "unit-enabled" }}'
     depends_on:
       minio-tenant-monitoring: true
+      sylva-ca-certs: true
     helm_repo_url: https://charts.bitnami.com/bitnami
     helmrelease_spec:
       targetNamespace: thanos
@@ -2697,18 +2709,14 @@ units:
         objstoreConfig: |-
           type: "S3"
           config:
-            bucket: "prometheus"
-            # write directly to service, bypass ingress
+            bucket: "thanos"
             endpoint: minio.minio-tenant-monitoring.svc.cluster.local:443
-            #endpoint: "minio-monitoring.sylva:443"
             access_key: "minio"
             secret_key: "minio1234"
             insecure: false
             http_config:
               tls_config:
               insecure_skip_verify: true
-            #trace:
-              #enabled: true
         query:
           enabled: true
           logLevel: debug
@@ -3084,6 +3092,28 @@ flux:
 
 neuvector:
   external_hostname: 'neuvector.{{ .Values.cluster_external_domain }}'
+
+minio-operator-console:
+  external_hostname: 'minio-operator-console.{{ .Values.cluster_external_domain }}'
+
+minio-monitoring:
+  external_hostname: 'minio-monitoring.{{ .Values.cluster_external_domain }}'
+
+minio-monitoring-console:
+  external_hostname: 'minio-monitoring-console.{{ .Values.cluster_external_domain }}'
+
+loki:
+  external_hostname: 'loki.{{ .Values.cluster_external_domain }}'
+
+thanos:
+  external_hostname: 'thanos.{{ .Values.cluster_external_domain }}'
+
+thanos-storegateway:
+  external_hostname: 'thanos-storegateway.{{ .Values.cluster_external_domain }}'
+
+thanos-receive:
+  external_hostname: 'thanos-receive.{{ .Values.cluster_external_domain }}'
+
 
 os_image_server:
   external_hostname: ''
