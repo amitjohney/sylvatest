@@ -28,6 +28,7 @@ spec:
   - ${THANOS_DNS}
   - ${THANOS_STOREGATEWAY_DNS}
   - ${THANOS_RECEIVE_DNS}
+  - ${THANOS_QUERY_DNS}
   - localhost
   ipAddresses:
   - 127.0.0.1

@@ -1567,6 +1567,7 @@ units:
           THANOS_DNS: '{{ .Values.thanos.external_hostname }}'
           THANOS_STOREGATEWAY_DNS: '{{ .Values.thanos_storegateway.external_hostname }}'
           THANOS_RECEIVE_DNS: '{{ .Values.thanos_receive.external_hostname }}'
+          THANOS_QUERY_DNS: '{{ .Values.thanos_query.external_hostname }}'
       wait: true
 
   synchronize-secrets:
@@ -3264,6 +3265,10 @@ thanos_storegateway:
 
 thanos_receive:
   external_hostname: 'thanos-receive.{{ .Values.cluster_external_domain }}'
+
+thanos_query:
+  external_hostname: 'thanos-query.{{ .Values.cluster_external_domain }}'
+
 
 # # # end monitoring
 
