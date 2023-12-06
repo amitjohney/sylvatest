@@ -2540,7 +2540,7 @@ units:
             quiet: true
         ingress:
           api:
-            enabled: false
+            enabled: true
             ingressClassName: nginx
             host: 'minio-monitoring.{{ .Values.cluster_external_domain }}'
             path: /
@@ -2550,7 +2550,7 @@ units:
                   - 'minio-monitoring.{{ .Values.cluster_external_domain }}'
                 secretName: minio-monitoring-tls
           console:
-            enabled: false
+            enabled: true
             ingressClassName: nginx
             host: 'minio-monitoring-console.{{ .Values.cluster_external_domain }}'
             path: /
