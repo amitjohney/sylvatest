@@ -2583,6 +2583,11 @@ units:
             stringData:
               CONSOLE_ACCESS_KEY: console
               CONSOLE_SECRET_KEY: console123
+
+  minio-monitoring-ingress:
+    depends_on:
+      minio-monitoring: true
+    repo: sylva-core            
     kustomization_spec:
       path: ./kustomize-units/minio-monitoring
       postBuild:
@@ -3065,10 +3070,16 @@ units:
             drop: ["ALL"]
           seccompProfile:
             type: RuntimeDefault
+
+  rancher-logging-config:
+    depends_on:
+      rancher-logging: true
+    repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/rancher-logging
       postBuild:
         substitute:
+          # we must use external name in order to work also for workload clusters
           ${LOKI_URL}: "https://{{ .Values.loki.external_hostname }}:443"
           ${JOB_NAME}: "{{ .Values.cluster.name }}-job"
         wait: true
