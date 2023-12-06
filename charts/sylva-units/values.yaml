@@ -1560,13 +1560,13 @@ units:
           VAULT_DNS: '{{ .Values.vault.external_hostname }}'
           KEYCLOAK_DNS: '{{ .Values.keycloak.external_hostname }}'
           FLUX_WEBUI_DNS: '{{ .Values.flux.external_hostname }}'
-          MINIO_OPERATOR_CONSOLE_DNS: '{{ .Values.minio-operator-console.external_hostname }}'
-          MINIO_MONITORING_DNS: '{{ .Values.minio-monitoring.external_hostname }}'
-          MINIO_MONITORING_CONSOLE_DNS: '{{ .Values.minio-monitoring-console.external_hostname }}'
+          MINIO_OPERATOR_CONSOLE_DNS: '{{ .Values.minio_operator_console.external_hostname }}'
+          MINIO_MONITORING_DNS: '{{ .Values.minio_monitoring.external_hostname }}'
+          MINIO_MONITORING_CONSOLE_DNS: '{{ .Values.minio_monitoring_console.external_hostname }}'
           LOKI_DNS: '{{ .Values.loki.external_hostname }}'
           THANOS_DNS: '{{ .Values.thanos.external_hostname }}'
-          THANOS_STOREGATEWAY_DNS: '{{ .Values.thanos-storegateway.external_hostname }}'
-          THANOS_RECEIVE_DNS: '{{ .Values.thanos-receive.external_hostname }}'
+          THANOS_STOREGATEWAY_DNS: '{{ .Values.thanos_storegateway.external_hostname }}'
+          THANOS_RECEIVE_DNS: '{{ .Values.thanos_receive.external_hostname }}'
       wait: true
 
   synchronize-secrets:
@@ -3093,13 +3093,13 @@ neuvector:
   external_hostname: 'neuvector.{{ .Values.cluster_external_domain }}'
 
 # monitoring
-minio-operator-console:
+minio_operator_console:
   external_hostname: 'minio-operator-console.{{ .Values.cluster_external_domain }}'
 
-minio-monitoring:
+minio_monitoring:
   external_hostname: 'minio-monitoring.{{ .Values.cluster_external_domain }}'
 
-minio-monitoring-console:
+minio_monitoring_console:
   external_hostname: 'minio-monitoring-console.{{ .Values.cluster_external_domain }}'
 
 loki:
@@ -3108,10 +3108,10 @@ loki:
 thanos:
   external_hostname: 'thanos.{{ .Values.cluster_external_domain }}'
 
-thanos-storegateway:
+thanos_storegateway:
   external_hostname: 'thanos-storegateway.{{ .Values.cluster_external_domain }}'
 
-thanos-receive:
+thanos_receive:
   external_hostname: 'thanos-receive.{{ .Values.cluster_external_domain }}'
 
 # # # end monitoring

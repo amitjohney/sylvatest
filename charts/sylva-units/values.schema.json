@@ -5839,7 +5839,7 @@
         }
       }
     },
-    "minio-operator-console": {
+    "minio_operator_console": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -5856,7 +5856,7 @@
         }
       }
     },
-    "minio-monitoring": {
+    "minio_monitoring": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -5873,7 +5873,7 @@
         }
       }
     },
-    "minio-monitoring-console": {
+    "minio_monitoring_console": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -5924,7 +5924,7 @@
         }
       }
     },
-    "thanos-storegateway": {
+    "thanos_storegateway": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -5941,7 +5941,7 @@
         }
       }
     },
-    "thanos-receive": {
+    "thanos_receive": {
       "type": "object",
       "additionalProperties": false,
       "properties": {

@@ -646,7 +646,7 @@ properties:
             format: hostname
           - $ref: "#/$defs/string-with-gotpl"
 
-  minio-operator-console: # -------------------------------
+  minio_operator_console: # -------------------------------
     type: object
     additionalProperties: false
     properties:
@@ -657,7 +657,7 @@ properties:
             format: hostname
           - $ref: "#/$defs/string-with-gotpl"
 
-  minio-monitoring: # -------------------------------
+  minio_monitoring: # -------------------------------
     type: object
     additionalProperties: false
     properties:
@@ -668,7 +668,7 @@ properties:
             format: hostname
           - $ref: "#/$defs/string-with-gotpl"
 
-  minio-monitoring-console: # -------------------------------
+  minio_monitoring_console: # -------------------------------
     type: object
     additionalProperties: false
     properties:
@@ -701,7 +701,7 @@ properties:
             format: hostname
           - $ref: "#/$defs/string-with-gotpl"
 
-  thanos-storegateway: # -------------------------------
+  thanos_storegateway: # -------------------------------
     type: object
     additionalProperties: false
     properties:
@@ -712,7 +712,7 @@ properties:
             format: hostname
           - $ref: "#/$defs/string-with-gotpl"
 
-  thanos-receive: # -------------------------------
+  thanos_receive: # -------------------------------
     type: object
     additionalProperties: false
     properties:
