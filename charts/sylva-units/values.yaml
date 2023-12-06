@@ -2459,6 +2459,131 @@ units:
                   - 'minio-operator-console.{{ .Values.cluster_external_domain }}'
                 secretName: minio-operator-tls
 
+  minio-monitoring:
+    enabled_conditions:
+      - '{{ tuple . "monitoring" | include "unit-enabled" }}'
+    depends_on:
+      minio-operator: true
+      sylva-ca-certs: true     
+    annotations:
+      sylvactl/readyMessage: "minio tenant monitoring console can be reached at https://minio-monitoring-console.{{ .Values.cluster_external_domain }} (minio--monitoring-console.{{ .Values.cluster_external_domain }} must resolve to {{ .Values.display_external_ip }})"
+    repo: minio-operator
+    helmrelease_spec:
+      releaseName: minio-tenant
+      targetNamespace: minio-monitoring
+      chart:
+        spec:
+          chart: helm/tenant
+          version: v5.0.11
+      install:
+        createNamespace: true
+      values:
+        tenant:
+          name: monitoring
+          configuration:
+            name: storage-configuration
+          pools:
+            - servers: 2
+              name: pool-0
+              volumesPerserver: 4
+              size: 3Gi
+              storageClassName: '{{ .Values._internal.default_storage_class }}'
+              containerSecurityContext:
+                runAsUser: 1000
+                runAsGroup: 1000
+                runAsNonRoot: true
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                seccompProfile:
+                  type: RuntimeDefault
+              securityContext:
+                runAsUser: 1000
+                runAsGroup: 1000
+                fsGroup: 1000
+                fsGroupChangePolicy: "OnRootMismatch"
+                runAsNonRoot: true
+                seccompProfile:
+                  type: RuntimeDefault
+          metrics:
+            enabled: disable
+          features:
+            bucketDNS: false
+            enableSFTP: false
+          users:
+            - name: storage-user
+          buckets:
+            - name: "thanos"
+              region: "monitoring-cluster"
+              objectLock: false
+            - name: "loki"
+              region: "monitoring-cluster"
+              objectLock: false
+            - name: "loki-chunks"
+              region: "monitoring-cluster"
+              objectLock: false
+            - name: "loki-ruler"
+              region: "monitoring-cluster"
+              objectLock: false
+            - name: "loki-admin"
+              region: "monitoring-cluster"
+              objectLock: false
+            - name: "testbucket"
+              region: "monitoring-cluster"
+              objectLock: false
+          ## Prometheus Operator's Service Monitor for MinIO Tenant Pods.
+          prometheusOperator: false
+          logging:
+            anonymous: true
+            json: true
+            quiet: true
+        ingress:
+          api:
+            enabled: false
+            ingressClassName: nginx
+            host: 'minio-monitoring.{{ .Values.cluster_external_domain }}'
+            path: /
+            pathType: Prefix
+            tls:
+              - hosts:
+                  - 'minio-monitoring.{{ .Values.cluster_external_domain }}'
+                secretName: minio-monitoring-tls
+          console:
+            enabled: false
+            ingressClassName: nginx
+            host: 'minio-monitoring-console.{{ .Values.cluster_external_domain }}'
+            path: /
+            pathType: Prefix
+            tls:
+              - hosts:
+                  - 'minio-monitoring-console.{{ .Values.cluster_external_domain }}'
+                secretName: minio-monitoring-tls
+        extraResources:
+          - |
+            apiVersion: v1
+            kind: Secret
+            metadata:
+              name: storage-configuration
+              namespace: minio-monitoring
+            type: Opaque
+            stringData:
+              config.env: |-
+                export MINIO_ROOT_USER="minio"
+                export MINIO_ROOT_PASSWORD="minio1234"
+                export MINIO_STORAGE_CLASS_STANDARD="EC:2"
+                export MINIO_BROWSER="on"
+          - |
+            apiVersion: v1
+            kind: Secret
+            type: Opaque
+            metadata:
+              name: storage-user
+              namespace: minio-monitoring
+            stringData:
+              CONSOLE_ACCESS_KEY: console
+              CONSOLE_SECRET_KEY: console123                
+
   loki:
     depends_on:
       sylva-ca-certs: true
