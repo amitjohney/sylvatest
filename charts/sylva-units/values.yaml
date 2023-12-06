@@ -594,6 +594,16 @@ units:
           requests:
             cpu: 100m
             memory: 2280Mi
+      _postRenderers:
+        - kustomize:
+            patchesStrategicMerge:
+              - kind: CronJob
+                apiVersion: batch/v1
+                metadata:
+                  name: neuvector-updater-pod
+                  namespace: neuvector
+                spec:
+                  startingDeadlineSeconds: 21600
 
   keycloak:
     depends_on:
@@ -820,6 +830,24 @@ units:
             - '[BackgroundScanReport/*,*,*]'
             - '[ClusterBackgroundScanReport,*,*]'
             - '[ClusterBackgroundScanReport/*,*,*]'
+      _postRenderers:
+        - kustomize:
+            patchesStrategicMerge:
+              - kind: CronJob
+                apiVersion: batch/v1
+                metadata:
+                  name: kyverno-cleanup-cluster-admission-reports
+                  namespace: kyverno
+                spec:
+                  startingDeadlineSeconds: 180
+              - kind: CronJob
+                apiVersion: batch/v1
+                metadata:
+                  name: kyverno-cleanup-admission-reports
+                  namespace: kyverno
+                spec:
+                  startingDeadlineSeconds: 180
+
 
   kyverno-policies:
     enabled_conditions:
