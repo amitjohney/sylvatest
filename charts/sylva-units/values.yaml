@@ -2095,6 +2095,10 @@ units:
           cattle:
             psp:
               enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") | include "as-bool" }}'
+        grafana: 
+          plugins:
+            - yesoreyeram-boomtable-panelyaram
+            - flant-statusmap-panel 
       # Disable drift detection for rancher-monitoring webhooks
       _postRenderers:
         - kustomize:
