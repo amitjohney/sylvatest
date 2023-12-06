@@ -2252,10 +2252,13 @@
                         }
                       ]
                     },
-                    "security_group_name": {
+                    "security_group_names": {
                       "anyOf": [
                         {
-                          "type": "string"
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
                         },
                         {
                           "$ref": "#/$defs/string-with-gotpl"
@@ -4327,10 +4330,13 @@
                             }
                           ]
                         },
-                        "security_group_name": {
+                        "security_group_names": {
                           "anyOf": [
                             {
-                              "type": "string"
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
                             },
                             {
                               "$ref": "#/$defs/string-with-gotpl"
@@ -4606,8 +4612,14 @@
                       "capo": {
                         "anyOf": [
                           {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          {
                             "required": [
-                              "security_group_name"
+                              "security_group_names"
                             ]
                           },
                           {
