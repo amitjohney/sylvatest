@@ -1,0 +1,13 @@
+---
+apiVersion: logging.banzaicloud.io/v1beta1
+kind: ClusterFlow
+metadata:
+  generation: 1
+  name: all-logs
+  namespace: cattle-logging-system
+spec:
+  globalOutputRefs:
+  - loki
+status:
+  active: true
+

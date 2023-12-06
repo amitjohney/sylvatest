@@ -2466,7 +2466,7 @@ units:
       minio-operator: true
       sylva-ca-certs: true
     annotations:
-      sylvactl/readyMessage: "minio tenant monitoring console can be reached at https://minio-monitoring-console.{{ .Values.cluster_external_domain }} (minio--monitoring-console.{{ .Values.cluster_external_domain }} must resolve to {{ .Values.display_external_ip }})"
+      sylvactl/readyMessage: "minio tenant monitoring console can be reached at https://minio-monitoring-console.{{ .Values.cluster_external_domain }} (minio-monitoring-console.{{ .Values.cluster_external_domain }} must resolve to {{ .Values.display_external_ip }})"
     repo: minio-operator
     helmrelease_spec:
       releaseName: minio-tenant
@@ -2540,7 +2540,7 @@ units:
             quiet: true
         ingress:
           api:
-            enabled: true
+            enabled: false
             ingressClassName: nginx
             host: 'minio-monitoring.{{ .Values.cluster_external_domain }}'
             path: /
@@ -2550,7 +2550,7 @@ units:
                   - 'minio-monitoring.{{ .Values.cluster_external_domain }}'
                 secretName: minio-monitoring-tls
           console:
-            enabled: true
+            enabled: false
             ingressClassName: nginx
             host: 'minio-monitoring-console.{{ .Values.cluster_external_domain }}'
             path: /
@@ -2583,6 +2583,13 @@ units:
             stringData:
               CONSOLE_ACCESS_KEY: console
               CONSOLE_SECRET_KEY: console123
+    kustomization_spec:
+      path: ./kustomize-units/minio-monitoring
+      postBuild:
+        substitute:
+          MINIO_MONITORING_DNS: '{{ .Values.minio_monitoring.external_hostname }}'
+          MINIO_MONITORING_CONSOLE_DNS: '{{ .Values.minio_monitoring_console.external_hostname }}'
+        wait: true
 
   loki:
     depends_on:
@@ -3058,6 +3065,13 @@ units:
             drop: ["ALL"]
           seccompProfile:
             type: RuntimeDefault
+    kustomization_spec:
+      path: ./kustomize-units/rancher-logging
+      postBuild:
+        substitute:
+          ${LOKI_URL}: "https://{{ .Values.loki.external_hostname }}:443"
+          ${JOB_NAME}: "{{ .Values.cluster.name }}-job"
+        wait: true
 
 ##### stuff related to the 'cluster' unit #####
 #
