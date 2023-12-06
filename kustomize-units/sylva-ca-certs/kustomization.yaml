@@ -6,3 +6,8 @@ resources:
   - keycloak-tls.yaml
   - vault-tls.yaml
   - flux-webui-tls.yaml
+  - minio-operator-tls.yaml
+  - minio-tenant-tls.yaml
+  - loki-tls.yaml
+  - thanos-tls.yaml
+  
