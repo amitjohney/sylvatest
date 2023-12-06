@@ -3081,8 +3081,8 @@ units:
       postBuild:
         substitute:
           # we must use external name in order to work also for workload clusters
-          ${LOKI_URL}: "https://{{ .Values.loki.external_hostname }}:443"
-          ${JOB_NAME}: "{{ .Values.cluster.name }}-job"
+          LOKI_URL: "https://{{ .Values.loki.external_hostname }}:443"
+          JOB_NAME: "{{ .Values.cluster.name }}-job"
       wait: true
 
 ##### stuff related to the 'cluster' unit #####
