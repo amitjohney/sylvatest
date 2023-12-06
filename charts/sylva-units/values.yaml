@@ -794,6 +794,13 @@ units:
         features:
           policyExceptions:
             enabled: true
+        admissionController:
+          rbac:
+            clusterRole:
+              extraResources:
+              - apiGroups: ["redhatcop.redhat.io"]
+                resources: ["*"]
+                verbs: ["*"]
         backgroundController:
           rbac:
             clusterRole:
@@ -806,6 +813,9 @@ units:
                 resources:
                   - "nodes"
                 verbs: ["get", "list", "watch", "patch", "update"]
+              - apiGroups: ["redhatcop.redhat.io"]
+                resources: ["*"]
+                verbs: ["*"]
         config:
           # -- Resource types to be skipped by the Kyverno policy engine, removed [Node,*,*] [Node/*,*,*] entries
           resourceFilters:
@@ -2340,6 +2350,18 @@ units:
     kustomization_substitute_secrets:
       USERNAME: '{{ .Values.cluster.capv.username }}'
       PASSWORD: '{{ .Values.cluster.capv.password }}'
+
+  cluster-grub-password:
+    enabled_conditions:
+    - '{{ tuple . "vault" | include "unit-enabled" }}'
+    depends_on:
+      vault: true
+      vault-config-operator: true
+      kyverno: '{{ tuple . "kyverno" | include "unit-enabled" }}'
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/cluster-grub-password
+      wait: true
 
 # creates the sandbox namespaces used to perform privileged operations like debugging a node
   sandbox-privileged-namespace:

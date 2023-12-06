@@ -287,3 +287,7 @@ units:
   vsphere-csi-driver:
     enabled: true
     unit_template: base-deps
+
+  cluster-grub-password:
+    enabled: true
+    unit_template: base-deps
