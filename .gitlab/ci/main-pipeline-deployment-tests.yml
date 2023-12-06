@@ -81,8 +81,10 @@ variables:
     when: manual
   - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_DEPLOYMENTS && $CI_JOB_NAME =~ $DEPLOYMENT_FLAVOR'
     variables:
+      MGMT_DEPLOYMENT_CUSTOM: environment-values/ci/control-plane-replicas-3.yml
       MGMT_UPDATE_CUSTOM: environment-values/ci/max-pods.yml
       APPLY_WATCH_TIMEOUT_MIN: 40
+      WC_DEPLOYMENT_CUSTOM: environment-values/ci/control-plane-replicas-3.yml
       WC_UPDATE_CUSTOM: environment-values/ci/max-pods.yml
       APPLY_WC_WATCH_TIMEOUT_MIN: 40
   - if: $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/ && ($E2E_JOB_MR_PARITY == "any" || ($E2E_JOB_MR_PARITY == "even" && $CI_OPEN_MERGE_REQUESTS =~ /[02468]$/) || ($E2E_JOB_MR_PARITY == "odd" && $CI_OPEN_MERGE_REQUESTS =~ /[13579]$/))
