@@ -62,7 +62,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.2.16
+        branch: tmon/cluster-secrets
 
   local-path-provisioner:
     kind: GitRepository
@@ -1973,6 +1973,11 @@ units:
           name: '{{ .Values._internal.os_images_info_configmap }}'  # this configmap is a byproduct of the os-images-info unit
           valuesKey: values.yaml
           optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capm3") | include "as-bool" }}'
+        - kind: Secret
+          name: cluster-root-secret
+          valuesKey: password
+          targetPath: secrets.root
+          optional: true
     # we pass everything that is under `cluster` to this unit that uses sylva-capi-cluster chart
     # (we do it via a secret because some of the values are credentials in many scenarios)
     helm_secret_values: '{{ .Values.cluster | include "preserve-type" }}'
@@ -3723,6 +3728,58 @@ units:
       USERNAME: '{{ .Values.cluster.capv.username }}'
       PASSWORD: '{{ .Values.cluster.capv.password }}'
 
+  cluster-secrets-kyverno:
+    info:
+      description: Configure Kyverno to manage secrets per cluster
+      maturity: stable
+    unit_templates:
+    - base-deps
+    enabled_conditions:
+    - '{{ tuple . "vault" | include "unit-enabled" }}'
+    depends_on:
+      vault: true
+      vault-config-operator: true
+      kyverno: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/cluster-secrets/kyverno
+      wait: true
+
+  cluster-secrets-init:
+    info:
+      description: Configure a cluster to manage secrets
+      maturity: stable
+    unit_templates:
+    - base-deps
+    enabled_conditions:
+    - '{{ tuple . "vault" | include "unit-enabled" }}'
+    depends_on:
+      cluster-secrets-kyverno: '{{ tuple . "kyverno" | include "unit-enabled" }}'
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/cluster-secrets/init
+      wait: true
+      targetNamespace: '{{ .Release.Namespace }}'
+
+  cluster-secrets-root-password:
+    info:
+      description: Configure root password per cluster
+      maturity: stable
+    unit_templates:
+    - base-deps
+    enabled_conditions:
+    - '{{ tuple . "vault" | include "unit-enabled" }}'
+    depends_on:
+      cluster-secrets-kyverno: true
+      cluster-secrets-init: true
+      eso-secret-stores: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/cluster-secrets/cluster-root-password
+      wait: true
+      targetNamespace: '{{ .Release.Namespace }}'
+
+# creates the sandbox namespaces used to perform privileged operations like debugging a node
   sandbox-privileged-namespace:
     info:
       description: >
