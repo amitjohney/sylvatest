@@ -2587,6 +2587,7 @@ units:
   minio-monitoring-ingress:
     depends_on:
       minio-monitoring: true
+      ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/minio-monitoring
