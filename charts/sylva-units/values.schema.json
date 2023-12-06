@@ -2608,6 +2608,23 @@
             }
           ]
         },
+        "default_boot_mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "legacy",
+                "UEFI",
+                "UEFISecureBoot"
+              ]
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "capd": {
           "anyOf": [
             {
