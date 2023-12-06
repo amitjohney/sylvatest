@@ -2587,14 +2587,14 @@ units:
   minio-monitoring-ingress:
     depends_on:
       minio-monitoring: true
-    repo: sylva-core            
+    repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/minio-monitoring
       postBuild:
         substitute:
           MINIO_MONITORING_DNS: '{{ .Values.minio_monitoring.external_hostname }}'
           MINIO_MONITORING_CONSOLE_DNS: '{{ .Values.minio_monitoring_console.external_hostname }}'
-        wait: true
+      wait: true
 
   loki:
     depends_on:
@@ -3082,7 +3082,7 @@ units:
           # we must use external name in order to work also for workload clusters
           ${LOKI_URL}: "https://{{ .Values.loki.external_hostname }}:443"
           ${JOB_NAME}: "{{ .Values.cluster.name }}-job"
-        wait: true
+      wait: true
 
 ##### stuff related to the 'cluster' unit #####
 #
