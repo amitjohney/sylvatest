@@ -7,6 +7,6 @@ resources:
   - vault-tls.yaml
   - flux-webui-tls.yaml
   - minio-operator-tls.yaml
-  - minio-tenant-tls.yaml
+  - minio-monitoring-tls.yaml
   - loki-tls.yaml
   - thanos-tls.yaml
