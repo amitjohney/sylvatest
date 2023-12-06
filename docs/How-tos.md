@@ -1,4 +1,7 @@
-# How to use sylva-core
+---
+title: How to use sylva-core
+slug: /
+---
 
 ## Access UIs when in CAPD behind Proxy
 
