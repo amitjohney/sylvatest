@@ -1996,7 +1996,7 @@ units:
                 timeInterval: 15s
               orgId: 1
               type: prometheus
-              url: "https://thanos.sylva"
+              url: "https://{{ .Values.thanos.external_hostname }}"
             - name: loki
               editable: true
               access: proxy
@@ -2008,13 +2008,13 @@ units:
                 #httpHeaderValue1: '{{ .Values.loki.tenant_id }}'
               orgId: 1
               type: loki
-              url: "https://loki.sylva"
+              url: "https://{{ .Values.loki.external_hostname }}"
         # ./templates/grafana/configmaps-datasources.yaml
         prometheus:
           prometheusSpec:
             # https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#remotewritespec
             remoteWrite:
-              - url: "https://thanos-receive.sylva:443/api/v1/receive"
+              - url: "https://{{ .Values.thanos_receive.external_hostname }}:443/api/v1/receive"
                 queue_config:
                   batch_send_deadline: 5s
                   min_backoff: 1s
