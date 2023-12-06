@@ -2654,7 +2654,7 @@ units:
             type: s3
             s3:
               s3: null
-              endpoint: "minio.minio-tenant-monitoring.svc.cluster.local:443"
+              endpoint: "minio.minio-monitoring.svc.cluster.local:443"
               region: null
               accessKeyId: "minio"
               secretAccessKey: "minio1234"
@@ -2834,7 +2834,7 @@ units:
           type: "S3"
           config:
             bucket: "thanos"
-            endpoint: minio.minio-tenant-monitoring.svc.cluster.local:443
+            endpoint: minio.minio-monitoring.svc.cluster.local:443
             access_key: "minio"
             secret_key: "minio1234"
             insecure: false
