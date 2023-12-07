@@ -2252,10 +2252,13 @@
                         }
                       ]
                     },
-                    "security_group_name": {
+                    "security_group_names": {
                       "anyOf": [
                         {
-                          "type": "string"
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
                         },
                         {
                           "$ref": "#/$defs/string-with-gotpl"
@@ -4327,10 +4330,13 @@
                             }
                           ]
                         },
-                        "security_group_name": {
+                        "security_group_names": {
                           "anyOf": [
                             {
-                              "type": "string"
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
                             },
                             {
                               "$ref": "#/$defs/string-with-gotpl"
@@ -4607,7 +4613,7 @@
                         "anyOf": [
                           {
                             "required": [
-                              "security_group_name"
+                              "security_group_names"
                             ]
                           },
                           {
