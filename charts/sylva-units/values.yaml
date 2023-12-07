@@ -969,8 +969,11 @@ units:
       path: ./kustomize-units/capv
       postBuild:
         substitute:
-          force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
+          EXP_NODE_ANTI_AFFINITY: "true"
       wait: true
+    kustomization_substitute_secrets:
+      VSPHERE_USERNAME: '{{ .Values.cluster.capv.username }}'
+      VSPHERE_PASSWORD: '{{ .Values.cluster.capv.password }}'
 
   cabpk:  # kubeadm
     repo: sylva-core
