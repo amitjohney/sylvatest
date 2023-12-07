@@ -603,6 +603,10 @@ properties:
           - type: string
             format: hostname
           - $ref: "#/$defs/string-with-gotpl"
+      access_key:
+        type: string
+      secret_key:
+        type: string
 
   keycloak: # -------------------------------
     type: object

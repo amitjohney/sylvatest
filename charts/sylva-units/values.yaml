@@ -332,6 +332,8 @@ units:
           VAULT_DNS: '{{ .Values.vault.external_hostname }}'
           VAULT_REPLICAS: '{{ .Values._internal.vault_replicas }}'
           MAX_POD_UNAVAILABLE: '{{ int .Values._internal.vault_replicas | eq 1 | ternary 0 1 }}'
+          VO_VAULT_ACCESS_KEY: '{{ .Values.vault.access_key }}'
+          VO_VAULT_SECRET_KEY: '{{ .Values.vault.secret_key }}'
       healthChecks:  # sometimes this kustomization seems correctly applied while vault pod is not running, see https://gitlab.com/sylva-projects/sylva-core/-/issues/250
       # so we replace wait:true by checking for the Vault components health
         - apiVersion: apps/v1
