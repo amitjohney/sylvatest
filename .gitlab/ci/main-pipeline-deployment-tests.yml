@@ -231,18 +231,10 @@ capm3-rke2-virt-equinix-deploy:
   extends: .default-trigger
   variables:
     ENV_NAME: rke2-capm3-virt
-    METAL3_PROVIDER: sylva
     DOCKER_HOST: ""
-  trigger:
-    include: .gitlab/ci/pipeline-deploy-rke2-capm3-virt-equinix.yml
-    strategy: depend
-
-capm3-rke2-virt-equinix-deploy-suse:
-  extends: .default-trigger
-  variables:
-    ENV_NAME: rke2-capm3-virt
-    METAL3_PROVIDER: suse
-    DOCKER_HOST: ""
+  parallel:
+    matrix:
+      - METAL3_PROVIDER: [sylva, suse]
   trigger:
     include: .gitlab/ci/pipeline-deploy-rke2-capm3-virt-equinix.yml
     strategy: depend
