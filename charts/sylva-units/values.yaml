@@ -3430,8 +3430,7 @@ k8s_version_short: "1.26"
 sylva_diskimagebuilder_version: 0.1.1
 
 sylva_diskimagebuilder_images:
-  ubuntu-jammy-plain-rke2-1.26.9:
-    enabled: true
+  ubuntu-jammy-plain-rke2-1.26.9: {}
   ubuntu-jammy-plain-rke2-1.25.14: {}
   ubuntu-jammy-plain-rke2-1.24.17: {}
   ubuntu-jammy-hardened-rke2-1.26.9:

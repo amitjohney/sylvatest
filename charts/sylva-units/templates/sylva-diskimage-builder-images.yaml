@@ -1,0 +1,10 @@
+{{- $envAll := set . "Values" (include "interpret-values-gotpl" . | fromJson) -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sylva-dib-images
+  labels:
+{{ include "sylva-units.labels" . | indent 4 }}
+data:
+  os_images: |
+{{ $envAll.Values._internal.default_os_images | toYaml | indent 4 }}

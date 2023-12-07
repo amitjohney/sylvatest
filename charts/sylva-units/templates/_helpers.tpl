@@ -152,7 +152,7 @@ true
   {{- $sylva_dib_images := index . 0 -}}
   {{- $sylva_dib_version := index . 1 -}}
   {{- $sylva_base_oci_registry := index . 2 -}}
-  {{- range $os_image_name,$os_image_props := $sylva_dib_images -}}
+  {{- range $os_image_name, $os_image_props := $sylva_dib_images -}}
     {{ if $os_image_props.enabled }}
 {{ $os_image_name }}:
   uri: "{{ $sylva_base_oci_registry }}/sylva-elements/diskimage-builder/{{ $os_image_name }}:{{ $sylva_dib_version }}"
