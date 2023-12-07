@@ -36,17 +36,28 @@ spec:
         worker_security_group_name:
           type: string
           description: "Worker security group name"
+        common_security_group_name:
+          type: string
+          description: "Common security group name"
         control_plane_rules:
           type: json
           description: "Security group rules associated with the control plane VMs"
           default:
-            direction: [ingress, ingress, ingress, ingress]
-            port: ['80', '443', '22', '53']
-            protocol: [tcp, tcp, tcp, udp]
-            remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
+            direction: []
+            port: []
+            protocol: []
+            remote_ip_prefix: []
         worker_rules:
           type: json
           description: "Security group rules associated with worker VMs"
+          default:
+            direction: []
+            port: []
+            protocol: []
+            remote_ip_prefix: []
+        common_sg_rules:
+          type: json
+          description: "Common security group rules associated with the control plane and worker VMs"
           default:
             direction: [ingress, ingress, ingress, ingress]
             port: ['80', '443', '22', '53']
@@ -101,10 +112,10 @@ spec:
             rules:
               repeat:
                 for_each:
-                  <%direction%>: {if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [control_plane_rules, direction]}, { get_param: [ironic_rules, direction] }]}, { get_param: [control_plane_rules, direction] }]}
-                  <%port%>: { if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [control_plane_rules, port]}, { get_param: [ironic_rules, port]}]}, { get_param: [control_plane_rules, port] }]}
-                  <%protocol%>: { if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [control_plane_rules, protocol]}, { get_param: [ironic_rules, protocol]}]}, { get_param: [control_plane_rules, protocol] }]}
-                  <%remote_ip_prefix%>: { if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [control_plane_rules, remote_ip_prefix]}, { get_param: [ironic_rules, remote_ip_prefix]}]}, { get_param: [control_plane_rules, remote_ip_prefix] }]}
+                  <%direction%>: { get_param: [control_plane_rules, direction] }
+                  <%port%>: { get_param: [control_plane_rules, port] }
+                  <%protocol%>: { get_param: [control_plane_rules, protocol] }
+                  <%remote_ip_prefix%>: { get_param: [control_plane_rules, remote_ip_prefix] }
                 template:
                   protocol: <%protocol%>
                   port_range_min: <%port%>
@@ -120,10 +131,29 @@ spec:
             rules:
               repeat:
                 for_each:
-                  <%direction%>: {if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [control_plane_rules, direction]}, { get_param: [ironic_rules, direction] }]}, { get_param: [control_plane_rules, direction] }]}
-                  <%port%>: { if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [control_plane_rules, port]}, { get_param: [ironic_rules, port]}]}, { get_param: [control_plane_rules, port] }]}
-                  <%protocol%>: { if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [control_plane_rules, protocol]}, { get_param: [ironic_rules, protocol]}]}, { get_param: [control_plane_rules, protocol] }]}
-                  <%remote_ip_prefix%>: { if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [control_plane_rules, remote_ip_prefix]}, { get_param: [ironic_rules, remote_ip_prefix]}]}, { get_param: [control_plane_rules, remote_ip_prefix] }]}
+                  <%direction%>: { get_param: [worker_rules, direction] }
+                  <%port%>: { get_param: [worker_rules, port] }
+                  <%protocol%>: { get_param: [worker_rules, protocol] }
+                  <%remote_ip_prefix%>: { get_param: [worker_rules, remote_ip_prefix] }
+                template:
+                  protocol: <%protocol%>
+                  port_range_min: <%port%>
+                  port_range_max: <%port%>
+                  remote_ip_prefix: <%remote_ip_prefix%>
+                  direction: <%direction%>
+                permutations: false
+        security-group-common:
+          type: OS::Neutron::SecurityGroup
+          properties:
+            description: "Heat Stack managed common security group for control_plane and worker VMs"
+            name: { get_param: common_security_group_name }
+            rules:
+              repeat:
+                for_each:
+                  <%direction%>: {if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [common_sg_rules, direction]}, { get_param: [ironic_rules, direction] }]}, { get_param: [common_sg_rules, direction] }]}
+                  <%port%>: { if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [common_sg_rules, port]}, { get_param: [ironic_rules, port]}]}, { get_param: [common_sg_rules, port] }]}
+                  <%protocol%>: { if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [common_sg_rules, protocol]}, { get_param: [ironic_rules, protocol]}]}, { get_param: [common_sg_rules, protocol] }]}
+                  <%remote_ip_prefix%>: { if: [{get_param: create_ironic_security_group}, { list_concat: [{ get_param: [common_sg_rules, remote_ip_prefix]}, { get_param: [ironic_rules, remote_ip_prefix]}]}, { get_param: [common_sg_rules, remote_ip_prefix] }]}
                 template:
                   protocol: <%protocol%>
                   port_range_min: <%port%>
@@ -154,6 +184,7 @@ spec:
         control_plane_security_group_name: "${CONTROL_PLANE_SECURITY_GROUP_NAME}"
         worker_security_group_name: "${WORKER_SECURITY_GROUP_NAME}"
         create_ironic_security_group: ${CAPO_CREATE_IRONIC_SECURITY_GROUP}
+        common_security_group_name: "${COMMON_SECURITY_GROUP_NAME}"
   outputConfigMap:
     name: capo-cluster-resources
     labels:
