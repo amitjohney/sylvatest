@@ -969,7 +969,8 @@ units:
       path: ./kustomize-units/capv
       postBuild:
         substitute:
-          EXP_NODE_ANTI_AFFINITY: "true"
+          # CAPV NodeAntiAffinity feature works only with CABPK
+          EXP_NODE_ANTI_AFFINITY: '{{ (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") | ternary "true" "false" }}'
       wait: true
     kustomization_substitute_secrets:
       VSPHERE_USERNAME: '{{ .Values.cluster.capv.username }}'
