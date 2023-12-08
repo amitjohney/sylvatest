@@ -120,6 +120,13 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: v1.21.2
 
+  cloud-provider-vsphere:
+    kind: GitRepository
+    spec:
+      url: https://github.com/kubernetes/cloud-provider-vsphere.git
+      ref:
+        tag: v1.26.2
+
 helm_repo_spec_default:
   interval: 60m0s
 
@@ -2294,23 +2301,41 @@ units:
             DEFAULT_PORT: '0'
             DEFAULT_ASN: '64512'
 
-  vsphere-cloud-controller-manager:
+  vsphere-cpi:
     enabled_conditions:
       - '{{ eq .Values.cluster.capi_providers.infra_provider "capv" }}'
-    repo: sylva-core
-    kustomization_spec:
-      path: kustomize-units/vsphere-cloud-controller-manager
+    repo: cloud-provider-vsphere
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: charts/vsphere-cpi
+      install:
+        remediation:
+          retries: -1
+      releaseName: vsphere-cpi
+      storageNamespace: kube-system
       targetNamespace: kube-system
-      wait: true
-      postBuild:
-        substitute:
-          SERVER: '{{ .Values.cluster.capv.server }}'
-          TLS_THUMBPRINT: '{{ .Values.cluster.capv.tlsThumbprint }}'
-          DATACENTER: '{{ .Values.cluster.capv.dataCenter }}'
-    kustomization_substitute_secrets:
-      USERNAME: '{{ .Values.cluster.capv.username }}'
-      PASSWORD: '{{ .Values.cluster.capv.password }}'
+      values:
+        config:
+          enabled: true
+          vcenter: '{{ .Values.cluster.capv.server }}'
+          datacenter: '{{ .Values.cluster.capv.dataCenter }}'
+          tlsTumbprint: '{{ .Values.cluster.capv.tlsThumbprint }}'
+      _postRenderers:
+        - kustomize:
+            patchesStrategicMerge:
+              - kind: ConfigMap
+                apiVersion: v1
+                metadata:
+                  name: vsphere-cloud-config
+                  namespace: kube-system
+                data:
+                  vsphere.conf: '{{ index (index .Values.vsphere "vsphere-cpi") "vsphere_conf" | toYaml }}'
 
+    helm_secret_values:
+      config:
+        username: '{{ .Values.cluster.capv.username }}'
+        password: '{{ .Values.cluster.capv.password }}'
 
   vsphere-csi-driver:
     enabled_conditions:
@@ -2487,6 +2512,27 @@ metal3:
   provider: sylva # sylva or suse
   # external_bootstrap_ip:
   # bootstrap_ip:
+
+vsphere:
+  vsphere-cpi:
+    vsphere_conf:
+      # Global properties in this section will be used for all specified vCenters unless overriden in VirtualCenter section.
+      global:
+        port: 443
+        # set insecure-flag to true if the vCenter uses a self-signed cert
+        insecureFlag: true
+        # settings for using k8s secret
+        secretName: vsphere-cloud-secret
+        secretNamespace: kube-system
+
+      # vcenter section
+      vcenter:
+        '{{ .Values.cluster.capv.server }}':
+          server: '{{ .Values.cluster.capv.server }}'
+          user: '{{ .Values.cluster.capv.username }}'
+          password: '{{ .Values.cluster.capv.password }}'
+          datacenters:
+            - '{{ .Values.cluster.capv.dataCenter }}'
 
 cluster_external_ip: 55.55.55.55
 
