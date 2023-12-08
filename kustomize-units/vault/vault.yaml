@@ -4,7 +4,7 @@ metadata:
   name: vault
 spec:
   size: ${VAULT_REPLICAS}
-  image: 172.20.129.169/alain.thioliere/vo_vault:0.0.10
+  image: 172.20.129.169/alain.thioliere/vo_vault:0.0.11
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
