@@ -21,7 +21,7 @@ fi
 if ! (kubectl get nodes > /dev/null); then
     echo_b "Cannot access cluster, 'kubectl get nodes' gives:"
     kubectl get nodes
-    exit -1
+    exit 1
 fi
 
 ensure_flux

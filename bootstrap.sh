@@ -4,7 +4,7 @@ source tools/shell-lib/common.sh
 
 if [[ ${KUBECONFIG:-} =~ management-cluster-kubeconfig ]]; then
     echo -e "KUBECONFIG seems to point to the management cluster, which doesn't sound ok for 'bootstrap.sh'\n(KUBECONFIG=$KUBECONFIG)"
-    exit -1
+    exit 1
 fi
 
 validate_input_values
