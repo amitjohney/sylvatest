@@ -97,7 +97,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/os-image-server.git
       ref:
-        tag: 1.7.0
+        tag: 1.8.0
 
   capo-contrail-bgpaas:
     kind: GitRepository
@@ -2271,7 +2271,7 @@ units:
         osImages: '{{ coalesce .Values.os_images .Values._internal.default_os_images | include "preserve-type" }}'
         osImagePersistenceDefaults:
           enabled: true
-          size: 3Gi
+          size: 8Gi
           storageClass: '{{ .Values._internal.default_storage_class }}'
 
   capo-contrail-bgpaas:
@@ -2665,9 +2665,9 @@ _internal:
         enabled: true
         size: 3Gi  
     ubuntu-jammy-plain-rke2-1-26-9:
-      uri: "{{ .Values.sylva_base_oci_registry }}/sylva-elements/diskimage-builder/ubuntu-jammy-plain-rke2-1.26.9:0.0.12"
-      filename: ubuntu-jammy-plain-rke2-1.26.9.qcow2
-      checksum: ffdc81fcdc0104151aa792a508eefe0d47660b18683949edcd734b3a4f938f20
+      uri: "{{ .Values.sylva_base_oci_registry }}/sylva-elements/diskimage-builder/ubuntu-jammy-plain-rke2-1.26.9:0.1.2"
+      filename: ubuntu-jammy-plain-rke2-1.26.9.raw
+      checksum: 800ca32a2bf2cceba01723a165ea6218f22f45a7557a51ae46b225f804aa3d97
 
   metal3_unit: '{{ .Values.metal3.provider | eq "suse" | ternary "metal3-suse" "metal3" }}'
 
