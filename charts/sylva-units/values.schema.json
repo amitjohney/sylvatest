@@ -6031,7 +6031,30 @@
       "additionalProperties": false,
       "patternProperties": {
         "^[a-z0-9][a-z0-9-]{1,50}[a-z0-9]$": {
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "uri": {
+              "type": "string",
+              "anyOf": [
+                {
+                  "pattern": "^(https?://.*|)$"
+                },
+                {
+                  "pattern": "^(oci://.*)$"
+                }
+              ]
+            },
+            "filename": {
+              "type": "string"
+            },
+            "checksum": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "uri",
+            "filename"
+          ]
         }
       }
     },

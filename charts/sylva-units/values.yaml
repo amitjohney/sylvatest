@@ -2739,11 +2739,13 @@ units:
           className: nginx
           hosts:
             - host: '{{ .Values.external_hostnames.os_image_server }}'
-        osImages: '{{ coalesce .Values.os_images .Values._internal.default_os_images | include "preserve-type" }}'
         osImagePersistenceDefaults:
           enabled: true
           size: 8Gi
           storageClass: '{{ .Values._internal.default_storage_class }}'
+      valuesFrom:
+        - kind: ConfigMap
+          name: os-images-info
 
   capo-contrail-bgpaas:
     info:
@@ -3429,12 +3431,14 @@ k8s_version_short: "1.26"
 
 sylva_diskimagebuilder_version: 0.1.1
 
+sylva_diskimagebuilder_images_format: qcow2
+
 sylva_diskimagebuilder_images:
   ubuntu-jammy-plain-rke2-1.26.9: {}
   ubuntu-jammy-plain-rke2-1.25.14: {}
   ubuntu-jammy-plain-rke2-1.24.17: {}
   ubuntu-jammy-hardened-rke2-1.26.9:
-    enabled: true
+    default_enabled: true
   ubuntu-jammy-hardened-rke2-1.25.14: {}
   ubuntu-jammy-hardened-rke2-1.24.17: {}
 
