@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
 - tag.yaml
 - default-namespace.yaml
+- disable-automount-sa.yaml
