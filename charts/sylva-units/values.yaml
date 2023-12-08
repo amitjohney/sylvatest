@@ -2650,9 +2650,9 @@ _internal:
   # These values are used only if `os_images` is empty
   default_os_images:
     opensuse-15-5-plain-rke2-1-26-9:
-      uri: "{{ .Values.sylva_base_oci_registry }}/sylva-elements/diskimage-builder/opensuse-15.5-plain-rke2-1.26.9:0.0.13"
-      filename: opensuse-15.5-plain-rke2-1.26.9.qcow2
-      checksum: 61c37438eca40ecdb8cf1b7dc4472fb2306559d9aad0cf0534f5723bb83602b2
+      uri: "{{ .Values.sylva_base_oci_registry }}/sylva-elements/diskimage-builder/opensuse-15.5-plain-rke2-1.26.9:0.1.2"
+      filename: opensuse-15.5-plain-rke2-1.26.9.raw
+      checksum: c78ffc27f8ab7d51cca6e73449b0f41afc47090a546ea2ba43fcbc82acdef6a3
       persistence:
         enabled: true
         size: 3Gi

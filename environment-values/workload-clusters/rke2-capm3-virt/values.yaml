@@ -11,7 +11,7 @@ cluster:
   # in order to be able to reach it from the outside through kubernetes-external service created by libvirt-metal unit
   # once pivot to management cluster will happen, this IP will be retrieved in a cluster-public-endpoint configMap created for that purpose
   cluster_api_cert_extra_SANs:
-    - '{{ .Values._internal.bootstrap_node_ip }}'
+    - "{{ .Values._internal.bootstrap_node_ip }}"
 
   rke2:
     additionalUserData:
@@ -26,9 +26,9 @@ cluster:
             passwd: $1$pdWEicWs$9ZWQf5.CWyXccmP8Chuu01 # sylva
 
   capm3:
-    machine_image_url: http://{{ .Values.cluster.mgmt_cluster_external_ip }}/opensuse-15.5-plain-rke2-1.26.9.qcow2
-    machine_image_format: qcow2
-    machine_image_checksum: http://{{ .Values.cluster.mgmt_cluster_external_ip }}/opensuse-15.5-plain-rke2-1.26.9.qcow2.sha256sum
+    machine_image_url: http://{{ .Values.cluster.mgmt_cluster_external_ip }}/opensuse-15.5-plain-rke2-1.26.9.raw
+    machine_image_format: raw
+    machine_image_checksum: http://{{ .Values.cluster.mgmt_cluster_external_ip }}/opensuse-15.5-plain-rke2-1.26.9.raw.sha256sum
     public_pool_network: 192.168.100.0
     public_pool_gateway: 192.168.100.1
     public_pool_start: 192.168.100.60
@@ -42,10 +42,9 @@ cluster:
 
     dns_server: 1.1.1.1
 
-  control_plane:  # tweak network configuration as needed
-
+  control_plane: # tweak network configuration as needed
     capm3:
-      hostSelector:  # criteria for matching labels on BareMetalHost objects defined by baremetal_hosts value
+      hostSelector: # criteria for matching labels on BareMetalHost objects defined by baremetal_hosts value
         matchLabels:
           cluster-role: control-plane
 
@@ -76,7 +75,7 @@ cluster:
       rootDeviceHints:
         deviceName: /dev/vda
 
-  baremetal_hosts:  # corresponding credentials need to be set in secrets.yaml
+  baremetal_hosts: # corresponding credentials need to be set in secrets.yaml
     workload-cp:
       bmh_spec:
         bmc:
