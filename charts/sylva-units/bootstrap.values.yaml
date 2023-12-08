@@ -418,9 +418,9 @@ units:
           chart: charts/libvirt-metal
       values: '{{ mergeOverwrite (dict "clusterExternalIP" .Values.cluster_external_ip "clusterPublicIP" .Values._internal.bootstrap_node_ip "clusterPublicDomain" .Values.cluster_external_domain ) .Values.libvirt_metal | include "preserve-type" }}'
 
-  vsphere-cloud-controller-manager:
-    # overload vsphere-cloud-controller-manager definition in bootstrap context to deploy in the management cluster
-    kustomization_spec:
+  vsphere-cpi:
+    # overload vsphere-cpi definition in bootstrap context to deploy in the management cluster
+    helmrelease_spec:
       kubeConfig:
         secretRef:
           name: '{{ .Values.cluster.name }}-kubeconfig'
@@ -454,4 +454,4 @@ units_override_enabled:
   - multus
   - multus-ready
   - libvirt-metal
-  - vsphere-cloud-controller-manager
+  - vsphere-cpi

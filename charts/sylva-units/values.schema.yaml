@@ -507,6 +507,10 @@ properties:
     type: object
     # actual constraints are later in this file under '# additional constraints for .metal3'
 
+  vsphere:  # -------------------------------
+    type: object
+    # actual constraints are later in this file under '# additional constraints for .vsphere'
+
   capd_docker_host:  # -------------------------------
     type: string
     format: uri
@@ -870,3 +874,26 @@ allOf:
             external_bootstrap_ip:  # -------------------------------
               type: string
               format: ipv4
+
+  # additional constraints for .vsphere
+  - if:
+      properties:
+        cluster:
+          properties:
+            capi_providers:
+              properties:
+                infra_provider:
+                  const: capv
+    then:
+      properties:
+        vsphere:  # -------------------------------
+          additionalProperties: false
+          properties:
+
+            vsphere-cpi:
+              type: object
+              additionalProperties: false
+              properties:
+
+                vsphere_conf:
+                  type: object
