@@ -291,6 +291,8 @@ units:
 
 # namespace-defs creates sylav-unit namespace and other namespaces to be used by various units
   namespace-defs:
+    depends_on:
+      kyverno-policies: '{{ tuple . "kyverno-policies" | include "unit-enabled" }}' # make sure that the policy disable-automountserviceaccounttoken applies
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/namespace-defs
