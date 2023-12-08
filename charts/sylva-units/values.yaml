@@ -2745,7 +2745,7 @@ units:
           storageClass: '{{ .Values._internal.default_storage_class }}'
       valuesFrom:
         - kind: ConfigMap
-          name: os-images-info
+          name: os-images
 
   capo-contrail-bgpaas:
     info:

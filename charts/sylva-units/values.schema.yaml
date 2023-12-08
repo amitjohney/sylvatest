@@ -813,6 +813,10 @@ properties:
   sylva_diskimagebuilder_version:  # -------------------------------
     type: string
 
+  sylva_diskimagebuilder_images_format:  # -------------------------------
+    type: string
+    pattern: "^(qcow2|raw)$"
+
   sylva_diskimagebuilder_images:  # -------------------------------
     type: object
 

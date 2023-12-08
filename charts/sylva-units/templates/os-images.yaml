@@ -2,12 +2,12 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: os-images-info
+  name: os-images
   labels:
 {{ include "sylva-units.labels" . | indent 4 }}
 data:
   values.yaml: |
-    os_images:
+    osImages:
     {{- $sylva_dib_images := $envAll.Values.sylva_diskimagebuilder_images }}
     {{- $sylva_dib_images_format := $envAll.Values.sylva_diskimagebuilder_images_format }}
     {{- $sylva_dib_version := $envAll.Values.sylva_diskimagebuilder_version }}
