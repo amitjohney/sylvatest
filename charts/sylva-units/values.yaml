@@ -383,6 +383,7 @@ units:
           VAULT_DNS: '{{ .Values.vault.external_hostname }}'
           VAULT_REPLICAS: '{{ .Values._internal.vault_replicas }}'
           MAX_POD_UNAVAILABLE: '{{ int .Values._internal.vault_replicas | eq 1 | ternary 0 1 }}'
+          AFFINITY: '{{ and (eq (int .Values.cluster.control_plane_replicas) 1) (ne .Values._internal.default_storage_class_unit "local-path") | ternary (.Values._internal.vault_no_affinity | toJson | indent 12 ) (.Values._internal.vault_affinity | toJson| indent 12)  }}'
       healthChecks:  # sometimes this kustomization seems correctly applied while vault pod is not running, see https://gitlab.com/sylva-projects/sylva-core/-/issues/250
       # so we replace wait:true by checking for the Vault components health
         - apiVersion: apps/v1
@@ -2710,7 +2711,18 @@ _internal:
     {{- index (tuple . .Values._internal.storage_class_unit_map | include "interpret-inner-gotpl" | fromJson) "result" | dig $default_storage_class (printf "storage class unit not found for %s" $default_storage_class) -}}
 
   vault_replicas: >-
-    {{ ge (int .Values.cluster.control_plane_replicas) 3 | ternary 3 1 }}
+    {{ or (.Values.cluster.capi_providers.infra_provider | eq "capd") (and (lt (int .Values.cluster.control_plane_replicas) 3) (eq .Values._internal.default_storage_class_unit "local-path")) | ternary 1 3  }}
+
+  vault_affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: vault
+              vault_cr: vault
+          topologyKey: kubernetes.io/hostname
+
+  vault_no_affinity: {}
 
   # this is used in source_templates.sylva-core below
   # and in any unit using sylva-units Helm chart

@@ -5,17 +5,9 @@ metadata:
 spec:
   size: ${VAULT_REPLICAS}
   image: hashicorp/vault:1.13.10
-  affinity:
-    podAntiAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        - labelSelector:
-            matchLabels:
-              app.kubernetes.io/name: vault
-              vault_cr: vault
-          topologyKey: kubernetes.io/hostname
+  affinity: ${AFFINITY}
   securityContext:
     runAsNonRoot: false
-
 
   # Common annotations for all created resources
   annotations:
