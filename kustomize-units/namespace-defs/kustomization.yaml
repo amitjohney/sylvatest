@@ -2,12 +2,4 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - keycloak-namespace.yaml
-  - vault-namespace.yaml
-  - rancher-namespaces.yaml
-  - rancher-global-data-namespace.yaml
-  - cattle-monitoring-namespace.yaml
-  - cinder-csi-namespace.yaml
-  - longhorn-namespace.yaml
-  - metal3-namespace.yaml
   - sylva-namespace.yaml

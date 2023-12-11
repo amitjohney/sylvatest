@@ -3,4 +3,3 @@ kind: Kustomization
 
 resources:
 - vault-secretstore.yaml
-- kubernetes-keycloak-ns-secretstore.yaml

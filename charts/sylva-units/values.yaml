@@ -289,6 +289,14 @@ units:
       path: ./kustomize-units/namespace-defs
       wait: true
       prune: false
+      _components:
+        - '{{ tuple "components/cinder-csi" (tuple . "cinder-csi" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/metal3" (tuple . "metal3" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/longhorn" (tuple . "longhorn" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/keycloak" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/vault" (tuple . "vault" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/rancher" (tuple . "rancher" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/cattle-monitoring" (tuple . "monitoring" | include "unit-enabled") | include "set-only-if" }}'
 
 # Postgresql deployment for keycloak
   postgres:
@@ -417,6 +425,8 @@ units:
     kustomization_spec:
       path: ./kustomize-units/vault-secrets
       wait: true
+      _components:
+        - '{{ tuple "components/keycloak" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
 
   vault-oidc:
     enabled_conditions:
@@ -455,6 +465,8 @@ units:
     kustomization_spec:
       path: ./kustomize-units/eso-secret-stores
       wait: true
+      _components:
+        - '{{ tuple "components/keycloak" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
 
   cis-operator-crd:
     enabled_conditions:
@@ -1575,6 +1587,10 @@ units:
           KEYCLOAK_DNS: '{{ .Values.keycloak.external_hostname }}'
           FLUX_WEBUI_DNS: '{{ .Values.flux.external_hostname }}'
       wait: true
+      _components:
+        - '{{ tuple "components/keycloak-tls" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/rancher-tls" (tuple . "rancher" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/vault-tls" (tuple . "vault" | include "unit-enabled") | include "set-only-if" }}'
 
   synchronize-secrets:
     depends_on:
@@ -1584,6 +1600,8 @@ units:
     kustomization_spec:
       path: ./kustomize-units/synchronize-secrets
       wait: true
+      _components:
+        - '{{ tuple "components/keycloak" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
       postBuild:
         substitute:
           FLUX_ADMIN_USERNAME: '{{ .Values.flux_webui.admin_user }}'
