@@ -12,6 +12,8 @@ The results are summarized by the following table:
 |2023-12-09 01:25|kubeadm-capv|96761ed484f56c02c0ce7d1d1b07050e5b63e153|:white_check_mark: success||
 |2023-12-09 01:32|rke2-capv|96761ed484f56c02c0ce7d1d1b07050e5b63e153|:white_check_mark: success||
 |2023-12-09 01:25|kubeadm-capv|96761ed484f56c02c0ce7d1d1b07050e5b63e153|:white_check_mark: success||
+|2023-12-09 01:32|rke2-capv|96761ed484f56c02c0ce7d1d1b07050e5b63e153|:white_check_mark: success||
+|2023-12-09 01:25|kubeadm-capv|96761ed484f56c02c0ce7d1d1b07050e5b63e153|:white_check_mark: success||
 |2023-12-08 01:27|rke2-capv|cf2abc8699b09b53cce4272c9e3179dae00a3f90|:white_check_mark: success||
 |2023-12-08 01:20|kubeadm-capv|cf2abc8699b09b53cce4272c9e3179dae00a3f90|:white_check_mark: success||
 |2023-12-07 01:30|rke2-capv|9fa645ff8df097aed17b96b36d479405c103bbbf|:x: failed|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/bbf478df4327ea57ebdf93004f9cc95a/capv-logs.gz)|
@@ -27,6 +29,4 @@ The results are summarized by the following table:
 |2023-11-30 01:56|rke2-capv|836d61be5d69d19a88813db00a752515abf781d0|:x: failed|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/3ed2a2ecdbf23c880dad03a45f977f9b/capv-logs.gz)|
 |2023-11-30 01:17|kubeadm-capv|836d61be5d69d19a88813db00a752515abf781d0|:white_check_mark: success||
 |2023-11-29 01:58|rke2-capv|372b1f34a4f94e37e81f2cac7028d53022421ac0|:x: failed|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/aaa72b5136697cb811344e7b5b71b72f/capv-logs.gz)|
-|2023-11-29 01:52|kubeadm-capv|372b1f34a4f94e37e81f2cac7028d53022421ac0|:x: failed|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/aaa72b5136697cb811344e7b5b71b72f/capv-logs.gz)|
-|2023-11-22 01:56|rke2-capv|b5d2d72674a4658e71f83715aa1435302d99ba5b|:x: failed|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/456f04b5fb9797f8d322b840d6006898/capv-logs.gz)|
 
