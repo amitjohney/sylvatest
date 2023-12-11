@@ -966,7 +966,7 @@
                   "pattern": "^[0-9a-z]+$"
                 },
                 {
-                  "pattern": "^https?://.*$"
+                  "pattern": "^(?!http).*"
                 },
                 {
                   "$ref": "#/$defs/string-with-gotpl"
@@ -1177,7 +1177,7 @@
                   "pattern": "^[0-9a-z]+$"
                 },
                 {
-                  "pattern": "^https?://.*$"
+                  "pattern": "^(?!http).*"
                 },
                 {
                   "$ref": "#/$defs/string-with-gotpl"
@@ -3143,7 +3143,7 @@
                       "pattern": "^[0-9a-z]+$"
                     },
                     {
-                      "pattern": "^https?://.*$"
+                      "pattern": "^(?!http).*"
                     },
                     {
                       "$ref": "#/$defs/string-with-gotpl"
