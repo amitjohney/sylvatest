@@ -1620,7 +1620,9 @@ units:
           valuesKey: worker_servergroup_id
           targetPath: machine_deployment_default.capo.server_group_id
           optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
-    # we pass everything that is under `cluster` to this unit, a helm release of the sylva-capi-cluster chart
+        - kind: ConfigMap
+          name: os-images-info
+    # we pass everything that is under `cluster` to this unit that uses sylva-capi-cluster chart
     # (we do it via a secret because some of the values are credentials in many scenarios)
     helm_secret_values: '{{ .Values.cluster | include "preserve-type" }}'
 
@@ -2679,6 +2681,41 @@ units:
       wait: true
       force: true
 
+  os-images-info:
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/kube-job
+      wait: true
+      force: true
+      postBuild:
+        substitute:
+          JOB_NAME: create-image-info
+          JOB_TARGET_NAMESPACE: sylva-system
+      _patches:
+        - target:
+            kind: Job
+          patch: |
+            - op: replace
+              path: /spec/template/spec/containers/0/image
+              value: registry.gitlab.com/sylva-projects/sylva-elements/container-images/oci-tools:0.0.8
+        - target:
+            kind: ConfigMap
+          patch: >-
+            - op: replace
+              path: /metadata/name
+              value: create-image-info-sylva-system-cm
+            - op: replace
+              path: /data/kube-job.sh
+              value: |
+            {{ .Files.Get "scripts/create-os-images-info.sh" | indent 4 }}
+        - target:
+            kind: ConfigMap
+          patch: >-
+            - op: add
+              path: /data/images.yaml
+              value: |
+            {{ include "generate-os-images" . | indent 4}}
+
   os-image-server:
     info:
       description: >
@@ -2690,6 +2727,7 @@ units:
     depends_on:
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
       '{{ .Values._internal.default_storage_class_unit }}': true
+      os-images-info: true
     repo: os-image-server
     annotations:
       sylvactl/readyMessage: |
@@ -2745,7 +2783,7 @@ units:
           storageClass: '{{ .Values._internal.default_storage_class }}'
       valuesFrom:
         - kind: ConfigMap
-          name: os-images
+          name: os-images-info
 
   capo-contrail-bgpaas:
     info:
