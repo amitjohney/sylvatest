@@ -2675,7 +2675,7 @@ sylva_base_oci_registry:
   '{{
   regexReplaceAll
     "/sylva-core/?$"
-    (lookup "source.toolkit.fluxcd.io/v1beta2" "HelmRepository" "default" "sylva-core" | dig "spec" "url" "")
+    (lookup "source.toolkit.fluxcd.io/v1beta2" "HelmRepository" "sylva-system" "sylva-core" | dig "spec" "url" "")
     ""
   | default "oci://registry.gitlab.com/sylva-projects"
   }}'
