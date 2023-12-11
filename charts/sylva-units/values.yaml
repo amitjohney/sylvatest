@@ -2005,16 +2005,30 @@ units:
           cattle:
             psp:
               enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") | include "as-bool" }}'
-      # Disable drift detection for rancher-monitoring webhooks
       _postRenderers:
         - kustomize:
             patches:
+            # Disable drift detection for rancher-monitoring webhooks
             - target:
                 kind: (ValidatingWebhookConfiguration|MutatingWebhookConfiguration)
               patch: |
                 - op: add
                   path: /metadata/annotations/helm.toolkit.fluxcd.io~1driftDetection
                   value: disabled
+            # Allow Grafana to install plugins from Internet
+            - target:
+                kind: Deployment
+                labels:
+                  app.kubernetes.io/instance: '{{ .Values.monitoring.helmrelease_spec.releaseName }}'
+                  app.kubernetes.io/name: grafana
+              patch: |
+                - op: add
+                  path: /spec/template/spec/containers/2/env
+                  value: 
+                    - name: http_proxy
+                      value: '{{ .Values.proxies.http_proxy }}'
+                    - name: https_proxy
+                      value: '{{ .Values.proxies.http_proxy }}'
 
   multus:
     enabled: false
