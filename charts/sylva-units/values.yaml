@@ -2938,9 +2938,9 @@ _internal:
   # These values are used only if `os_images` is empty
   default_os_images:
     ubuntu-jammy-plain-rke2-1-26-9:
-      uri: "{{ .Values.sylva_base_oci_registry }}/sylva-elements/diskimage-builder/ubuntu-jammy-plain-rke2-1.26.9:0.1.2"
-      filename: ubuntu-jammy-plain-rke2-1.26.9.raw
-      checksum: 800ca32a2bf2cceba01723a165ea6218f22f45a7557a51ae46b225f804aa3d97
+      uri: "{{ .Values.sylva_base_oci_registry }}/sylva-elements/diskimage-builder/ubuntu-jammy-plain-rke2-1.27.6:0.1.3"
+      filename: ubuntu-jammy-plain-rke2-1.27.6.raw
+      checksum: 80107ad26195bc4caa763d3e926477cb7d4891b9b7e22047a84dc6e83532eb13
 
   metal3_unit: '{{ .Values.metal3.provider | eq "suse" | ternary "metal3-suse" "metal3" }}'
 
