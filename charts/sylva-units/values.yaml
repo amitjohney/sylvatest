@@ -1812,6 +1812,9 @@ units:
     kustomization_spec:
       path: ./kustomize-units/calico-wireguard
       wait: true
+      postBuild:
+        substitute:
+          CALICO_WIREGUARD_ENABLED: '{{ .Values.calico-wireguard-enabled | default "true" }}'
 
   metallb:
     info:

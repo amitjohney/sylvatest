@@ -3,4 +3,4 @@ kind: FelixConfiguration
 metadata:
   name: default
 spec:
-  wireguardEnabled: true
+  wireguardEnabled: ${CALICO_WIREGUARD_ENABLED}

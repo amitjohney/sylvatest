@@ -6301,6 +6301,9 @@
     },
     "shared_workload_clusters_secret_values": {
       "type": "object"
+    },
+    "calico-wireguard-enabled": {
+      "type": "boolean"
     }
   },
   "allOf": [
