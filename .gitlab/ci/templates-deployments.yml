@@ -50,8 +50,6 @@ include:
             value: ${OCI_TAG}
       EOF
         cat $ENV_PATH/kustomization.yaml
-        export METALLB_HELM_OCI_URL='{{ lookup "source.toolkit.fluxcd.io/v1beta2" "HelmRepository" "sylva-system" "sylva-core" | dig "spec" "url" "oci://registry.gitlab.com/sylva-projects/sylva-core" | dir | replace "oci:/" "oci://" }}/sylva-core/metallb'
-        yq -i '.cluster.metallb_helm_oci_url = strenv(METALLB_HELM_OCI_URL)' $values_file
       fi
     - yq -i '.cluster.name = strenv(CLUSTER_CI_NAME)' $values_file
     - yq -i '.env_type = "ci"' $values_file
