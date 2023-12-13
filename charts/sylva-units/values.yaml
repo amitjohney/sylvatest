@@ -1389,7 +1389,10 @@ units:
             value: |
               #!/bin/bash
               set -e
-              kubectl -n $TARGET_NAMESPACE wait MachineDeployment -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }} --for condition=Ready --timeout 600s
+              MD=$(kubectl -n $TARGET_NAMESPACE get MachineDeployment -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }}  -o json | jq '.items|length')
+              if [ $MD -gt 0 ];then
+                kubectl -n $TARGET_NAMESPACE wait MachineDeployment -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }} --for condition=Ready --timeout 600s
+              fi
               kubectl -n $TARGET_NAMESPACE patch cluster.cluster.x-k8s.io  {{ .Values.cluster.name }} --type merge -p '{"spec":{"paused": true}}'
 
   resume-cluster-reconciliation:
