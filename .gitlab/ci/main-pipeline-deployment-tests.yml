@@ -57,7 +57,7 @@ variables:
     value: "environment-values/ci/enable-multus.yml"
     description: |
       Path to a file use to customize the value file
-      used during the workload cluster DEPLOYMENT
+      used during the workload cluster UPDATE
   DEPLOYMENT_FLAVOR:
     value: ""
     description: |
