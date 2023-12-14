@@ -1146,7 +1146,7 @@ units:
             tag: "v0.4.0"
           ironic:
             repository: quay.io/metal3-io/ironic
-            tag: "capm3-v1.5.1"
+            tag: "capm3-v1.5.2"
           ironicIPADownloader:
             repository: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ironic-ipa-downloader/ipa
             tag: "0.2.0"
