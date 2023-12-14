@@ -3,6 +3,7 @@ set -o pipefail
 
 export BASE_DIR="$(realpath $(dirname $0))"
 export PATH=${BASE_DIR}/bin:${PATH}
+export KIND_CLUSTER_NAME=${KIND_CLUSTER_NAME:-sylva}
 
 SYLVA_TOOLBOX_VERSION=${SYLVA_TOOLBOX_VERSION:-"v0.2.13"}
 SYLVA_TOOLBOX_IMAGE=${SYLVA_TOOLBOX_IMAGE:-container-images/sylva-toolbox}
@@ -158,6 +159,23 @@ function ensure_sylvactl {
 }
 ensure_sylvactl
 
+function cleanup_bootstrap_cluster() {
+  : ${CLEANUP_BOOTSTRAP_CLUSTER:='yes'}
+  CALLER_SCRIPT_NAME=$(basename $0)
+  kind_clusters=`kind get clusters`
+
+  # if caller script is bootstrap.sh or apply.sh and if current bootstrap-cluster contains sylva bootstrap-cluster - then delete it
+  if [[ $CALLER_SCRIPT_NAME =~ "bootstrap.sh"|"apply.sh" && ${kind_clusters} =~ $KIND_CLUSTER_NAME ]]; then
+    libvirt_metal_ks=`KUBECONFIG= kubectl get ks -l sylva-units.unit=libvirt-metal -o yaml | yq '.items|length'`
+    if [[ $CLEANUP_BOOTSTRAP_CLUSTER == 'yes' && $libvirt_metal_ks == "0" ]]; then
+      echo_b "\U0001F5D1 Delete bootstrap cluster"
+      kind delete cluster -n $KIND_CLUSTER_NAME
+      end_section
+    fi
+  fi
+
+}
+
 function exit_trap() {
     EXIT_CODE=$?
 
@@ -170,6 +188,11 @@ function exit_trap() {
           .gitlab/ci/scripts/units-reports.py --env-type=${CI_JOB_NAME_SLUG}:management --input ${CI_PROJECT_DIR}/management-cluster-dump/flux-kustomizations.yaml --output management-cluster-units-report.xml
         fi
         end_section
+    fi
+
+    # call cleanup only when script exists successfully 
+    if [[ $EXIT_CODE -eq 0 ]]; then
+      cleanup_bootstrap_cluster
     fi
 
     # Kill all child processes (kubectl watches) on exit
