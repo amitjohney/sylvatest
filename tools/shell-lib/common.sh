@@ -207,7 +207,11 @@ function force_reconcile() {
   local name_or_selector=$2
   local namespace=${3:-sylva-system}
   echo "force reconciliation of $1 $2"
-  kubectl annotate -n $namespace --overwrite $kinds $name_or_selector reconcile.fluxcd.io/requestedAt=$(date -uIs) | sed -e 's/^/  /'
+  RECONCILE_REQUEST_DATE=$(date -uIs)
+  kubectl annotate -n $namespace --overwrite $kinds $name_or_selector reconcile.fluxcd.io/requestedAt=$RECONCILE_REQUEST_DATE | sed -e 's/^/  /'
+  if ! kubectl -n $namespace wait --for=jsonpath='{.status.lastHandledReconcileAt}'="$RECONCILE_REQUEST_DATE" $kinds $name_or_selector; then
+          echo "Timed out while waiting for sylva-units HelmRelease to report lastHandledReconcileAt"
+  fi
 }
 
 function define_source() {
