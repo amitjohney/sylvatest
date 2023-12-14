@@ -60,6 +60,30 @@ units:
     enabled: true
   kyverno:
     enabled: true
+  keycloak:
+    enabled: true
+  keycloak-legacy-operator:
+    enabled: true
+  keycloak-resources:
+    enabled: true
+  keycloak-add-client-scope:
+    enabled: true
+  keycloak-oidc-external-secrets:
+    enabled: true
+  flux-webui:
+    enabled: true
+  flux-system:
+    enabled: true
+  postgres:
+    enabled: true
+  synchronize-secrets:
+    enabled: true
+  rancher:
+    enabled: true
+  k8s-gateway:
+    enabled: true
+  coredns:
+    enabled: true
 
 cluster:
   control_plane_replicas: 3

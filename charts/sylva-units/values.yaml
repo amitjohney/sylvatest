@@ -532,6 +532,8 @@ units:
       vault: true
       vault-config-operator: true
       kyverno: true
+      keycloak-add-client-scope: true
+      keycloak-oidc-external-secrets: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/neuvector-init
@@ -539,6 +541,7 @@ units:
       postBuild:
         substitute:
           NEUVECTOR_DNS: '{{ .Values.neuvector.external_hostname }}'
+          KEYCLOAK_DNS: '{{ .Values.keycloak.external_hostname }}'
 
   neuvector:
     enabled: no
@@ -722,10 +725,13 @@ units:
     kustomization_spec:
       path: ./kustomize-units/keycloak-resources
       targetNamespace: keycloak
+      _components:
+        - '{{ tuple "components/neuvector" (tuple . "neuvector" | include "unit-enabled") | include "set-only-if" }}'
       postBuild:
         substitute:
           RANCHER_DNS: '{{ .Values.rancher.external_hostname }}'
           FLUX_WEBUI_DNS: '{{ .Values.flux.external_hostname }}'
+          NEUVECTOR_DNS: '{{ tuple .Values.neuvector.external_hostname (tuple . "neuvector" | include "unit-enabled") | include "set-only-if" }}'
           VAULT_DNS: '{{ .Values.vault.external_hostname }}'
           EXPIRE_PASSWORD_DAYS: '{{ int .Values.keycloak.keycloak_expire_password_days }}'
       healthChecks:  #  cannot use __wait: true__ here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/144
@@ -741,6 +747,7 @@ units:
           kind: Secret
           name: keycloak-client-secret-flux-webui-client  # this secret is a byproduct of the flux-webui-client KeycloakClient resource
           namespace: keycloak
+        - '{{ tuple (dict "apiVersion" "v1" "kind" "Secret" "name" "keycloak-client-secret-neuvector-client" "namespace" "keycloak") (tuple . "neuvector" | include "unit-enabled") | include "set-only-if" }}'  # # this secret is a byproduct of the neuvector client KeycloakClient resource
 
   # this is a Job to manually add a custom client-scope to sylva realm (on top of default ones)
   # while CRD option does not yet provide good results (overrides defaults)
@@ -827,6 +834,10 @@ units:
               - apiGroups: [""]
                 resources:
                   - "nodes"
+                verbs: ["get", "list", "watch", "patch", "update"]
+              - apiGroups: ["external-secrets.io"]
+                resources:
+                  - "externalsecrets"
                 verbs: ["get", "list", "watch", "patch", "update"]
         config:
           # -- Resource types to be skipped by the Kyverno policy engine, removed [Node,*,*] [Node/*,*,*] entries
@@ -1874,8 +1885,9 @@ units:
     depends_on:
       flux-system: true
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
-      keycloak-add-client-scope: true
-      keycloak-oidc-external-secrets: true
+      coredns: '{{ tuple . "keycloak" | include "unit-enabled" }}' # see https://gitlab.com/sylva-projects/sylva-core/-/merge_requests/1023#note_1694289969
+      keycloak-add-client-scope: '{{ tuple . "keycloak" | include "unit-enabled" }}'
+      keycloak-oidc-external-secrets: '{{ tuple . "keycloak" | include "unit-enabled" }}'
     annotations:
       sylvactl/readyMessage: "Flux Web UI can be reached at https://{{ .Values.flux.external_hostname }} ({{ .Values.flux.external_hostname }} must resolve to {{ .Values.display_external_ip }})"
     repo: weave-gitops
