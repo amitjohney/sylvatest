@@ -3470,11 +3470,11 @@ sylva_diskimagebuilder_version: 0.1.2
 sylva_diskimagebuilder_images_format: raw
 
 sylva_diskimagebuilder_images:
-  ubuntu-jammy-plain-rke2-1.26.9: {}
+  ubuntu-jammy-plain-rke2-1.26.9:
+    default_enabled: true
   ubuntu-jammy-plain-rke2-1.25.14: {}
   ubuntu-jammy-plain-rke2-1.24.17: {}
-  ubuntu-jammy-hardened-rke2-1.26.9:
-    default_enabled: true
+  ubuntu-jammy-hardened-rke2-1.26.9: {}
   ubuntu-jammy-hardened-rke2-1.25.14: {}
   ubuntu-jammy-hardened-rke2-1.24.17: {}
 
