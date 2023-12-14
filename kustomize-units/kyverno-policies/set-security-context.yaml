@@ -1,0 +1,68 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: set-pod-security-context
+  annotations:
+    pod-policies.kyverno.io/autogen-controllers: none
+    policies.kyverno.io/title: Add/set security context to pods
+    policies.kyverno.io/category: Other
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/minversion: 1.6.0
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      The pods running in a CIS hardened cluster need to specify several security context properties
+spec:
+  rules:
+  - name: set-pod-security-context
+    match:
+      any:
+      - resources:
+          kinds:
+          - Deployment
+          - StatefulSet
+          - Job
+          - DaemonSet
+    exclude:
+      any:
+      - resources:
+          selector:
+            matchLabels:
+              securityExeption: "true"
+    mutate:
+      foreach:
+      - list: request.object.spec.template.spec.containers[]
+        patchStrategicMerge:
+          spec:
+            template:
+              spec:
+                containers:
+                - name: "{{ element.name }}"
+                  securityContext:
+                    +(allowPrivilegeEscalation): false
+                    capabilities:
+                      drop:
+                      - ALL
+                    readOnlyRootFilesystem: true
+                    runAsNonRoot: true
+                    +(runAsUser): 10000
+                    +(runAsGroup): 10000
+                    seccompProfile:
+                      type: RuntimeDefault
+      - list: request.object.spec.template.spec.initContainers[]
+        patchStrategicMerge:
+          spec:
+            template:
+              spec:
+                containers:
+                - name: "{{ element.name }}"
+                  +(securityContext):
+                    +(allowPrivilegeEscalation): false
+                    capabilities:
+                      drop:
+                      - ALL
+                    readOnlyRootFilesystem: true
+                    runAsNonRoot: true
+                    +(runAsUser): 10000
+                    +(runAsGroup): 10000
+                    seccompProfile:
+                      type: RuntimeDefault

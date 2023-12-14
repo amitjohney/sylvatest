@@ -1807,28 +1807,6 @@ units:
           loadBalancerIP: '{{ .Values.cluster_external_ip }}'
           annotations:
             metallb.universe.tf/allow-shared-ip: cluster-external-ip
-      _postRenderers:
-        - kustomize:
-            patchesStrategicMerge:
-              - kind: Deployment
-                apiVersion: apps/v1
-                metadata:
-                  name: k8s-gateway
-                spec:
-                  template:
-                    spec:
-                      containers:
-                      - name: k8s-gateway
-                        securityContext:
-                          allowPrivilegeEscalation: false
-                          capabilities:
-                            drop:
-                            - ALL
-                          runAsNonRoot: true
-                          runAsGroup: 1000
-                          runAsUser: 1000
-                          seccompProfile:
-                            type: RuntimeDefault
 
   capd-metallb-config:
     enabled_conditions:
