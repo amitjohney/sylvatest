@@ -241,6 +241,56 @@ units:
         createNamespace: true
       values:
         installCRDs: true
+        replicaCount: >-
+          {{ ge (int .Values.cluster.control_plane_replicas) 3 | ternary 2 1 }}
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/instance: cert-manager
+                    app.kubernetes.io/component: controller
+                topologyKey: kubernetes.io/hostname
+        podDisruptionBudget:
+          enabled: true
+          minAvailable: >-
+            {{ ge (int .Values.cluster.control_plane_replicas) 3 | ternary 1 0 }}
+        webhook:
+          replicaCount: >-
+            {{ ge (int .Values.cluster.control_plane_replicas) 3 | ternary 3 1 }}
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchLabels:
+                      app.kubernetes.io/instance: cert-manager
+                      app.kubernetes.io/component: webhook
+                  topologyKey: kubernetes.io/hostname
+          podDisruptionBudget:
+            enabled: true
+            minAvailable: >-
+              {{ ge (int .Values.cluster.control_plane_replicas) 3 | ternary 1 0 }}
+        cainjector:
+          replicaCount: >-
+            {{ ge (int .Values.cluster.control_plane_replicas) 3 | ternary 2 1 }}
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchLabels:
+                      app.kubernetes.io/instance: cert-manager
+                      app.kubernetes.io/component: cainjector
+                  topologyKey: kubernetes.io/hostname
+          podDisruptionBudget:
+            enabled: true
+            minAvailable: >-
+              {{ ge (int .Values.cluster.control_plane_replicas) 3 | ternary 1 0 }}
 
   trivy-operator:
     enabled: no
