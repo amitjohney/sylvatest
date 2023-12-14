@@ -2102,7 +2102,7 @@ units:
       chart:
         spec:
           chart: sriov-crd
-          version: 102.0.0+up0.1.0
+          version: 102.1.0+up0.1.0
 
   sriov:
     enabled: false
@@ -2116,7 +2116,7 @@ units:
       chart:
         spec:
           chart: sriov
-          version: 102.0.0+up0.1.0
+          version: 102.1.0+up0.1.0
       values:
         cert_manager: true
         rancher-nfd:
