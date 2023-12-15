@@ -31,7 +31,7 @@ spec:
       - resources:
           namespaces:
           - calico-system
-
+          - vault
     mutate:
       foreach:
       - list: request.object.spec.template.spec.containers[]
@@ -46,7 +46,6 @@ spec:
                     capabilities:
                       drop:
                       - ALL
-                    readOnlyRootFilesystem: true
                     runAsNonRoot: true
                     +(runAsUser): 10000
                     +(runAsGroup): 10000
@@ -59,12 +58,11 @@ spec:
               spec:
                 containers:
                 - name: "{{ element.name }}"
-                  +(securityContext):
+                  securityContext:
                     +(allowPrivilegeEscalation): false
                     capabilities:
                       drop:
                       - ALL
-                    readOnlyRootFilesystem: true
                     runAsNonRoot: true
                     +(runAsUser): 10000
                     +(runAsGroup): 10000

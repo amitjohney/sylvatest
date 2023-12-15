@@ -2138,6 +2138,11 @@ units:
         createNamespace: true
       timeout: 168h  # leave plenty of time to download OS images in initContainers
       values:
+        podSecurityContext:
+          fsGroup: 10000
+          seccompProfile:
+            type: RuntimeDefault
+
         downloader:
           proxy: '{{ get .Values.proxies "https_proxy" }}'
           no_proxy: '{{ include "sylva-units.no_proxy" . }}'
