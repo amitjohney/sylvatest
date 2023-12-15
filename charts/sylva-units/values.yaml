@@ -404,6 +404,14 @@ units:
         image:
           repository: ghcr.io/bank-vaults/vault-operator
           tag: '{{ .Values.source_templates | dig "vault-operator" "spec" "ref" "tag" "" | required "source_templates.vault-operator.spec.ref.tag is unset" }}'
+      _postRenderers:
+        - kustomize:
+            patchesStrategicMerge:
+              - kind: Namespace
+                metadata:
+                  name: vault 
+                  labels: 
+                    securityExeption: "true"
 
 # Vault assumes that the certificate vault-tls has been issued
   vault:

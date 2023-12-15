@@ -29,9 +29,15 @@ spec:
             matchLabels:
               securityExeption: "true"
       - resources:
+          namespaceSelector:
+            matchExpressions:
+            - key: securityExeption
+              operator: In
+              values:
+              - "true"
+      - resources:
           namespaces:
           - calico-system
-          - vault
     mutate:
       foreach:
       - list: request.object.spec.template.spec.containers[]
