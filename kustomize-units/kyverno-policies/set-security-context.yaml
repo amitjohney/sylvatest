@@ -62,7 +62,7 @@ spec:
           spec:
             template:
               spec:
-                containers:
+                initContainers:
                 - name: "{{ element.name }}"
                   securityContext:
                     +(allowPrivilegeEscalation): false
