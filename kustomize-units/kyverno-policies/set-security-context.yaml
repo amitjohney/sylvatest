@@ -28,6 +28,10 @@ spec:
           selector:
             matchLabels:
               securityExeption: "true"
+      - resources:
+          namespaces:
+          - calico-system
+
     mutate:
       foreach:
       - list: request.object.spec.template.spec.containers[]
