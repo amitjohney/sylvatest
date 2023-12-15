@@ -304,15 +304,6 @@ units:
       install:
         createNamespace: true
       values:
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - ALL
-          privileged: false
-          readOnlyRootFilesystem: true
-          runAsGroup: 10000
-          runAsUser: 10000
         serviceAccount:
           annotations: {}
           create: true
@@ -709,24 +700,6 @@ units:
           namespace: keycloak
       _components:
         - '{{ tuple "components/keycloak-operator-proxies" (.Values.proxies.https_proxy) | include "set-only-if" }}'
-      _patches:
-        - patch: |
-            - op: replace
-              path: /spec/template/spec/containers/0/securityContext
-              value:
-                allowPrivilegeEscalation: false
-                capabilities:
-                  drop:
-                    - ALL
-                privileged: false
-                runAsNonRoot: true
-                runAsGroup: 1000
-                runAsUser: 1000
-                seccompProfile:
-                  type: RuntimeDefault
-          target:
-            kind: Deployment
-            name: keycloak-operator
 
   keycloak-legacy-operator:
     enabled_conditions:
@@ -739,29 +712,6 @@ units:
       path: ./kustomize-units/keycloak-legacy-operator
       targetNamespace: keycloak
       wait: true
-      _patches:
-        - patch: |
-            apiVersion: apps/v1
-            kind: Deployment
-            metadata:
-              name: keycloak-realm-operator
-            spec:
-              template:
-                spec:
-                  containers:
-                    - name: keycloak-realm-operator
-                      securityContext:
-                        runAsUser: 10000
-                        allowPrivilegeEscalation: false
-                        capabilities:
-                          drop:
-                            - ALL
-                        runAsNonRoot: true
-                        seccompProfile:
-                          type: RuntimeDefault
-          target:
-            kind: Deployment
-            name: keycloak-realm-operator
 
   keycloak-resources:
     enabled_conditions:
@@ -1010,27 +960,10 @@ units:
     repo: sylva-core
     depends_on:
       cert-manager: true
+      kyverno: true
     kustomization_spec:
       path: ./kustomize-units/capo
       wait: true
-      _patches:
-        - target:
-            group: apps
-            version: v1
-            kind: Deployment
-            name: capo-controller-manager
-            namespace: capo-system
-          patch: |-
-            - op: add
-              path: /spec/template/spec/containers/0/securityContext
-              value:
-                runAsNonRoot: true
-                seccompProfile:
-                  type: RuntimeDefault
-                allowPrivilegeEscalation: false
-                capabilities:
-                  drop:
-                    - ALL
 
   capm3:
     repo: sylva-core
@@ -1067,44 +1000,11 @@ units:
     repo: sylva-core
     depends_on:
       cert-manager: true
+      kyverno: '{{ tuple . "kyverno" | include "unit-enabled" }}'
     kustomization_spec:
       path: ./kustomize-units/cabpr
       wait: true
-      _patches:
-        - target:
-            group: apps
-            version: v1
-            kind: Deployment
-            name: rke2-bootstrap-controller-manager
-            namespace: rke2-bootstrap-system
-          patch: |-
-            - op: add
-              path: /spec/template/spec/containers/0/securityContext
-              value:
-                runAsNonRoot: true
-                seccompProfile:
-                  type: RuntimeDefault
-                allowPrivilegeEscalation: false
-                capabilities:
-                  drop:
-                    - ALL
-        - target:
-            group: apps
-            version: v1
-            kind: Deployment
-            name: rke2-control-plane-controller-manager
-            namespace: rke2-control-plane-system
-          patch: |-
-            - op: add
-              path: /spec/template/spec/containers/0/securityContext
-              value:
-                runAsNonRoot: true
-                seccompProfile:
-                  type: RuntimeDefault
-                allowPrivilegeEscalation: false
-                capabilities:
-                  drop:
-                    - ALL
+
   metal3-suse:
     enabled: false
     depends_on:
@@ -1125,7 +1025,6 @@ units:
           provisioningInterface: eth0
         metal3-baremetal-operator:
           securityContext:
-            allowPrivilegeEscalation: false
             runAsUser: 11000
         metal3-ironic:
           ingress:
@@ -1225,12 +1124,6 @@ units:
         mariadb:
           persistence:
             storageClass: '{{ .Values._internal.default_storage_class }}'
-        podSecurityContext:
-          runAsNonRoot: true
-          runAsUser: 1000
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: 1000
       valuesFrom:
         - kind: Secret
           name: metal3-secrets
@@ -1284,20 +1177,6 @@ units:
         helperImage:
           repository: docker.io/library/busybox
           tag: 1.36.1
-      _postRenderers:
-        - kustomize:
-            patchesStrategicMerge:
-              - kind: Deployment
-                apiVersion: apps/v1
-                metadata:
-                  name: local-path-provisioner
-                spec:
-                  template:
-                    spec:
-                      containers:
-                      - name: local-path-provisioner
-                        securityContext:
-                          runAsUser: 1000
 
   cluster:
     repo: sylva-capi-cluster
@@ -1369,29 +1248,6 @@ units:
     kustomization_spec:
       path: ./kustomize-units/heat-operator
       wait: true
-      _patches:
-        - target:
-            group: apps
-            version: v1
-            kind: Deployment
-            name: heat-operator-controller-manager
-            namespace: heat-operator-system
-          patch: |-
-            - op: add
-              path: /spec/template/spec/containers/0/securityContext/seccompProfile
-              value:
-                type: RuntimeDefault
-        - target:
-            group: apps
-            version: v1
-            kind: Deployment
-            name: heat-operator-controller-manager
-            namespace: heat-operator-system
-          patch: |-
-            - op: add
-              path: /spec/template/spec/containers/1/securityContext/seccompProfile
-              value:
-                type: RuntimeDefault
 
   capo-cluster-resources:
     enabled_conditions:
@@ -1791,6 +1647,7 @@ units:
   k8s-gateway:
     depends_on:
       capd-metallb-config: '{{ tuple . "capd-metallb-config" | include "unit-enabled" }}'
+      kyverno: true
     helm_repo_url: https://ori-edge.github.io/k8s_gateway/
     helmrelease_spec:
       chart:
@@ -1838,16 +1695,8 @@ units:
         createNamespace: true
       values:
         securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - ALL
-          privileged: false
-          runAsNonRoot: true
           runAsGroup: 1
           runAsUser: 1
-          seccompProfile:
-            type: RuntimeDefault
         conf:
           env:
             - name: URL_REMAP
@@ -1988,27 +1837,6 @@ units:
                   - apiGroup: rbac.authorization.k8s.io
                     kind: User
                     name: sylva-admin@example.com  # add same RBAC for the SSO user, so that when flux-webui SA impersonates it has privileges; cannot use "infra-admins" group here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/427
-              - kind: Deployment
-                apiVersion: apps/v1
-                metadata:
-                  name: flux-webui-weave-gitops
-                spec:
-                  template:
-                    spec:
-                      containers:
-                      - name: weave-gitops
-                        securityContext:
-                          allowPrivilegeEscalation: false
-                          capabilities:
-                            drop:
-                            - ALL
-                          privileged: false
-                          readOnlyRootFilesystem: true
-                          runAsNonRoot: true
-                          runAsGroup: 1000
-                          runAsUser: 1000
-                          seccompProfile:
-                            type: RuntimeDefault
 
   monitoring-crd:
     enabled_conditions:
@@ -2314,27 +2142,6 @@ units:
           proxy: '{{ get .Values.proxies "https_proxy" }}'
           no_proxy: '{{ include "sylva-units.no_proxy" . }}'
           extra_ca_certs: '{{ .Values.oci_registry_extra_ca_certs | include "set-if-defined" }}'
-          securityContext:
-            capabilities:
-              drop:
-              - ALL
-            runAsNonRoot: true
-            runAsUser: 10000
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-            seccompProfile:
-              type: RuntimeDefault
-        nginx:
-          securityContext:
-            capabilities:
-              drop:
-              - ALL
-            runAsNonRoot: true
-            runAsUser: 10000
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-            seccompProfile:
-              type: RuntimeDefault
         ingress:
           className: nginx
           hosts:
