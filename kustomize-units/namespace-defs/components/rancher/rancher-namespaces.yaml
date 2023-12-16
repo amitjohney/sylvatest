@@ -4,6 +4,7 @@ kind: Namespace
 metadata:
   name: cattle-system
   labels:
+    securityException: "true"
     pod-security.kubernetes.io/enforce: baseline
     pod-security.kubernetes.io/enforce-version: latest
 ---
