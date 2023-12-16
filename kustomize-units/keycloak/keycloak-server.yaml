@@ -7,7 +7,7 @@ metadata:
 spec:
   db:
     vendor: postgres
-    host: postgres
+    host: postgres-primary
     usernameSecret:
       name: keycloak-db-secret
       key: username
