@@ -363,6 +363,8 @@ units:
           version: 13.2.24
       targetNamespace: keycloak
       values:
+        commonLabels:
+          securityException: "true"
         global:
           postgresql:
             auth:
