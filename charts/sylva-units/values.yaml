@@ -1649,7 +1649,7 @@ units:
   k8s-gateway:
     depends_on:
       capd-metallb-config: '{{ tuple . "capd-metallb-config" | include "unit-enabled" }}'
-      kyverno: '{{ tuple . "kyverno" | include "unit-enabled" }}' 
+      kyverno: '{{ tuple . "kyverno" | include "unit-enabled" }}'
     helm_repo_url: https://ori-edge.github.io/k8s_gateway/
     helmrelease_spec:
       chart:
