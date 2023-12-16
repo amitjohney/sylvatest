@@ -4,7 +4,7 @@ kind: Namespace
 metadata:
   name: vault
   labels:
-    securityExeption: "true"
+    securityException: "true"
     pod-security.kubernetes.io/audit: baseline
     pod-security.kubernetes.io/enforce: baseline
     pod-security.kubernetes.io/warn: baseline

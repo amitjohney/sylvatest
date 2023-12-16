@@ -27,11 +27,11 @@ spec:
       - resources:
           selector:
             matchLabels:
-              securityExeption: "true"
+              securityException: "true"
       - resources:
           namespaceSelector:
             matchExpressions:
-            - key: securityExeption
+            - key: securityException
               operator: In
               values:
               - "true"
