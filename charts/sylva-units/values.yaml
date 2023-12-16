@@ -2149,6 +2149,11 @@ units:
           proxy: '{{ get .Values.proxies "https_proxy" }}'
           no_proxy: '{{ include "sylva-units.no_proxy" . }}'
           extra_ca_certs: '{{ .Values.oci_registry_extra_ca_certs | include "set-if-defined" }}'
+          securityContext:
+            allowPrivilegeEscalation: false
+        nginx:
+          securityContext:
+            allowPrivilegeEscalation: false
         ingress:
           className: nginx
           hosts:
