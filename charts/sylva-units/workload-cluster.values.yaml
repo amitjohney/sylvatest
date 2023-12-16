@@ -152,7 +152,7 @@ units:
   kyverno:
     enabled: true
     depends_on:
-      namespace-defs: true
+      cluster: true
 
   metallb:
     enabled: true
