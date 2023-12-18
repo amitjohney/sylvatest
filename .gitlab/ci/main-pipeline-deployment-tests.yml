@@ -222,8 +222,11 @@ capo-rke2-cilium-deploy:
   variables:
     CAPO_TAG: $ENV_TAG
     ENV_NAME: rke2-capo
+    CUSTOM_VALUES_FILE: environment-values/ci/cilium-rke2-capo.yml
+    MGMT_WATCH_TIMEOUT_MIN: 45
+    ONLY_DEPLOY_MGMT: "TRUE"
   trigger:
-    include: .gitlab/ci/pipeline-deploy-cilium-rke2-capo.yml
+    include: .gitlab/ci/pipeline-deploy-capo.yml
     strategy: depend
 
 capo-fip-deploy:
