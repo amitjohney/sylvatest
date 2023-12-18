@@ -145,6 +145,9 @@ units:
     #enabled: true
     unit_template: base-deps
 
+  calico-wireguard:
+    enabled: true
+
   metallb:
     enabled: true
     unit_template: base-deps

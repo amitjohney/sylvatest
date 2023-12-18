@@ -1814,7 +1814,7 @@ units:
       wait: true
       postBuild:
         substitute:
-          CALICO_WIREGUARD_ENABLED: '{{ .Values.calico_wireguard_enabled | default "true" }}'
+          CALICO_WIREGUARD_ENABLED: '{{ .Values.calico_wireguard_enabled }}'
 
   metallb:
     info:
@@ -3582,3 +3582,6 @@ shared_workload_clusters_values:
 shared_workload_clusters_secret_values:
   cluster:
     capo: '{{ tuple (dict "clouds_yaml" (.Values.cluster | dig "capo" "clouds_yaml" dict)) (.Values.cluster | dig "capo" "clouds_yaml" dict) | include "set-only-if" }}'
+
+# enable wireguard by default
+calico_wireguard_enabled: true
