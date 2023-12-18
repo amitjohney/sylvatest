@@ -6302,7 +6302,7 @@
     "shared_workload_clusters_secret_values": {
       "type": "object"
     },
-    "calico-wireguard-enabled": {
+    "calico_wireguard_enabled": {
       "type": "boolean"
     }
   },

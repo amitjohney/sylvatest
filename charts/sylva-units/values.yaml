@@ -1814,7 +1814,7 @@ units:
       wait: true
       postBuild:
         substitute:
-          CALICO_WIREGUARD_ENABLED: '{{ .Values.calico-wireguard-enabled | default "true" }}'
+          CALICO_WIREGUARD_ENABLED: '{{ .Values.calico_wireguard_enabled | default "true" }}'
 
   metallb:
     info:
