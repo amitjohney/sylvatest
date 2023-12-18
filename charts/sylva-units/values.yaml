@@ -1673,16 +1673,13 @@ units:
     - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'  # installed by RKE2 when RKE2 is used
     - '{{ .Values.cluster.default_cni | eq "cilium" | include "preserve-type" }}'
     helm_repo_url: https://rke2-charts.rancher.io
-    helm_chart_versions:
-      - "1.13.200"
-      - "1.14.100"
     helmrelease_spec:
       releaseName: rke2-cilium
       targetNamespace: kube-system
       chart:
         spec:
           chart: rke2-cilium
-          version: '{{ semver (tuple . .Values.cluster.k8s_version | include "interpret-as-string") | (semver "v1.26.6").Compare | le 0 | ternary "1.13.200" "1.14.100" }}'
+          version: 1.14.100
       values:
         operator:
           replicas: '{{ .Values.cluster.control_plane_replicas }}'  ### Workaround for single node clusters
@@ -2042,7 +2039,7 @@ units:
   ingress-nginx:
     depends_on:
       capd-metallb-config: '{{ tuple . "capd-metallb-config" | include "unit-enabled" }}'
-      '{{ .Values.cluster.default_cni }}': true
+      '{{ .Values.cluster.default_cni }}': '{{ tuple . .Values.cluster.default_cni | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io
     helm_chart_versions:
       4.5.202: '{{ not .Values._internal.k8s_post_1_26_6  }}'
