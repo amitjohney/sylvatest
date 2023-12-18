@@ -50,8 +50,6 @@ include:
             value: ${OCI_TAG}
       EOF
         cat $ENV_PATH/kustomization.yaml
-        export METALLB_HELM_OCI_URL='{{ lookup "source.toolkit.fluxcd.io/v1beta2" "HelmRepository" "sylva-system" "sylva-core" | dig "spec" "url" "oci://registry.gitlab.com/sylva-projects/sylva-core" | dir | replace "oci:/" "oci://" }}/sylva-core/metallb'
-        yq -i '.cluster.metallb_helm_oci_url = strenv(METALLB_HELM_OCI_URL)' $values_file
       fi
     - yq -i '.cluster.name = strenv(CLUSTER_CI_NAME)' $values_file
     - yq -i '.env_type = "ci"' $values_file
@@ -104,7 +102,7 @@ include:
           #and allow to enable extra kustomize components needed in the context of the platform
           #on which this test actually runs
           git clone --depth=1 https://foo:${CI_COMPONENT_REPO_PAT}@${CI_COMPONENT_REPO}
-          export CI_COMPONENT="https://${CI_COMPONENT_REPO}//${CI_COMPONENT_REPO_PATH}-${ENV_NAME}?ref=2023-11-07"
+          export CI_COMPONENT="https://${CI_COMPONENT_REPO}//${CI_COMPONENT_REPO_PATH}-base?ref=2023-12-11"
           if [ $(yq '.components | length' $ENV_PATH/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' $ENV_PATH/kustomization.yaml; fi
           yq -i '.components += strenv(CI_COMPONENT)' $ENV_PATH/kustomization.yaml
           yq -e '.registry_mirrors' $(basename ${CI_COMPONENT_REPO} .git)/${CI_COMPONENT_REPO_PATH}-base/values.yaml > registry_mirrors.yml

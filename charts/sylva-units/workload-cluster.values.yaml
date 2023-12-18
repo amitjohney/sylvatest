@@ -78,20 +78,10 @@ units:
             kind: HeatStack
           patch: |
             - op: replace
-              path: /spec/heatStack/template/parameters/control_plane_rules
+              path: /spec/heatStack/template/parameters/common_sg_rules
               value:
                 type: json
-                description: "Security group rules associated with the control plane VMs"
-                default:
-                  direction: [ingress, ingress, ingress, egress]
-                  port: ['80', '443', '22', '53']
-                  protocol: [tcp, tcp, tcp, udp]
-                  remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
-            - op: replace
-              path: /spec/heatStack/template/parameters/worker_rules
-              value:
-                type: json
-                description: "Security group rules associated with the worker VMs"
+                description: "Common security group rules associated with the control plane and worker VMs"
                 default:
                   direction: [ingress, ingress, ingress, egress]
                   port: ['80', '443', '22', '53']
@@ -281,7 +271,7 @@ units:
           name: "{{ .Values.cluster.name }}-capi"
           namespace: '{{ .Release.Namespace }}'
 
-  vsphere-cloud-controller-manager:
+  vsphere-cpi:
     enabled: true
 
   vsphere-csi-driver:

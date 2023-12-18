@@ -2252,10 +2252,13 @@
                         }
                       ]
                     },
-                    "security_group_name": {
+                    "security_group_names": {
                       "anyOf": [
                         {
-                          "type": "string"
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
                         },
                         {
                           "$ref": "#/$defs/string-with-gotpl"
@@ -4327,10 +4330,13 @@
                             }
                           ]
                         },
-                        "security_group_name": {
+                        "security_group_names": {
                           "anyOf": [
                             {
-                              "type": "string"
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
                             },
                             {
                               "$ref": "#/$defs/string-with-gotpl"
@@ -4607,7 +4613,7 @@
                         "anyOf": [
                           {
                             "required": [
-                              "security_group_name"
+                              "security_group_names"
                             ]
                           },
                           {
@@ -5641,6 +5647,9 @@
     "metal3": {
       "type": "object"
     },
+    "vsphere": {
+      "type": "object"
+    },
     "capd_docker_host": {
       "type": "string",
       "format": "uri",
@@ -6155,6 +6164,41 @@
               "external_bootstrap_ip": {
                 "type": "string",
                 "format": "ipv4"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "cluster": {
+            "properties": {
+              "capi_providers": {
+                "properties": {
+                  "infra_provider": {
+                    "const": "capv"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "vsphere": {
+            "additionalProperties": false,
+            "properties": {
+              "vsphere-cpi": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "vsphere_conf": {
+                    "type": "object"
+                  }
+                }
               }
             }
           }

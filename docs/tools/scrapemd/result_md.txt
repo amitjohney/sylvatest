@@ -1,0 +1,452 @@
+Projects in group (ID: 59800588):
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/doc-preview/blob/main/README.md
+
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-projects.gitlab.io/blob/main/README.md
+##### https://gitlab.com/sylva-projects/sylva-projects.gitlab.io/blob/main/website/blog/2023-11-10-workload-gitops.md
+##### https://gitlab.com/sylva-projects/sylva-projects.gitlab.io/blob/main/website/docs/placeholder.md
+##### https://gitlab.com/sylva-projects/sylva-projects.gitlab.io/blob/main/website/src/pages/markdown-page.md
+
+Clone issue: authentication required
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/.gitlab/ci/README.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/.gitlab/issue_templates/Bug.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/.gitlab/issue_templates/Default.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/.gitlab/merge_request_templates/Default.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/README.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/charts/sylva-units/README.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/charts/sylva-units/test-values/README.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/charts/sylva-units/test-values/bootstrap/README.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/charts/sylva-units/test-values/unit-name-typo/README.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/docs/Debugging.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/docs/How-tos.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/docs/development-tooling.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/docs/longhorn-node-annotations.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/docs/metal3.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/docs/security.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/environment-values/README.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/environment-values/components/oci-artifacts/README.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/environment-values/components/workload-cluster-oci-artifacts/README.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/kustomize-units/kube-job/README.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/tools/kind/systemd
+
+Clone issue: authentication required
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/CNF Validation Backlog.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/README.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/Validation program strategy.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/cnf-validations/6Wind_vSR_v3.6.1/ValidationReport-6Wind_vSR_v3.6.1.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/cnf-validations/Lessons Learnt - CNF validation.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/cnf-validations/Nokia_UPF_B-23.5.R1/ValidationReport-Nokia_UPF_B-23.5.R1.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/cnf-validations/Oracle_PCF_V1.11.0/ValidationReport-Oracle_PCF_v1.11.0.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/cnf-validations/README.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/cnf-validations/ValidationReport-Template.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/derivative-stack-validations/README.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/validation-scripts/README.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/validation-scripts/xtesting-cnf_deployment_tests/README.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/validation-scripts/xtesting-cni_use_tests/README.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/validation-scripts/xtesting-platform_smoke_tests/README.md
+
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/governance/blob/main/CONTRIBUTORS.md
+##### https://gitlab.com/sylva-projects/governance/blob/main/README.md
+
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva/blob/main/.git/refs/remotes/origin/Add-testing-framework.md
+##### https://gitlab.com/sylva-projects/sylva/blob/main/Contributing.md
+##### https://gitlab.com/sylva-projects/sylva/blob/main/HLD.md
+##### https://gitlab.com/sylva-projects/sylva/blob/main/README.md
+##### https://gitlab.com/sylva-projects/sylva/blob/main/RFE/Support-sriov-on-bm-workload-clusters.md
+##### https://gitlab.com/sylva-projects/sylva/blob/main/RFE/gitlab-usage-guideline.md
+##### https://gitlab.com/sylva-projects/sylva/blob/main/RFE/template.md
+
+Group: Sylva-projects (ID: 59800588)
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/doc-preview/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/doc-preview.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-projects.gitlab.io/blob/main/README.md
+##### https://gitlab.com/sylva-projects/sylva-projects.gitlab.io/blob/main/website/blog/2023-11-10-workload-gitops.md
+##### https://gitlab.com/sylva-projects/sylva-projects.gitlab.io/blob/main/website/docs/placeholder.md
+##### https://gitlab.com/sylva-projects/sylva-projects.gitlab.io/blob/main/website/src/pages/markdown-page.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-projects.gitlab.io.git 
+Clone issue: authentication required
+---- URL is https://gitlab.com/sylva-projects/communication-and-adoption.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/.gitlab/ci/README.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/.gitlab/issue_templates/Bug.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/.gitlab/issue_templates/Default.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/.gitlab/merge_request_templates/Default.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/README.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/charts/sylva-units/README.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/charts/sylva-units/test-values/README.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/charts/sylva-units/test-values/bootstrap/README.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/charts/sylva-units/test-values/unit-name-typo/README.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/docs/Debugging.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/docs/How-tos.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/docs/development-tooling.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/docs/longhorn-node-annotations.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/docs/metal3.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/docs/security.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/environment-values/README.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/environment-values/components/oci-artifacts/README.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/environment-values/components/workload-cluster-oci-artifacts/README.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/kustomize-units/kube-job/README.md
+##### https://gitlab.com/sylva-projects/sylva-core/blob/main/tools/kind/systemd
+
+---- URL is https://gitlab.com/sylva-projects/sylva-core.git 
+Clone issue: authentication required
+---- URL is https://gitlab.com/sylva-projects/governance-private.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/CNF Validation Backlog.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/README.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/Validation program strategy.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/cnf-validations/6Wind_vSR_v3.6.1/ValidationReport-6Wind_vSR_v3.6.1.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/cnf-validations/Lessons Learnt - CNF validation.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/cnf-validations/Nokia_UPF_B-23.5.R1/ValidationReport-Nokia_UPF_B-23.5.R1.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/cnf-validations/Oracle_PCF_V1.11.0/ValidationReport-Oracle_PCF_v1.11.0.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/cnf-validations/README.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/cnf-validations/ValidationReport-Template.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/derivative-stack-validations/README.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/validation-scripts/README.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/validation-scripts/xtesting-cnf_deployment_tests/README.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/validation-scripts/xtesting-cni_use_tests/README.md
+##### https://gitlab.com/sylva-projects/validation_center/blob/main/validation-scripts/xtesting-platform_smoke_tests/README.md
+
+---- URL is https://gitlab.com/sylva-projects/validation_center.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/governance/blob/main/CONTRIBUTORS.md
+##### https://gitlab.com/sylva-projects/governance/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/governance.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva/blob/main/.git/refs/remotes/origin/Add-testing-framework.md
+##### https://gitlab.com/sylva-projects/sylva/blob/main/Contributing.md
+##### https://gitlab.com/sylva-projects/sylva/blob/main/HLD.md
+##### https://gitlab.com/sylva-projects/sylva/blob/main/README.md
+##### https://gitlab.com/sylva-projects/sylva/blob/main/RFE/Support-sriov-on-bm-workload-clusters.md
+##### https://gitlab.com/sylva-projects/sylva/blob/main/RFE/gitlab-usage-guideline.md
+##### https://gitlab.com/sylva-projects/sylva/blob/main/RFE/template.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva.git 
+  Group: sylva-elements (ID: 63142339)
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/sylva-units-operator/blob/main/README.md
+##### https://gitlab.com/sylva-projects/sylva-elements/sylva-units-operator/blob/main/cmd
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/sylva-units-operator.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/workload-cluster-operator/blob/main/README.md
+##### https://gitlab.com/sylva-projects/sylva-elements/workload-cluster-operator/blob/main/cmd
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/workload-cluster-operator.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/ci-tools/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/ci-tools.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/redfish-bm-on-libvirt/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/redfish-bm-on-libvirt.git 
+Clone issue: authentication required
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/ARCHIVED-capo-contrail-bgpaas.git 
+Clone issue: authentication required
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/wg04-energy-efficiency.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/diskimage-builder/blob/main/README.md
+##### https://gitlab.com/sylva-projects/sylva-elements/diskimage-builder/blob/main/kanod_image_builder/elements/chrony/README.md
+##### https://gitlab.com/sylva-projects/sylva-elements/diskimage-builder/blob/main/kanod_image_builder/elements/cloud-init-growpart/static/etc/systemd
+##### https://gitlab.com/sylva-projects/sylva-elements/diskimage-builder/blob/main/kanod_image_builder/elements/kanod-cloud-init/README.md
+##### https://gitlab.com/sylva-projects/sylva-elements/diskimage-builder/blob/main/kanod_image_builder/elements/rename-interface-names/static/etc/systemd
+##### https://gitlab.com/sylva-projects/sylva-elements/diskimage-builder/blob/main/security/cosign.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/diskimage-builder.git 
+Clone issue: authentication required
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/packer-cis-hardening.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/heat-operator/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/heat-operator.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/sylvactl/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/sylvactl.git 
+Clone issue: authentication required
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/renovate.git 
+    Group: ci-tooling (ID: 76355873)
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/ci-tooling/runner-aas-interface/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/ci-tooling/runner-aas-interface.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/ci-tooling/runner-aas/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/ci-tooling/runner-aas.git 
+    Group: container-images (ID: 63351332)
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/oci-tools/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/container-images/oci-tools.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/sandbox-registry/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/container-images/sandbox-registry.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/ci-disk-image-builder/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/container-images/ci-disk-image-builder.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/libvirt-metal/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/container-images/libvirt-metal.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/openstack-client/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/container-images/openstack-client.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/sylva-toolbox/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/container-images/sylva-toolbox.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/ironic-ipa-downloader/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/container-images/ironic-ipa-downloader.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/.github/ISSUE_TEMPLATE/bug_report.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/.github/ISSUE_TEMPLATE/feature_request.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/.github/ISSUE_TEMPLATE/kubernetes_bump.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/.github/ISSUE_TEMPLATE/release_tracking.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/.github/PULL_REQUEST_TEMPLATE.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/CONTRIBUTING.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/README.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/REVIEWING.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/bootstrap/kubeadm/types/README.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/cmd
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/cmd/clusterctl/README.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/cmd/clusterctl/cmd
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/code-of-conduct.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/CONTRIBUTING.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/REVIEWING.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/SUMMARY.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/clusterctl/commands/additional-commands.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/clusterctl/commands/alpha-rollout.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/clusterctl/commands/alpha-topology-plan.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/clusterctl/commands/commands.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/clusterctl/commands/completion.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/clusterctl/commands/delete.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/clusterctl/commands/describe-cluster.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/clusterctl/commands/generate-cluster.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/clusterctl/commands/generate-provider.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/clusterctl/commands/generate-yaml.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/clusterctl/commands/get-kubeconfig.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/clusterctl/commands/init.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/clusterctl/commands/move.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/clusterctl/commands/upgrade.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/clusterctl/configuration.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/clusterctl/developers.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/clusterctl/overview.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/clusterctl/provider-contract.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/code-of-conduct.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/architecture/controllers/bootstrap.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/architecture/controllers/cluster-resource-set.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/architecture/controllers/cluster-topology.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/architecture/controllers/cluster.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/architecture/controllers/control-plane.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/architecture/controllers/machine-deployment.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/architecture/controllers/machine-health-check.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/architecture/controllers/machine-pool.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/architecture/controllers/machine-set.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/architecture/controllers/machine.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/architecture/controllers/metadata-propagation.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/architecture/controllers/multi-tenancy.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/architecture/controllers/support-multiple-instances.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/architecture/controllers.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/crd-relationships.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/e2e.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/guide.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/logging.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/providers/bootstrap.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/providers/cluster-infrastructure.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/providers/contracts.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/providers/implementers-guide/building_running_and_testing.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/providers/implementers-guide/configure.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/providers/implementers-guide/controllers_and_reconciliation.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/providers/implementers-guide/create_api.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/providers/implementers-guide/generate_crds.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/providers/implementers-guide/naming.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/providers/implementers-guide/overview.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/providers/implementers.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/providers/machine-infrastructure.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/providers/v0.3-to-v0.4.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/providers/v0.4-to-v1.0.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/providers/v1.0-to-v1.1.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/providers/v1.1-to-v1.2.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/providers/v1.2-to-v1.3.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/providers/version-migration.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/providers/webhooks.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/repository-layout.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/testing.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/developer/tilt.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/introduction.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/reference/api_reference.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/reference/glossary.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/reference/jobs.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/reference/labels_and_annotations.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/reference/ports.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/reference/providers.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/reference/reference.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/reference/versions.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/roadmap.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/security/index.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/security/pod-security-standards.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/automated-machine-management/autoscaling.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/automated-machine-management/healthchecking.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/automated-machine-management/index.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/automated-machine-management/scaling.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/bootstrap/index.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/bootstrap/kubeadm-bootstrap.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/bootstrap/microk8s-bootstrap.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/certs/auto-rotate-certificates-in-kcp.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/certs/generate-kubeconfig.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/certs/index.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/certs/using-custom-certificates.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/control-plane/index.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/control-plane/kubeadm-control-plane.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/control-plane/microk8s-control-plane.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/experimental-features/cluster-class/change-clusterclass.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/experimental-features/cluster-class/index.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/experimental-features/cluster-class/operate-cluster.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/experimental-features/cluster-class/write-clusterclass.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/experimental-features/cluster-resource-set.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/experimental-features/experimental-features.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/experimental-features/ignition.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/experimental-features/machine-pools.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/experimental-features/runtime-sdk/deploy-runtime-extension.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/experimental-features/runtime-sdk/implement-extensions.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/experimental-features/runtime-sdk/implement-lifecycle-hooks.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/experimental-features/runtime-sdk/implement-topology-mutation-hook.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/experimental-features/runtime-sdk/index.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/external-etcd.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/index.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/multiple-providers.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/updating-machine-templates.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/upgrading-cluster-api-versions.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/upgrading-clusters.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/tasks/using-kustomize.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/user/concepts.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/user/personas.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/user/quick-start.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/book/src/user/troubleshooting.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20181121-machine-api.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20190610-machine-states-preboot-bootstrapping.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20190709-cluster-spec-crds.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20190919-machinepool-api.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20191016-clusterctl-redesign.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20191016-e2e-test-framework.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20191017-kubeadm-based-control-plane.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20191030-machine-health-checking.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20200220-cluster-resource-set.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20200330-spot-instances.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20200423-etcd-data-disk.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20200506-conditions.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20200511-clusterctl-extensible-template-processing.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20200602-machine-deletion-phase-hooks.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20200804-windows-support.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20201020-capi-provider-operator.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20210203-externally-managed-cluster-infrastructure.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20210210-insulate-users-from-kubeadm-API-changes.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20210222-kubelet-authentication.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20210310-opt-in-autoscaling-from-zero.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20210526-cluster-class-and-managed-topologies.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20220125-ipam-integration.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20220209-machinepool-machines.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20220221-runtime-SDK.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20220330-topology-mutation-hook.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20220411-cluster-api-state-metrics.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20220414-runtime-hooks.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20220712-cluster-api-addon-orchestration.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20220725-managed-kubernetes.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/20220927-label-sync-between-machine-and-nodes.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/proposals/YYYYMMDD-template.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/release/release-1.3.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/release/release-1.4.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/release/release-cycle.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/release/release-tasks.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/release/release-team.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/scope-and-objectives.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/docs/staging-use-cases.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/exp/README.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/exp/addons/README.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/hack/boilerplate/README.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/hack/observability/kube-state-metrics/metrics/README.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/logos/LICENSE.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/logos/README.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/logos/icons/README.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/test/README.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/test/e2e/data/infrastructure-docker/README.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/test/framework/README.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/test/infrastructure/docker/README.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/test/infrastructure/docker/exp/README.md
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2/blob/v1.3.4-patched/test/infrastructure/docker/internal/third_party/forked/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/container-images/capd-for-rke2.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/ci-image/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/container-images/ci-image.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/rke2-in-docker/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/container-images/rke2-in-docker.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/kind-with-cni/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/container-images/kind-with-cni.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/kube-job/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/container-images/kube-job.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/container-images/kopf/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/container-images/kopf.git 
+    Group: fleet-deployments (ID: 63142425)
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/fleet-deployments/monitoring-stack/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/fleet-deployments/monitoring-stack.git 
+    Group: helm-charts (ID: 63529637)
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/helm-charts/capo-contrail-bgpaas/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/helm-charts/capo-contrail-bgpaas.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sriov-resources/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sriov-resources.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/helm-charts/os-image-server/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/helm-charts/os-image-server.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git 
+Clone issue: reference not found
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/helm-charts/multus.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/helm-charts/capi-rancher-import/blob/main/README.md
+##### https://gitlab.com/sylva-projects/sylva-elements/helm-charts/capi-rancher-import/blob/main/cattle-kustomize/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/helm-charts/capi-rancher-import.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/helm-charts/cluster-vsphere/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/helm-charts/cluster-vsphere.git 
+URLs found for md extension : 
+##### https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3/blob/main/README.md
+
+---- URL is https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3.git 
