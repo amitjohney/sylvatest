@@ -1229,8 +1229,7 @@ units:
         services:
           ironic:
             # Specify the IP address used by Ironic service
-            ironicIP: '{{ .Values.cluster_external_ip }}'
-            # We allow shared IPs because we are exposing (by design) a single cluster external IP
+            ironicIP: '{{ .Values.display_external_ip }}'
             annotations:
               metallb.universe.tf/allow-shared-ip: cluster-external-ip
         mariadb:
@@ -2833,7 +2832,7 @@ shared_workload_clusters_values:
   cluster:
     air_gapped: '{{ .Values.air_gapped | include "set-if-defined" }}'
     capi_providers: '{{ .Values.cluster.capi_providers | include "preserve-type" }}'
-    mgmt_cluster_external_ip: '{{ .Values.cluster_external_ip }}'
+    mgmt_cluster_external_ip: '{{ .Values.display_external_ip }}'
     mgmt_cluster_external_domain: '{{ .Values.cluster_external_domain }}'
     dns_resolver: true
     capo:
