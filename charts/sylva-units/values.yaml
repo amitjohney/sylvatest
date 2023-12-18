@@ -3591,3 +3591,20 @@ snmp:
   auth: 
     community: public
   devices: []
+
+# Sample snmp configuration as it needs to be added in the secrets.yaml file
+#  snmp:
+#    version: 3
+#    auth:
+#      community: public
+#      security_level: authPriv
+#      username: user
+#      password: xxxxx
+#      auth_protocol: MD5
+#      priv_protocol: AES
+#      priv_password: xxxxx
+#    devices:
+#      - name: server1
+#        ip: a.b.c.d
+#      - name: server2
+#        ip: x.y.z.t
