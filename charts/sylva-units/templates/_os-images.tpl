@@ -15,7 +15,6 @@ osImages:
     {{- if ($os_image_props.enabled) }}
   {{ $os_image_name }}:
     uri: {{ $sylva_base_oci_registry }}/sylva-elements/diskimage-builder/{{ $os_image_name }}:{{ $sylva_dib_version }}
-    filename: {{ $os_image_name }}.{{ $sylva_dib_images_format }}
     {{- end }}
   {{- end }}
 {{- else }}
@@ -23,7 +22,6 @@ osImages:
     {{- if (or ($os_image_props.enabled) ($os_image_props.default_enabled)) }}
   {{ $os_image_name }}:
     uri: {{ $sylva_base_oci_registry }}/sylva-elements/diskimage-builder/{{ $os_image_name }}:{{ $sylva_dib_version }}
-    filename: {{ $os_image_name }}.{{ $sylva_dib_images_format }}
     {{- end }}
   {{- end }}
 {{- end }}

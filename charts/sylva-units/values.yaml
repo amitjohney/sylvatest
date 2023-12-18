@@ -3467,8 +3467,6 @@ k8s_version_short: "1.26"
 
 sylva_diskimagebuilder_version: 0.1.2
 
-sylva_diskimagebuilder_images_format: raw
-
 sylva_diskimagebuilder_images:
   ubuntu-jammy-plain-rke2-1.26.9:
     default_enabled: true
