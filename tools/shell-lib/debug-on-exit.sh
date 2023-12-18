@@ -73,10 +73,15 @@ echo "System info"
 free -h
 df -h || true
 
-echo "Performing dump on bootstrap cluster"
-kubectl cluster-info dump -A -o yaml --output-directory=bootstrap-cluster-dump
+if [[ $(kind get clusters) =~ $KIND_CLUSTER_NAME ]]; then
+  echo "Performing dump on bootstrap cluster"
+  kubectl cluster-info dump -A -o yaml --output-directory=bootstrap-cluster-dump
 
-dump_additional_resources bootstrap-cluster-dump $additional_resources
+  dump_additional_resources bootstrap-cluster-dump $additional_resources
+
+  echo "Dump node logs"
+  docker ps -q -f name=management-cluster-control-plane* | xargs -I % -r docker exec % journalctl -e
+fi
 
 if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
     export KUBECONFIG=${KUBECONFIG:-$BASE_DIR/management-cluster-kubeconfig}
@@ -107,6 +112,3 @@ if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
         dump_additional_resources workload-cluster-dump $additional_resources
     fi
 fi
-
-echo "Dump node logs"
-docker ps -q -f name=management-cluster-control-plane* | xargs -I % -r docker exec % journalctl -e
