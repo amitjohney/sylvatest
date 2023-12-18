@@ -1,5 +1,6 @@
 ---
 workflow:
+  name: "Deployment pipeline - $WORKFLOW_NAME"
   rules:
     - when: always
 
