@@ -1389,8 +1389,6 @@ units:
     enabled_conditions:
     - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     repo: sylva-core
-    depends_on:
-      cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/heat-operator
       wait: true
