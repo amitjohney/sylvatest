@@ -64,13 +64,6 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: 0.7.0
 
-  metal3-suse:
-    kind: GitRepository
-    spec:
-      url: https://github.com/suse-edge/charts.git
-      ref:
-        tag: 0.2.0-metal3
-
   sylva-capi-cluster:
     kind: GitRepository
     spec:
@@ -1134,12 +1127,12 @@ units:
     depends_on:
       cert-manager: true
       '{{ .Values._internal.default_storage_class_unit }}': true
-    repo: metal3-suse
-    helm_chart_artifact_name: metal3
+    helm_repo_url: https://suse-edge.github.io/charts
     helmrelease_spec:
       chart:
         spec:
-          chart: charts/metal3/0.2.0
+          chart: metal3
+          version: 0.4.0
       install:
         createNamespace: true
       targetNamespace: metal3-system
