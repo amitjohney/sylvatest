@@ -2547,6 +2547,13 @@ units:
                   template:
                     spec:
                       securityContext:
+                        runAsNonRoot: true
+                        seccompProfile:
+                          type: RuntimeDefault
+                        allowPrivilegeEscalation: false
+                        capabilities:
+                          drop:
+                            - ALL
                         runAsGroup: 3000
                         runAsUser: 2000
 
