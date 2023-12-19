@@ -2391,7 +2391,7 @@ units:
           params: |
             {{- $result := list -}}
             {{- range $device := .Values.snmp.devices }}
-            {{- $service_monitor := dict "name" $device.name  -}}
+            {{- $service_monitor := dict "name" (lower $device.name) -}}
             {{- $module := list -}}
             {{- $module := append $module "dell_idrac" -}}
             {{- $_ := set $service_monitor "module" $module -}}
