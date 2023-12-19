@@ -418,6 +418,7 @@ units:
   kubevirt-test-vms:
     depends_on:
       kubevirt: true
+      multus: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kubevirt-test-vms
