@@ -2535,6 +2535,10 @@ units:
         rancher-nfd:
           image:
             tag: v0.13.2-build20230605
+          master:
+            securityContext:
+              seccompProfile:
+                type: RuntimeDefault
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:
@@ -2556,17 +2560,6 @@ units:
                             - ALL
                         runAsGroup: 3000
                         runAsUser: 2000
-              - kind: Deployment
-                apiVersion: apps/v1
-                metadata:
-                  name: sriov-rancher-nfd-master
-                  namespace: cattle-sriov-system
-                spec:
-                  template:
-                    spec:
-                      securityContext:
-                        seccompProfile:
-                          type: RuntimeDefault
 
   sriov-resources:
     info:
