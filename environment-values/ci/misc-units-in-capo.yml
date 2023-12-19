@@ -74,6 +74,8 @@ units:
     enabled: true
   flux-system:
     enabled: true
+  postgres-init:
+    enabled: true
   postgres:
     enabled: true
   synchronize-secrets:
