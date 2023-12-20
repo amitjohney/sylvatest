@@ -1,0 +1,51 @@
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: cluster-garbage-collector-sa
+  namespace: sylva-system
+  labels:
+    app: cluster-garbage-collector
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: cluster-garbage-collector
+  labels:
+    app: cluster-garbage-collector
+rules:
+  - apiGroups:
+      - infrastructure.cluster.x-k8s.io
+    verbs:
+      - get
+      - list
+      - patch
+    resources:
+      - dockermachinetemplates
+      - vspheremachinetemplates
+      - openstackmachinetemplates
+      - metal3machinetemplates
+  - apiGroups:
+      - bootstrap.cluster.x-k8s.io
+    verbs:
+      - get
+      - list
+      - patch
+    resources:
+      - kubeadmconfigtemplates
+      - rke2configtemplates
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: cluster-garbage-collector
+  labels:
+    app: cluster-garbage-collector
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cluster-garbage-collector
+subjects:
+  - kind: ServiceAccount
+    name: cluster-garbage-collector-sa
+    namespace: sylva-system

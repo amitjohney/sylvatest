@@ -69,7 +69,8 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.1.20
+        tag: 0.1.21-bb-keep-xtemplate-1
+        branch: keep-xtemplate-when-helm-upgrade # https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster/-/merge_requests/226
 
   local-path-provisioner:
     kind: GitRepository
@@ -1470,6 +1471,17 @@ units:
     # we pass everything that is under `cluster` to this unit that uses sylva-capi-cluster chart
     # (we do it via a secret because some of the values are credentials in many scenarios)
     helm_secret_values: '{{ .Values.cluster | include "preserve-type" }}'
+
+  cluster-garbage-collector:
+    depends_on:
+      cluster: true
+      capd: '{{ tuple . "capd" | include "unit-enabled" }}'
+      capv: '{{ tuple . "capv" | include "unit-enabled" }}'
+      capo: '{{ tuple . "capo" | include "unit-enabled" }}'
+      capm3: '{{ tuple . "capm3" | include "unit-enabled" }}'
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/cluster-garbage-collector
 
   heat-operator:
     enabled_conditions:
