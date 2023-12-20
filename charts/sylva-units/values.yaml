@@ -1402,6 +1402,30 @@ units:
               value:
                 type: RuntimeDefault
 
+  sylva-units-operator:
+    repo: sylva-core
+    depends_on:
+      flux-system: true
+    kustomization_spec:
+      path: ./kustomize-units/sylva-units-operator
+      wait: true
+      images:
+        - name: controller
+          newName: registry.gitlab.com/sylva-projects/sylva-elements/sylva-units-operator
+          newTag: 0.0.0-pre3
+
+  workload-cluster-operator:
+    repo: sylva-core
+    depends_on:
+      sylva-units-operator: true
+    kustomization_spec:
+      path: ./kustomize-units/workload-cluster-operator
+      wait: true
+      images:
+        - name: controller
+          newName: registry.gitlab.com/sylva-projects/sylva-elements/workload-cluster-operator
+          newTag: 0.0.0-pre3
+
   capo-cluster-resources:
     enabled_conditions:
     - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
