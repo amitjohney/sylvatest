@@ -243,7 +243,7 @@ capm3-rke2-virt-equinix-deploy:
     ENV_NAME: rke2-capm3-virt
     METAL3_PROVIDER: sylva
     DOCKER_HOST: ""
-    CUSTOM_VALUES_FILE: environment-values/ci/enable-kubevirt.yml
+    WC_DEPLOYMENT_CUSTOM: environment-values/ci/enable-kubevirt.yml
   trigger:
     include: .gitlab/ci/pipeline-deploy-rke2-capm3-virt-equinix.yml
     strategy: depend
@@ -254,7 +254,7 @@ capm3-rke2-virt-equinix-deploy-suse:
     ENV_NAME: rke2-capm3-virt
     METAL3_PROVIDER: suse
     DOCKER_HOST: ""
-    CUSTOM_VALUES_FILE: environment-values/ci/enable-kubevirt.yml
+    WC_DEPLOYMENT_CUSTOM: environment-values/ci/enable-kubevirt.yml
   trigger:
     include: .gitlab/ci/pipeline-deploy-rke2-capm3-virt-equinix.yml
     strategy: depend
