@@ -1,9 +1,14 @@
-# This file is here mostly for documentation purposes
+# This values file is meant to be used when deploying Sylva from OCI registry artifacts.
 #
-# It is meant to be use when deploying Sylva from OCI registry artifacts.
+# NOTE WELL: This file is NOT usable as-is !
 #
-# In such a context the 'sylva-units' chart is deploy from an OCI registry artifact
-# build by tools/oci/build-sylva-units-artifact.sh, and this tool also
+# For a deployment from OCI registry artifacts, the sylva-units Helm chart
+# must be deployed from the OCI artifact built by a tool (tools/oci/build-sylva-units-artifact.sh)
+# which augments this file to override Helm-based units definition to let them
+# use OCI artifacts.
+#
+# In such a context the 'sylva-units' chart is deployed from an OCI registry artifact
+# built by tools/oci/build-sylva-units-artifact.sh, and this tool also
 # populates this file so that all external sources definitions (from source_templates and helm_repo_url)
 # will point to OCI Registry artifacts.
 #
@@ -120,6 +125,7 @@ units:
   flux-system:
     kustomization_spec:
       _patches:
+        # for OCI-based deployments, we don't need nor want the Kustomization controller to use an HTTP proxy
         - patch: |
             kind: Deployment
             apiVersion: apps/v1
