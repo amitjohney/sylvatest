@@ -269,11 +269,17 @@ function validate_sylva_units() {
                 value: sylva-units-preview
 EOF
 
+  if [[ ${KUBECONFIG:-} =~ management-cluster-kubeconfig$ ]] || [[ ${1:-} == "force-management" ]]; then
+    bootstrap=no
+  else
+    bootstrap=yes
+  fi
+
   # for bootstrap cluster, we need to inject bootstrap values
   # (for mgmt cluster, we do not so we "pipe through" with "cat")
   _kustomize ${PREVIEW_DIR} \
     | define_source \
-    | (if [[ ${KUBECONFIG:-} =~ management-cluster-kubeconfig$ ]]; then cat ; else inject_bootstrap_values ; fi) \
+    | (if [[ $bootstrap == "yes" ]]; then inject_bootstrap_values ; else cat ; fi) \
     | kubectl apply -f -
   rm -Rf ${PREVIEW_DIR}
 
@@ -282,7 +288,8 @@ EOF
 
   echo "Wait for Helm release to be ready"
   if ! sylvactl watch --timeout 120s --ignore-suspended -n sylva-units-preview HelmRelease/sylva-units-preview/sylva-units; then
-    echo "Helm release sylva-units did not become ready in time"
+    echo "the preview Helm release of sylva-units used for validation did not become ready in time"
+    kubectl -n sylva-units-preview get hr sylva-units -o yaml | yq '.status.conditions[] | select(.type=="Ready" or .type == "Released") | .message'
     exit 1
   fi
 }
