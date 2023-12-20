@@ -86,6 +86,8 @@ units:
     enabled: true
   coredns:
     enabled: true
+  capo-contrail-bgpaas:
+    enabled: true
 
 cluster:
   control_plane_replicas: 3
