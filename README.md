@@ -400,20 +400,6 @@ Before triggering bootstrap.sh, certain prerequisites need to be done/followed
           username: Administrator
           password: "put the actual password here"
 
-  units:
-    workload-cluster:
-      helmrelease_spec:
-        values:
-          cluster:
-            baremetal_hosts:
-              dl360-38:
-                credentials:
-                  username: Administrator
-                  password: "put the actual password here"
-              dl360-39:
-                credentials:
-                  username: Administrator
-                  password: "put the actual password here"
   ```
 
 > **_NOTE:_** Obviously, the `secrets.yaml` file is sensitive and meant to be ignored by Git (see `.gitignore`). However, for the sake of security, it can be a good idea to [secure these files with SOPS](./sops-howto.md) to mitigate the risk of leakage.
