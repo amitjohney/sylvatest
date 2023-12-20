@@ -1482,6 +1482,7 @@ units:
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/cluster-garbage-collector
+      wait: true
 
   heat-operator:
     enabled_conditions:

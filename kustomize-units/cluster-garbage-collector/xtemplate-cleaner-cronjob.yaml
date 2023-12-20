@@ -46,20 +46,19 @@ spec:
                       TEMPLATE_TYPE_KIND=${TEMPLATE_TYPE_CR/\*/}
 
                       # Get all namespaces in which resources are seen (in which Sylva clusters are deployed)
-                      for TARGET_NAMESPACE in $(kubectl get $TEMPLATE_TYPE_KIND --all-namespaces | awk '{print $4}' | sort | uniq
-); do
+                      for TARGET_NAMESPACE in $(kubectl get $TEMPLATE_TYPE_KIND --all-namespaces -o=custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace,AGE:.metadata.creationTimestamp | awk '{print $2}' | sort | uniq); do
                         # Extract resource name from type
                         TEMPLATE_RESOURCE="${TEMPLATE_TYPE_KIND/Template}"
 
-                        # Get all template resources
-                        TEMPLATE_RESOURCES=$(kubectl -n "$TARGET_NAMESPACE" get "$TEMPLATE_TYPE_KIND" -o name)
+                        # Get all template resources older than 5 minutes
+                        TEMPLATE_RESOURCES=$(kubectl -n "$TARGET_NAMESPACE" get "$TEMPLATE_RESOURCE"-o go-template --template '{{range .items}}{{.metadata.name}} {{.metadata.creationTimestamp}}{{"\n"}}{{end}}' | awk '$2 <= "'$(date -d'now-5 minutes' -Ins --utc | sed 's/+0000/Z/')'" { print $1 }')
 
                         # Iterate over template resource names of a specific type
                         for TEMPLATE_RESOURCE_NAME in $TEMPLATE_RESOURCES; do
                             # Check if there are any cloned resources
                             EXISTING_RESOURCES=$(kubectl -n "$TARGET_NAMESPACE" get $TEMPLATE_RESOURCE -l cluster.x-k8s.io/cloned-from-name="$TEMPLATE_RESOURCE_NAME" -o yaml | yq '.items|length')
 
-                            # Delete template resource if no cloned resources exist for a particular 
+                            # Delete template resource if no cloned resources exist for a particular
                             if [[ $EXISTING_RESOURCES -eq 0 ]]; then
                                 echo "Deleting $TEMPLATE_TYPE/$TEMPLATE_RESOURCE_NAME"
                                 kubectl -n "$TARGET_NAMESPACE" delete "$TEMPLATE_TYPE_KIND/$TEMPLATE_RESOURCE_NAME"

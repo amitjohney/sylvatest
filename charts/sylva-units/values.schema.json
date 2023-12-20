@@ -364,7 +364,7 @@
                 }
               ]
             },
-            "node_annotations": {
+            "nodeAnnotations": {
               "anyOf": [
                 {
                   "type": "object"
@@ -2007,6 +2007,19 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
+            "machine_deployment_spec": {
+              "anyOf": [
+                {
+                  "type": "object"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "infra_provider": {
               "anyOf": [
                 {
@@ -2758,7 +2771,8 @@
                 "ssh_key_name": {
                   "anyOf": [
                     {
-                      "type": "string"
+                      "type": "string",
+                      "pattern": "^[0-9A-Za-z@._ -]+$"
                     },
                     {
                       "$ref": "#/$defs/string-with-gotpl"
@@ -4136,6 +4150,19 @@
           "anyOf": [
             {
               "type": "object"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "additional_commands": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/bootstrap-additional-commands"
             },
             {
               "$ref": "#/$defs/string-with-gotpl"
