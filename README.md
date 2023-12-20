@@ -330,11 +330,11 @@ Before trigerring bootstrap.sh, some prerequisites need to be satisfied.
 
 </details>
 
-<details><summary>**Deploying Baremetal Clusters using CAPM3**</summary>
+<details><summary>Deploying baremetal clusters using CAPM3</summary>
 
-This scenario details deployment procedure for a Full Baremetal use case. You will make use of Baremetal Hosts on both **management-cluster** && **workload-cluster** to deploy `sylva`.
+This scenario details deployment procedure for a full Baremetal use case.
 
-In order to deploy a minimal `sylva cluster` on baremetal servers, you would need a baremetal host, acting as K8s controller and K8s worker. This is applicable for both `management && workload` clusters.
+In order to deploy a minimal `sylva cluster` on baremetal servers, you would need a baremetal host, acting as K8s controller and K8s worker. This is applicable for both `management` & `workload` clusters.
 For Highly Available clusters at least three servers are required acting as both K8s `control-plane` && `worker`.
 
 > **_Hardware Requirements:_** It is recommended to have the following specs at the minimum for the Baremetal Servers
@@ -363,7 +363,7 @@ TCP 161/162: SNMPv3 (BM -> Prometheus) (optional)
 - 9345
 - 9999
 
-The baremetal nodes needs to have their first interface (PXE boot interface) connected to a provisioning network which needs to access to a DHCP server (potentially through a DHCP relay). This provisioning network needs also to reach a HTTP(s) endpoint (Ironic API: components of CAPM3) on the management cluster and to be accessible on port TCP 9999.
+The baremetal nodes need to have their first interface (PXE boot interface) connected to a provisioning network with access to a DHCP server (potentially through a DHCP relay). This provisioning network needs also to reach a HTTP(s) endpoint (Ironic API: components of CAPM3) on the management cluster and to be accessible on port TCP 9999.
 
 The provisioning network should be split into 2 ranges, one used for the DHCPD server during provisioning and the second for the Ironic provisioning pools to provision the operating system on each baremetal node.
 
