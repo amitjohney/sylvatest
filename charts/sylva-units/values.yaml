@@ -2696,6 +2696,16 @@ units:
             - op: replace
               path: /spec/template/spec/containers/0/image
               value: registry.gitlab.com/sylva-projects/sylva-elements/container-images/oci-tools:0.0.8
+            - op: add
+              path: /spec/template/spec/containers/0/env/0
+              value:
+                name: https_proxy
+                value: '{{ .Values.proxies.https_proxy }}'
+            - op: add
+              path: /spec/template/spec/containers/0/env/1
+              value:
+                name: no_proxy
+                value: '{{ include "sylva-units.no_proxy" . }}'
         - target:
             kind: ConfigMap
           patch: >-
