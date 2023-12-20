@@ -64,13 +64,6 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: 0.7.0
 
-  metal3-suse:
-    kind: GitRepository
-    spec:
-      url: https://github.com/suse-edge/charts.git
-      ref:
-        tag: 0.2.0-metal3
-
   sylva-capi-cluster:
     kind: GitRepository
     spec:
@@ -1135,12 +1128,12 @@ units:
     depends_on:
       cert-manager: true
       '{{ .Values._internal.default_storage_class_unit }}': true
-    repo: metal3-suse
-    helm_chart_artifact_name: metal3
+    helm_repo_url: https://suse-edge.github.io/charts
     helmrelease_spec:
       chart:
         spec:
-          chart: charts/metal3/0.2.0
+          chart: metal3
+          version: 0.2.1
       install:
         createNamespace: true
       targetNamespace: metal3-system
@@ -1148,10 +1141,6 @@ units:
         global:
           ironicIP: '{{ .Values.cluster_external_ip }}'
           provisioningInterface: eth0
-        metal3-baremetal-operator:
-          securityContext:
-            allowPrivilegeEscalation: false
-            runAsUser: 11000
         metal3-ironic:
           ingress:
             enabled: false
@@ -1161,9 +1150,6 @@ units:
             - '{{ .Values.cluster_external_ip }}'
             annotations:
               metallb.universe.tf/allow-shared-ip: cluster-external-ip
-          podSecurityContext:
-            runAsUser: 10475
-            fsGroup: 10475
           baremetaloperator:
             ironichostNetwork: false
           persistence:
@@ -1171,9 +1157,6 @@ units:
               storageClass: '{{ .Values._internal.default_storage_class }}'
               accessMode: ReadWriteOnce
         metal3-mariadb:
-          podSecurityContext:
-            runAsUser: 10060
-            fsGroup: 10060
           persistence:
             storageClass: '{{ .Values._internal.default_storage_class }}'
 
