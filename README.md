@@ -395,7 +395,7 @@ Before triggering bootstrap.sh, certain prerequisites need to be done/followed
   ```yaml
   cluster:
     baremetal_hosts:
-      my-:
+      my-hpe-server:
         credentials:
           username: Administrator
           password: "put the actual password here"
