@@ -876,6 +876,8 @@ properties:
             pattern: "^(DES|AES|AES192|AES256)$"
           priv_password:
             type: string
+        required:
+          - community
       devices:
         type: array
         items:
@@ -888,6 +890,21 @@ properties:
             ip:
               type: string
               format: ipv4
+    # auth credentials properties are required only for SNMP v3
+    if:
+      properties:
+        version:
+          const: 3
+      then:
+        properties:
+          auth:
+            required:
+              - security_level
+              - username
+              - password
+              - auth_protocol
+              - priv_protocol
+              - priv_password
 
 allOf:
 

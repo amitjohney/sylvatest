@@ -6326,7 +6326,10 @@
             "priv_password": {
               "type": "string"
             }
-          }
+          },
+          "required": [
+            "community"
+          ]
         },
         "devices": {
           "type": "array",
@@ -6342,6 +6345,27 @@
                 "type": "string",
                 "format": "ipv4"
               }
+            }
+          }
+        }
+      },
+      "if": {
+        "properties": {
+          "version": {
+            "const": 3
+          }
+        },
+        "then": {
+          "properties": {
+            "auth": {
+              "required": [
+                "security_level",
+                "username",
+                "password",
+                "auth_protocol",
+                "priv_protocol",
+                "priv_password"
+              ]
             }
           }
         }

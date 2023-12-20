@@ -3583,6 +3583,7 @@ shared_workload_clusters_secret_values:
     capo: '{{ tuple (dict "clouds_yaml" (.Values.cluster | dig "capo" "clouds_yaml" dict)) (.Values.cluster | dig "capo" "clouds_yaml" dict) | include "set-only-if" }}'
 
 snmp:
-  version: 3
-  auth: {}
+  version: 2
+  auth: 
+    community: public
   devices: []
