@@ -7,7 +7,7 @@ metadata:
   labels:
     app: cluster-garbage-collector
 spec:
-  schedule: ${CRONJOB_SCHEDULE:=37 */3 * * *} # executed by default every 3 hours, on the 37th minute of every third hour, on all days of the month, all months, and all days of the week - if not overriden from sylva-units
+  schedule: ${CRONJOB_SCHEDULE:=\"37 */3 * * *\""} # executed by default every 3 hours, on the 37th minute of every third hour, on all days of the month, all months, and all days of the week - if not overriden from sylva-units
   concurrencyPolicy: Replace
   successfulJobsHistoryLimit: 5
   failedJobsHistoryLimit: 5
