@@ -421,6 +421,107 @@ units:
       wait: true
       targetNamespace: kubevirt-tests
 
+  harbor:
+    depends_on:
+      ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
+    annotations:
+      sylvactl/readyMessage: "Harbor UI can be reached at https://{{ .Values.harbor.external_hostname }} ({{ .Values.harbor.external_hostname }} must resolve to {{ .Values.display_external_ip }})"
+    helm_repo_url: https://helm.goharbor.io
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: harbor
+          version: 1.11.1
+      targetNamespace: harbor
+      values:
+        persistence:
+          enabled: true
+          resourcePolicy: "keep"
+          persistentVolumeClaim:
+            registry:
+              storageClass: '{{ .Values._internal.default_storage_class }}'
+              #size: 32Gi
+            chartmuseum:
+              storageClass: '{{ .Values._internal.default_storage_class }}'
+              #size: 32Gi
+            jobservice:
+              storageClass: '{{ .Values._internal.default_storage_class }}'
+              #size: 8Gi
+            database:
+              storageClass: '{{ .Values._internal.default_storage_class }}'
+              #size: 8Gi
+            redis:
+              storageClass: '{{ .Values._internal.default_storage_class }}'
+              #size: 8Gi
+            #trivy:
+              #storageClass: '{{ .Values._internal.default_storage_class }}'
+              #size: 8Gi
+        expose:
+          ingress:
+            enabled: true
+            hosts:
+              core: '{{ .Values.harbor.external_hostname }}'
+        notary:
+          enabled: false
+        trivy:
+          enabled: false
+      _postRenderers:
+        - kustomize:
+            patches:
+              - target:
+                  kind: Deployment|StatefulSet
+                patch: |-
+                  - op: add
+                    path: /spec/template/spec/containers/0/securityContext
+                    value:
+                      runAsNonRoot: true
+                      seccompProfile:
+                        type: RuntimeDefault
+                      allowPrivilegeEscalation: false
+                      capabilities:
+                        drop:
+                          - ALL
+              - target:
+                  kind: Deployment
+                  name: harbor-registry
+                patch: |-
+                  - op: add
+                    path: /spec/template/spec/containers/1/securityContext
+                    value:
+                      runAsNonRoot: true
+                      seccompProfile:
+                        type: RuntimeDefault
+                      allowPrivilegeEscalation: false
+                      capabilities:
+                        drop:
+                          - ALL
+              - target:
+                  kind: StatefulSet
+                  name: harbor-database
+                patch: |-
+                  - op: add
+                    path: /spec/template/spec/initContainers/0/securityContext
+                    value:
+                      runAsNonRoot: true
+                      seccompProfile:
+                        type: RuntimeDefault
+                      allowPrivilegeEscalation: false
+                      capabilities:
+                        drop:
+                          - ALL
+                  - op: add
+                    path: /spec/template/spec/initContainers/1/securityContext
+                    value:
+                      runAsNonRoot: true
+                      seccompProfile:
+                        type: RuntimeDefault
+                      allowPrivilegeEscalation: false
+                      capabilities:
+                        drop:
+                          - ALL
+      install:
+        createNamespace: true
+
   vault-operator:
     repo: vault-operator
     helmrelease_spec:
@@ -2655,6 +2756,9 @@ flux:
 
 neuvector:
   external_hostname: 'neuvector.{{ .Values.cluster_external_domain }}'
+
+harbor:
+  external_hostname: 'harbor.{{ .Values.cluster_external_domain }}'
 
 os_image_server:
   external_hostname: ''

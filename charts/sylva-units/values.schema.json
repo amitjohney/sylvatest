@@ -5835,6 +5835,23 @@
         }
       }
     },
+    "harbor": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "external_hostname": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
+        }
+      }
+    },
     "flux": {
       "type": "object",
       "additionalProperties": false,
