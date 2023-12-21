@@ -15,22 +15,48 @@ metadata:
     app: cluster-garbage-collector
 rules:
   - apiGroups:
+      - cluster.x-k8s.io
+    verbs:
+      - get
+      - list
+    resources:
+      - machinedeployments
+      - machinesets
+  - apiGroups:
       - infrastructure.cluster.x-k8s.io
     verbs:
       - get
       - list
-      - patch
+      - delete
     resources:
       - dockermachinetemplates
       - vspheremachinetemplates
       - openstackmachinetemplates
       - metal3machinetemplates
   - apiGroups:
+      - infrastructure.cluster.x-k8s.io
+    verbs:
+      - get
+      - list
+    resources:
+      - dockermachines
+      - vspheremachines
+      - openstackmachines
+      - metal3machines
+  - apiGroups:
+      - controlplane.cluster.x-k8s.io
+    verbs:
+      - get
+      - list
+    resources:
+      - kubeadmcontrolplanes
+      - rke2controlplanes
+  - apiGroups:
       - bootstrap.cluster.x-k8s.io
     verbs:
       - get
       - list
-      - patch
+      - delete
     resources:
       - kubeadmconfigtemplates
       - rke2configtemplates

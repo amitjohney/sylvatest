@@ -35,6 +35,8 @@ units:
     enabled: true
   cluster:
     enabled: true
+  cluster-garbage-collector:
+    enabled: true
   trivy-operator:
     enabled: true  # explicitly enable to test Trivy
     helmrelease_spec:

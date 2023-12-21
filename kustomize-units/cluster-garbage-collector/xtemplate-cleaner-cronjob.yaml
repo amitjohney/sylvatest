@@ -7,7 +7,7 @@ metadata:
   labels:
     app: cluster-garbage-collector
 spec:
-  schedule: "37 */3 * * *" # executed every 3 hours, on the 0th minute of every third hour, on all days of the month, all months, and all days of the week
+  schedule: ${CRONJOB_SCHEDULE:-"37 */3 * * *"} # executed by default every 3 hours, on the 37th minute of every third hour, on all days of the month, all months, and all days of the week - if not overriden from sylva-units
   concurrencyPolicy: Replace
   successfulJobsHistoryLimit: 5
   failedJobsHistoryLimit: 5
@@ -26,8 +26,8 @@ spec:
               image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/kube-job:v1.0.5
               imagePullPolicy: IfNotPresent
               command:
-                - '/bin/bash'
-                - '-c'
+                - /bin/bash
+                - -c
                 - |
                   set -e
 
@@ -47,25 +47,30 @@ spec:
                       # (see VSphereMachineTemplates.*cluster.x-k8s.io above)
                       TEMPLATE_TYPE_KIND=${TEMPLATE_TYPE_CR/\*/}
 
-                      # Get all namespaces in which resources are seen (in which Sylva clusters are deployed)
-                      for TARGET_NAMESPACE in $(kubectl get $TEMPLATE_TYPE_KIND --all-namespaces -o=custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace,AGE:.metadata.creationTimestamp | awk '{print $2}' | sort | uniq); do
-                        # Extract resource name from type
-                        TEMPLATE_RESOURCE="${TEMPLATE_TYPE_KIND/Template}"
+                      # Get all namespaces in which template resources are seen (in which Sylva clusters are deployed)
+                      for TARGET_NAMESPACE in $(kubectl get $TEMPLATE_TYPE_KIND --all-namespaces -o=custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace | awk '{print $2}' | sort | uniq); do
 
-                        # Get all template resources older than 5 minutes
-                        TEMPLATE_RESOURCES=$(kubectl -n "$TARGET_NAMESPACE" get "$TEMPLATE_RESOURCE"-o go-template --template '{{range .items}}{{.metadata.name}} {{.metadata.creationTimestamp}}{{"\n"}}{{end}}' | awk '$2 <= "'$(date -d'now-5 minutes' -Ins --utc | sed 's/+0000/Z/')'" { print $1 }')
+                        # Get all template resources older than 5 minutes (eg. name of all OpenStackMachineTemplates from a ns with .metadata.creationTimestamp > 300s)
+                        # and only continue if list is not empty
+                        TEMPLATE_RESOURCE_INSTANCE_LIST=$(kubectl -n "$TARGET_NAMESPACE" get "$TEMPLATE_TYPE_KIND" -o go-template --template '{{range .items}}{{.metadata.name}} {{.metadata.creationTimestamp}}{{"\n"}}{{end}}' | awk '$2 <= "'$(date -d'now-5 minutes' -Ins --utc | sed 's/+0000/Z/')'" { print $1 }')
+                        if [ -n "$TEMPLATE_RESOURCE_INSTANCE_LIST" ]; then
 
-                        # Iterate over template resource names of a specific type
-                        for TEMPLATE_RESOURCE_NAME in $TEMPLATE_RESOURCES; do
-                            # Check if there are any cloned resources
-                            EXISTING_RESOURCES=$(kubectl -n "$TARGET_NAMESPACE" get $TEMPLATE_RESOURCE -l cluster.x-k8s.io/cloned-from-name="$TEMPLATE_RESOURCE_NAME" -o yaml | yq '.items|length')
+                          # Extract cloned template resource type from template type (eg. OpenStackMachine out of OpenStackMachineTemplate)
+                          CLONED_TEMPLATE_RESOURCE="${TEMPLATE_TYPE_KIND/Template}"
 
-                            # Delete template resource if no cloned resources exist for a particular
+                          # Iterate over template resource instances
+                          for TEMPLATE_RESOURCE_INSTANCE in $TEMPLATE_RESOURCE_INSTANCE_LIST; do
+
+                            # Check if there are currently any cloned template resources still linked to the template resource instance
+                            EXISTING_RESOURCES=$(kubectl -n "$TARGET_NAMESPACE" get $CLONED_TEMPLATE_RESOURCE -l cluster.x-k8s.io/cloned-from-name="$TEMPLATE_RESOURCE_INSTANCE" -o yaml | yq '.items|length')
+
+                            # Delete template resource instance if no cloned resources exist for it
                             if [[ $EXISTING_RESOURCES -eq 0 ]]; then
-                                echo "Deleting $TEMPLATE_TYPE/$TEMPLATE_RESOURCE_NAME"
-                                kubectl -n "$TARGET_NAMESPACE" delete "$TEMPLATE_TYPE_KIND/$TEMPLATE_RESOURCE_NAME"
+                              echo "Deleting $TEMPLATE_TYPE_KIND/$TEMPLATE_RESOURCE_INSTANCE"
+                              kubectl -n "$TARGET_NAMESPACE" delete "$TEMPLATE_TYPE_KIND/$TEMPLATE_RESOURCE_INSTANCE"
                             fi
-                        done
+                          done
+                        fi
                       done
                     fi
                   done
@@ -79,7 +84,3 @@ spec:
                 privileged: false
                 seccompProfile:
                   type: RuntimeDefault
-      securityContext:
-        runAsNonRoot: true
-        seccompProfile:
-          type: RuntimeDefault
