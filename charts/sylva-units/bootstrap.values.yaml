@@ -446,8 +446,8 @@ units_override_enabled:
   # - calico-crd
   # - calico
   # - tigera-clusterrole
-  - management-cluster-flux
-  - management-cluster-configs
+  # - management-cluster-flux
+  # - management-cluster-configs
   # - management-sylva-units
   # - pivot
   # - heat-operator
