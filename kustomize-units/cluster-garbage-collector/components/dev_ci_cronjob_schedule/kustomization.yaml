@@ -7,4 +7,4 @@ patches:
   patch: |
     - op: replace
       path: /spec/schedule
-      value: "*/10 * * *"
+      value: "*/10 * * * *"
