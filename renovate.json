@@ -190,14 +190,6 @@
       ],
       "registryUrlTemplate": "https://{{{ registryUrl }}}",
       "datasourceTemplate": "docker"
-    },
-    {
-      "customType": "regex",
-      "datasourceTemplate": "helm",
-      "fileMatch": ["tools/oci/push-helm-charts-artifacts.sh"],
-      "matchStrings": [
-        "process_chart_in_helm_repo \"(?<registryUrl>.*?)\"\\s[\\w\\W]*?(?<depName>.*?)\\s(?<currentValue>.*)"
-      ]
     }
   ]
 }
