@@ -415,7 +415,7 @@ units:
     enabled_conditions:
     - '{{ tuple . "libvirt-metal" | include "unit-enabled" }}'
     depends_on:
-      calico: false
+      '{{ .Values.cluster.default_cni }}': false
 
   libvirt-metal:
     enabled_conditions:
