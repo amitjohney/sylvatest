@@ -56,6 +56,7 @@
 | **snmp-exporter** | installs SNMP exporter | beta |  | [Helm](https://prometheus-community.github.io/helm-charts) | 1.8.1 |
 | **sylva-prometheus-rules** | installs prometheus rules using external helm chart & rules git repo | beta |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-prometheus-rules.git) | 0.0.7 |
 | **sylva-units-operator** | installs sylva-units operator | experimental |  | [Kustomize](https://gitlab.com/sylva-projects/sylva-elements/sylva-units-operator.git/config/default?ref=0.0.0-pre4) | 0.0.0-pre4 |
+| **sylva-units-release-template** | create the default sylva-units-release-template used by workload-cluster CR | experimental | True | Kustomize | N/A |
 | **thanos** | installs Thanos | beta |  | [Helm](https://charts.bitnami.com/bitnami) | 12.16.1 |
 | **trivy-operator** | installs Trivy operator | beta |  | [Helm](https://aquasecurity.github.io/helm-charts/) | 0.20.6 |
 | **workload-cluster-operator** | installs Sylva operator for managing workload clusters | experimental |  | [Kustomize](https://gitlab.com/sylva-projects/sylva-elements/workload-cluster-operator.git/config/default?ref=0.0.0-pre3) | 0.0.0-pre3 |

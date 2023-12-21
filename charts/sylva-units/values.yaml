@@ -1355,6 +1355,10 @@ units:
                 resources:
                   - "externalsecrets"
                 verbs: ["get", "list", "watch", "patch", "update"]
+              - apiGroups: ["unitsoperator.sylva"]
+                resources:
+                  - "sylvaunitsreleasetemplates"
+                verbs: ["get", "list", "watch", "patch", "update", "create", "delete"]
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:
@@ -1411,6 +1415,31 @@ units:
       path: ./kustomize-units/rancher-monitoring-clusterid-inject
       wait: true
 
+  sylva-units-release-template:
+    info:
+      description: create the default sylva-units-release-template used by workload-cluster CR
+      internal: true
+      maturity: experimental
+    unit_templates:
+    - base-deps
+    depends_on:
+      sylva-units-operator: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/sylva-units-release-template
+      wait: true
+      targetNamespace: sylva-system
+      _patches:
+        - target:
+            group: unitsoperator.sylva
+            version: v1alpha1
+            kind: SylvaUnitsReleaseTemplate
+          patch: |
+            - op: replace
+              path: /spec/sylvaUnitsSource
+              value:
+            {{ include "surT-default" . | indent 4 }}
+
   shared-workload-clusters-settings:
     info:
       description: manages parameters which would be shared between management and workload clusters
@@ -1419,6 +1448,8 @@ units:
     - base-deps
     depends_on:
       kyverno: true
+      sylva-units-operator: true
+      sylva-units-release-template: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/shared-workload-clusters-settings
