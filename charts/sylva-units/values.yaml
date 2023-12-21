@@ -1483,9 +1483,8 @@ units:
     kustomization_spec:
       path: ./kustomize-units/cluster-garbage-collector
       wait: true
-      postBuild:
-        substitute:
-          CRONJOB_SCHEDULE: '{{ tuple "schedule: \"*/10 * * *\"" (list "dev" "ci" | has .Values.env_type) | include "set-only-if" }}'
+      _components:
+        - '{{ tuple "components/dev_ci_cronjob_schedule" (list "dev" "ci" | has .Values.env_type)  | include "set-only-if" }}'      
 
   heat-operator:
     enabled_conditions:
