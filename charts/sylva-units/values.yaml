@@ -2933,7 +2933,7 @@ _internal:
   sylva_core_existing_source: '{{ .Values.unit_helmrelease_kustomization_spec_default.sourceRef }}'
 
   # We need to retrieve bootstrap_node_ip in management-cluster while using libvirt-metal emulation, it is stored in a ConfigMap by libvirt-metal unit in that case
-  bootstrap_node_ip: '{{ lookup "v1" "ConfigMap" "sylva-system" "cluster-public-endpoint" | dig "data" "address" "not found" | default "not found" }}'
+  bootstrap_node_ip: '{{ lookup "v1" "ConfigMap" "sylva-system" "cluster-public-endpoint" | dig "data" "address" "not_found" | default "not_found" }}'
 
   # These values are used only if `os_images` is empty
   default_os_images:
