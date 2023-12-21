@@ -39,35 +39,89 @@ spec:
                     OpenStackMachineTemplates
                     Metal3MachineTemplates
                   "
-                  for TEMPLATE_TYPE_CR in ${TEMPLATE_TYPES_CR[@]}; do
+                  for TEMPLATE_CR in ${TEMPLATE_TYPES_CR[@]}; do
 
-                    if kubectl api-resources | grep -qi $TEMPLATE_TYPE_CR ; then
+                    if kubectl api-resources | grep -qi $TEMPLATE_CR ; then
 
                       # Transform the .* used for matching kubectl api-resource, into a plain '.'
                       # (see VSphereMachineTemplates.*cluster.x-k8s.io above)
-                      TEMPLATE_TYPE_KIND=${TEMPLATE_TYPE_CR/\*/}
+                      TEMPLATE_RESOURCE=${TEMPLATE_CR/\*/}
 
-                      # Get all namespaces in which template resources are seen (in which Sylva clusters are deployed)
-                      for TARGET_NAMESPACE in $(kubectl get $TEMPLATE_TYPE_KIND --all-namespaces -o=custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace | awk '{print $2}' | sort | uniq); do
+                      # Get all namespaces in which template resources of a particular type are seen (in which Sylva clusters are deployed)
+                      for TARGET_NAMESPACE in $(kubectl get $TEMPLATE_RESOURCE --all-namespaces -o=custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace | awk '{print $2}' | sort | uniq); do
 
                         # Get all template resources older than 5 minutes (eg. name of all OpenStackMachineTemplates from a ns with .metadata.creationTimestamp > 300s)
                         # and only continue if list is not empty
-                        TEMPLATE_RESOURCE_INSTANCE_LIST=$(kubectl -n "$TARGET_NAMESPACE" get "$TEMPLATE_TYPE_KIND" -o go-template --template '{{range .items}}{{.metadata.name}} {{.metadata.creationTimestamp}}{{"\n"}}{{end}}' | awk '$2 <= "'$(date -d'now-5 minutes' -Ins --utc | sed 's/+0000/Z/')'" { print $1 }')
+                        TEMPLATE_RESOURCE_INSTANCE_LIST=$(kubectl -n "$TARGET_NAMESPACE" get "$TEMPLATE_RESOURCE" -o go-template --template '{{range .items}}{{.metadata.name}} {{.metadata.creationTimestamp}}{{"\n"}}{{end}}' | awk '$2 <= "'$(date -d'now-5 minutes' -Ins --utc | sed 's/+0000/Z/')'" { print $1 }')
                         if [ -n "$TEMPLATE_RESOURCE_INSTANCE_LIST" ]; then
 
-                          # Extract cloned template resource type from template type (eg. OpenStackMachine out of OpenStackMachineTemplate)
-                          CLONED_TEMPLATE_RESOURCE="${TEMPLATE_TYPE_KIND/Template}"
+                          # Only for XMachineTemplate resources
+                          if [[ $TEMPLATE_RESOURCE =~ .*MachineTemplate$ ]]; then
+                            # Extract cloned template resource type from template type (eg. OpenStackMachine out of OpenStackMachineTemplate)
+                            CLONED_TEMPLATE_RESOURCE="${TEMPLATE_RESOURCE/Template}"
+                          fi
 
-                          # Iterate over template resource instances
+                          # Iterate over template resource instances (eg. each OpenStackMachineTemplate)
                           for TEMPLATE_RESOURCE_INSTANCE in $TEMPLATE_RESOURCE_INSTANCE_LIST; do
 
-                            # Check if there are currently any cloned template resources still linked to the template resource instance
-                            EXISTING_RESOURCES=$(kubectl -n "$TARGET_NAMESPACE" get $CLONED_TEMPLATE_RESOURCE -l cluster.x-k8s.io/cloned-from-name="$TEMPLATE_RESOURCE_INSTANCE" -o yaml | yq '.items|length')
+                            > /tmp/output.txt
+                            fail=0
 
-                            # Delete template resource instance if no cloned resources exist for it
-                            if [[ $EXISTING_RESOURCES -eq 0 ]]; then
-                              echo "Deleting $TEMPLATE_TYPE_KIND/$TEMPLATE_RESOURCE_INSTANCE"
-                              kubectl -n "$TARGET_NAMESPACE" delete "$TEMPLATE_TYPE_KIND/$TEMPLATE_RESOURCE_INSTANCE"
+                            # Only for (Docker|VSphere|OpenStack|Metal3)MachineTemplates resources
+                            if [[ $TEMPLATE_RESOURCE =~ .*MachineTemplate ]]; then
+
+                              # Check there's no KubeadmControlPlane.spec.machineTemplate.infrastructureRef.name
+                              # or RKE2ControlPlane.spec.infrastructureRef.name usage for the template resource instance
+                              if kubectl api-resources | grep -qi KubeadmControlPlane ; then
+                                kubectl -n "$TARGET_NAMESPACE" get KubeadmControlPlane -o=custom-columns=KIND:.kindNAME:.metadata.name,INFRASTRUCTURE_REF_NAME:.spec.machineTemplate.infrastructureRef.name,INFRASTRUCTURE_REF_KIND:.spec.machineTemplate.infrastructureRef.kind | tail -n +2 >> /tmp/output.txt
+                              fi
+                              if kubectl api-resources | grep -qi RKE2ControlPlane ; then
+                                kubectl -n "$TARGET_NAMESPACE" get RKE2ControlPlane -o=custom-columns=KIND:.kind,NAME:.metadata.name,INFRASTRUCTURE_REF_NAME:.spec.infrastructureRef.name,INFRASTRUCTURE_REF_KIND:.spec.infrastructureRef.kind | tail -n +2  >> /tmp/output.txt
+                              fi
+
+                              # Check there's no MachineSet.spec.template.spec.infrastructureRef.name usage for the template resource instance
+                              kubectl -n "$TARGET_NAMESPACE" get MachineSet -o=custom-columns=KIND:.kind,NAME:.metadata.name,INFRASTRUCTURE_REF_NAME:.spec.template.spec.infrastructureRef.name,INFRASTRUCTURE_REF_KIND:.spec.template.spec.infrastructureRef.kind | tail -n +2  >> /tmp/output.txt
+
+                              # Check there's no MachineDeployment.spec.template.spec.infrastructureRef.name usage for the template resource instance
+                              kubectl -n "$TARGET_NAMESPACE" get MachineSet -o=custom-columns=KIND:.kind,NAME:.metadata.name,INFRASTRUCTURE_REF_NAME:.spec.template.spec.infrastructureRef.name,INFRASTRUCTURE_REF_KIND:.spec.template.spec.infrastructureRef.kind | tail -n +2  >> /tmp/output.txt
+
+                              while read INFRASTRUCTURE_CONSUMER_KIND INFRASTRUCTURE_CONSUMER_INSTANCE INFRASTRUCTURE_REF_NAME INFRASTRUCTURE_REF_KIND; do
+                                if [[ $INFRASTRUCTURE_REF_NAME == $TEMPLATE_RESOURCE_INSTANCE && $INFRASTRUCTURE_REF_KIND == $TEMPLATE_RESOURCE ]]; then
+                                  echo "Found $TEMPLATE_RESOURCE/$TEMPLATE_RESOURCE_INSTANCE being referenced by $INFRASTRUCTURE_CONSUMER_KIND/$INFRASTRUCTURE_CONSUMER_INSTANCE, will try again later."
+                                  fail=1
+                                fi
+                              done < /tmp/output.txt
+
+                              # Check if there are currently any cloned template resources still linked to the template resource instance
+                              EXISTING_CLONED_RESOURCES=$(kubectl -n "$TARGET_NAMESPACE" get $CLONED_TEMPLATE_RESOURCE -o jsonpath="{ $.items[?(@.metadata.annotations.cluster\.x-k8s\.io\/cloned-from-name == '$TEMPLATE_RESOURCE_INSTANCE')].metadata.name}" | wc -w)
+
+                              # Don't consider template resource instance for deletion if cloned resources still exist for it
+                              if [[ $EXISTING_CLONED_RESOURCES -gt 0 ]]; then
+                                echo "The following $CLONED_TEMPLATE_RESOURCE resource are still annotated with cluster.x-k8s.io/cloned-from-name=$TEMPLATE_RESOURCE_INSTANCE \n"
+                                kubectl -n "$TARGET_NAMESPACE" get $CLONED_TEMPLATE_RESOURCE -o jsonpath="{ $.items[?(@.metadata.annotations.cluster\.x-k8s\.io\/cloned-from-name == '$TEMPLATE_RESOURCE_INSTANCE')].metadata.name}"
+                                fail=1
+                              fi
+                            fi
+
+                            # Only for (Kubeadm|RKE2)ConfigTemplate resources
+                            if [[ $TEMPLATE_RESOURCE =~ .*ConfigTemplate ]]; then
+                              # Check there's no MachineSet.spec.template.spec.bootstrap.configRef.name usage for the template resource instance
+                              kubectl -n "$TARGET_NAMESPACE" get MachineSet -o=custom-columns=KIND:.kind,NAME:.metadata.name,BOOTSTRAP_CONFIG_REF_NAME:.spec.template.spec.bootstrap.configRef.name,BOOTSTRAP_CONFIG_REF_KIND:.spec.template.spec.bootstrap.configRef.kind | tail -n +2  >> /tmp/output.txt
+
+                              # Check there's no MachineDeployment.spec.template.spec.bootstrap.configRef.name usage for the template resource instance
+                              kubectl -n "$TARGET_NAMESPACE" get MachineSet -o=custom-columns=KIND:.kind,NAME:.metadata.name,BOOTSTRAP_CONFIG_REF_NAME:.spec.template.spec.bootstrap.configRef.name,BOOTSTRAP_CONFIG_REF_KIND:.spec.template.spec.bootstrap.configRef.kind | tail -n +2  >> /tmp/output.txt
+
+                              while read BOOTSTRAP_CONSUMER_KIND BOOTSTRAP_CONSUMER_INSTANCE BOOTSTRAP_CONFIG_REF_NAME BOOTSTRAP_CONFIG_REF_KIND; do
+                                if [[ $BOOTSTRAP_CONFIG_REF_NAME == $TEMPLATE_RESOURCE_INSTANCE && $BOOTSTRAP_CONFIG_REF_KIND == $TEMPLATE_RESOURCE ]]; then
+                                  echo "Found $TEMPLATE_RESOURCE/$TEMPLATE_RESOURCE_INSTANCE being referenced by $BOOTSTRAP_CONSUMER_KIND/$BOOTSTRAP_CONSUMER_INSTANCE, will try again later."
+                                  fail=1
+                                fi
+                              done < /tmp/output.txt
+                            fi
+
+                            if [[ "$fail" -eq 0 ]]; then
+                              echo "Deleting $TEMPLATE_RESOURCE/$TEMPLATE_RESOURCE_INSTANCE"
+                              kubectl -n "$TARGET_NAMESPACE" delete "$TEMPLATE_RESOURCE/$TEMPLATE_RESOURCE_INSTANCE"
                             fi
                           done
                         fi
