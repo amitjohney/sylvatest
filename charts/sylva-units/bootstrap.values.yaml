@@ -437,21 +437,22 @@ units_override_enabled:
   - '{{ .Values.cluster.capi_providers.infra_provider }}'
   - '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
   - '{{ .Values._internal.metal3_unit }}'
-  - bootstrap-local-path
-  - ingress-nginx
-  - os-image-server
-  - cluster
-  - namespace-defs
-  - calico-crd
-  - calico
-  - tigera-clusterrole
-  - management-cluster-flux
+  - cluster-garbage-collector
+  # - bootstrap-local-path
+  # - ingress-nginx
+  # - os-image-server
+  # - cluster
+  # - namespace-defs
+  # - calico-crd
+  # - calico
+  # - tigera-clusterrole
+  # - management-cluster-flux
   - management-cluster-configs
-  - management-sylva-units
-  - pivot
-  - heat-operator
-  - capo-cluster-resources
-  - multus
-  - multus-ready
-  - libvirt-metal
-  - vsphere-cpi
+  # - management-sylva-units
+  # - pivot
+  # - heat-operator
+  # - capo-cluster-resources
+  # - multus
+  # - multus-ready
+  # - libvirt-metal
+  # - vsphere-cpi
