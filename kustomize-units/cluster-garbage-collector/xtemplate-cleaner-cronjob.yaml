@@ -7,7 +7,7 @@ metadata:
   labels:
     app: cluster-garbage-collector
 spec:
-  schedule: "0 */3 * * *" # executed every 3 hours, on the 0th minute of every third hour, on all days of the month, all months, and all days of the week
+  schedule: "37 */3 * * *" # executed every 3 hours, on the 0th minute of every third hour, on all days of the month, all months, and all days of the week
   concurrencyPolicy: Replace
   successfulJobsHistoryLimit: 5
   failedJobsHistoryLimit: 5
@@ -29,6 +29,8 @@ spec:
                 - '/bin/bash'
                 - '-c'
                 - |
+                  set -e
+
                   TEMPLATE_TYPES_CR="
                     KubeadmConfigTemplates
                     RKE2ConfigTemplates

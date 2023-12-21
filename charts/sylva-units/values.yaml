@@ -1475,6 +1475,7 @@ units:
   cluster-garbage-collector:
     depends_on:
       cluster: true
+      capi: true
       capd: '{{ tuple . "capd" | include "unit-enabled" }}'
       capv: '{{ tuple . "capv" | include "unit-enabled" }}'
       capo: '{{ tuple . "capo" | include "unit-enabled" }}'
