@@ -1473,7 +1473,7 @@ units:
 
   cluster-garbage-collector:
     depends_on:
-      cluster: true
+      cluster: false # we can't depend directly on 'cluster' unit, since it's being disabled in 'management-sylva-units' and re-enabled by 'pivot'
       capi: true
       capd: '{{ tuple . "capd" | include "unit-enabled" }}'
       capv: '{{ tuple . "capv" | include "unit-enabled" }}'
