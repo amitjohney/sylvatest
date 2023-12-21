@@ -2399,18 +2399,19 @@ units:
             {{- $result = append $result $service_monitor -}}
             {{- end }}
             {{- $result | include "preserve-type" -}}
-        config: |
-          dell_idrac:
-            version: {{ .Values.snmp.version }}
-            auth:
-              community: '{{ .Values.snmp.auth.community }}'
-              security_level: '{{ .Values.snmp.auth.security_level }}'
-              username: '{{ .Values.snmp.auth.username }}'
-              password: '{{ .Values.snmp.auth.password }}'
-              auth_protocol: '{{ .Values.snmp.auth.auth_protocol }}'
-              priv_protocol: '{{ .Values.snmp.auth.priv_protocol }}'
-              priv_password: '{{ .Values.snmp.auth.priv_password }}'
-          {{ .Files.Get "configs/snmp-exporter/dell_idrac.yaml" | indent 2 -}}
+    helm_secret_values:
+      config: |
+        dell_idrac:
+          version: {{ .Values.snmp.version }}
+          auth:
+            community: '{{ .Values.snmp.auth.community }}'
+            security_level: '{{ .Values.snmp.auth.security_level }}'
+            username: '{{ .Values.snmp.auth.username }}'
+            password: '{{ .Values.snmp.auth.password }}'
+            auth_protocol: '{{ .Values.snmp.auth.auth_protocol }}'
+            priv_protocol: '{{ .Values.snmp.auth.priv_protocol }}'
+            priv_password: '{{ .Values.snmp.auth.priv_password }}'
+        {{ .Files.Get "configs/snmp-exporter/dell_idrac.yaml" | indent 2 -}}
 
   multus:
     info:
@@ -3588,7 +3589,7 @@ shared_workload_clusters_secret_values:
 
 snmp:
   version: 2
-  auth: 
+  auth:
     community: public
   devices: []
 
