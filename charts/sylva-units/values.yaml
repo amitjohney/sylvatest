@@ -2689,6 +2689,7 @@ units:
         substitute:
           JOB_NAME: create-image-info
           JOB_TARGET_NAMESPACE: sylva-system
+          JOB_CHECKSUM: '{{ .Values | toJson | sha256sum }}'
       _patches:
         - target:
             kind: Job
@@ -2716,13 +2717,6 @@ units:
               path: /data/kube-job.sh
               value: |
             {{ .Files.Get "scripts/create-os-images-info.sh" | indent 4 }}
-        - target:
-            kind: ConfigMap
-          patch: >-
-            - op: add
-              path: /data/images.yaml
-              value: |
-            {{ include "generate-os-images" . | indent 4}}
 
   os-image-server:
     info:
@@ -2791,7 +2785,7 @@ units:
           storageClass: '{{ .Values._internal.default_storage_class }}'
       valuesFrom:
         - kind: ConfigMap
-          name: os-images-info
+          name: os-images-info  # this configmap is a byproduct of the os-images-info unit
 
   capo-contrail-bgpaas:
     info:
