@@ -122,6 +122,16 @@
       "description": "Prevent vault update to 1.14 due to licence issue",
       "matchPackageNames": ["hashicorp/vault"],
       "allowedVersions": "<1.14"
+    },
+    {
+      "description": "Regroup workload-cluster-operator updates",
+      "matchPackagePatterns": ".*workload-cluster-operator.*",
+      "groupName": "workload-cluster-operator"
+    },
+    {
+      "description": "Regroup sylva-units-operator updates",
+      "matchPackagePatterns": ".*sylva-units-operator.*",
+      "groupName": "sylva-units-operator"
     }
   ],
   "customManagers": [
@@ -161,6 +171,18 @@
         "\\n\\s+helm_repo_url:(?<registryUrl>.*)\\n[\\w\\W]*?chart: (?<depName>.*)\\n[\\w\\W]*?version: (?<currentValue>.*)\\n"
       ],
       "datasourceTemplate": "helm"
+    },
+    {
+      "description": "Match images used by operators",
+      "customType": "regex",
+      "fileMatch": "charts/sylva-units/values.yaml",
+      "matchStringsStrategy": "recursive",
+      "matchStrings": [
+        "units:[\\w\\W]*[ ]+",
+        "\\n\\s+newName:\\s+(?<registryUrl>.*?)\/(?<depName>.*)\\n[\\w\\W]*?newTag:\\s+\"?(?<currentValue>[^\"\\n]+)\"?\\n"
+      ],
+      "registryUrlTemplate": "https://{{{ registryUrl }}}",
+      "datasourceTemplate": "docker"
     },
     {
       "description": "Match Helm charts in git repository defined under units",
