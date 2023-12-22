@@ -7,3 +7,5 @@ units:
     enabled: true
   kubevirt-test-vms:
     enabled: true
+  kyverno:
+    enabled: false
