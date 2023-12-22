@@ -421,6 +421,17 @@ units:
       wait: true
       targetNamespace: kubevirt-tests
 
+  kubevirt-sriov-test-vms:
+    depends_on:
+      multus: true
+      kubevirt: true
+      kubevirt-test-vms: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/kubevirt-sriov-test-vms
+      wait: true
+      targetNamespace: kubevirt-tests
+
   harbor:
     depends_on:
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
