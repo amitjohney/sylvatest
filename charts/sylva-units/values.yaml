@@ -423,8 +423,8 @@ units:
 
   kubevirt-sriov-test-vms:
     depends_on:
-      multus: true
-      kubevirt: true
+#      multus: true
+#      kubevirt: true
       kubevirt-test-vms: true
     repo: sylva-core
     kustomization_spec:
