@@ -2707,6 +2707,21 @@ units:
               value:
                 name: no_proxy
                 value: '{{ include "sylva-units.no_proxy" . }}'
+            - op: add:
+              path: /spec/template/spec/containers/0/volumeMounts/-
+              value:
+                mountPath: /opt/
+                name: images-volume
+            - op: add
+              path: /spec/template/spec/volumes/-
+              value:
+                name: images-volume
+                configMap:
+                  name: os-images
+                  defaultMode: 0755
+                  items:
+                  - key: images.yaml
+                    path: images.yaml
         - target:
             kind: ConfigMap
           patch: >-
