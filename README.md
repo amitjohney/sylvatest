@@ -121,7 +121,12 @@ using Docker 24.0.0 and [issue #368](https://gitlab.com/sylva-projects/sylva-cor
 
 > **_NOTICE:_** When deploying on SUSE OS, please check whether DNS server is installed and enabled, see [SUSE Domain Name System](https://documentation.suse.com/sles/15-SP5/html/SLES-all/cha-dns.html).
 
-The `bootstrap.sh` script which you'll use below, will create for you a kind cluster that will be used as the bootstrap cluster. If available in the Linux environment variables, the following vars will be used to customize this kind cluster:
+The `bootstrap.sh` script which you'll use below, will create for you a kind cluster that will be used as the bootstrap cluster.
+
+Once the `bootstrap.sh` script is finished with success and the pivot from bootstrap to management cluster is done with success, the kind bootstrap cluster will be removed. (except for libvirt-metal deployments, because the management nodes are VMs living in pods of the bootstrap cluster).
+To keep the bootstrap cluster you can do an `export CLEANUP_BOOTSTRAP_CLUSTER=no` before running the `bootstrap.sh`.
+
+If available in the Linux environment variables, the following vars will be used to customize this kind cluster:
 
 - [`KIND_POD_SUBNET`](https://kind.sigs.k8s.io/docs/user/configuration/#pod-subnet)
 - [`KIND_SVC_SUBNET`](https://kind.sigs.k8s.io/docs/user/configuration/#service-subnet)

@@ -5653,6 +5653,9 @@
     "metal3": {
       "type": "object"
     },
+    "vsphere": {
+      "type": "object"
+    },
     "capd_docker_host": {
       "type": "string",
       "format": "uri",
@@ -5718,6 +5721,10 @@
           }
         }
       }
+    },
+    "k8s_version_short": {
+      "type": "string",
+      "pattern": "^[1-9]+[0-9]*[.]([1-9]+[0-9]|0)*$"
     },
     "cluster_external_ip": {
       "type": "string",
@@ -5818,6 +5825,23 @@
       }
     },
     "neuvector": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "external_hostname": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
+        }
+      }
+    },
+    "harbor": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -6167,6 +6191,41 @@
               "external_bootstrap_ip": {
                 "type": "string",
                 "format": "ipv4"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "cluster": {
+            "properties": {
+              "capi_providers": {
+                "properties": {
+                  "infra_provider": {
+                    "const": "capv"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "vsphere": {
+            "additionalProperties": false,
+            "properties": {
+              "vsphere-cpi": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "vsphere_conf": {
+                    "type": "object"
+                  }
+                }
               }
             }
           }

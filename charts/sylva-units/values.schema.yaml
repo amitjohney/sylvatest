@@ -507,6 +507,10 @@ properties:
     type: object
     # actual constraints are later in this file under '# additional constraints for .metal3'
 
+  vsphere:  # -------------------------------
+    type: object
+    # actual constraints are later in this file under '# additional constraints for .vsphere'
+
   capd_docker_host:  # -------------------------------
     type: string
     format: uri
@@ -555,6 +559,11 @@ properties:
                   type: array
                   items:
                     type: string
+
+  k8s_version_short:
+    type: string
+    # short Kubernetes version, e.g. 1.26
+    pattern: '^[1-9]+[0-9]*[.]([1-9]+[0-9]|0)*$'
 
   cluster_external_ip:  # -------------------------------
     type: string
@@ -625,6 +634,17 @@ properties:
         type: integer
 
   neuvector: # -------------------------------
+    type: object
+    additionalProperties: false
+    properties:
+
+      external_hostname:  # -------------------------------
+        anyOf:
+          - type: string
+            format: hostname
+          - $ref: "#/$defs/string-with-gotpl"
+
+  harbor: # -------------------------------
     type: object
     additionalProperties: false
     properties:
@@ -870,3 +890,26 @@ allOf:
             external_bootstrap_ip:  # -------------------------------
               type: string
               format: ipv4
+
+  # additional constraints for .vsphere
+  - if:
+      properties:
+        cluster:
+          properties:
+            capi_providers:
+              properties:
+                infra_provider:
+                  const: capv
+    then:
+      properties:
+        vsphere:  # -------------------------------
+          additionalProperties: false
+          properties:
+
+            vsphere-cpi:
+              type: object
+              additionalProperties: false
+              properties:
+
+                vsphere_conf:
+                  type: object

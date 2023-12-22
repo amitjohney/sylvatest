@@ -271,7 +271,7 @@ units:
           name: "{{ .Values.cluster.name }}-capi"
           namespace: '{{ .Release.Namespace }}'
 
-  vsphere-cloud-controller-manager:
+  vsphere-cpi:
     enabled: true
 
   vsphere-csi-driver:

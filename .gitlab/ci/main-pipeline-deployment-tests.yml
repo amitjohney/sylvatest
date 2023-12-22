@@ -57,7 +57,7 @@ variables:
     value: "environment-values/ci/enable-multus.yml"
     description: |
       Path to a file use to customize the value file
-      used during the workload cluster DEPLOYMENT
+      used during the workload cluster UPDATE
   DEPLOYMENT_FLAVOR:
     value: ""
     description: |
@@ -98,6 +98,9 @@ variables:
   trigger:
     forward:
       pipeline_variables: true  # required to pass variables from upstream to downstream pipelines
+  variables:
+    # Used to pass parent JOB_NAME to the child pipelines
+    WORKFLOW_NAME: $CI_JOB_NAME
   needs: []
 
 .needs-publish-jobs:

@@ -56,7 +56,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://github.com/weaveworks/weave-gitops.git
       ref:
-        tag: v0.36.0
+        tag: v0.38.0
 
   metal3:
     kind: GitRepository
@@ -64,13 +64,6 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3.git
       ref:
         tag: 0.7.0
-
-  metal3-suse:
-    kind: GitRepository
-    spec:
-      url: https://github.com/suse-edge/charts.git
-      ref:
-        tag: 0.2.0-metal3
 
   sylva-capi-cluster:
     kind: GitRepository
@@ -105,7 +98,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/capo-contrail-bgpaas.git
       ref:
-        tag: 1.0.2
+        tag: 1.0.3
 
   libvirt-metal:
     kind: GitRepository
@@ -120,6 +113,13 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       url: https://github.com/bank-vaults/vault-operator.git
       ref:
         tag: v1.21.2
+
+  cloud-provider-vsphere:
+    kind: GitRepository
+    spec:
+      url: https://github.com/kubernetes/cloud-provider-vsphere.git
+      ref:
+        tag: v1.26.2
 
 helm_repo_spec_default:
   interval: 60m0s
@@ -228,12 +228,62 @@ units:
       chart:
         spec:
           chart: cert-manager
-          version: v1.13.2
+          version: v1.13.3
       targetNamespace: cert-manager
       install:
         createNamespace: true
       values:
         installCRDs: true
+        replicaCount: >-
+          {{ ge (int .Values.cluster.control_plane_replicas) 3 | ternary 2 1 }}
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchLabels:
+                      app.kubernetes.io/instance: cert-manager
+                      app.kubernetes.io/component: controller
+                  topologyKey: kubernetes.io/hostname
+        podDisruptionBudget:
+          enabled: true
+          minAvailable: >-
+            {{ ge (int .Values.cluster.control_plane_replicas) 3 | ternary 1 0 }}
+        webhook:
+          replicaCount: >-
+            {{ ge (int .Values.cluster.control_plane_replicas) 3 | ternary 3 1 }}
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  podAffinityTerm:
+                    labelSelector:
+                      matchLabels:
+                        app.kubernetes.io/instance: cert-manager
+                        app.kubernetes.io/component: webhook
+                    topologyKey: kubernetes.io/hostname
+          podDisruptionBudget:
+            enabled: true
+            minAvailable: >-
+              {{ ge (int .Values.cluster.control_plane_replicas) 3 | ternary 1 0 }}
+        cainjector:
+          replicaCount: >-
+            {{ ge (int .Values.cluster.control_plane_replicas) 3 | ternary 2 1 }}
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  podAffinityTerm:
+                    labelSelector:
+                      matchLabels:
+                        app.kubernetes.io/instance: cert-manager
+                        app.kubernetes.io/component: cainjector
+                    topologyKey: kubernetes.io/hostname
+          podDisruptionBudget:
+            enabled: true
+            minAvailable: >-
+              {{ ge (int .Values.cluster.control_plane_replicas) 3 | ternary 1 0 }}
 
   trivy-operator:
     enabled: no
@@ -283,37 +333,71 @@ units:
 
   # namespace-defs creates sylav-unit namespace and other namespaces to be used by various units
   namespace-defs:
+    depends_on:
+      kyverno-policies: '{{ tuple . "kyverno-policies" | include "unit-enabled" }}' # make sure that the policy disable-automountserviceaccounttoken applies
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/namespace-defs
       wait: true
       prune: false
+      _components:
+        - '{{ tuple "components/cinder-csi" (tuple . "cinder-csi" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/metal3" (tuple . "metal3" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/longhorn" (tuple . "longhorn" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/keycloak" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/vault" (tuple . "vault" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/rancher" (tuple . "rancher" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/cattle-monitoring" (tuple . "monitoring" | include "unit-enabled") | include "set-only-if" }}'
 
   # Postgresql deployment for keycloak
+  postgres-init:
+    enabled_conditions:
+      - '{{ tuple . "postgres" | include "unit-enabled"  }}'
+    depends_on:
+      namespace-defs: true
+      "{{ .Values._internal.default_storage_class_unit }}": true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/postgres-init
+      wait: true
+      postBuild:
+        substitute:
+          MAX_POD_UNAVAILABLE: "{{ int .Values.cluster.control_plane_replicas | gt 3 | ternary 0 1 }}"
+
   postgres:
     enabled_conditions:
       - '{{ tuple . "keycloak" | include "unit-enabled" }}'
     depends_on:
       namespace-defs: true
+      postgres-init: true
       "{{ .Values._internal.default_storage_class_unit }}": true
     helm_repo_url: https://charts.bitnami.com/bitnami
     helmrelease_spec:
       chart:
         spec:
           chart: postgresql
-          version: 12.12.10
+          version: 13.2.24
       targetNamespace: keycloak
       values:
         global:
           postgresql:
             auth:
               database: keycloak
-          auth:
-            username: postgres
+        architecture: replication
         nameOverride: postgres
         serviceAccount:
           create: true
           name: postgresql
+        readReplicas:
+          replicaCount: "{{ int .Values.cluster.control_plane_replicas | gt 3 | ternary 1 3 }}"
+          affinity:
+            podAntiAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchLabels:
+                      app.kubernetes.io/name: postgres
+                      app.kubernetes.io/component: read
+                  topologyKey: kubernetes.io/hostname
 
   kubevirt:
     helm_repo_url: https://suse-edge.github.io/charts
@@ -321,16 +405,121 @@ units:
       chart:
         spec:
           chart: kubevirt
-          version: 0.1.0
+          version: 0.2.0
+      targetNamespace: kubevirt
+      install:
+        createNamespace: true
 
   kubevirt-test-vms:
     depends_on:
       kubevirt: true
+      multus: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kubevirt-test-vms
       wait: true
       targetNamespace: kubevirt-tests
+
+  harbor:
+    depends_on:
+      ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
+    annotations:
+      sylvactl/readyMessage: "Harbor UI can be reached at https://{{ .Values.harbor.external_hostname }} ({{ .Values.harbor.external_hostname }} must resolve to {{ .Values.display_external_ip }})"
+    helm_repo_url: https://helm.goharbor.io
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: harbor
+          version: 1.11.1
+      targetNamespace: harbor
+      values:
+        persistence:
+          enabled: true
+          resourcePolicy: "keep"
+          persistentVolumeClaim:
+            registry:
+              storageClass: "{{ .Values._internal.default_storage_class }}"
+              #size: 32Gi
+            chartmuseum:
+              storageClass: "{{ .Values._internal.default_storage_class }}"
+              #size: 32Gi
+            jobservice:
+              storageClass: "{{ .Values._internal.default_storage_class }}"
+              #size: 8Gi
+            database:
+              storageClass: "{{ .Values._internal.default_storage_class }}"
+              #size: 8Gi
+            redis:
+              storageClass: "{{ .Values._internal.default_storage_class }}"
+              #size: 8Gi
+            #trivy:
+            #storageClass: '{{ .Values._internal.default_storage_class }}'
+            #size: 8Gi
+        expose:
+          ingress:
+            enabled: true
+            hosts:
+              core: "{{ .Values.harbor.external_hostname }}"
+        notary:
+          enabled: false
+        trivy:
+          enabled: false
+      _postRenderers:
+        - kustomize:
+            patches:
+              - target:
+                  kind: Deployment|StatefulSet
+                patch: |-
+                  - op: add
+                    path: /spec/template/spec/containers/0/securityContext
+                    value:
+                      runAsNonRoot: true
+                      seccompProfile:
+                        type: RuntimeDefault
+                      allowPrivilegeEscalation: false
+                      capabilities:
+                        drop:
+                          - ALL
+              - target:
+                  kind: Deployment
+                  name: harbor-registry
+                patch: |-
+                  - op: add
+                    path: /spec/template/spec/containers/1/securityContext
+                    value:
+                      runAsNonRoot: true
+                      seccompProfile:
+                        type: RuntimeDefault
+                      allowPrivilegeEscalation: false
+                      capabilities:
+                        drop:
+                          - ALL
+              - target:
+                  kind: StatefulSet
+                  name: harbor-database
+                patch: |-
+                  - op: add
+                    path: /spec/template/spec/initContainers/0/securityContext
+                    value:
+                      runAsNonRoot: true
+                      seccompProfile:
+                        type: RuntimeDefault
+                      allowPrivilegeEscalation: false
+                      capabilities:
+                        drop:
+                          - ALL
+                  - op: add
+                    path: /spec/template/spec/initContainers/1/securityContext
+                    value:
+                      runAsNonRoot: true
+                      seccompProfile:
+                        type: RuntimeDefault
+                      allowPrivilegeEscalation: false
+                      capabilities:
+                        drop:
+                          - ALL
+      install:
+        createNamespace: true
 
   vault-operator:
     repo: vault-operator
@@ -365,6 +554,7 @@ units:
           VAULT_DNS: "{{ .Values.vault.external_hostname }}"
           VAULT_REPLICAS: "{{ .Values._internal.vault_replicas }}"
           MAX_POD_UNAVAILABLE: "{{ int .Values._internal.vault_replicas | eq 1 | ternary 0 1 }}"
+          AFFINITY: '{{ and (eq (int .Values.cluster.control_plane_replicas) 1) (ne .Values._internal.default_storage_class_unit "local-path") | ternary (.Values._internal.vault_no_affinity | toJson | indent 12 ) (.Values._internal.vault_affinity | toJson| indent 12)  }}'
       healthChecks: # sometimes this kustomization seems correctly applied while vault pod is not running, see https://gitlab.com/sylva-projects/sylva-core/-/issues/250
         # so we replace wait:true by checking for the Vault components health
         - apiVersion: apps/v1
@@ -416,6 +606,8 @@ units:
     kustomization_spec:
       path: ./kustomize-units/vault-secrets
       wait: true
+      _components:
+        - '{{ tuple "components/keycloak" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
 
   vault-oidc:
     enabled_conditions:
@@ -439,7 +631,7 @@ units:
       chart:
         spec:
           chart: external-secrets
-          version: 0.9.9
+          version: 0.9.10
       targetNamespace: external-secrets
       install:
         createNamespace: true
@@ -454,6 +646,8 @@ units:
     kustomization_spec:
       path: ./kustomize-units/eso-secret-stores
       wait: true
+      _components:
+        - '{{ tuple "components/keycloak" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
 
   cis-operator-crd:
     enabled_conditions:
@@ -509,6 +703,8 @@ units:
       vault: true
       vault-config-operator: true
       kyverno: true
+      keycloak-add-client-scope: true
+      keycloak-oidc-external-secrets: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/neuvector-init
@@ -516,6 +712,7 @@ units:
       postBuild:
         substitute:
           NEUVECTOR_DNS: "{{ .Values.neuvector.external_hostname }}"
+          KEYCLOAK_DNS: "{{ .Values.keycloak.external_hostname }}"
 
   neuvector:
     enabled: no
@@ -699,10 +896,13 @@ units:
     kustomization_spec:
       path: ./kustomize-units/keycloak-resources
       targetNamespace: keycloak
+      _components:
+        - '{{ tuple "components/neuvector" (tuple . "neuvector" | include "unit-enabled") | include "set-only-if" }}'
       postBuild:
         substitute:
           RANCHER_DNS: "{{ .Values.rancher.external_hostname }}"
           FLUX_WEBUI_DNS: "{{ .Values.flux.external_hostname }}"
+          NEUVECTOR_DNS: '{{ tuple .Values.neuvector.external_hostname (tuple . "neuvector" | include "unit-enabled") | include "set-only-if" }}'
           VAULT_DNS: "{{ .Values.vault.external_hostname }}"
           EXPIRE_PASSWORD_DAYS: "{{ int .Values.keycloak.keycloak_expire_password_days }}"
       healthChecks: #  cannot use __wait: true__ here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/144
@@ -718,6 +918,7 @@ units:
           kind: Secret
           name: keycloak-client-secret-flux-webui-client # this secret is a byproduct of the flux-webui-client KeycloakClient resource
           namespace: keycloak
+        - '{{ tuple (dict "apiVersion" "v1" "kind" "Secret" "name" "keycloak-client-secret-neuvector-client" "namespace" "keycloak") (tuple . "neuvector" | include "unit-enabled") | include "set-only-if" }}' # # this secret is a byproduct of the neuvector client KeycloakClient resource
 
   # this is a Job to manually add a custom client-scope to sylva realm (on top of default ones)
   # while CRD option does not yet provide good results (overrides defaults)
@@ -783,7 +984,7 @@ units:
       chart:
         spec:
           chart: kyverno
-          version: 3.1.0
+          version: 3.1.1
       targetNamespace: kyverno
       install:
         createNamespace: true
@@ -804,6 +1005,10 @@ units:
                 - apiGroups: [""]
                   resources:
                     - "nodes"
+                  verbs: ["get", "list", "watch", "patch", "update"]
+                - apiGroups: ["external-secrets.io"]
+                  resources:
+                    - "externalsecrets"
                   verbs: ["get", "list", "watch", "patch", "update"]
         config:
           # -- Resource types to be skipped by the Kyverno policy engine, removed [Node,*,*] [Node/*,*,*] entries
@@ -1025,12 +1230,12 @@ units:
     depends_on:
       cert-manager: true
       "{{ .Values._internal.default_storage_class_unit }}": true
-    repo: metal3-suse
-    helm_chart_artifact_name: metal3
+    helm_repo_url: https://suse-edge.github.io/charts
     helmrelease_spec:
       chart:
         spec:
-          chart: charts/metal3/0.2.0
+          chart: metal3
+          version: 0.2.1
       install:
         createNamespace: true
       targetNamespace: metal3-system
@@ -1038,10 +1243,6 @@ units:
         global:
           ironicIP: "{{ .Values.cluster_external_ip }}"
           provisioningInterface: eth0
-        metal3-baremetal-operator:
-          securityContext:
-            allowPrivilegeEscalation: false
-            runAsUser: 11000
         metal3-ironic:
           ingress:
             enabled: false
@@ -1051,9 +1252,6 @@ units:
               - "{{ .Values.cluster_external_ip }}"
             annotations:
               metallb.universe.tf/allow-shared-ip: cluster-external-ip
-          podSecurityContext:
-            runAsUser: 10475
-            fsGroup: 10475
           baremetaloperator:
             ironichostNetwork: false
           persistence:
@@ -1061,9 +1259,6 @@ units:
               storageClass: "{{ .Values._internal.default_storage_class }}"
               accessMode: ReadWriteOnce
         metal3-mariadb:
-          podSecurityContext:
-            runAsUser: 10060
-            fsGroup: 10060
           persistence:
             storageClass: "{{ .Values._internal.default_storage_class }}"
 
@@ -1122,7 +1317,7 @@ units:
             tag: "v0.4.0"
           ironic:
             repository: quay.io/metal3-io/ironic
-            tag: "capm3-v1.5.1"
+            tag: "capm3-v1.5.2"
           ironicIPADownloader:
             repository: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ironic-ipa-downloader/ipa
             tag: "0.2.0"
@@ -1133,8 +1328,7 @@ units:
         services:
           ironic:
             # Specify the IP address used by Ironic service
-            ironicIP: "{{ .Values.cluster_external_ip }}"
-            # We allow shared IPs because we are exposing (by design) a single cluster external IP
+            ironicIP: "{{ .Values.display_external_ip }}"
             annotations:
               metallb.universe.tf/allow-shared-ip: cluster-external-ip
         mariadb:
@@ -1279,8 +1473,6 @@ units:
     enabled_conditions:
       - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     repo: sylva-core
-    depends_on:
-      cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/heat-operator
       wait: true
@@ -1307,6 +1499,30 @@ units:
               path: /spec/template/spec/containers/1/securityContext/seccompProfile
               value:
                 type: RuntimeDefault
+
+  sylva-units-operator:
+    repo: sylva-core
+    depends_on:
+      flux-system: true
+    kustomization_spec:
+      path: ./kustomize-units/sylva-units-operator
+      wait: true
+      images:
+        - name: controller
+          newName: registry.gitlab.com/sylva-projects/sylva-elements/sylva-units-operator
+          newTag: 0.0.0-pre3
+
+  workload-cluster-operator:
+    repo: sylva-core
+    depends_on:
+      sylva-units-operator: true
+    kustomization_spec:
+      path: ./kustomize-units/workload-cluster-operator
+      wait: true
+      images:
+        - name: controller
+          newName: registry.gitlab.com/sylva-projects/sylva-elements/workload-cluster-operator
+          newTag: 0.0.0-pre3
 
   capo-cluster-resources:
     enabled_conditions:
@@ -1364,7 +1580,10 @@ units:
               value: |
                 #!/bin/bash
                 set -e
-                kubectl -n $TARGET_NAMESPACE wait MachineDeployment -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }} --for condition=Ready --timeout 600s
+                MD=$(kubectl -n $TARGET_NAMESPACE get MachineDeployment -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }}  -o json | jq '.items|length')
+                if [ $MD -gt 0 ];then
+                  kubectl -n $TARGET_NAMESPACE wait MachineDeployment -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }} --for condition=Ready --timeout 600s
+                fi
                 kubectl -n $TARGET_NAMESPACE patch cluster.cluster.x-k8s.io  {{ .Values.cluster.name }} --type merge -p '{"spec":{"paused": true}}'
 
   resume-cluster-reconciliation:
@@ -1571,6 +1790,10 @@ units:
           KEYCLOAK_DNS: "{{ .Values.keycloak.external_hostname }}"
           FLUX_WEBUI_DNS: "{{ .Values.flux.external_hostname }}"
       wait: true
+      _components:
+        - '{{ tuple "components/keycloak-tls" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/rancher-tls" (tuple . "rancher" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/vault-tls" (tuple . "vault" | include "unit-enabled") | include "set-only-if" }}'
 
   synchronize-secrets:
     depends_on:
@@ -1580,6 +1803,8 @@ units:
     kustomization_spec:
       path: ./kustomize-units/synchronize-secrets
       wait: true
+      _components:
+        - '{{ tuple "components/keycloak" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
       postBuild:
         substitute:
           FLUX_ADMIN_USERNAME: "{{ .Values.flux_webui.admin_user }}"
@@ -1598,7 +1823,7 @@ units:
       chart:
         spec:
           chart: rancher
-          version: 2.7.9
+          version: 2.8.0
       targetNamespace: cattle-system
       interval: 10m0s
       upgrade:
@@ -1700,7 +1925,7 @@ units:
       chart:
         spec:
           chart: k8s-gateway
-          version: 2.0.4
+          version: 2.1.0
       targetNamespace: k8s-gateway
       install:
         createNamespace: true
@@ -1839,8 +2064,9 @@ units:
     depends_on:
       flux-system: true
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
-      keycloak-add-client-scope: true
-      keycloak-oidc-external-secrets: true
+      coredns: '{{ tuple . "keycloak" | include "unit-enabled" }}' # see https://gitlab.com/sylva-projects/sylva-core/-/merge_requests/1023#note_1694289969
+      keycloak-add-client-scope: '{{ tuple . "keycloak" | include "unit-enabled" }}'
+      keycloak-oidc-external-secrets: '{{ tuple . "keycloak" | include "unit-enabled" }}'
     annotations:
       sylvactl/readyMessage: "Flux Web UI can be reached at https://{{ .Values.flux.external_hostname }} ({{ .Values.flux.external_hostname }} must resolve to {{ .Values.display_external_ip }})"
     repo: weave-gitops
@@ -2055,7 +2281,7 @@ units:
       chart:
         spec:
           chart: sriov-crd
-          version: 102.0.0+up0.1.0
+          version: 102.1.0+up0.1.0
 
   sriov:
     enabled: false
@@ -2069,7 +2295,7 @@ units:
       chart:
         spec:
           chart: sriov
-          version: 102.0.0+up0.1.0
+          version: 102.1.0+up0.1.0
       values:
         cert_manager: true
         rancher-nfd:
@@ -2290,22 +2516,41 @@ units:
             DEFAULT_PORT: "0"
             DEFAULT_ASN: "64512"
 
-  vsphere-cloud-controller-manager:
+  vsphere-cpi:
     enabled_conditions:
       - '{{ eq .Values.cluster.capi_providers.infra_provider "capv" }}'
-    repo: sylva-core
-    kustomization_spec:
-      path: kustomize-units/vsphere-cloud-controller-manager
+    repo: cloud-provider-vsphere
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: charts/vsphere-cpi
+      install:
+        remediation:
+          retries: -1
+      releaseName: vsphere-cpi
+      storageNamespace: kube-system
       targetNamespace: kube-system
-      wait: true
-      postBuild:
-        substitute:
-          SERVER: "{{ .Values.cluster.capv.server }}"
-          TLS_THUMBPRINT: "{{ .Values.cluster.capv.tlsThumbprint }}"
-          DATACENTER: "{{ .Values.cluster.capv.dataCenter }}"
-    kustomization_substitute_secrets:
-      USERNAME: "{{ .Values.cluster.capv.username }}"
-      PASSWORD: "{{ .Values.cluster.capv.password }}"
+      values:
+        config:
+          enabled: true
+          vcenter: "{{ .Values.cluster.capv.server }}"
+          datacenter: "{{ .Values.cluster.capv.dataCenter }}"
+          tlsTumbprint: "{{ .Values.cluster.capv.tlsThumbprint }}"
+      _postRenderers:
+        - kustomize:
+            patchesStrategicMerge:
+              - kind: ConfigMap
+                apiVersion: v1
+                metadata:
+                  name: vsphere-cloud-config
+                  namespace: kube-system
+                data:
+                  vsphere.conf: '{{ index (index .Values.vsphere "vsphere-cpi") "vsphere_conf" | toYaml }}'
+
+    helm_secret_values:
+      config:
+        username: "{{ .Values.cluster.capv.username }}"
+        password: "{{ .Values.cluster.capv.password }}"
 
   vsphere-csi-driver:
     enabled_conditions:
@@ -2368,13 +2613,13 @@ cluster:
     bootstrap_provider: cabpk # cabpr (RKE2) or cabpk (kubeadm)
 
   # kubernetes version to be used
-  k8s_version: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.26.9+rke2r1" "v1.26.9" }}'
+  k8s_version: '{{ .Values._internal.k8s_version_map | dig .Values.k8s_version_short "" | required (printf "no k8s version defined for %s" .Values.k8s_version_short) }}'
 
   # kube_vip version to be used for kubeadm deployments
   images:
     kube_vip:
       repository: ghcr.io/kube-vip/kube-vip
-      tag: "v0.6.3"
+      tag: "v0.6.4"
 
   # Nodes number for control-plane
   control_plane_replicas: 3
@@ -2483,6 +2728,27 @@ metal3:
   # external_bootstrap_ip:
   # bootstrap_ip:
 
+vsphere:
+  vsphere-cpi:
+    vsphere_conf:
+      # Global properties in this section will be used for all specified vCenters unless overriden in VirtualCenter section.
+      global:
+        port: 443
+        # set insecure-flag to true if the vCenter uses a self-signed cert
+        insecureFlag: true
+        # settings for using k8s secret
+        secretName: vsphere-cloud-secret
+        secretNamespace: kube-system
+
+      # vcenter section
+      vcenter:
+        "{{ .Values.cluster.capv.server }}":
+          server: "{{ .Values.cluster.capv.server }}"
+          user: "{{ .Values.cluster.capv.username }}"
+          password: "{{ .Values.cluster.capv.password }}"
+          datacenters:
+            - "{{ .Values.cluster.capv.dataCenter }}"
+
 cluster_external_ip: 55.55.55.55
 
 # Admin password that will be configured by default on various units  # FIXME, only used for SSO today see https://gitlab.com/sylva-projects/sylva-core/-/issues/503
@@ -2509,6 +2775,9 @@ flux:
 
 neuvector:
   external_hostname: "neuvector.{{ .Values.cluster_external_domain }}"
+
+harbor:
+  external_hostname: "harbor.{{ .Values.cluster_external_domain }}"
 
 os_image_server:
   external_hostname: ""
@@ -2602,15 +2871,17 @@ ntp:
 sylva_base_oci_registry: '{{
   regexReplaceAll
   "/sylva-core/?$"
-  (lookup "source.toolkit.fluxcd.io/v1beta2" "HelmRepository" "default" "sylva-core" | dig "spec" "url" "")
+  (lookup "source.toolkit.fluxcd.io/v1beta2" "HelmRepository" "sylva-system" "sylva-core" | dig "spec" "url" "")
   ""
   | default "oci://registry.gitlab.com/sylva-projects"
   }}'
 sylva_core_oci_registry: "{{ .Values.sylva_base_oci_registry }}/sylva-core"
 
+k8s_version_short: "1.26"
+
 _internal:
   # unless the default password has already been generated by a previous run, we generate a new one randomly
-  default_password: '{{ lookup "v1" "Secret" "default" "sylva-units-values" | dig "data" "values" "" | b64dec | fromYaml | dig "_internal" "default_password" (randAlphaNum 64) }}'
+  default_password: '{{ lookup "v1" "Secret" "sylva-system" "sylva-units-values" | dig "data" "values" "" | b64dec | fromYaml | dig "_internal" "default_password" (randAlphaNum 64) }}'
 
   default_storage_class: >-
     {{- if (tuple . "cinder-csi" | include "unit-enabled") -}}
@@ -2636,7 +2907,18 @@ _internal:
     {{- index (tuple . .Values._internal.storage_class_unit_map | include "interpret-inner-gotpl" | fromJson) "result" | dig $default_storage_class (printf "storage class unit not found for %s" $default_storage_class) -}}
 
   vault_replicas: >-
-    {{ ge (int .Values.cluster.control_plane_replicas) 3 | ternary 3 1 }}
+    {{ or (.Values.cluster.capi_providers.infra_provider | eq "capd") (and (lt (int .Values.cluster.control_plane_replicas) 3) (eq .Values._internal.default_storage_class_unit "local-path")) | ternary 1 3  }}
+
+  vault_affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: vault
+              vault_cr: vault
+          topologyKey: kubernetes.io/hostname
+
+  vault_no_affinity: {}
 
   # this is used in source_templates.sylva-core below
   # and in any unit using sylva-units Helm chart
@@ -2645,7 +2927,7 @@ _internal:
   sylva_core_existing_source: "{{ .Values.unit_helmrelease_kustomization_spec_default.sourceRef }}"
 
   # We need to retrieve bootstrap_node_ip in management-cluster while using libvirt-metal emulation, it is stored in a ConfigMap by libvirt-metal unit in that case
-  bootstrap_node_ip: '{{ lookup "v1" "ConfigMap" "sylva-system" "cluster-public-endpoint" | dig "data" "address" "not found" | default "not found" }}'
+  bootstrap_node_ip: '{{ lookup "v1" "ConfigMap" "sylva-system" "cluster-public-endpoint" | dig "data" "address" "not_found" | default "not_found" }}'
 
   # These values are used only if `os_images` is empty
   default_os_images:
@@ -2665,6 +2947,9 @@ _internal:
 
   k8s_post_1_26_6: '{{ semverCompare ">1.26.6" (tuple . .Values.cluster.k8s_version | include "interpret-as-string") | include "preserve-type" }}'
 
+  k8s_version_map:
+    1.26: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.26.9+rke2r1" "v1.26.9" }}'
+
 shared_workload_clusters_values:
   ntp: '{{ .Values.ntp | include "set-if-defined" }}'
   proxies: '{{ .Values.proxies | include "set-if-defined" }}'
@@ -2675,7 +2960,7 @@ shared_workload_clusters_values:
   cluster:
     air_gapped: '{{ .Values.air_gapped | include "set-if-defined" }}'
     capi_providers: '{{ .Values.cluster.capi_providers | include "preserve-type" }}'
-    mgmt_cluster_external_ip: "{{ .Values.cluster_external_ip }}"
+    mgmt_cluster_external_ip: "{{ .Values.display_external_ip }}"
     mgmt_cluster_external_domain: "{{ .Values.cluster_external_domain }}"
     dns_resolver: true
     capo:

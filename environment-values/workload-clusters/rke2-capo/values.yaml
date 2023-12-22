@@ -5,13 +5,6 @@ cluster:
   control_plane_replicas: 1
   capo:
     ssh_key_name: # put the name of your nova SSH keypair here
-  rke2:
-    nodeLabels:
-      sylva.org/annotate-node-from-label: "true"
-      node.longhorn.io/create-default-disk: "config"
-    node_annotations: # node label for Longhorn annotation that will get the value base64 encoded, which would match a Kyverno ClusterPolicy to move it to annotation
-      node.longhorn.io/default-disks-config: '[ { "path":"/var/lib/longhorn", "allowScheduling":true}, { "name":"fast-ssd-disk", "path":"/mnt/extra", "allowScheduling":false, "storageReserved":10485760, "tags":[ "ssd", "fast" ] }]'
-      node.longhorn.io/default-node-tags: '["fast","storage"]'
   machine_deployments:
     md0:
       replicas: 1

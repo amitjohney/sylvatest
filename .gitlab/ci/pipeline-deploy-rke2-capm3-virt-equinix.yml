@@ -23,9 +23,10 @@ create-runner:
     RUNNER_PROJECT_ID: $CI_PROJECT_ID
   tags: []
   image:
-    name: registry.gitlab.com/gitlab-org/cli:v1.35.0
+    name: registry.gitlab.com/gitlab-org/cli:v1.36.0
     entrypoint: [""]
   script:
+    - glab config set -g check_update false
     - >
       curl -Ss -X POST --fail
       --form "token=$RUNNER_AAS_TOKEN"
