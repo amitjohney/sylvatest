@@ -9,3 +9,11 @@ units:
     enabled: true
   kyverno:
     enabled: false
+  kyverno-policies:
+    enabled: false
+  shared-workload-clusters-settings:
+    enabled: false
+  neuvector-init:
+    enabled: false
+  cluster-creator-policy:
+    enabled: false
