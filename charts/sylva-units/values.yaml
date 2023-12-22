@@ -3381,7 +3381,7 @@ keycloak: {}
 cis_benchmark_scan_profile: '{{ eq .Values.cluster.capi_providers.bootstrap_provider "cabpr" | ternary "rke2-cis-1.23-profile-hardened" "no-scan-profile-defined-for-kubeadm-cluster" }}'
 
 # osImages images that should be served and from where they should be downloaded
-# if empty default value are used (default_os_images)
+# if empty default value are used
 os_images: {}
 
 # to configure the SR-IOV VFs on the supported NICs of cluster nodes
