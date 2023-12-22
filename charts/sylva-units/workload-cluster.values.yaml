@@ -191,6 +191,10 @@ units:
     enabled: false
     unit_template: base-deps
 
+  kubevirt-sriov-test-vms:
+    enabled: false
+    unit_template: base-deps
+
   longhorn-crd:
     enabled: true
     unit_template: base-deps
