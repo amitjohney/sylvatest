@@ -2695,9 +2695,6 @@ units:
             kind: Job
           patch: |
             - op: replace
-              path: /metadata/namespace
-              value: sylva-system
-            - op: replace
               path: /spec/template/spec/containers/0/image
               value: registry.gitlab.com/sylva-projects/sylva-elements/container-images/oci-tools:0.0.8
             - op: add
@@ -2710,21 +2707,6 @@ units:
               value:
                 name: no_proxy
                 value: '{{ include "sylva-units.no_proxy" . }}'
-            - op: add
-              path: /spec/template/spec/containers/0/volumeMounts/-
-              value:
-                mountPath: /opt/images/
-                name: images-volume
-            - op: add
-              path: /spec/template/spec/volumes/-
-              value:
-                name: images-volume
-                configMap:
-                  name: os-images
-                  defaultMode: 0755
-                  items:
-                  - key: images.yaml
-                    path: images.yaml
         - target:
             kind: ConfigMap
           patch: >-
@@ -2735,6 +2717,13 @@ units:
               path: /data/kube-job.sh
               value: |
             {{ .Files.Get "scripts/create-os-images-info.sh" | indent 4 }}
+        - target:
+            kind: ConfigMap
+          patch: >-
+            - op: add
+              path: /data/images.yaml
+              value: |
+            {{ include "generate-os-images" . | indent 4}}
 
   os-image-server:
     info:
