@@ -9,12 +9,12 @@ data:
   values.yaml: |
     osImages:
 EOF
-yq '.osImages | keys | .[]' /opt/images.yaml | while read line; do
+yq '.osImages | keys | .[]' /opt/images/images.yaml | while read line; do
   echo "Insert image details "
   export OS_IMAGE_KEY=$line
   echo "      $OS_IMAGE_KEY:" | sed 's/[._]/-/g' >> /tmp/os-image-details.yaml
   # Check if the artifact is a Sylva diskimage-builder artifact
-  uri=$(yq '.osImages.[env(OS_IMAGE_KEY)].uri' /opt/images.yaml)
+  uri=$(yq '.osImages.[env(OS_IMAGE_KEY)].uri' /opt/images/images.yaml)
   if [[ "$uri" == *"sylva-elements/diskimage-builder"* ]]; then
     echo "This is a Sylva diskimage-builder image. Updating image details from artifact"
     url=$(echo $uri| sed 's|oci://||')

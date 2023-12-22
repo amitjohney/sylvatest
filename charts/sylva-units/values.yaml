@@ -2707,10 +2707,10 @@ units:
               value:
                 name: no_proxy
                 value: '{{ include "sylva-units.no_proxy" . }}'
-            - op: add:
+            - op: add
               path: /spec/template/spec/containers/0/volumeMounts/-
               value:
-                mountPath: /opt/
+                mountPath: /opt/images/
                 name: images-volume
             - op: add
               path: /spec/template/spec/volumes/-
