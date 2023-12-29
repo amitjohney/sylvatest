@@ -2398,6 +2398,7 @@ units:
           defaultDataPath: /var/lib/longhorn
           deletingConfirmationFlag: true
           autoCleanupSystemGeneratedSnapshot: true
+          allowVolumeCreationWithDegradedAvailability: false
 
   cluster-creator-login:
     enabled_conditions:
