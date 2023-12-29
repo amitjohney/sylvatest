@@ -5,5 +5,5 @@ units:
     enabled: true
   kubevirt:
     enabled: true
-  kubevirt-test-vms:
-    enabled: true
+#  kubevirt-test-vms:
+#    enabled: true
