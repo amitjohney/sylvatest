@@ -206,7 +206,7 @@ units:
 
   multus:
     # can be enabled at runtime if desired:
-    #enabled: true
+    enabled: true
     unit_template: base-deps
 
   multus-ready:
