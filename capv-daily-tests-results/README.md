@@ -8,6 +8,8 @@ The results are summarized by the following table:
 
 | Date                      | Management Cluster CAPI Providers | Sylva-Core main commit ID        | Result                                       | Test logs (only for failed tests) |
 |---------------------------|-----------------------------------|----------------------------------|----------------------------------------------|-----------------------------------|
+|2023-12-23 01:30|rke2-capv|cf4b9dee6b0addb94b54b70530d0a25365ba937e|:x: failed|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/758ab1ecc725e797a06261c62cc77788/capv-logs.gz)|
+|2023-12-23 01:26|kubeadm-capv|cf4b9dee6b0addb94b54b70530d0a25365ba937e|:white_check_mark: success||
 |2023-12-23 01:30|rke2-capv|cf4b9dee6b0addb94b54b70530d0a25365ba937e|:x: failed|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/d3bb7c8c3be36d81a9f9930f81189f56/capv-logs.gz)|
 |2023-12-23 01:26|kubeadm-capv|cf4b9dee6b0addb94b54b70530d0a25365ba937e|:white_check_mark: success||
 |2023-12-23 01:30|rke2-capv|cf4b9dee6b0addb94b54b70530d0a25365ba937e|:x: failed|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/6e58c059b348d378ad25155a7f3ed1c8/capv-logs.gz)|
@@ -27,6 +29,4 @@ The results are summarized by the following table:
 |2023-12-20 01:30|rke2-capv|b35e73dc268daa88a515133780b81231be12b7ac|:x: failed|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/8ff2e86ac7a644c70a8ca6d9a4a9987d/capv-logs.gz)|
 |2023-12-20 01:21|kubeadm-capv|b35e73dc268daa88a515133780b81231be12b7ac|:white_check_mark: success||
 |2023-12-19 01:32|rke2-capv|b61273b01122127b026aa57a3e82192b26ae3950|:white_check_mark: success||
-|2023-12-19 01:57|kubeadm-capv|b61273b01122127b026aa57a3e82192b26ae3950|:x: failed|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/cf84ea4603a78ee42b2b668743f17355/capv-logs.gz)|
-|2023-12-18 01:30|kubeadm-capv|38e05b9f79f33309b62cd27c422abf4a21e1234a|:x: failed|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/bf3e2899c64789df966177c5f62a1190/capv-logs.gz)|
 
