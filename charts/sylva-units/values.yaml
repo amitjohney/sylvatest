@@ -2372,6 +2372,7 @@ units:
   snmp-exporter:
     enabled_conditions:
     - '{{ tuple . "monitoring" | include "unit-enabled" }}'
+    - '{{ tuple . "capm3" | include "unit-enabled" }}'
     depends_on:
       monitoring: true
     helm_repo_url: https://prometheus-community.github.io/helm-charts
