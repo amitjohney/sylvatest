@@ -377,6 +377,8 @@ units:
     info:
       description: installs Trivy operator
       maturity: beta
+    depends_on:
+      kyverno: '{{ tuple . "kyverno" | include "unit-enabled" }}'
     enabled: no
     unit_templates:
     - base-deps
@@ -1776,6 +1778,8 @@ units:
     info:
       description: installs local-path CSI
       maturity: stable
+    depends_on:
+      kyverno: '{{ tuple . "kyverno" | include "unit-enabled" }}'
     repo: local-path-provisioner
     unit_templates:
     - base-deps
@@ -2494,6 +2498,7 @@ units:
     unit_templates:
     - base-deps
     depends_on:
+      kyverno: '{{ tuple . "kyverno" | include "unit-enabled" }}'
       capd-metallb-config: '{{ tuple . "capd-metallb-config" | include "unit-enabled" }}'
     helm_repo_url: https://ori-edge.github.io/k8s_gateway/
     helmrelease_spec:
@@ -2702,6 +2707,7 @@ units:
     unit_templates:
     - base-deps
     depends_on:
+      kyverno: '{{ tuple . "kyverno" | include "unit-enabled" }}'
       flux-system: true
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
       coredns: '{{ tuple . "keycloak" | include "unit-enabled" }}' # see https://gitlab.com/sylva-projects/sylva-core/-/merge_requests/1023#note_1694289969
@@ -3269,6 +3275,7 @@ units:
     - base-deps
     depends_on:
       namespace-defs: true
+      kyverno: '{{ tuple . "kyverno" | include "unit-enabled" }}'
       sriov-crd: true
     helm_repo_url: https://charts.rancher.io/
     helmrelease_spec:
@@ -3540,6 +3547,7 @@ units:
     unit_templates:
     - base-deps
     depends_on:
+      kyverno: '{{ tuple . "kyverno" | include "unit-enabled" }}'
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
       '{{ .Values._internal.default_storage_class_unit }}': true
       os-images-info: true
