@@ -392,9 +392,6 @@ units:
       install:
         createNamespace: true
       values:
-        securityContext:
-          privileged: false
-          readOnlyRootFilesystem: true
         serviceAccount:
           annotations: {}
           create: true
@@ -2786,20 +2783,6 @@ units:
                   - apiGroup: rbac.authorization.k8s.io
                     kind: User
                     name: sylva-admin@example.com  # add same RBAC for the SSO user, so that when flux-webui SA impersonates it has privileges; cannot use "infra-admins" group here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/427
-              - kind: Deployment
-                apiVersion: apps/v1
-                metadata:
-                  name: flux-webui-weave-gitops
-                spec:
-                  template:
-                    spec:
-                      containers:
-                      - name: weave-gitops
-                        securityContext:
-                          privileged: false
-                          readOnlyRootFilesystem: true
-                          runAsGroup: 1000
-                          runAsUser: 1000
 
   prometheus-flux:
     info:
@@ -3575,11 +3558,6 @@ units:
           proxy: '{{ get .Values.proxies "https_proxy" }}'
           no_proxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
           extra_ca_certs: '{{ .Values.oci_registry_extra_ca_certs | include "set-if-defined" }}'
-          securityContext:
-            readOnlyRootFilesystem: true
-        nginx:
-          securityContext:
-            readOnlyRootFilesystem: true
         ingress:
           className: nginx
           hosts:
