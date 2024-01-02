@@ -1153,6 +1153,13 @@ units:
                 capabilities:
                   drop:
                     - ALL
+  capa:
+    repo: sylva-core
+    depends_on:
+      cert-manager: true
+    kustomization_spec:
+      path: ./kustomize-units/capo
+      wait: true
 
   capm3:
     repo: sylva-core
