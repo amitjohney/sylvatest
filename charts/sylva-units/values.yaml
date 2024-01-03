@@ -2397,7 +2397,7 @@ units:
             {{- range $device := .Values.snmp.devices }}
             {{- $service_monitor := dict "name" (lower $device.name) -}}
             {{- $module := list -}}
-            {{- $module := append $module "dell_idrac" -}}
+            {{- $module := append $module $device.group -}}
             {{- $_ := set $service_monitor "module" $module -}}
             {{- $_ := set $service_monitor "target" $device.ip -}}
             {{- $result = append $result $service_monitor -}}
@@ -2405,17 +2405,21 @@ units:
             {{- $result | include "preserve-type" -}}
     helm_secret_values:
       config: |
-        dell_idrac:
-          version: {{ .Values.snmp.version }}
+        {{- $files := .Files }}
+        {{- range $group_name, $group_keys := .Values.snmp.groups }}
+        {{ $oid_file := printf "configs/snmp-exporter/%s.yaml" $group_keys.hw_type }}
+        {{- $group_name }}:
+          version: {{ $group_keys.version }}
           auth:
-            community: '{{ .Values.snmp.auth.community }}'
-            security_level: '{{ .Values.snmp.auth.security_level }}'
-            username: '{{ .Values.snmp.auth.username }}'
-            password: '{{ .Values.snmp.auth.password }}'
-            auth_protocol: '{{ .Values.snmp.auth.auth_protocol }}'
-            priv_protocol: '{{ .Values.snmp.auth.priv_protocol }}'
-            priv_password: '{{ .Values.snmp.auth.priv_password }}'
-        {{ .Files.Get "configs/snmp-exporter/dell_idrac.yaml" | indent 2 -}}
+            community: '{{ $group_keys.auth.community }}'
+            security_level: '{{ $group_keys.auth.security_level }}'
+            username: '{{ $group_keys.auth.username }}'
+            password: '{{ $group_keys.auth.password }}'
+            auth_protocol: '{{ $group_keys.auth.auth_protocol }}'
+            priv_protocol: '{{ $group_keys.auth.priv_protocol }}'
+            priv_password: '{{ $group_keys.auth.priv_password }}'
+          {{- $files.Get $oid_file | nindent 2 }}
+        {{- end -}}
 
   multus:
     info:
@@ -3594,20 +3598,36 @@ shared_workload_clusters_secret_values:
 snmp:
   devices: []
   groups: {}
-  
+
 # Sample snmp configuration as it needs to be added in the secrets.yaml file
-#  snmp:
-#    version: 3
-#    auth:
-#      community: public
-#      security_level: authPriv
-#      username: user
-#      password: xxxxx
-#      auth_protocol: MD5
-#      priv_protocol: AES
-#      priv_password: xxxxx
-#    devices:
-#      - name: server1
-#        ip: a.b.c.d
-#      - name: server2
-#        ip: x.y.z.t
+# snmp:
+#   devices:
+#     - name: server1
+#       ip: 1.2.3.4
+#       group: dell1
+#     - name: server2
+#       ip: 5.6.7.8
+#       group: hp1
+#   groups:
+#     dell1:
+#       version: 3
+#       auth:
+#         community: public
+#         security_level: authPriv
+#         username: snmp
+#         password: xxxxx
+#         auth_protocol: MD5
+#         priv_protocol: AES
+#         priv_password: xxxxx
+#       hw_type: dell
+#     hp1:
+#       version: 3
+#       auth:
+#         community: public
+#         security_level: authPriv
+#         username: snmp
+#         password: xxxxx
+#         auth_protocol: MD5
+#         priv_protocol: AES
+#         priv_password: xxxxx
+#       hw_type: hp
