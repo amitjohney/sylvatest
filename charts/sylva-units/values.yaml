@@ -1158,7 +1158,7 @@ units:
     depends_on:
       cert-manager: true
     kustomization_spec:
-      path: ./kustomize-units/capo
+      path: ./kustomize-units/capa
       wait: true
 
   capm3:
