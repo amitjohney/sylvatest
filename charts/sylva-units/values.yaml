@@ -3592,11 +3592,9 @@ shared_workload_clusters_secret_values:
     capo: '{{ tuple (dict "clouds_yaml" (.Values.cluster | dig "capo" "clouds_yaml" dict)) (.Values.cluster | dig "capo" "clouds_yaml" dict) | include "set-only-if" }}'
 
 snmp:
-  version: 2
-  auth:
-    community: public
   devices: []
-
+  groups: {}
+  
 # Sample snmp configuration as it needs to be added in the secrets.yaml file
 #  snmp:
 #    version: 3
