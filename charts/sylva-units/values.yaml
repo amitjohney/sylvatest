@@ -1478,29 +1478,6 @@ units:
     kustomization_spec:
       path: ./kustomize-units/heat-operator
       wait: true
-      _patches:
-        - target:
-            group: apps
-            version: v1
-            kind: Deployment
-            name: heat-operator-controller-manager
-            namespace: heat-operator-system
-          patch: |-
-            - op: add
-              path: /spec/template/spec/containers/0/securityContext/seccompProfile
-              value:
-                type: RuntimeDefault
-        - target:
-            group: apps
-            version: v1
-            kind: Deployment
-            name: heat-operator-controller-manager
-            namespace: heat-operator-system
-          patch: |-
-            - op: add
-              path: /spec/template/spec/containers/1/securityContext/seccompProfile
-              value:
-                type: RuntimeDefault
 
   sylva-units-operator:
     repo: sylva-core
