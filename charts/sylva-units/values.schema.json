@@ -6293,44 +6293,6 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "version": {
-          "type": "integer",
-          "minimum": 2,
-          "maximum": 3
-        },
-        "auth": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "community": {
-              "type": "string"
-            },
-            "security_level": {
-              "type": "string",
-              "pattern": "^(noAuthNoPriv|authNoPriv|authPriv)$"
-            },
-            "username": {
-              "type": "string"
-            },
-            "password": {
-              "type": "string"
-            },
-            "auth_protocol": {
-              "type": "string",
-              "pattern": "^(MD5|SHA|SHA224|SHA256|SHA384|SHA512)$"
-            },
-            "priv_protocol": {
-              "type": "string",
-              "pattern": "^(DES|AES|AES192|AES256)$"
-            },
-            "priv_password": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "community"
-          ]
-        },
         "devices": {
           "type": "array",
           "items": {
@@ -6344,28 +6306,85 @@
               "ip": {
                 "type": "string",
                 "format": "ipv4"
+              },
+              "group": {
+                "type": "string"
               }
             }
           }
-        }
-      },
-      "if": {
-        "properties": {
-          "version": {
-            "const": 3
-          }
         },
-        "then": {
-          "properties": {
-            "auth": {
-              "required": [
-                "security_level",
-                "username",
-                "password",
-                "auth_protocol",
-                "priv_protocol",
-                "priv_password"
-              ]
+        "groups": {
+          "type": "object",
+          "additionalProperties": false,
+          "patternProperties": {
+            ".+": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "version": {
+                  "type": "integer",
+                  "minimum": 2,
+                  "maximum": 3
+                },
+                "auth": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "community": {
+                      "type": "string"
+                    },
+                    "security_level": {
+                      "type": "string",
+                      "pattern": "^(noAuthNoPriv|authNoPriv|authPriv)$"
+                    },
+                    "username": {
+                      "type": "string"
+                    },
+                    "password": {
+                      "type": "string"
+                    },
+                    "auth_protocol": {
+                      "type": "string",
+                      "pattern": "^(MD5|SHA|SHA224|SHA256|SHA384|SHA512)$"
+                    },
+                    "priv_protocol": {
+                      "type": "string",
+                      "pattern": "^(DES|AES|AES192|AES256)$"
+                    },
+                    "priv_password": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "community"
+                  ]
+                },
+                "hw_type": {
+                  "type": "string",
+                  "pattern": "^(dell|hp)$"
+                }
+              },
+              "if": {
+                "properties": {
+                  "version": {
+                    "const": 3
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "auth": {
+                      "required": [
+                        "security_level",
+                        "username",
+                        "password",
+                        "auth_protocol",
+                        "priv_protocol",
+                        "priv_password"
+                      ]
+                    }
+                  }
+                }
+              }
             }
           }
         }
