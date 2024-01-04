@@ -2833,6 +2833,61 @@
                       "type": "null"
                     }
                   ]
+                },
+                "extra": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "allowed_address_pairs": {
+                          "anyOf": [
+                            {
+                              "type": "array",
+                              "items": [
+                                {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "ip"
+                                  ],
+                                  "properties": {
+                                    "ip": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "format": "ipv4"
+                                        },
+                                        {
+                                          "$ref": "#/$defs/ipv4-cidr-full"
+                                        }
+                                      ]
+                                    },
+                                    "mac": {
+                                      "type": "string",
+                                      "format": "mac"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 }
               }
             },
