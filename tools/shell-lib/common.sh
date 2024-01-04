@@ -162,7 +162,7 @@ ensure_sylvactl
 function cleanup_bootstrap_cluster() {
   : ${CLEANUP_BOOTSTRAP_CLUSTER:='yes'}
   CALLER_SCRIPT_NAME=$(basename $0)
-  kind_clusters=`kind get clusters`
+  kind_clusters=`kind get clusters -q`
 
   # if caller script is bootstrap.sh or apply.sh and if current bootstrap-cluster contains sylva bootstrap-cluster - then delete it
   if [[ $CALLER_SCRIPT_NAME =~ "bootstrap.sh"|"apply.sh" && ${kind_clusters} =~ $KIND_CLUSTER_NAME ]]; then
