@@ -28,6 +28,7 @@ OCI_REGISTRY="${1:-oci://registry.gitlab.com/sylva-projects/sylva-core/}"
 REGISTRY_URI="${OCI_REGISTRY/oci:\/\//}"
 LOG_ERROR_FILE=$(mktemp)
 VALUES_FILE="$BASE_DIR/charts/sylva-units/values.yaml"
+FORCE_HELM_CHART_PROCESSING=${FORCE_HELM_CHART_PROCESSING:-false}  # can be set to "true" to force OCI artifact sign&push even it they already exist
 
 # if we run in a gitlab CI job, then we use the credentials provided by gitlab job environment
 if [[ -n ${CI_REGISTRY_USER:-} ]]; then
@@ -70,10 +71,33 @@ function check_invalid_semver_tag {
   echo "${new_version:-$version}"
 }
 
+function artifact_integrity {
+  local tgz_file=$1
+ 
+  artifact_name=$(echo $tgz_file | sed 's/-.*//')
+  artifact_version=$(echo $tgz_file | sed 's/\.tgz//' | sed 's/.*-//')
+
+  artifact_url=$OCI_REGISTRY$artifact_name:${artifact_version}
+  
+  # The integrity test does make only if the OCI artefact exist
+  if (flux pull artifact $artifact_url -o /tmp); then
+    echo "Checking the integrity of the existing unsigned artifact $artifact_name..."
+    mkdir /tmp/$tgz_file
+    tar -xzvf $tgz_file -C /tmp/$tgz_file
+    # make a diff between the tgz file and the artifact pulled
+    diff -qr /tmp/$artifact_name /tmp/$tgz_file/$artifact_name
+  fi
+}
+
 function push_and_sign {
  
       local tgz_file=$1
       local chart_name=$2
+
+      if !(artifact_integrity $tgz_file); then
+        echo "[ERROR] cannot push and sign $chart_name because its content differs from an existing OCI artefact"
+        return 1
+      fi
       
       helm push $tgz_file $OCI_REGISTRY >output 2>&1
       cat output
@@ -163,25 +187,34 @@ function show_status {
 }
 
 function artifact_exists {
-  # if the environment variable FORCE_HELM_CHART_PROCESSING is set to true, the helm vhart is processed even if it exists
+  # if the environment variable FORCE_HELM_CHART_PROCESSING is set to true, the helm cshart is processed even if it exists
   if [[ $FORCE_HELM_CHART_PROCESSING == "true" ]]; then
           echo "Force processing artifact $1 ..."
           return 1
   fi
 
-  # Don't process the artifact if it exists and properly signed
+  echo "Checking if artifact $1 exists..."
 
-  if [[ -v COSIGN_PRIVATE_KEY ]] && [[ -v COSIGN_PASSWORD ]]; then
-    echo "Check is artifact $1 is signed with the correct key"
-    if cosign verify --key env://COSING_PUBLIC_KEY $1; then
-      echo "Artifact $1 exists and is already signed with the correct key, skipping it"
-    else
-      return 1
-    fi
+  if (flux pull artifact $1 -o /tmp); then
+  # artifact exist
+     if [[ -v COSIGN_PRIVATE_KEY ]] && [[ -v COSIGN_PASSWORD ]]; then
+        echo "Check is artifact $1 is signed with the correct key"
+      if cosign verify --key env://COSIGN_PUBLIC_KEY $1; then
+        echo "Artifact $1 exists and is already signed with the correct key, skipping it"
+        # Don't process the artifact if it exists and properly signed
+        return 0
+      else
+        echo "Artifact $1 exists and should be signed"
+        return 1
+      fi
+     fi
+     # artifact exists and no signing material available
+     return 0
+  else
+    # artifact does no exist
+    return 1
   fi
 
-  echo "Checking if artifact $1 exists..."
-  flux pull artifact $1 -o /tmp > /dev/null 2>&1
 }
 
 
