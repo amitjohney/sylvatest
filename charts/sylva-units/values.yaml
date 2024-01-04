@@ -1159,6 +1159,9 @@ units:
       cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/capa
+      postBuild:
+        substitute:
+          AWS_B64ENCODED_CREDENTIALS: "test"
       wait: true
 
   capm3:
