@@ -337,7 +337,6 @@ Before trigerring bootstrap.sh, some prerequisites need to be satisfied.
 
 <details><summary>Deploying baremetal clusters using CAPM3</summary>
 
-
 This scenario details deployment procedure for a full baremetal use-case, so using baremetal servers for both management and workload clusters.
 The deployment workflow is in line with other infrastructure providers as detailed above, with `sylva-units` values specific to CAPM3, as shown in `environment-values/rke2-capm3/`.
 
@@ -346,7 +345,7 @@ Before triggering deployment through bootstrap.sh, some prerequisites need to be
 - Create a **bootstrap vm** using OpenStack, vsphere or use an existing vm (please check previous section)
 - Review the hardware and network specs for a baremetal deployment:
 
-In order to deploy a minimal `sylva cluster`, you would need a baremetal server, acting both as control-plane and worker (both in kubeadm and rke2, the control-plane nodes don't have the `effect: NoSchedule` taint). 
+In order to deploy a minimal `sylva cluster`, you would need a baremetal server, acting both as control-plane and worker (both in kubeadm and rke2, the control-plane nodes don't have the `effect: NoSchedule` taint).
 For highly Available clusters at least three servers are required.
 
 > **_Hardware Requirements:_** It is recommended to have the following specs at the minimum for the baremetal Servers
