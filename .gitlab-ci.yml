@@ -1,7 +1,7 @@
 ---
 include:
   - project: "to-be-continuous/gitleaks"
-    ref: 2.2.3
+    ref: 2.3.0
     file: "templates/gitlab-ci-gitleaks.yml"
     rules:
       - if: '$CI_PIPELINE_SOURCE == "pipeline"'
