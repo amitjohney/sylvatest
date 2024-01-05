@@ -1237,7 +1237,7 @@ units:
       chart:
         spec:
           chart: metal3
-          version: 0.4.1
+          version: 0.4.2
       install:
         createNamespace: true
       targetNamespace: metal3-system
