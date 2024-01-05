@@ -100,7 +100,7 @@ function check_pivot_has_ran() {
 
 function validate_input_values {
   echo_b "\U0001F50E Validate input files"
-  find $ENV_PATH -name "*.yaml" -exec yq --header-preprocess=false {} \; 1> /dev/null
+  find $ENV_PATH -name "*.yaml" -exec yq --header-preprocess=false {} + 1> /dev/null
 }
 
 function retrieve_kubeconfig {
