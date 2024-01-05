@@ -337,6 +337,7 @@ Before trigerring bootstrap.sh, some prerequisites need to be satisfied.
 
 <details><summary>Deploying baremetal clusters using CAPM3</summary>
 
+
 This scenario details deployment procedure for a full baremetal use-case, so using baremetal servers for both management and workload clusters.
 The deployment workflow is in line with other infrastructure providers as detailed above, with `sylva-units` values specific to CAPM3, as shown in `environment-values/rke2-capm3/`.
 
@@ -378,12 +379,12 @@ The provisioning network is usually split into 2 ranges, one used for DHCP serve
 
 Reference for Network Allocation:
 
---------------------------------------------------------------------------------------------------------------------------------------
-| Network        | VLAN id | CIDR             | Gateway       | Reserved Pool                   | Metal3 pools                        |
-| -------------- | ------- | ---------------- | ------------- | --------------------------------|-------------------------------------|
-| Provisioning   | 2016    | 10.199.39.192/27 | 10.199.39.193 | 10.199.39.225-240 (DHCPD server)| Provisioning pool: 10.199.39.219-220|
-| Public Network | 2015    | 10.188.36.128/26 | 10.188.36.129 | None                            | Public pool: 10.188.36.148-149      |
---------------------------------------------------------------------------------------------------------------------------------------
+  --------------------------------------------------------------------------------------------------------------------------------------
+  | Network        | VLAN id | CIDR             | Gateway       | Reserved Pool                   | Metal3 pools                        |
+  | -------------- | ------- | ---------------- | ------------- | --------------------------------|-------------------------------------|
+  | Provisioning   | 2016    | 10.199.39.192/27 | 10.199.39.193 | 10.199.39.225-240 (DHCPD server)| Provisioning pool: 10.199.39.219-220|
+  | Public Network | 2015    | 10.188.36.128/26 | 10.188.36.129 | None                            | Public pool: 10.188.36.148-149      |
+  --------------------------------------------------------------------------------------------------------------------------------------
 
 On the Bootstrap VM:
 
