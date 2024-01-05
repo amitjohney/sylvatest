@@ -208,7 +208,7 @@ capo-misc-units-deploy:
   extends: .default-trigger-oci
   stage: deploy
   variables:
-    ENV_NAME: kubeadm-capo
+    ENV_NAME: rke2-capo
     CAPO_TAG: "${ENV_TAG_OCI}-misc"
     CUSTOM_VALUES_FILE: environment-values/ci/misc-units-in-capo.yml
     MGMT_WATCH_TIMEOUT_MIN: 45
