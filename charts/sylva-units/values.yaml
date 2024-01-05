@@ -349,6 +349,7 @@ units:
         - '{{ tuple "components/vault" (tuple . "vault" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/rancher" (tuple . "rancher" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/cattle-monitoring" (tuple . "monitoring" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/kubevirt" (tuple . "kubevirt" | include "unit-enabled") | include "set-only-if" }}'
 
 # Postgresql deployment for keycloak
   postgres-init:
@@ -401,6 +402,8 @@ units:
                   topologyKey: kubernetes.io/hostname
 
   kubevirt:
+    depends_on:
+      namespace-defs: true
     helm_repo_url: https://suse-edge.github.io/charts
     helmrelease_spec:
       chart:
@@ -409,7 +412,7 @@ units:
           version: 0.2.0
       targetNamespace: kubevirt
       install:
-        createNamespace: true
+        createNamespace: false
 
   kubevirt-test-vms:
     depends_on:
