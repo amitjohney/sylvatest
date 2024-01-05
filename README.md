@@ -357,7 +357,7 @@ TCP 5050: (BM -> Ironic) Port used by Ironic Python Agent from the BM node to th
 TCP 6385: (BM -> Ironic) Port used for Ironic API
 TCP 161/162: SNMPv3 (BM -> Prometheus) (optional)
 
-> **_IMPORTANT NOTE:_** Depending on your infrastructure provider, the following ports should be passed in the security groups/rules to allow traffic to-and-fro (ingress and egress) from the bootstrap vm to baremetal hosts on the management cluster.
+> **_IMPORTANT NOTE:_** Depending on your infrastructure provider, the following ports should be passed in the security groups/rules to allow traffic in both directions (ingress and egress) between the bootstrap vm and the baremetal hosts.
 
 - 80
 - 443
