@@ -337,27 +337,31 @@ Before trigerring bootstrap.sh, some prerequisites need to be satisfied.
 
 <details><summary>Deploying baremetal clusters using CAPM3</summary>
 
-This scenario details deployment procedure for a full Baremetal use case.
+This scenario details deployment procedure for a full baremetal use-case, so using baremetal servers for both management and workload clusters.
+The deployment workflow is in line with other infrastructure providers as detailed above, with `sylva-units` values specific to CAPM3, as shown in `environment-values/rke2-capm3/`.
 
-In order to deploy a minimal `sylva cluster` on baremetal servers, you would need a baremetal host, acting as K8s controller and K8s worker. This is applicable for both `management` & `workload` clusters.
-For Highly Available clusters at least three servers are required acting as both K8s `control-plane` && `worker`.
+Before triggering deployment through bootstrap.sh, some prerequisites need to be satisfied.
 
-> **_Hardware Requirements:_** It is recommended to have the following specs at the minimum for the Baremetal Servers
+- Create a **bootstrap vm** using OpenStack, vsphere or use an existing vm (please check previous section)
+- Review the hardware and network specs for a baremetal deployment:
+
+In order to deploy a minimal `sylva cluster`, you would need a baremetal server, acting both as control-plane and worker (both in kubeadm and rke2, the control-plane nodes don't have the `effect: NoSchedule` taint). 
+For highly Available clusters at least three servers are required.
+
+> **_Hardware Requirements:_** It is recommended to have the following specs at the minimum for the baremetal Servers
 
 - 16 CPU cores (32 vCPU with HT)
 - 32GB of RAM
 - 100GB of OS Disk
 
-### Network Prerequisites for Full Baremetal Deployment
-
-The BMC interfaces (IDRAC for Dell, ILO for HPE, XCC for Lenovo) must be reachable from the bootstrap vm over the list of ports mention below (Only the few necessary flows should be authorized to be routed from/to the Out-of-Band network since this network allows sensitive/disruptive operations):
+The BMC interfaces (IDRAC for Dell, ILO for HPE, XCC for Lenovo) must be reachable from the bootstrap vm over the list of ports mention below (It is advised to only allow these flows by L4 stateful inspection devices like Firewalls, to permit reachability from/to the Out-of-Band network, since this network allows sensitive/disruptive operations):
 
 TCP 6180: (Ironic -> BM) pull discovery image (ram disk) (ironic-httpd)
-TCP 5050: (BM -> Ironic) Port used by Ironic Python Agent from the BM node to the Ironic Inspector (management cluster)
-TCP 6385: (BM -> Ironic) Port used for Ironic API
+TCP 5050: (BM <-> Ironic) Port used by Ironic Python Agent from the BM node to the Ironic Inspector (management cluster)
+TCP 6385: (BM <-> Ironic) Port used for Ironic API
 TCP 161/162: SNMPv3 (BM -> Prometheus) (optional)
 
-> **_IMPORTANT NOTE:_** Depending on your infrastructure provider, the following ports should be passed in the security groups/rules to allow traffic in both directions (ingress and egress) between the bootstrap vm and the baremetal hosts.
+> **_IMPORTANT NOTE:_** Depending on the security rules implementation in your infrastructure provider, the following ports shall be allowed to facilitate traffic flow in both directions (ingress and egress) between the bootstrap vm and the baremetal hosts.
 
 - 80
 - 443
@@ -368,34 +372,31 @@ TCP 161/162: SNMPv3 (BM -> Prometheus) (optional)
 - 9345
 - 9999
 
-The baremetal nodes need to have their first interface (PXE boot interface) connected to a provisioning network with access to a DHCP server (potentially through a DHCP relay). This provisioning network needs also to reach a HTTP(s) endpoint (Ironic API: components of CAPM3) on the management cluster and to be accessible on port TCP 9999.
+The first interface (PXE boot interface) of the baremetal nodes must be connected to a provisioning network with access to a DHCP server (potentially through a DHCP relay). The provisioning network needs to reach a HTTP(s) endpoint (Ironic API: components of CAPM3) on the management cluster and also have accessibility over port 9999 (TCP).
 
-The provisioning network should be split into 2 ranges, one used for the DHCPD server during provisioning and the second for the Ironic provisioning pools to provision the operating system on each baremetal node.
+The provisioning network is usually split into 2 ranges, one used for DHCP server during provisioning and the second one for Ironic provisioning pools to provision the operating system on each baremetal node.
 
-### Network Allocation Reference Example
+Reference for Network Allocation:
 
-| Network        | VLAN id | CIDR             | Gateway        | Reserved Pool                   | Metal3 pools                         |
-| -------------- | ------- | ---------------- | ------------- | ---------------------------------|-----------------------------------|
-| Provisioning   | 2016    | 10.199.39.192/27 | 10.199.39.193 | 10.199.39.225-240 (DHCPD server) | Provisioning pool: 10.199.39.219-220 |
-| Public Network | 2015    | 10.188.36.128/26 | 10.188.36.129 | None                            | Public pool: 10.188.36.148-149     |
+--------------------------------------------------------------------------------------------------------------------------------------
+| Network        | VLAN id | CIDR             | Gateway       | Reserved Pool                   | Metal3 pools                        |
+| -------------- | ------- | ---------------- | ------------- | --------------------------------|-------------------------------------|
+| Provisioning   | 2016    | 10.199.39.192/27 | 10.199.39.193 | 10.199.39.225-240 (DHCPD server)| Provisioning pool: 10.199.39.219-220|
+| Public Network | 2015    | 10.188.36.128/26 | 10.188.36.129 | None                            | Public pool: 10.188.36.148-149      |
+--------------------------------------------------------------------------------------------------------------------------------------
 
-### Cluster Deployment on Baremetal Servers
+On the Bootstrap VM:
 
-The deployment workflow is in line with other infrastrucure providers as detailed above, with additions specific to CAPM3 in `environment-values/rke2-capm3/`
-
-Before triggering bootstrap.sh, certain prerequisites need to be done/followed
-
-- Create a **bootstrap vm** using OpenStack or use any existing Linux environment
-- Set the **proxies** environment variables (http_proxy, https_proxy, no_proxy) if using corporate proxy
 - Install **Docker** and add your user to the `docker` group
 - Clone **sylva-core** project on the **bootstrap vm**
 - Create your own copy of **environment-values** (this will prevent you from accidentally committing your secrets).
+- Set the **proxies** environment variables (http_proxy, https_proxy, no_proxy) if using a corporate proxy
 
   ```shell
   cp -a environment-values/rke2-capm3 environment-values/my-rke2-capm3
   ```
 
-- Provide your **Node specific IPMI credentials** in `environment-values/my-rke2-camp3/secrets.yaml`
+- Provide your **server specific IPMI credentials** in `environment-values/my-rke2-camp3/secrets.yaml`
 
   ```yaml
   cluster:
@@ -404,7 +405,10 @@ Before triggering bootstrap.sh, certain prerequisites need to be done/followed
         credentials:
           username: Administrator
           password: "put the actual password here"
-
+      my-dell-server:
+        credentials:
+          username: Administrator
+          password: "put the actual password here"     
   ```
 
 > **_NOTE:_** Obviously, the `secrets.yaml` file is sensitive and meant to be ignored by Git (see `.gitignore`). However, for the sake of security, it can be a good idea to [secure these files with SOPS](./sops-howto.md) to mitigate the risk of leakage.
