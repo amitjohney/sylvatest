@@ -379,7 +379,7 @@ The provisioning network is usually split into 2 ranges, one used for DHCP serve
 
 Reference for Network Allocation:
 
-```markdown
+```shell
 --------------------------------------------------------------------------------------------------------------------------------------
 | Network        | VLAN id | CIDR             | Gateway       | Reserved Pool                   | Metal3 pools                        |
 | -------------- | ------- | ---------------- | ------------- | --------------------------------|-------------------------------------|
