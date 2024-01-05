@@ -2385,6 +2385,10 @@
         {
           "type": "object",
           "additionalProperties": false,
+          "required": [
+            "username",
+            "password"
+          ],
           "patternProperties": {
             "^(username|password)$": {
               "type": "string"
@@ -5178,15 +5182,24 @@
                     }
                   ]
                 }
-              },
-              "not": {
-                "required": [
-                  "secretRef"
-                ]
               }
             }
           },
           "allOf": [
+            {
+              "not": {
+                "required": [
+                  "auth"
+                ],
+                "properties": {
+                  "spec": {
+                    "required": [
+                      "secretRef"
+                    ]
+                  }
+                }
+              }
+            },
             {
               "if": {
                 "properties": {
