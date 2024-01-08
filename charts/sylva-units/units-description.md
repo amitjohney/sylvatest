@@ -43,7 +43,7 @@
 | **vault-operator** | installs Vault operator | stable |  | [Helm](https://github.com/bank-vaults/vault-operator.git) | v1.21.2 |
 | **vsphere-csi-driver** | installs Vsphere CSI | stable |  | [Kustomize](https://raw.githubusercontent.com/kubernetes-sigs/vsphere-csi-driver/v3.1.2/manifests/vanilla/vsphere-csi-driver.yaml) | v3.1.2 |
 | **harbor** | installs Harbor | beta |  | [Helm](https://helm.goharbor.io) | 1.11.1 |
-| **kubevirt** | installs kubevirt | beta |  | [Helm](https://suse-edge.github.io/charts) | 0.2.0 |
+| **kubevirt** | installs kubevirt | beta |  | [Helm](https://suse-edge.github.io/charts) | 0.2.1 |
 | **metal3-suse** | installs SUSE-maintained Metal3 operator | beta |  | [Helm](https://suse-edge.github.io/charts) | 0.4.3 |
 | **neuvector** | installs Neuvector | beta |  | [Helm](https://neuvector.github.io/neuvector-helm) | 2.6.6 |
 | **sylva-units-operator** | installs sylva-units operator | experimental |  | [Kustomize](https://gitlab.com/sylva-projects/sylva-elements/sylva-units-operator.git/config/default?ref=0.0.0-pre3) | 0.0.0-pre3 |
@@ -59,6 +59,7 @@
 | **cis-operator-scan** | allows for running a CIS scan for management cluster<br><br>it generates a report which can be viewed and downloaded in CSV from the Rancher UI, at https://rancher.sylva/dashboard/c/local/cis/cis.cattle.io.clusterscan |  | True | Kustomize | N/A |
 | **cluster-creator-login** | configures Rancher account used for workload cluster imports |  | True | Kustomize | N/A |
 | **cluster-creator-policy** | Kyverno policy for cluster creator<br><br>This units defines a Kyverno policy to distribute the Kubeconfig of cluster creator<br>in all workload cluster namespaces, to allow the import of workload clusters in<br>Rancher. |  | True | Kustomize | N/A |
+| **cluster-garbage-collector** | installs cronjob responsible for unused CAPI resources cleaning |  | True | Kustomize | N/A |
 | **cluster-import** | imports workload cluster into Rancher |  | True | Kustomize | N/A |
 | **coredns** | configures DNS inside cluster |  | True | Kustomize | N/A |
 | **eso-secret-stores** | defines External Secrets stores |  | True | Kustomize | N/A |
