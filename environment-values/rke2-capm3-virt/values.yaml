@@ -116,12 +116,12 @@ libvirt_metal:
   nodes:
     management-cp:
       redfishPort: 8000
-      memGB: 12
+      memGB: 16
       numCPUs: 8
 
     workload-cp:
       redfishPort: 8001
-      memGB: 6 # IPA allocates half of it to tmpfs, if must be large enough to store the image.
+      memGB: 8 # IPA allocates half of it to tmpfs, if must be large enough to store the image.
       numCPUs: 4
 
 #proxies:
