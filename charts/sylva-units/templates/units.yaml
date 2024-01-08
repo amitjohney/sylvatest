@@ -298,7 +298,7 @@ stringData:
                 (append $kustomization_spec.healthChecks
                   (dict
                     "namespace" ($unit_def.kustomization_spec.targetNamespace | default $envAll.Release.Namespace)
-                    "apiVersion" "helm.toolkit.fluxcd.io/v2beta1"
+                    "apiVersion" "helm.toolkit.fluxcd.io/v2beta2"
                     "kind" "HelmRelease"
                     "name" $unit_name)
                 ) -}}
