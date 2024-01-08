@@ -207,6 +207,7 @@ properties:
             not:
               required:
                 - secretRef
+                - verify
 
         allOf:
         - if:

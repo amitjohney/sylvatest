@@ -21,3 +21,6 @@ secretGenerator:
 - name: sylva-units-secrets
   options:
     disableNameSuffixHash: true
+- name: pgp-public-keys
+  options:
+    disableNameSuffixHash: true
