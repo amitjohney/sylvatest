@@ -151,7 +151,7 @@ include:
     CLUSTER_TYPE: management
   timeout: 60min
   artifacts:
-    expire_in: 6 hour
+    expire_in: 12 hour
     when: always
     paths:
       - debug-on-exit.log
@@ -191,7 +191,7 @@ include:
     CLUSTER_TYPE: workload
   timeout: 60min
   artifacts:
-    expire_in: 6 hour
+    expire_in: 12 hour
     when: always
     paths:
       - debug-on-exit.log
