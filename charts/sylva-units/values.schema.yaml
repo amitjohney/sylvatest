@@ -597,26 +597,46 @@ properties:
         pattern: "^(https?://.*|)$"
       - $ref: "#/$defs/gotpl"
 
-  rancher: # -------------------------------
+  external_hostnames:  # -------------------------------
     type: object
     additionalProperties: false
     properties:
 
-      external_hostname:  # -------------------------------
+      rancher:  # -------------------------------
         anyOf:
           - type: string
             format: hostname
           - $ref: "#/$defs/string-with-gotpl"
-
-  vault: # -------------------------------
-    type: object
-    additionalProperties: false
-    properties:
-
-      external_hostname:  # -------------------------------
+      vault:  # -------------------------------
         anyOf:
           - type: string
             format: hostname
+          - $ref: "#/$defs/string-with-gotpl"
+      keycloak:  # -------------------------------
+        anyOf:
+          - type: string
+            format: hostname
+          - $ref: "#/$defs/string-with-gotpl"
+      neuvector:  # -------------------------------
+        anyOf:
+          - type: string
+            format: hostname
+          - $ref: "#/$defs/string-with-gotpl"
+      harbor:  # -------------------------------
+        anyOf:
+          - type: string
+            format: hostname
+          - $ref: "#/$defs/string-with-gotpl"
+      flux:  # -------------------------------
+        anyOf:
+          - type: string
+            format: hostname
+          - $ref: "#/$defs/string-with-gotpl"
+      os_image_server:  # -------------------------------
+        anyOf:
+          - type: string
+            format: hostname
+          - const: ''
           - $ref: "#/$defs/string-with-gotpl"
 
   keycloak: # -------------------------------
@@ -624,59 +644,8 @@ properties:
     additionalProperties: false
     properties:
 
-      external_hostname:  # -------------------------------
-        anyOf:
-          - type: string
-            format: hostname
-          - $ref: "#/$defs/string-with-gotpl"
-
       keycloak_expire_password_days:  # -------------------------------
         type: integer
-
-  neuvector: # -------------------------------
-    type: object
-    additionalProperties: false
-    properties:
-
-      external_hostname:  # -------------------------------
-        anyOf:
-          - type: string
-            format: hostname
-          - $ref: "#/$defs/string-with-gotpl"
-
-  harbor: # -------------------------------
-    type: object
-    additionalProperties: false
-    properties:
-
-      external_hostname:  # -------------------------------
-        anyOf:
-          - type: string
-            format: hostname
-          - $ref: "#/$defs/string-with-gotpl"
-
-  flux: # -------------------------------
-    type: object
-    additionalProperties: false
-    properties:
-
-      external_hostname:  # -------------------------------
-        anyOf:
-          - type: string
-            format: hostname
-          - $ref: "#/$defs/string-with-gotpl"
-
-  os_image_server: # -------------------------------
-    type: object
-    additionalProperties: false
-    properties:
-
-      external_hostname:  # -------------------------------
-        anyOf:
-          - type: string
-            format: hostname
-          - const: ''
-          - $ref: "#/$defs/string-with-gotpl"
 
   os_images: # -------------------------------
     type: object

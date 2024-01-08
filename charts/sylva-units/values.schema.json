@@ -5846,45 +5846,11 @@
         }
       ]
     },
-    "rancher": {
+    "external_hostnames": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "external_hostname": {
-          "anyOf": [
-            {
-              "type": "string",
-              "format": "hostname"
-            },
-            {
-              "$ref": "#/$defs/string-with-gotpl"
-            }
-          ]
-        }
-      }
-    },
-    "vault": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "external_hostname": {
-          "anyOf": [
-            {
-              "type": "string",
-              "format": "hostname"
-            },
-            {
-              "$ref": "#/$defs/string-with-gotpl"
-            }
-          ]
-        }
-      }
-    },
-    "keycloak": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "external_hostname": {
+        "rancher": {
           "anyOf": [
             {
               "type": "string",
@@ -5895,16 +5861,7 @@
             }
           ]
         },
-        "keycloak_expire_password_days": {
-          "type": "integer"
-        }
-      }
-    },
-    "neuvector": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "external_hostname": {
+        "vault": {
           "anyOf": [
             {
               "type": "string",
@@ -5914,14 +5871,8 @@
               "$ref": "#/$defs/string-with-gotpl"
             }
           ]
-        }
-      }
-    },
-    "harbor": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "external_hostname": {
+        },
+        "keycloak": {
           "anyOf": [
             {
               "type": "string",
@@ -5931,14 +5882,8 @@
               "$ref": "#/$defs/string-with-gotpl"
             }
           ]
-        }
-      }
-    },
-    "flux": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "external_hostname": {
+        },
+        "neuvector": {
           "anyOf": [
             {
               "type": "string",
@@ -5948,14 +5893,30 @@
               "$ref": "#/$defs/string-with-gotpl"
             }
           ]
-        }
-      }
-    },
-    "os_image_server": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "external_hostname": {
+        },
+        "harbor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
+        },
+        "flux": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
+        },
+        "os_image_server": {
           "anyOf": [
             {
               "type": "string",
@@ -5968,6 +5929,15 @@
               "$ref": "#/$defs/string-with-gotpl"
             }
           ]
+        }
+      }
+    },
+    "keycloak": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "keycloak_expire_password_days": {
+          "type": "integer"
         }
       }
     },
