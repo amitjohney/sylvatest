@@ -66,6 +66,41 @@ function dump_additional_resources() {
     done
 }
 
+
+function format_and_sort_events() {
+  # this sorts events by lastTimestamp (when defined)
+  yq '[.items[] |
+       [.firstTimestamp // .eventTime,
+        .lastTimestamp // .firstTimestamp // .eventTime,
+        .involvedObject.kind,
+        .involvedObject.name,
+        .count,
+        .reason,
+        .message // "" | sub("\n","\n        ")]
+       ]
+      | sort_by(.1)
+      | @tsv'
+}
+
+function cluster_info_dump() {
+  local cluster=$1
+  local dump_dir=$cluster-cluster-dump
+  echo "Dumping resources for $cluster cluster in $dump_dir"
+
+  kubectl cluster-info dump -A -o yaml --output-directory=$dump_dir
+
+  # produce a readable ordered log of events for each namespace
+  for events_yaml in $(find $dump_dir -name events.yaml); do
+    format_and_sort_events < $events_yaml > ${events_yaml//.yaml}.log
+  done
+
+  # same in a single file
+  kubectl get events -A -o yaml | format_and_sort_events > $dump_dir/events.log
+
+  dump_additional_resources $dump_dir $additional_resources
+}
+
+
 echo "Docker containers"
 docker ps
 
@@ -74,11 +109,7 @@ free -h
 df -h || true
 
 if [[ $(kind get clusters) =~ $KIND_CLUSTER_NAME ]]; then
-  echo "Performing dump on bootstrap cluster"
-  kubectl cluster-info dump -A -o yaml --output-directory=bootstrap-cluster-dump
-
-  dump_additional_resources bootstrap-cluster-dump $additional_resources
-
+  cluster_info_dump bootstrap
   echo "Dump node logs"
   docker ps -q -f name=management-cluster-control-plane* | xargs -I % -r docker exec % journalctl -e
 fi
@@ -92,10 +123,7 @@ if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
     echo "Get pods in management cluster"
     kubectl --request-timeout=3s get pods -A
 
-    echo "Performing dump on management cluster"
-    kubectl cluster-info dump -A -o yaml --output-directory=management-cluster-dump
-
-    dump_additional_resources management-cluster-dump $additional_resources
+    cluster_info_dump management
 
     workload_cluster_name=$(kubectl get cluster.cluster -A -o jsonpath='{ $.items[?(@.metadata.namespace != "sylva-system")].metadata.name }')
     if [[ -z "$workload_cluster_name" ]]; then
@@ -106,9 +134,6 @@ if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
         kubectl -n $workload_cluster_namespace get secret $workload_cluster_name-kubeconfig -o jsonpath='{.data.value}' | base64 -d > $BASE_DIR/workload-cluster-kubeconfig
         export KUBECONFIG=$BASE_DIR/workload-cluster-kubeconfig
 
-        echo "Performing dump on workload cluster"
-        kubectl cluster-info dump -A -o yaml --output-directory=workload-cluster-dump
-
-        dump_additional_resources workload-cluster-dump $additional_resources
+        cluster_info_dump workload
     fi
 fi
