@@ -149,6 +149,13 @@ units:
       namespace-defs: true
       cluster: true
 
+  harbor:
+    # can be enabled at runtime if desired:
+    #enabled: true
+    depends_on:
+      namespace-defs: true
+      cluster: true
+
   metallb:
     enabled: true
     depends_on:
