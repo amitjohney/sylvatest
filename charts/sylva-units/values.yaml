@@ -2374,6 +2374,7 @@ units:
           deletingConfirmationFlag: true
           autoCleanupSystemGeneratedSnapshot: true
           allowVolumeCreationWithDegradedAvailability: false
+          storageMinimalAvailablePercentage: 10
 
   cluster-creator-login:
     enabled_conditions:
