@@ -1617,6 +1617,9 @@ units:
     helm_secret_values: '{{ .Values.cluster | include "preserve-type" }}'
 
   cluster-garbage-collector:
+    info:
+      description: installs cronjob responsible for unused CAPI resources cleaning
+      internal: true
     depends_on:
       cluster: false # we can't depend directly on 'cluster' unit, since it's being disabled in 'management-sylva-units' and re-enabled by 'pivot'
       capi: true
