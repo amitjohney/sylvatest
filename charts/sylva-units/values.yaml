@@ -1624,6 +1624,7 @@ units:
   calico:
     enabled_conditions:
     - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'  # installed by RKE2 when RKE2 is used
+    - '{{ .Values.cluster.default_cni | eq "calico" | include "preserve-type" }}'
     depends_on:
       calico-crd: true
     helm_repo_url: https://rke2-charts.rancher.io
@@ -1641,11 +1642,30 @@ units:
             bgp: Enabled
           registry: UseDefault
 
+  cilium:
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'  # installed by RKE2 when RKE2 is used
+    - '{{ .Values.cluster.default_cni | eq "cilium" | include "preserve-type" }}'
+    helm_repo_url: https://rke2-charts.rancher.io
+    helmrelease_spec:
+      releaseName: rke2-cilium
+      targetNamespace: kube-system
+      chart:
+        spec:
+          chart: rke2-cilium
+          version: 1.14.100
+      values:
+        operator:
+          replicas: '{{ .Values.cluster.control_plane_replicas }}'  ### Workaround for single node clusters
+        global:
+          clusterCIDRv4: '{{ .Values.cluster.cluster_pods_cidrs }}'
+          serviceCIDR: '{{ .Values.cluster.cluster_services_cidrs }}'
+
   metallb:
     enabled_conditions:
       - '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" }}'
     depends_on:
-      calico: true
+      '{{ .Values.cluster.default_cni }}': '{{ tuple . .Values.cluster.default_cni | include "unit-enabled" }}'
     helm_repo_url: https://metallb.github.io/metallb
     helmrelease_spec:
       targetNamespace: metallb-system
@@ -1993,7 +2013,7 @@ units:
   ingress-nginx:
     depends_on:
       capd-metallb-config: '{{ tuple . "capd-metallb-config" | include "unit-enabled" }}'
-      calico: '{{ tuple . "calico" | include "unit-enabled" }}'
+      '{{ .Values.cluster.default_cni }}': '{{ tuple . .Values.cluster.default_cni | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io
     helm_chart_versions:
       4.5.202: '{{ not .Values._internal.k8s_post_1_26_6  }}'
@@ -2193,7 +2213,7 @@ units:
   multus:
     enabled: false
     depends_on:
-      calico: '{{ tuple . "calico" | include "unit-enabled" }}'
+      '{{ .Values.cluster.default_cni }}': '{{ tuple . .Values.cluster.default_cni | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io/
     helmrelease_spec:
       chart:
@@ -2583,6 +2603,9 @@ cluster:
 
   # cis profile to be used. Curently supported only for rke2 clusters. "cis-1.6" for k8s prior to 1.25, "cis-1.23" for 1.25+
   cis_profile: cis-1.23
+
+  # cni used for the cluster. Can be calico or cilium
+  default_cni: calico
 
   # for now, the choice below needs to be made
   # consistently with the choice of a matching kustomization path

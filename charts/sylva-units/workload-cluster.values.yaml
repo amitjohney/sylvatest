@@ -58,7 +58,7 @@ unit_templates:
     depends_on:
       cluster: true
       namespace-defs: true
-      calico: '{{ tuple . "calico" | include "unit-enabled" }}'
+      '{{ .Values.cluster.default_cni }}': '{{ tuple . .Values.cluster.default_cni | include "unit-enabled" }}'
 
 # here we select which units we want to enable for a workload cluster
 units:
@@ -149,10 +149,16 @@ units:
       namespace-defs: true
       cluster: true
 
+  cilium:
+    enabled: true
+    depends_on:
+      namespace-defs: true
+      cluster: true
+
   metallb:
     enabled: true
     depends_on:
-      calico: true
+      '{{ .Values.cluster.default_cni }}': true
 
   ingress-nginx:
     enabled: true
