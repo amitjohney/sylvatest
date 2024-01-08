@@ -425,7 +425,7 @@ units:
     depends_on:
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
     annotations:
-      sylvactl/readyMessage: "Harbor UI can be reached at https://{{ .Values.harbor.external_hostname }} ({{ .Values.harbor.external_hostname }} must resolve to {{ .Values.display_external_ip }})"
+      sylvactl/readyMessage: "Harbor UI can be reached at https://{{ .Values.external_hostnames.harbor }} ({{ .Values.external_hostnames.harbor }} must resolve to {{ .Values.display_external_ip }})"
     helm_repo_url: https://helm.goharbor.io
     helmrelease_spec:
       chart:
@@ -460,7 +460,7 @@ units:
           ingress:
             enabled: true
             hosts:
-              core: '{{ .Values.harbor.external_hostname }}'
+              core: '{{ .Values.external_hostnames.harbor }}'
         notary:
           enabled: false
         trivy:
@@ -544,7 +544,7 @@ units:
       '{{ .Values._internal.default_storage_class_unit }}': true
       vault-operator: true
     annotations:
-      sylvactl/readyMessage: "Vault UI can be reached at https://{{ .Values.vault.external_hostname }} ({{ .Values.vault.external_hostname }} must resolve to {{ .Values.display_external_ip }})"
+      sylvactl/readyMessage: "Vault UI can be reached at https://{{ .Values.external_hostnames.vault }} ({{ .Values.external_hostnames.vault }} must resolve to {{ .Values.display_external_ip }})"
     repo: sylva-core
     kustomization_substitute_secrets:
       ADMIN_PASSWORD: '{{ .Values.admin_password }}'
@@ -552,7 +552,7 @@ units:
       path: ./kustomize-units/vault
       postBuild:
         substitute:
-          VAULT_DNS: '{{ .Values.vault.external_hostname }}'
+          VAULT_DNS: '{{ .Values.external_hostnames.vault }}'
           VAULT_REPLICAS: '{{ .Values._internal.vault_replicas }}'
           MAX_POD_UNAVAILABLE: '{{ int .Values._internal.vault_replicas | eq 1 | ternary 0 1 }}'
           AFFINITY: '{{ and (eq (int .Values.cluster.control_plane_replicas) 1) (ne .Values._internal.default_storage_class_unit "local-path") | ternary (.Values._internal.vault_no_affinity | toJson | indent 12 ) (.Values._internal.vault_affinity | toJson| indent 12)  }}'
@@ -623,8 +623,8 @@ units:
       wait: true
       postBuild:
         substitute:
-          VAULT_DNS: '{{ .Values.vault.external_hostname }}'
-          KEYCLOAK_DNS: '{{ .Values.keycloak.external_hostname }}'
+          VAULT_DNS: '{{ .Values.external_hostnames.vault }}'
+          KEYCLOAK_DNS: '{{ .Values.external_hostnames.keycloak }}'
 
   external-secrets-operator:
     helm_repo_url: https://charts.external-secrets.io
@@ -712,8 +712,8 @@ units:
       wait: true
       postBuild:
         substitute:
-          NEUVECTOR_DNS: '{{ .Values.neuvector.external_hostname }}'
-          KEYCLOAK_DNS: '{{ .Values.keycloak.external_hostname }}'
+          NEUVECTOR_DNS: '{{ .Values.external_hostnames.neuvector }}'
+          KEYCLOAK_DNS: '{{ .Values.external_hostnames.keycloak }}'
 
   neuvector:
     enabled: no
@@ -721,7 +721,7 @@ units:
       neuvector-init: true
       ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
     annotations:
-      sylvactl/readyMessage: "Neuvector UI can be reached at https://{{ .Values.neuvector.external_hostname }} ({{ .Values.neuvector.external_hostname }} must resolve to {{ .Values.display_external_ip }})"
+      sylvactl/readyMessage: "Neuvector UI can be reached at https://{{ .Values.external_hostnames.neuvector }} ({{ .Values.external_hostnames.neuvector }} must resolve to {{ .Values.display_external_ip }})"
     helm_repo_url: https://neuvector.github.io/neuvector-helm
     helm_chart_artifact_name: neuvector-core
     helmrelease_spec:
@@ -759,7 +759,7 @@ units:
           runAsUser: 10000
           ingress:
             enabled: true
-            host: '{{ .Values.neuvector.external_hostname }}'
+            host: '{{ .Values.external_hostnames.neuvector }}'
             ingressClassName: nginx
             path: /
             annotations:
@@ -810,14 +810,14 @@ units:
       postgres: true
       synchronize-secrets: true # make sure that the secret keycloak-initial-admin is ready to be consummed
     annotations:
-      sylvactl/readyMessage: "Keycloak admin console can be reached at https://{{ .Values.keycloak.external_hostname }}/admin/master/console, user 'admin', password in Vault at secret/keycloak ({{ .Values.keycloak.external_hostname }} must resolve to {{ .Values.display_external_ip }})"
+      sylvactl/readyMessage: "Keycloak admin console can be reached at https://{{ .Values.external_hostnames.keycloak }}/admin/master/console, user 'admin', password in Vault at secret/keycloak ({{ .Values.external_hostnames.keycloak }} must resolve to {{ .Values.display_external_ip }})"
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/keycloak
       targetNamespace: keycloak
       postBuild:
         substitute:
-          KEYCLOAK_DNS: '{{ .Values.keycloak.external_hostname }}'
+          KEYCLOAK_DNS: '{{ .Values.external_hostnames.keycloak }}'
         substituteFrom:
         - kind: ConfigMap
           name: proxy-env-vars
@@ -901,10 +901,10 @@ units:
         - '{{ tuple "components/neuvector" (tuple . "neuvector" | include "unit-enabled") | include "set-only-if" }}'
       postBuild:
         substitute:
-          RANCHER_DNS: '{{ .Values.rancher.external_hostname }}'
-          FLUX_WEBUI_DNS: '{{ .Values.flux.external_hostname }}'
-          NEUVECTOR_DNS: '{{ tuple .Values.neuvector.external_hostname (tuple . "neuvector" | include "unit-enabled") | include "set-only-if" }}'
-          VAULT_DNS: '{{ .Values.vault.external_hostname }}'
+          RANCHER_DNS: '{{ .Values.external_hostnames.rancher }}'
+          FLUX_WEBUI_DNS: '{{ .Values.external_hostnames.flux }}'
+          NEUVECTOR_DNS: '{{ tuple .Values.external_hostnames.neuvector (tuple . "neuvector" | include "unit-enabled") | include "set-only-if" }}'
+          VAULT_DNS: '{{ .Values.external_hostnames.vault }}'
           EXPIRE_PASSWORD_DAYS: '{{ int .Values.keycloak.keycloak_expire_password_days }}'
       healthChecks:  #  cannot use __wait: true__ here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/144
         - apiVersion: legacy.k8s.keycloak.org/v1alpha1
@@ -970,8 +970,8 @@ units:
       path: ./kustomize-units/keycloak-oidc-external-secrets
       postBuild:
         substitute:
-          KEYCLOAK_DNS: '{{ .Values.keycloak.external_hostname }}'
-          FLUX_WEBUI_DNS: '{{ .Values.flux.external_hostname }}'
+          KEYCLOAK_DNS: '{{ .Values.external_hostnames.keycloak }}'
+          FLUX_WEBUI_DNS: '{{ .Values.external_hostnames.flux }}'
       wait: false
       healthChecks:
         - apiVersion: v1
@@ -1764,10 +1764,10 @@ units:
       path: ./kustomize-units/sylva-ca-certs
       postBuild:
         substitute:
-          RANCHER_DNS: '{{ .Values.rancher.external_hostname }}'
-          VAULT_DNS: '{{ .Values.vault.external_hostname }}'
-          KEYCLOAK_DNS: '{{ .Values.keycloak.external_hostname }}'
-          FLUX_WEBUI_DNS: '{{ .Values.flux.external_hostname }}'
+          RANCHER_DNS: '{{ .Values.external_hostnames.rancher }}'
+          VAULT_DNS: '{{ .Values.external_hostnames.vault }}'
+          KEYCLOAK_DNS: '{{ .Values.external_hostnames.keycloak }}'
+          FLUX_WEBUI_DNS: '{{ .Values.external_hostnames.flux }}'
       wait: true
       _components:
         - '{{ tuple "components/keycloak-tls" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
@@ -1796,7 +1796,7 @@ units:
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
       synchronize-secrets: true
     annotations:
-      sylvactl/readyMessage: "Rancher UI can be reached at https://{{ .Values.rancher.external_hostname }} ({{ .Values.rancher.external_hostname }} must resolve to {{ .Values.display_external_ip }})"
+      sylvactl/readyMessage: "Rancher UI can be reached at https://{{ .Values.external_hostnames.rancher }} ({{ .Values.external_hostnames.rancher }} must resolve to {{ .Values.display_external_ip }})"
     helm_repo_url: https://releases.rancher.com/server-charts/latest
     helmrelease_spec:
       chart:
@@ -1811,7 +1811,7 @@ units:
       values:
         privateCA: true
         useBundledSystemChart: true
-        hostname: '{{ .Values.rancher.external_hostname }}'
+        hostname: '{{ .Values.external_hostnames.rancher }}'
         ingress:
           enabled: true
           ingressClassName: nginx
@@ -1892,8 +1892,8 @@ units:
       path: ./kustomize-units/rancher-keycloak-oidc-provider
       postBuild:
         substitute:
-          KEYCLOAK_EXTERNAL_URL: '{{ .Values.keycloak.external_hostname }}'
-          RANCHER_EXTERNAL_URL: '{{ .Values.rancher.external_hostname }}'
+          KEYCLOAK_EXTERNAL_URL: '{{ .Values.external_hostnames.keycloak }}'
+          RANCHER_EXTERNAL_URL: '{{ .Values.external_hostnames.rancher }}'
       wait: true
 
   k8s-gateway:
@@ -1981,7 +1981,7 @@ units:
         conf:
           env:
             - name: URL_REMAP
-              value: "https://{{ .Values.rancher.external_hostname }}/ https://rancher.cattle-system.svc.cluster.local/"
+              value: "https://{{ .Values.external_hostnames.rancher }}/ https://rancher.cattle-system.svc.cluster.local/"
             - name: REQUESTS_SSL_VERIFY
               value: "no"
           cattle_agent_kustomize_source_ref:
@@ -2035,7 +2035,7 @@ units:
       path: ./kustomize-units/first-login-rancher
       postBuild:
         substitute:
-          RANCHER_EXTERNAL_URL: '{{ .Values.rancher.external_hostname }}'
+          RANCHER_EXTERNAL_URL: '{{ .Values.external_hostnames.rancher }}'
           CURRENT_TIME: '{{ now | date "2006-01-02T15:04:05.999Z" }}'
       wait: true
 
@@ -2047,7 +2047,7 @@ units:
       keycloak-add-client-scope: '{{ tuple . "keycloak" | include "unit-enabled" }}'
       keycloak-oidc-external-secrets: '{{ tuple . "keycloak" | include "unit-enabled" }}'
     annotations:
-      sylvactl/readyMessage: "Flux Web UI can be reached at https://{{ .Values.flux.external_hostname }} ({{ .Values.flux.external_hostname }} must resolve to {{ .Values.display_external_ip }})"
+      sylvactl/readyMessage: "Flux Web UI can be reached at https://{{ .Values.external_hostnames.flux }} ({{ .Values.external_hostnames.flux }} must resolve to {{ .Values.display_external_ip }})"
     repo: weave-gitops
     helm_chart_artifact_name: weave-gitops
     helmrelease_spec:
@@ -2083,14 +2083,14 @@ units:
           enabled: true
           className: nginx
           hosts:
-            - host: '{{ .Values.flux.external_hostname }}'
+            - host: '{{ .Values.external_hostnames.flux }}'
               paths:
                 - path: /   # setting this to another value like '/flux-webui' does not work (URLs coming back from flux webui aren't rewritten by nginx)
                   pathType: Prefix
           tls:
             - secretName: flux-webui-tls
               hosts:
-                - '{{ .Values.flux.external_hostname }}'
+                - '{{ .Values.external_hostnames.flux }}'
         extraVolumes:
           - name: custom-ca-cert
             secret:
@@ -2390,7 +2390,7 @@ units:
           JOB_NAME: cluster-creator-login
           JOB_TARGET_NAMESPACE: flux-system
           JOB_CHECKSUM: '{{ .Values | toJson | sha256sum }}'
-          RANCHER_EXTERNAL_URL: '{{ .Values.rancher.external_hostname }}'
+          RANCHER_EXTERNAL_URL: '{{ .Values.external_hostnames.rancher }}'
       healthChecks:
         - apiVersion: v1
           kind: Secret
@@ -2425,12 +2425,12 @@ units:
     annotations:
       sylvactl/readyMessage: |
         OS images are served at:
-        {{- $osImageFqdn := (coalesce .Values.os_image_server.external_hostname .Values.display_external_ip) -}}
+        {{- $osImageFqdn := (coalesce .Values.external_hostnames.os_image_server .Values.display_external_ip) -}}
         {{- range $imageName, $imageParams := (coalesce .Values.os_images .Values._internal.default_os_images) }}
           * https://{{ $osImageFqdn }}/{{ $imageParams.filename }}(.sha256sum)
         {{- end }}
         {{- if not (eq $osImageFqdn .Values.display_external_ip)}}
-        ({{ .Values.os_image_server.external_hostname }} must resolve to {{ .Values.display_external_ip }})
+        ({{ .Values.external_hostnames.os_image_server }} must resolve to {{ .Values.display_external_ip }})
         {{- end }}
     helmrelease_spec:
       chart:
@@ -2469,7 +2469,7 @@ units:
         ingress:
           className: nginx
           hosts:
-            - host: '{{ .Values.os_image_server.external_hostname }}'
+            - host: '{{ .Values.external_hostnames.os_image_server }}'
         osImages: '{{ coalesce .Values.os_images .Values._internal.default_os_images | include "preserve-type" }}'
         osImagePersistenceDefaults:
           enabled: true
@@ -2741,26 +2741,16 @@ display_external_ip: '{{ .Values.openstack.floating_ip | eq "" | ternary .Values
 
 cluster_external_domain: sylva
 
-rancher:
-  external_hostname: 'rancher.{{ .Values.cluster_external_domain }}'
+external_hostnames:
+  rancher: 'rancher.{{ .Values.cluster_external_domain }}'
+  vault: 'vault.{{ .Values.cluster_external_domain }}'
+  keycloak: 'keycloak.{{ .Values.cluster_external_domain }}'
+  flux: 'flux.{{ .Values.cluster_external_domain }}'
+  neuvector: 'neuvector.{{ .Values.cluster_external_domain }}'
+  harbor: 'harbor.{{ .Values.cluster_external_domain }}'
+  os_image_server: ''
 
-vault:
-  external_hostname: 'vault.{{ .Values.cluster_external_domain }}'
-
-keycloak:
-  external_hostname: 'keycloak.{{ .Values.cluster_external_domain }}'
-
-flux:
-  external_hostname: 'flux.{{ .Values.cluster_external_domain }}'
-
-neuvector:
-  external_hostname: 'neuvector.{{ .Values.cluster_external_domain }}'
-
-harbor:
-  external_hostname: 'harbor.{{ .Values.cluster_external_domain }}'
-
-os_image_server:
-  external_hostname: ''
+keycloak: {}
 
 # cis benchmark is only for rke2 so far, e.g. rke2-cis-1.23-profile-hardened
 cis_benchmark_scan_profile: '{{ eq .Values.cluster.capi_providers.bootstrap_provider "cabpr" | ternary "rke2-cis-1.23-profile-hardened" "no-scan-profile-defined-for-kubeadm-cluster" }}'
