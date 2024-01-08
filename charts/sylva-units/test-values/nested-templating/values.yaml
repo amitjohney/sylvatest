@@ -1,6 +1,8 @@
 units:
 
   foo:
+    info:
+      description: fooo
     repo: sylva-core
     enabled: '{{ 4 | eq 4 }}'
     kustomization_spec:
@@ -8,6 +10,8 @@ units:
       wait: true
 
   bar:
+    info:
+      description: baaar
     repo: sylva-core
     enabled: '{{ .Values.units.foo.enabled }}'
     kustomization_spec:
@@ -18,6 +22,8 @@ units:
         PASS: '{{ tuple . .Values.units.bar.kustomization_spec.path | include "interpret-as-string" | b64enc }}'
 
   plop:
+    info:
+      description: plop
     repo: sylva-core
     enabled: '{{ not (tuple . .Values.units.foo.enabled | include "interpret-for-test") }}'
     kustomization_spec:
@@ -25,6 +31,8 @@ units:
       wait: true
 
   pif:
+    info:
+      description: pif
     repo: sylva-core
     enabled: yes
     kustomization_spec:
@@ -32,6 +40,8 @@ units:
       wait: true
 
   pof:
+    info:
+      description: pof
     repo: sylva-core
     enabled: yes
     kustomization_spec:
@@ -39,6 +49,8 @@ units:
       wait: true
 
   baz:
+    info:
+      description: pouf
     repo: sylva-core
     enabled: yes
     depends_on:
@@ -51,6 +63,8 @@ units:
       wait: true
 
   bang:
+    info:
+      description: bang
     repo: sylva-core
     enabled: yes
     depends_on:
@@ -62,6 +76,8 @@ units:
       wait: true
 
   test-boolean:
+    info:
+      description: test
     repo: sylva-core
     kustomization_spec:
       postBuild:

@@ -58,6 +58,8 @@ units: # defines Flux Kustomizations & HelmReleases
       wait: true
 ```
 
+List of available units can be found into [`charts/sylva-units/units-description.md`](units-description.md).
+
 - The second section contains "high level" values that are meant to be used in [goTpl expressions](https://helm.sh/docs/chart_template_guide/function_list/). For example, the capo controller unit defined above will occur if the user also provides following values to the chart (i.e.  `.Values.cluster.capi_providers.infra_provider` will be equal to `capo` ):
 
 ```yaml
@@ -646,10 +648,6 @@ Once the bootstrap phase is done, and the pivot is done, the management cluster 
 
 ## Cleaning things up
 
-<!-- markdownlint-disable MD044 -->
-
 One limitation of this approach is that management cluster can not delete itself properly, as it will shoot itself in the foot at some point.
 
 For resources created by CAPO, the [`tools/openstack-cleanup.sh`](tools/openstack-cleanup.sh) script is provided to help cleaning the resources.
-
-<!-- markdownlint-enable MD044 -->

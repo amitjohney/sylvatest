@@ -99,6 +99,25 @@ $defs:
     # this sub-schema will be completed with actual libvirt-metal values schema with json schema generation
     type: object
 
+  unit_info:
+    # this sub-schema describes documentation block for units
+    type: object
+    additionalProperties: false
+    required: [description]
+    properties:
+      description:
+        type: string
+      details:
+        type: string
+      internal:
+        type: boolean
+      maturity:
+        type: string
+        enum: ["core-component", "stable", "beta", "experimental"]
+      version:
+        type: string
+
+
 # lines with '# -------------------------------' correspond to keys in values.yaml
 # (the rest being the JSONSchema language itself)
 
@@ -303,6 +322,9 @@ properties:
             items:
               $ref: "#/$defs/enabled"
 
+          info:
+            $ref: "#/$defs/unit_info"
+
           unit_template:
             type: string
             pattern: "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
@@ -439,6 +461,9 @@ properties:
             - helmrelease_spec
           helm_chart_artifact_name:
             - helmrelease_spec
+
+        required:
+          - info
 
         allOf:
           - anyOf:  # require having at least helmrelease_spec or

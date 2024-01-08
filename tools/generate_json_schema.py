@@ -26,6 +26,7 @@ SYLVA_UNITS_VALUES_FILE = f"{CHART_DIR}/values.yaml"
 SYLVA_UNITS_YAML_SCHEMA = f"{CHART_DIR}/values.schema.yaml"
 SYLVA_UNITS_JSON_SCHEMA = f"{CHART_DIR}/values.schema.json"
 
+
 def get_unit_schema(values_file, unit_name):
     """
     Get external helm chart schema from Gitlab repository
@@ -142,5 +143,5 @@ if __name__ == "__main__":
     sylva_unit_schema = load_sylva_units_schema(args.input)
     for unit_name in SYLVA_UNITS_CHARTS_SCHEMAS:
         unit_schema = get_unit_schema(args.values, unit_name)
-        sylva_unit_schema = merge_schemas(sylva_unit_schema, unit_schema, unit_name +  "-values")
+        sylva_unit_schema = merge_schemas(sylva_unit_schema, unit_schema, unit_name + "-values")
     dump_schema(sylva_unit_schema, args.output)

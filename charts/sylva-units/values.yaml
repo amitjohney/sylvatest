@@ -168,6 +168,12 @@ unit_templates:
 # a corresponding GitRepository or OCIRepository (and Secret, TODO: the Secret don't need to be generated for each unit)
 units:
   # <unit-name>:
+  #   info: # unit metadata mainly for documentation purpose
+  #     description: <short unit description>
+  #     details: <more detailed data about unit purpose and usage>
+  #     maturity: <level of integration in sylva stack of corresponding component>
+  #     internal: true <for internal sylva units>
+  #     version: <force declarative version, not recommended>
   #   enabled: boolean or GoTPL
   #   repo: <name of the repo under 'source_templates'> (for use with kustomization_spec)
   #   helm_repo_url: URL of the Helm repo to use (for use with helmrelease_spec, but not mandatory, 'repo' can be used as well to use a git repo)
@@ -202,8 +208,10 @@ units:
   #                  the settings for the unit are inherited from the corresponding entry under unit_templates
 
   flux-system:
-    # note that Flux is always installed on the current cluster as a pre-requisite to installing the chart
-    # this units contains Flux definitions *to manage the Flux system itself via gitops*
+    info:
+      description: contains Flux definitions *to manage the Flux system itself via gitops*
+      details: Note that Flux is always installed on the current cluster as a pre-requisite to installing the chart
+      maturity: core-component
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/flux-system/base
@@ -223,6 +231,9 @@ units:
           optional: true
 
   cert-manager:
+    info:
+      description: installs cert-manager, an X.509 certificate controller
+      maturity: core-component
     helm_repo_url: https://charts.jetstack.io
     helmrelease_spec:
       chart:
@@ -286,6 +297,9 @@ units:
               {{ ge (int .Values.cluster.control_plane_replicas) 3 | ternary 1 0 }}
 
   trivy-operator:
+    info:
+      description: installs Trivy operator
+      maturity: beta
     enabled: no
     helm_repo_url: https://aquasecurity.github.io/helm-charts/
     helmrelease_spec:
@@ -320,9 +334,10 @@ units:
             runAsGroup: 10000
             runAsUser: 10000
 
-
-# sylva-ca provides a Certificate Authority for Components of the management cluster
   sylva-ca:
+    info:
+      description: provides a Certificate Authority for units of the Sylva stack
+      internal: true
     depends_on:
       cert-manager: true
       external-secrets-operator: true
@@ -332,8 +347,11 @@ units:
       targetNamespace: cert-manager
       wait: true
 
-# namespace-defs creates sylav-unit namespace and other namespaces to be used by various units
+
   namespace-defs:
+    info:
+      description: creates sylva-system namespace and other namespaces to be used by various units
+      internal: true
     depends_on:
       kyverno-policies: '{{ tuple . "kyverno-policies" | include "unit-enabled" }}' # make sure that the policy disable-automountserviceaccounttoken applies
     repo: sylva-core
@@ -352,6 +370,9 @@ units:
 
 # Postgresql deployment for keycloak
   postgres-init:
+    info:
+      description: initializes Postgresql for Keycloak
+      internal: true
     enabled_conditions:
     - '{{ tuple . "postgres" | include "unit-enabled"  }}'
     depends_on:
@@ -366,6 +387,9 @@ units:
           MAX_POD_UNAVAILABLE: '{{ int .Values.cluster.control_plane_replicas | gt 3 | ternary 0 1 }}'
 
   postgres:
+    info:
+      description: installs Postgresql for keycloak
+      maturity: stable
     enabled_conditions:
     - '{{ tuple . "keycloak" | include "unit-enabled" }}'
     depends_on:
@@ -401,6 +425,9 @@ units:
                   topologyKey: kubernetes.io/hostname
 
   kubevirt:
+    info:
+      description: installs kubevirt
+      maturity: beta
     helm_repo_url: https://suse-edge.github.io/charts
     helmrelease_spec:
       chart:
@@ -412,6 +439,9 @@ units:
         createNamespace: true
 
   kubevirt-test-vms:
+    info:
+      description: deploys kubevirt VMs for testing
+      internal: true
     depends_on:
       kubevirt: true
       multus: true
@@ -422,6 +452,9 @@ units:
       targetNamespace: kubevirt-tests
 
   harbor:
+    info:
+      description: installs Harbor
+      maturity: beta
     depends_on:
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
     annotations:
@@ -523,6 +556,9 @@ units:
         createNamespace: true
 
   vault-operator:
+    info:
+      description: installs Vault operator
+      maturity: stable
     repo: vault-operator
     helmrelease_spec:
       chart:
@@ -536,8 +572,12 @@ units:
           repository: ghcr.io/bank-vaults/vault-operator
           tag: '{{ .Values.source_templates | dig "vault-operator" "spec" "ref" "tag" "" | required "source_templates.vault-operator.spec.ref.tag is unset" }}'
 
-# Vault assumes that the certificate vault-tls has been issued
   vault:
+    info:
+      description: installs Vault
+      details: |
+        Vault assumes that the certificate vault-tls has been issued
+      maturity: stable
     depends_on:
       sylva-ca-certs: true
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
@@ -584,6 +624,9 @@ units:
           namespace: vault
 
   vault-config-operator:
+    info:
+      description: installs Vault config operator
+      maturity: stable
     depends_on:
       namespace-defs: true
       cert-manager: true
@@ -599,7 +642,10 @@ units:
         enableCertManager: true
         enableMonitoring: false
 
-  vault-secrets: # generate random secrets in vault, configure password policy, authentication backends, etc...
+  vault-secrets:
+    info:
+      description: generates random secrets in vault, configure password policy, authentication backends, etc...
+      internal: true
     repo: sylva-core
     depends_on:
       vault: true
@@ -611,6 +657,9 @@ units:
         - '{{ tuple "components/keycloak" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
 
   vault-oidc:
+    info:
+      description: configures Vault to be used with OIDC
+      internal: true
     enabled_conditions:
     - '{{ tuple . "keycloak" | include "unit-enabled" }}'
     depends_on:
@@ -627,6 +676,9 @@ units:
           KEYCLOAK_DNS: '{{ .Values.external_hostnames.keycloak }}'
 
   external-secrets-operator:
+    info:
+      description: installs the External Secrets operator
+      maturity: stable
     helm_repo_url: https://charts.external-secrets.io
     helmrelease_spec:
       chart:
@@ -640,6 +692,9 @@ units:
         installCRDs: true
 
   eso-secret-stores:
+    info:
+      description: defines External Secrets stores
+      internal: true
     depends_on:
       external-secrets-operator: true
       vault: true
@@ -651,6 +706,9 @@ units:
         - '{{ tuple "components/keycloak" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
 
   cis-operator-crd:
+    info:
+      description: install CIS operator CRDs
+      maturity: stable
     enabled_conditions:
     - '{{ tuple . "cis-operator" | include "unit-enabled" }}'
     helm_repo_url: https://charts.rancher.io
@@ -664,6 +722,9 @@ units:
         createNamespace: true
 
   cis-operator:
+    info:
+      description: install CIS operator
+      maturity: stable
     enabled_conditions:
     - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
     depends_on:
@@ -681,9 +742,12 @@ units:
             psp:
               enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") | include "preserve-type" }}'
 
-  # this allows for running a CIS scan for management cluster
-  # generates a report which can be viewed and downloaded in CSV from the Rancher UI, at https://rancher.sylva/dashboard/c/local/cis/cis.cattle.io.clusterscan
   cis-operator-scan:
+    info:
+      description: allows for running a CIS scan for management cluster
+      details: |
+        it generates a report which can be viewed and downloaded in CSV from the Rancher UI, at https://rancher.sylva/dashboard/c/local/cis/cis.cattle.io.clusterscan
+      internal: true
     enabled_conditions:
     - '{{ tuple . "cis-operator" | include "unit-enabled" }}'
     depends_on:
@@ -697,6 +761,11 @@ units:
           SCAN_PROFILE: '{{ .Values.cis_benchmark_scan_profile }}'
 
   neuvector-init:
+    info:
+      description: sets up Neuvector prerequisites
+      details: |
+        it generates namespace, certificate, admin password, policy exception for using latest tag images (required for the pod managing the database of vulnerabilities since this DB is updated often)
+      internal: true
     enabled_conditions:
     - '{{ tuple . "neuvector" | include "unit-enabled" }}'
     depends_on:
@@ -716,6 +785,9 @@ units:
           KEYCLOAK_DNS: '{{ .Values.external_hostnames.keycloak }}'
 
   neuvector:
+    info:
+      description: installs Neuvector
+      maturity: beta
     enabled: no
     depends_on:
       neuvector-init: true
@@ -803,6 +875,9 @@ units:
                   startingDeadlineSeconds: 21600
 
   keycloak:
+    info:
+      description: initializes and configures Keycloak
+      maturity: stable
     depends_on:
       sylva-ca: true
       sylva-ca-certs: true
@@ -851,6 +926,9 @@ units:
             name: keycloak-operator
 
   keycloak-legacy-operator:
+    info:
+      description: installs Keycloak "legacy" operator
+      maturity: stable
     enabled_conditions:
     - '{{ tuple . "keycloak" | include "unit-enabled" }}'
     depends_on:
@@ -886,6 +964,9 @@ units:
             name: keycloak-realm-operator
 
   keycloak-resources:
+    info:
+      description: configures keycloak resources
+      internal: true
     enabled_conditions:
     - '{{ tuple . "keycloak" | include "unit-enabled" }}'
     depends_on:
@@ -921,16 +1002,21 @@ units:
           namespace: keycloak
         - '{{ tuple (dict "apiVersion" "v1" "kind" "Secret" "name" "keycloak-client-secret-neuvector-client" "namespace" "keycloak") (tuple . "neuvector" | include "unit-enabled") | include "set-only-if" }}'  # # this secret is a byproduct of the neuvector client KeycloakClient resource
 
-  # this is a Job to manually add a custom client-scope to sylva realm (on top of default ones)
-  # while CRD option does not yet provide good results (overrides defaults)
+
   keycloak-add-client-scope:
+    info:
+      description: configures Keycloak client-scope
+      details: >
+        a job to manually add a custom client-scope to sylva realm (on top of default ones)
+        while CRD option does not yet provide good results (overrides defaults)
+      internal: true
     enabled_conditions:
     - '{{ tuple . "flux-webui" | include "unit-enabled" }}'
     - '{{ tuple . "keycloak" | include "unit-enabled" }}'
     repo: sylva-core
     depends_on:
       keycloak-resources: true
-      keycloak: true  # this unit defines the keycloak-initial-admin Secret used by the script
+      keycloak: true  # defines the keycloak-initial-admin Secret used by the script
     kustomization_spec:
       path: ./kustomize-units/kube-job
       wait: true
@@ -958,6 +1044,9 @@ units:
           {{ .Files.Get "scripts/keycloak-add-client-scope.sh" | indent 4 }}
 
   keycloak-oidc-external-secrets:
+    info:
+      description: configures OIDC secrets for Keycloack
+      internal: true
     enabled_conditions:
     - '{{ tuple . "keycloak" | include "unit-enabled" }}'
     depends_on:
@@ -980,6 +1069,9 @@ units:
           namespace: flux-system
 
   kyverno:
+    info:
+      description: installs Kyverno
+      maturity: stable
     helm_repo_url: https://kyverno.github.io/kyverno
     helmrelease_spec:
       chart:
@@ -1055,6 +1147,9 @@ units:
 
 
   kyverno-policies:
+    info:
+      description: configures Kyverno policies
+      internal: true
     enabled_conditions:
     - '{{ tuple . "kyverno" | include "unit-enabled" }}'
     depends_on:
@@ -1065,6 +1160,9 @@ units:
       wait: true
 
   rancher-monitoring-clusterid-inject:
+    info:
+      description: injects Rancher cluster ID in Helm values of Rancher monitoring chart
+      internal: true
     enabled_conditions:
     - '{{ tuple . "kyverno" | include "unit-enabled" }}'
     - '{{ tuple . "rancher" | include "unit-enabled" }}'
@@ -1077,6 +1175,9 @@ units:
       wait: true
 
   shared-workload-clusters-settings:
+    info:
+      description: manages parameters which would be shared between management and workload clusters
+      internal: true
     depends_on:
       kyverno: true
     repo: sylva-core
@@ -1096,6 +1197,9 @@ units:
       SECRET_VALUES: '{{ index (tuple . .Values.shared_workload_clusters_secret_values | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | b64enc }}'
 
   node-annotation-from-label:
+    info:
+      description: manages cluster node labels
+      internal: true
     enabled: false # it blocks RKE2 node registrations when bootstrap is slower (for CAPM3 deployments) than Kyverno ClusterPolicy webhook install, https://gitlab.com/sylva-projects/sylva-core/-/issues/660
     enabled_conditions:
     - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
@@ -1110,6 +1214,9 @@ units:
           NODE_LABEL_KEY_LIST: '{{ mergeOverwrite (.Values.cluster | dig "rke2" "node_annotations" dict) (.Values.cluster | dig "control_plane" "rke2" "node_annotations" dict) (.Values.cluster | dig "machine_deployment_default" "rke2" "node_annotations" dict) | keys | toJson }}' # need to address .cluster.machine_deployments.X.rke2.node_annotations
 
   capi:
+    info:
+      description: installs Cluster API core operator
+      maturity: core-component
     repo: sylva-core
     depends_on:
       cert-manager: true
@@ -1118,6 +1225,9 @@ units:
       wait: true
 
   capd:
+    info:
+      description: installs Docker CAPI infra provider
+      internal: true
     repo: sylva-core
     depends_on:
       cert-manager: true
@@ -1129,6 +1239,9 @@ units:
       wait: true
 
   capo:
+    info:
+      description: installs OpenStack CAPI infra provider
+      maturity: core-component
     repo: sylva-core
     depends_on:
       cert-manager: true
@@ -1155,6 +1268,9 @@ units:
                     - ALL
 
   capm3:
+    info:
+      description: installs Metal3 CAPI infra provider, for baremetal
+      maturity: core-component
     repo: sylva-core
     depends_on:
       cert-manager: true
@@ -1167,6 +1283,9 @@ units:
       wait: true
 
   capv:
+    info:
+      description: installs vSphere CAPI infra provider
+      maturity: core-component
     repo: sylva-core
     depends_on:
       cert-manager: true
@@ -1177,7 +1296,10 @@ units:
           force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
       wait: true
 
-  cabpk:  # kubeadm
+  cabpk:
+    info:
+      description: installs Kubeadm CAPI bootstrap provider
+      maturity: core-component
     repo: sylva-core
     depends_on:
       cert-manager: true
@@ -1185,7 +1307,10 @@ units:
       path: ./kustomize-units/cabpk
       wait: true
 
-  cabpr:  # RKE2
+  cabpr:
+    info:
+      description: installs RKE2 CAPI bootstrap provider
+      maturity: core-component
     repo: sylva-core
     depends_on:
       cert-manager: true
@@ -1228,6 +1353,9 @@ units:
                   drop:
                     - ALL
   metal3-suse:
+    info:
+      description: installs SUSE-maintained Metal3 operator
+      maturity: beta
     enabled: false
     depends_on:
       cert-manager: true
@@ -1263,6 +1391,9 @@ units:
             storageClass: '{{ .Values._internal.default_storage_class }}'
 
   metal3-init:
+    info:
+      description: generates Metal3 random credentials
+      internal: true
     enabled_conditions:
     - '{{ tuple . "metal3" | include "unit-enabled" }}'
     depends_on:
@@ -1274,6 +1405,9 @@ units:
       wait: true
 
   metal3-sync-secrets:
+    info:
+      description: configures secrets for Metal3 components
+      internal: true
     enabled_conditions:
     - '{{ tuple . "metal3" | include "unit-enabled" }}'
     depends_on:
@@ -1285,6 +1419,9 @@ units:
       wait: true
 
   metal3:
+    info:
+      description: install Metal3 operator
+      maturity: stable
     enabled: false
     depends_on:
       cert-manager: true
@@ -1367,9 +1504,13 @@ units:
           targetPath: auth.ironicInspectorPassword
           optional: false
 
-  # this unit is here only to have a single thing to look at to determine
-  # if everything is ready for pivot (see bootstrap.values.yaml pivot unit)
   capi-providers-pivot-ready:
+    info:
+      description: checks if management cluster is ready for pivot
+      details: >
+        is here only to have a single thing to look at to determine
+        if everything is ready for pivot (see bootstrap.values.yaml pivot unit)
+      internal: true
     repo: sylva-core
     # we copy the dependencies of the 'cluster' unit
     # (with the exception of "capo-cluster-resources" which we don't need, given how what it produces is consumed)
@@ -1379,6 +1520,9 @@ units:
       wait: false
 
   local-path-provisioner:
+    info:
+      description: installs local-path CSI
+      maturity: stable
     repo: local-path-provisioner
     helmrelease_spec:
       chart:
@@ -1409,6 +1553,9 @@ units:
                           runAsUser: 1000
 
   cluster:
+    info:
+      description: holds the Cluster API definition for the cluster
+      maturity: core-component
     repo: sylva-capi-cluster
     helm_chart_artifact_name: sylva-capi-cluster
     depends_on:
@@ -1419,7 +1566,7 @@ units:
       '{{ .Values._internal.metal3_unit }}': '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
       sylva-system/os-image-server: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
     labels:
-      suspend-on-pivot: "yes"  # this unit must be suspended before pivot
+      suspend-on-pivot: "yes"  # must be suspended before pivot
     kustomization_spec:
       healthChecks:
         # wait for OpenStackCluster when this provider is used, as Cluster will be seen as non-ready when it will be paused (as observedGeneration will differ from generation)
@@ -1465,7 +1612,7 @@ units:
           valuesKey: worker_servergroup_id
           targetPath: machine_deployment_default.capo.server_group_id
           optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
-    # we pass everything that is under `cluster` to this unit that uses sylva-capi-cluster chart
+    # we pass everything that is under `cluster` to this unit, a helm release of the sylva-capi-cluster chart
     # (we do it via a secret because some of the values are credentials in many scenarios)
     helm_secret_values: '{{ .Values.cluster | include "preserve-type" }}'
 
@@ -1485,6 +1632,9 @@ units:
         - '{{ tuple "components/dev-ci-cronjob-schedule" (list "dev" "ci" | has .Values.env_type) | include "set-only-if" }}'
 
   heat-operator:
+    info:
+      description: installs OpenStack Heat operator
+      maturity: core-component
     enabled_conditions:
     - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     repo: sylva-core
@@ -1493,6 +1643,9 @@ units:
       wait: true
 
   sylva-units-operator:
+    info:
+      description: installs sylva-units operator
+      maturity: experimental
     repo: sylva-core
     depends_on:
       flux-system: true
@@ -1505,6 +1658,9 @@ units:
           newTag: 0.0.0-pre3
 
   workload-cluster-operator:
+    info:
+      description: installs Sylva operator for managing workload clusters
+      maturity: experimental
     repo: sylva-core
     depends_on:
       sylva-units-operator: true
@@ -1517,6 +1673,9 @@ units:
           newTag: 0.0.0-pre3
 
   capo-cluster-resources:
+    info:
+      description: installs OpenStack stack for capo cluster prerequisites
+      internal: true
     enabled_conditions:
     - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     repo: sylva-core
@@ -1544,6 +1703,10 @@ units:
 
 
   pause-cluster-reconciliation:
+    info:
+      description: (specific to CAPO:) makes sure cluster reconciliation is paused during some operation
+      details: workaround for https://gitlab.com/sylva-projects/sylva-core/-/issues/309
+      internal: true
     enabled_conditions:
     - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     # Following condition is required in bootstrap phase, when sylva-units is installed in management-cluster
@@ -1580,9 +1743,13 @@ units:
               kubectl -n $TARGET_NAMESPACE patch cluster.cluster.x-k8s.io  {{ .Values.cluster.name }} --type merge -p '{"spec":{"paused": true}}'
 
   resume-cluster-reconciliation:
+    info:
+      description: makes sure cluster reconciliation is on
+      details: workaround for https://gitlab.com/sylva-projects/sylva-core/-/issues/309
+      internal: true
     enabled_conditions:
     - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
-    # This unit should not be enabled on first run when cluster kustomisation is not yet created
+    # should not be enabled on first run when cluster unit is not yet created
     - '{{ not (lookup "kustomize.toolkit.fluxcd.io/v1" "Kustomization" .Release.Namespace "cluster" | empty) }}'
     repo: sylva-core
     kustomization_spec:
@@ -1608,6 +1775,9 @@ units:
               kubectl -n $TARGET_NAMESPACE patch cluster.cluster.x-k8s.io {{ .Values.cluster.name }} --type merge -p '{"spec":{"paused": false}}'
 
   calico-crd:
+    info:
+      description: installs Calico CRDs
+      maturity: stable
     enabled_conditions:
     - '{{ tuple . "calico" | include "unit-enabled" }}'
     depends_on:
@@ -1624,10 +1794,12 @@ units:
           chart: rke2-calico-crd
           version: "" # will be defined by helm_chart_versions
 
-
-  # this unit is here to allow for upgrading Calico chart when upgrading cluster
-  # v1.25.x to v1.26.x, see https://gitlab.com/sylva-projects/sylva-core/-/issues/664
   tigera-clusterrole:
+    info:
+      description: is here to allow for upgrading Calico chart when upgrading cluster
+      details: |
+        For v1.25.x to v1.26.x, see https://gitlab.com/sylva-projects/sylva-core/-/issues/664
+      internal: true
     enabled_conditions:
     - '{{ tuple . "calico" | include "unit-enabled" }}'
     repo: sylva-core
@@ -1637,6 +1809,9 @@ units:
       force: true
 
   calico:
+    info:
+      description: install Calico CNI
+      maturity: stable
     enabled_conditions:
     - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'  # installed by RKE2 when RKE2 is used
     depends_on:
@@ -1657,6 +1832,9 @@ units:
           registry: UseDefault
 
   metallb:
+    info:
+      description: installs MetalLB operator
+      maturity: stable
     enabled_conditions:
       - '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" }}'
     depends_on:
@@ -1699,6 +1877,9 @@ units:
             key: node-role.kubernetes.io/control-plane
 
   cinder-csi-psp:
+    info:
+      description: configures security policies for OpenStack Cinder CSI
+      internal: true
     enabled_conditions:
     - '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") }}'
     - '{{ tuple . "cinder-csi" | include "unit-enabled" }}'
@@ -1711,6 +1892,9 @@ units:
       wait: true
 
   cinder-csi:
+    info:
+      description: installs OpenStack Cinder CSI
+      maturity: stable
     enabled_conditions:
     - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     depends_on:
@@ -1770,6 +1954,9 @@ units:
             {{- end -}}
 
   sylva-ca-certs:
+    info:
+      description: configures Sylva internal certificate authority
+      internal: true
     depends_on:
       namespace-defs: true
       cert-manager: true
@@ -1790,6 +1977,9 @@ units:
         - '{{ tuple "components/vault-tls" (tuple . "vault" | include "unit-enabled") | include "set-only-if" }}'
 
   synchronize-secrets:
+    info:
+      description: allows secrets from Vault to be consumed other units, relies on ExternalSecrets
+      internal: true
     depends_on:
       eso-secret-stores: true
       vault-secrets: true
@@ -1804,6 +1994,9 @@ units:
           FLUX_ADMIN_USERNAME: '{{ .Values.flux_webui.admin_user }}'
 
   rancher:
+    info:
+      description: installs Rancher
+      maturity: stable
     depends_on:
       cert-manager: true
       k8s-gateway: true
@@ -1878,8 +2071,8 @@ units:
                             failureThreshold: 20
 
     kustomization_spec:
-      # these healthchecks are added so that this unit does not become ready before
-      # a few things that Rancher sets up behind the scene is ready
+      # these healthChecks are added so that does not become ready before
+      # a few things that Rancher sets up behind the scene are ready
       healthChecks:
         - apiVersion: apiextensions.k8s.io/v1
           kind: CustomResourceDefinition
@@ -1894,6 +2087,9 @@ units:
           namespace: cattle-system
 
   rancher-keycloak-oidc-provider:
+    info:
+      description: configures Rancher for Keycloak OIDC integration
+      internal: true
     enabled_conditions:
     - '{{ tuple . "rancher" | include "unit-enabled" }}'
     - '{{ tuple . "keycloak" | include "unit-enabled" }}'
@@ -1912,6 +2108,11 @@ units:
       wait: true
 
   k8s-gateway:
+    info:
+      description: installs k8s gateway (coredns + plugin to resolve external service names to ingress IPs)
+      details: >
+        is here only to allow for DNS resolution of Ingress hosts (FQDNs), used for importing workload clusters into Rancher and for flux-webui to use Keycloak SSO
+      maturity: stable
     depends_on:
       capd-metallb-config: '{{ tuple . "capd-metallb-config" | include "unit-enabled" }}'
     helm_repo_url: https://ori-edge.github.io/k8s_gateway/
@@ -1954,6 +2155,9 @@ units:
                             type: RuntimeDefault
 
   capd-metallb-config:
+    info:
+      description: configures MetalLB in a capd context
+      internal: true
     enabled_conditions:
     - '{{ tuple . "metallb" | include "unit-enabled" }}'
     - '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" }}'
@@ -1968,6 +2172,9 @@ units:
           CLUSTER_EXTERNAL_IP: '{{ .Values.cluster_external_ip }}'
 
   capi-rancher-import:
+    info:
+      description: installs the capi-rancher-import operator, which let's us import Cluster AIP workload clusters in management cluster's Rancher
+      internal: true
     enabled_conditions:
     - '{{ tuple . "rancher" | include "unit-enabled" }}'
     repo: capi-rancher-import
@@ -2006,6 +2213,9 @@ units:
           cattle_agent_kustomize_path: ./cattle-kustomize
 
   ingress-nginx:
+    info:
+      description: installs Nginx ingress controller
+      maturity: stable
     depends_on:
       capd-metallb-config: '{{ tuple . "capd-metallb-config" | include "unit-enabled" }}'
       calico: '{{ tuple . "calico" | include "unit-enabled" }}'
@@ -2041,6 +2251,9 @@ units:
           namespace: kube-system
 
   first-login-rancher:
+    info:
+      description: configure Rancher authentication for admin
+      internal: true
     enabled_conditions:
     - '{{ tuple . "rancher" | include "unit-enabled" }}'
     repo: sylva-core
@@ -2055,6 +2268,9 @@ units:
       wait: true
 
   flux-webui:
+    info:
+      description: installs Weave GitOps Flux web GUI
+      maturity: stable
     depends_on:
       flux-system: true
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
@@ -2156,6 +2372,9 @@ units:
                             type: RuntimeDefault
 
   monitoring-crd:
+    info:
+      description: installs monitoring stack CRDs
+      maturity: stable
     enabled_conditions:
     - '{{ tuple . "monitoring" | include "unit-enabled" }}'
     helm_repo_url: https://charts.rancher.io/
@@ -2176,6 +2395,9 @@ units:
               enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") | include "as-bool" }}'
 
   monitoring:
+    info:
+      description: installs monitoring stack
+      maturity: stable
     depends_on:
       monitoring-crd: true
     helm_repo_url: https://charts.rancher.io/
@@ -2206,6 +2428,9 @@ units:
                   value: disabled
 
   multus:
+    info:
+      description: installs Multus
+      maturity: stable
     enabled: false
     depends_on:
       calico: '{{ tuple . "calico" | include "unit-enabled" }}'
@@ -2242,8 +2467,12 @@ units:
                     app: whereabouts
 
   multus-ready:
-    # Perform healthchecks outside of the multus unit,
-    # in order to properly target workload cluster when we deploy multus in it
+    info:
+      description: checks that Multus is ready
+      details: >
+        performs healthchecks outside of the multus unit,
+        in order to properly target workload cluster when we deploy multus in it
+      internal: true
     enabled_conditions:
       - '{{ tuple . "multus" | include "unit-enabled" }}'
     depends_on:
@@ -2262,6 +2491,9 @@ units:
           namespace: kube-system
 
   sriov-crd:
+    info:
+      description: installs SRIOV CRDs
+      maturity: stable
     enabled_conditions:
     - '{{ tuple . "sriov" | include "unit-enabled" }}'
     depends_on:
@@ -2278,6 +2510,9 @@ units:
           version: 102.1.0+up0.1.0
 
   sriov:
+    info:
+      description: installs SRIOV operator
+      maturity: stable
     enabled: false
     depends_on:
       sriov-crd: true
@@ -2311,6 +2546,9 @@ units:
                         runAsUser: 2000
 
   sriov-psp:
+    info:
+      description: configures security policies for SRIOV
+      internal: true
     enabled_conditions:
     - '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") }}'
     - '{{ (tuple . "sriov" | include "unit-enabled") }}'
@@ -2322,6 +2560,9 @@ units:
       wait: true
 
   sriov-resources:
+    info:
+      description: configures SRIOV resources
+      internal: true
     enabled: false
     depends_on:
       sriov: true
@@ -2336,6 +2577,9 @@ units:
         node_policies: '{{ .Values.sriov.node_policies | include "preserve-type" }}'
 
   coredns:
+    info:
+      description: configures DNS inside cluster
+      internal: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/coredns
@@ -2354,6 +2598,9 @@ units:
           CLUSTER_EXTERNAL_DOMAIN: '{{ .Values.cluster_external_domain }}'
 
   longhorn-crd:
+    info:
+      description: installs Longhorn CRDs
+      maturity: stable
     enabled_conditions:
     - '{{ tuple . "longhorn" | include "unit-enabled" }}'
     depends_on:
@@ -2368,6 +2615,9 @@ units:
           version: 102.2.3+up1.4.4
 
   longhorn:
+    info:
+      description: installs Longhorn CSI
+      maturity: stable
     enabled: false
     depends_on:
       longhorn-crd: true
@@ -2391,6 +2641,9 @@ units:
           storageMinimalAvailablePercentage: 10
 
   cluster-creator-login:
+    info:
+      description: configures Rancher account used for workload cluster imports
+      internal: true
     enabled_conditions:
     - '{{ tuple . "rancher" | include "unit-enabled" }}'
     depends_on:
@@ -2417,6 +2670,13 @@ units:
           namespace: kube-job
 
   cluster-creator-policy:
+    info:
+      description: Kyverno policy for cluster creator
+      details: |
+        This units defines a Kyverno policy to distribute the Kubeconfig of cluster creator
+        in all workload cluster namespaces, to allow the import of workload clusters in
+        Rancher.
+      internal: true
     enabled_conditions:
     - '{{ tuple . "rancher" | include "unit-enabled" }}'
     depends_on:
@@ -2429,8 +2689,11 @@ units:
       force: true
 
   os-image-server:
-    # this units allows to deploy web server on management cluster
-    # which serves OS image file for baremetal workload cluster
+    info:
+      description: >
+        Deploys a web server on management cluster
+        which serves OS images for baremetal clusters.
+      maturity: stable
     enabled_conditions:
       - '{{ tuple . .Values._internal.metal3_unit | include "unit-enabled" }}'
     depends_on:
@@ -2492,6 +2755,9 @@ units:
           storageClass: '{{ .Values._internal.default_storage_class }}'
 
   capo-contrail-bgpaas:
+    info:
+      description: installs CAPO Contrail BGPaaS controller
+      maturity: stable
     enabled: false
     repo: capo-contrail-bgpaas
     helm_chart_artifact_name: capo-contrail-bgpaas
@@ -2512,6 +2778,9 @@ units:
             DEFAULT_ASN: '64512'
 
   vsphere-cpi:
+    info:
+      description: configures Vsphere Cloud controller manager
+      internal: true
     enabled_conditions:
       - '{{ eq .Values.cluster.capi_providers.infra_provider "capv" }}'
     repo: cloud-provider-vsphere
@@ -2548,6 +2817,9 @@ units:
         password: '{{ .Values.cluster.capv.password }}'
 
   vsphere-csi-driver:
+    info:
+      description: installs Vsphere CSI
+      maturity: stable
     enabled_conditions:
       - '{{ eq .Values.cluster.capi_providers.infra_provider "capv" }}'
     repo: sylva-core
@@ -2577,8 +2849,12 @@ units:
       USERNAME: '{{ .Values.cluster.capv.username }}'
       PASSWORD: '{{ .Values.cluster.capv.password }}'
 
-# creates the sandbox namespaces used to perform privileged operations like debugging a node
   sandbox-privileged-namespace:
+    info:
+      description: >
+        creates the sandbox namespace used
+        to perform privileged operations like debugging a node
+      internal: true
     enabled: false
     repo: sylva-core
     kustomization_spec:
