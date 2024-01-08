@@ -19,6 +19,9 @@ ensure_flux
 echo_b "\U0001F50E Validate sylva-units values for management cluster"
 validate_sylva_units force-management
 
+echo_b "\U0001F5D1 Delete preview chart and namespace for management cluster"
+cleanup_preview
+
 echo_b "\U0001F50E Validate sylva-units values for bootstrap cluster"
 validate_sylva_units
 
