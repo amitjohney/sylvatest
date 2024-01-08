@@ -100,6 +100,7 @@ function cluster_info_dump() {
   dump_additional_resources $dump_dir $additional_resources
 }
 
+echo "Start debug-on-exit at: $(date -Iseconds)"
 
 echo "Docker containers"
 docker ps
