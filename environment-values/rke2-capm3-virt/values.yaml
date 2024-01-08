@@ -116,7 +116,7 @@ libvirt_metal:
   nodes:
     management-cp:
       redfishPort: 8000
-      memGB: 12
+      memGB: 16
       numCPUs: 8
 
     workload-cp:
