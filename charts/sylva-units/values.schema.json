@@ -5138,6 +5138,36 @@
           ]
         }
       }
+    },
+    "unit_info": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "description"
+      ],
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "details": {
+          "type": "string"
+        },
+        "internal": {
+          "type": "boolean"
+        },
+        "maturity": {
+          "type": "string",
+          "enum": [
+            "core-component",
+            "stable",
+            "beta",
+            "experimental"
+          ]
+        },
+        "version": {
+          "type": "string"
+        }
+      }
     }
   },
   "additionalProperties": false,
@@ -5411,6 +5441,9 @@
                 "$ref": "#/$defs/enabled"
               }
             },
+            "info": {
+              "$ref": "#/$defs/unit_info"
+            },
             "unit_template": {
               "type": "string",
               "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
@@ -5621,6 +5654,9 @@
               "helmrelease_spec"
             ]
           },
+          "required": [
+            "info"
+          ],
           "allOf": [
             {
               "anyOf": [

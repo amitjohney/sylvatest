@@ -137,3 +137,9 @@ clusterctl-check-versions:
         exit -1
         echo
       fi
+
+check_unit_documentation:
+  # this job verifie that units documentation has been updated
+  extends: [.lint-base]
+  script:
+    - ./tools/generate_units_documentation.py check

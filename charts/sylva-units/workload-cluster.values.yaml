@@ -241,6 +241,9 @@ units:
 
   cluster-import:
     enabled: false  # overriden depending on whether Rancher is enabled or not (eg. via shared-workload-clusters-settings)
+    info:
+      description: imports workload cluster into Rancher
+      internal: true
     unit_template: base-deps
     depends_on:
       sylva-system/rancher: true  # depends on rancher unit in sylva-system ns

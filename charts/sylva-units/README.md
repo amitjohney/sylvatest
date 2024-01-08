@@ -45,6 +45,9 @@ Last, it is important to note that once all those "units" are setup, defined as 
 reconciliation resources, the full lifecycle of the platform is covered: configuration changes
 and software updates will happen by redeploying the `sylva-units` chart with updated values.
 
+All currently maintained units are listed into [`charts/sylva-units/units-description.md`](units-description.md).
+This file gathers information about units (description, source, version, etc...).
+
 ## Not a typical Helm chart
 
 While most Helm charts create Deployments/ConfigMaps/Service/etc to deploy a given service,
@@ -197,6 +200,8 @@ a given deployment flavor, or for a given deployment).
 units:
 
   my-unit:
+    info:
+      description: <explain here what the unit is doing>
     repo: sylva-core   # this refers to .source_templates.sylva-core (defined in default values)
     kustomization_spec:
       path: ./kustomize-unit/myComponent
@@ -216,6 +221,7 @@ source_templates:
 units:
 
   my-unit:
+    ...
     repo: project-foo
     kustomization_spec:
       path: ./kustomize  # this will point to https://gitlab.com/sylva-projects/sylva-elements/foo.git / kustomize
@@ -235,6 +241,7 @@ source_templates:
 units:
 
   my-unit:
+    ...
     repo: helm-chart-bar
     helmrelease_spec:
       chart:
@@ -256,6 +263,7 @@ source_templates:
 units:
 
   my-unit:
+    ...
     repo: acme-project-foo
     helm_chart_artifact_name: foo  # this specifies the Helm chart name used for Helm OCI artifacts
     helmrelease_spec:
@@ -270,6 +278,7 @@ units:
 units:
 
   cert-manager:
+    ...
     helm_repo_url: https://charts.jetstack.io
     helmrelease_spec:
       chart:
@@ -446,3 +455,41 @@ For this to be possible, you **must** use some helpers, as illustrated by the fo
     ```
 
 For more details on templating features & limitations, refer to [`_interpret-values.tpl`](templates/_interpret-values.tpl)
+
+### How to add unit information
+
+`info` object adds developer provided data about the unit. At least `description` string is required:
+
+```yaml
+units:
+
+  my-unit:
+    info:
+      description: <explain here what the unit is doing>
+      details: <optionally provide some further information about unit>
+  ...
+```
+
+For external components, `info.maturity` can be added to define what is the state of integration into Sylva stack:
+
+```yaml
+units:
+
+  my-unit:
+    info:
+      description: <explain here what the unit is doing>
+      maturity: beta
+  ...
+```
+
+`info.internal = true` designates an unit which is specific to Sylva used for deployment logic:
+
+```yaml
+units:
+
+  my-unit:
+    info:
+      description: <explain here what the unit is doing>
+      internal: true
+  ...
+```

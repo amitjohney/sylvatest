@@ -96,6 +96,9 @@ units:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
 
   bootstrap-local-path:
+    info:
+      description: installs localpath CSI in bootstrap cluster
+      internal: true
     enabled_conditions:
       - '{{ tuple . .Values._internal.metal3_unit | include "unit-enabled" }}'
     repo: sylva-core
@@ -163,6 +166,9 @@ units:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
 
   management-cluster-flux:
+    info:
+      description: installs flux in management cluster during bootstrap
+      internal: true
     depends_on:
       cluster: true
       # FIXME; Flux wait/healthcheck on management cluster does not work as expected, it becomes ready as soon as manifests are applied
@@ -189,6 +195,9 @@ units:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
 
   management-cluster-configs:
+    info:
+      description: copies configuration object in management cluster during bootstrap
+      internal: true
     depends_on:
       management-cluster-flux: true
       namespace-defs: true
@@ -236,6 +245,9 @@ units:
 
   # instantiate 'sylva-units' chart again in the management cluster
   management-sylva-units:
+    info:
+      description: installs sylva-units in management cluster during bootstrap
+      internal: true
     depends_on:
       management-cluster-configs: true
     unit_template: sylva-units
@@ -282,6 +294,9 @@ units:
       valuesFrom: '{{ lookup "helm.toolkit.fluxcd.io/v2beta1" "HelmRelease" "sylva-system" "sylva-units" | dig "spec" "valuesFrom" list | include "preserve-type" }}'
 
   pivot:
+    info:
+      description: moves ClusterAPI objects from bootstrap cluster to management cluster
+      internal: true
     enabled: yes
     depends_on:
       management-sylva-units: true
@@ -407,6 +422,10 @@ units:
       calico: false
 
   libvirt-metal:
+    info:
+      description: installs libvirt for baremetal emulation
+      details: this unit is used in bootstrap cluster for baremetal testing
+      maturity: stable
     enabled_conditions:
     - '{{ not (.Values.libvirt_metal.nodes | empty) }}'
     depends_on:
