@@ -1786,6 +1786,7 @@ units:
             path: /data/kube-job.sh
             value: |
               #!/bin/bash
+              kubectl -n $TARGET_NAMESPACE get cluster.cluster.x-k8s.io {{ .Values.cluster.name }} || { echo "Cluster does not exist yet, nothing to do."; exit 0; }
               kubectl -n $TARGET_NAMESPACE patch cluster.cluster.x-k8s.io {{ .Values.cluster.name }} --type merge -p '{"spec":{"paused": false}}'
 
   calico-crd:
