@@ -12430,12 +12430,11 @@ spec:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  annotations:
+  #annotations:
     #${AWS_CONTROLLER_IAM_ROLE/#arn/eks.amazonaws.com/role-arn: arn}
-    AWSServiceRoleForAmazonEKS/#arn/eks.amazonaws.com/role-arn: arn
-
   labels:
     cluster.x-k8s.io/provider: infrastructure-aws
+    clusterctl.cluster.x-k8s.io: ""
     control-plane: controller-manager
   name: capa-controller-manager
   namespace: capa-system
@@ -12921,7 +12920,8 @@ spec:
           preferredDuringSchedulingIgnoredDuringExecution:
           - preference:
               matchExpressions:
-              - key: ${K8S_CP_LABEL:=node-role.kubernetes.io/control-plane}
+              #- key: ${K8S_CP_LABEL:=node-role.kubernetes.io/control-plane}
+              - key: node-role.kubernetes.io/control-plane
                 operator: Exists
             weight: 10
           - preference:
