@@ -160,23 +160,27 @@ def generate_units_metadata():
 
     units_data = []
     for unit_name, unit in units.items():
-        version_and_source = get_version_and_source(main_values, unit)
-        units_data.append(
-            {
-                "name": unit_name,
-                "description": get_or_empty(unit, "info", "description"),
-                "details": get_or_empty(unit, "info", "details"),
-                "maturity": get_or_empty(unit, "info", "maturity"),
-                "internal": get_or_empty(unit, "info", "internal"),
-                "source_url": version_and_source["source_url"],
-                "source_type": version_and_source["source_type"],
-                "version": version_and_source["version"],
-            }
-        )
-        if version_and_source["source_url"]:
-            units_data[-1]["source"] = f"[{version_and_source['source_type']}]({version_and_source['source_url']})"
-        else:
-            units_data[-1]["source"] = version_and_source["source_type"]
+        try:
+            version_and_source = get_version_and_source(main_values, unit)
+            units_data.append(
+                {
+                    "name": unit_name,
+                    "description": get_or_empty(unit, "info", "description"),
+                    "details": get_or_empty(unit, "info", "details"),
+                    "maturity": get_or_empty(unit, "info", "maturity"),
+                    "internal": get_or_empty(unit, "info", "internal"),
+                    "source_url": version_and_source["source_url"],
+                    "source_type": version_and_source["source_type"],
+                    "version": version_and_source["version"],
+                }
+            )
+            if version_and_source["source_url"]:
+                units_data[-1]["source"] = f"[{version_and_source['source_type']}]({version_and_source['source_url']})"
+            else:
+                units_data[-1]["source"] = version_and_source["source_type"]
+        except Exception as e:
+            print(f"Failed to generate documentation for unit {unit_name}:")
+            raise
     return units_data
 
 
