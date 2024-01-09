@@ -40,7 +40,7 @@ def read_yaml_files(paths):
     return list(yaml.safe_load_all(files_concatenated_content))
 
 
-def get_version_and_source(values, unit):
+def get_version_and_source(values, unit_name, unit):
 
     helmrelease_spec = get_or_empty(unit, "helmrelease_spec")
     if helmrelease_spec:
@@ -76,6 +76,13 @@ def get_version_and_source(values, unit):
 
     kustomize_unit_path = get_or_empty(unit, "kustomization_spec", "path")
     if kustomize_unit_path:
+        if '{{' in kustomize_unit_path:
+            if kustomization_path := get_or_empty(unit, "info", "kustomization_path"):
+                kustomize_unit_path = kustomization_path
+            else:
+                print(f"unit {unit_name} has a templatized kustomization path: {kustomize_unit_path}")
+                print(f" this isn't supported by this tool")
+                print(f" you need to set the path manually with units.{unit_name}.info.kustomization_path")
         kustomize_unit_version_source = search_version_in_kustomize_unit_files(kustomize_unit_path)
         if kustomize_unit_version_source:
             return {
@@ -161,7 +168,7 @@ def generate_units_metadata():
     units_data = []
     for unit_name, unit in units.items():
         try:
-            version_and_source = get_version_and_source(main_values, unit)
+            version_and_source = get_version_and_source(main_values, unit_name, unit)
             units_data.append(
                 {
                     "name": unit_name,
@@ -169,6 +176,7 @@ def generate_units_metadata():
                     "details": get_or_empty(unit, "info", "details"),
                     "maturity": get_or_empty(unit, "info", "maturity"),
                     "internal": get_or_empty(unit, "info", "internal"),
+                    "hidden": get_or_empty(unit, "info", "hidden"),
                     "source_url": version_and_source["source_url"],
                     "source_type": version_and_source["source_type"],
                     "version": version_and_source["version"],
@@ -205,6 +213,8 @@ def convert_to_markdown_table(units, headers, sort_function=sort_by_name):
     table_md_lines = []
     units.sort(key=sort_function)
     for unit in units:
+        if unit.get("hidden", False):
+            continue
         items = [str(unit[key]).strip().replace("\n", "<br>") for key in headers]
         table_md_lines.append("| " + " | ".join(items) + " |")
     md_content = "<!-- markdownlint-disable MD044 -->\n"
@@ -229,6 +239,8 @@ def generate_units_description():
 def generate_full_md_table():
     units_data = generate_units_metadata()
     for unit in units_data:
+        if unit.get("hidden", False):
+            continue
         unit["name"] = f"**{unit['name']}**"
         unit["full description"] = f"{unit['description']}"
         if unit['details']:

@@ -5166,6 +5166,12 @@
         },
         "version": {
           "type": "string"
+        },
+        "hidden": {
+          "type": "boolean"
+        },
+        "kustomization_path": {
+          "type": "string"
         }
       }
     }

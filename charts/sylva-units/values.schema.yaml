@@ -116,6 +116,10 @@ $defs:
         enum: ["core-component", "stable", "beta", "experimental"]
       version:
         type: string
+      hidden:
+        type: boolean
+      kustomization_path:
+        type: string
 
 
 # lines with '# -------------------------------' correspond to keys in values.yaml
