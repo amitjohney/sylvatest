@@ -12431,7 +12431,8 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   annotations:
-    ${AWS_CONTROLLER_IAM_ROLE/#arn/eks.amazonaws.com/role-arn: arn}
+    #${AWS_CONTROLLER_IAM_ROLE/#arn/eks.amazonaws.com/role-arn: arn}
+    AWSServiceRoleForAmazonEKS/#arn/eks.amazonaws.com/role-arn: arn
 
   labels:
     cluster.x-k8s.io/provider: infrastructure-aws
