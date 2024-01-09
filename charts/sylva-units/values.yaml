@@ -163,6 +163,19 @@ units_enabled_default: false
 unit_templates:
   sylva-units:
     repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/
+
+  # dummy unit template is used to have a Kustomization
+  # to add dependencies
+  dummy:
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/dummy
+      wait: false
+      postBuild:
+        substitute:
+          UNIT_NAME: '{{ .Values._unit_name_ }}'
 
 # this defines Flux HelmRelease objects, and for each  # FIXME
 # a corresponding GitRepository or OCIRepository (and Secret, TODO: the Secret don't need to be generated for each unit)
@@ -1508,16 +1521,14 @@ units:
     info:
       description: checks if management cluster is ready for pivot
       details: >
-        is here only to have a single thing to look at to determine
+        This unit only has dependencies, but does not create resources.
+        It is here only to have a single thing to look at to determine
         if everything is ready for pivot (see bootstrap.values.yaml pivot unit)
       internal: true
-    repo: sylva-core
+    unit_template: dummy
     # we copy the dependencies of the 'cluster' unit
     # (with the exception of "capo-cluster-resources" which we don't need, given how what it produces is consumed)
     depends_on: '{{ omit .Values.units.cluster.depends_on "capo-cluster-resources" | include "preserve-type" }}'
-    kustomization_spec:
-      path: ./kustomize-units/dummy  # does not create any relevant resource
-      wait: false
 
   local-path-provisioner:
     info:
@@ -2473,16 +2484,16 @@ units:
     info:
       description: checks that Multus is ready
       details: >
-        performs healthchecks outside of the multus unit,
-        in order to properly target workload cluster when we deploy multus in it
+        This unit only has dependencies, it does not create resources.
+        It performs healthchecks outside of the multus unit,
+        in order to properly target workload cluster when we deploy multus in it.
       internal: true
+    unit_template: dummy
     enabled_conditions:
       - '{{ tuple . "multus" | include "unit-enabled" }}'
     depends_on:
       multus: true
-    repo: sylva-core
     kustomization_spec:
-      path: ./kustomize-units/dummy
       healthChecks:
         - apiVersion: apps/v1
           kind: DaemonSet

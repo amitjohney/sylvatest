@@ -52,7 +52,7 @@
 | **bootstrap-local-path** | installs localpath CSI in bootstrap cluster |  | True | Kustomize | N/A |
 | **capd** | installs Docker CAPI infra provider |  | True | Kustomize | N/A |
 | **capd-metallb-config** | configures MetalLB in a capd context |  | True | Kustomize | N/A |
-| **capi-providers-pivot-ready** | checks if management cluster is ready for pivot<br><br>is here only to have a single thing to look at to determine if everything is ready for pivot (see bootstrap.values.yaml pivot unit) |  | True | Kustomize | N/A |
+| **capi-providers-pivot-ready** | checks if management cluster is ready for pivot<br><br>This unit only has dependencies, but does not create resources. It is here only to have a single thing to look at to determine if everything is ready for pivot (see bootstrap.values.yaml pivot unit) |  | True | Kustomize | N/A |
 | **capi-rancher-import** | installs the capi-rancher-import operator, which let's us import Cluster AIP workload clusters in management cluster's Rancher |  | True | Helm | N/A |
 | **capo-cluster-resources** | installs OpenStack stack for capo cluster prerequisites |  | True | Kustomize | N/A |
 | **cinder-csi-psp** | configures security policies for OpenStack Cinder CSI |  | True | Kustomize | N/A |
@@ -74,7 +74,7 @@
 | **management-sylva-units** | installs sylva-units in management cluster during bootstrap |  | True | Helm | N/A |
 | **metal3-init** | generates Metal3 random credentials |  | True | Kustomize | N/A |
 | **metal3-sync-secrets** | configures secrets for Metal3 components |  | True | Kustomize | N/A |
-| **multus-ready** | checks that Multus is ready<br><br>performs healthchecks outside of the multus unit, in order to properly target workload cluster when we deploy multus in it |  | True | Kustomize | N/A |
+| **multus-ready** | checks that Multus is ready<br><br>This unit only has dependencies, it does not create resources. It performs healthchecks outside of the multus unit, in order to properly target workload cluster when we deploy multus in it. |  | True | Kustomize | N/A |
 | **namespace-defs** | creates sylva-system namespace and other namespaces to be used by various units |  | True | Kustomize | N/A |
 | **neuvector-init** | sets up Neuvector prerequisites<br><br>it generates namespace, certificate, admin password, policy exception for using latest tag images (required for the pod managing the database of vulnerabilities since this DB is updated often) |  | True | Kustomize | N/A |
 | **node-annotation-from-label** | manages cluster node labels |  | True | Kustomize | N/A |

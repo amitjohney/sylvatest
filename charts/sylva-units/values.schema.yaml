@@ -472,6 +472,8 @@ properties:
               - helmrelease_spec
             - required:
               - kustomization_spec
+            - required:  # we relax this check if 'unit_template' is used
+              - unit_template
 
           - anyOf:
             # for a unit which is explicitly disabled, we don't mandate anything else
@@ -493,12 +495,20 @@ properties:
                       type: string
 
               # there are some things we need on kustomization_spec
-              # but that aren't needed in the case where we specify helmrelease_spec
+              # but that aren't needed in the case where we specify helmrelease_spec,
               # (see example where we need that under bootstrap.values.yaml:units.sylva-units)
+              # or in the case where unit_template is used
+              #
+              # (note that we have a check for the presence of 'path' in the final resource in templates/units.yaml
+              #  to ensure it's presence when unit_template is used)
               - if:
-                  not:
-                    required:
-                      - helmrelease_spec
+                  allOf:
+                    - not:
+                        required:
+                          - helmrelease_spec
+                    - not:
+                        required:
+                          - unit_template
                 then:
                   properties:
                     kustomization_spec:
