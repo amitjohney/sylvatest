@@ -12895,10 +12895,9 @@ spec:
 ---
 apiVersion: v1
 data:
-  credentials: TEKCg==
+  credentials: "test"
 kind: Secret
 metadata:
-  creationTimestamp: "2024-01-09T10:34:38Z"
   labels:
     cluster.x-k8s.io/provider: infrastructure-aws
     clusterctl.cluster.x-k8s.io: ""
