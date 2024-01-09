@@ -61,7 +61,7 @@ function dump_additional_resources() {
             kubectl get $kind -A -o wide > $base_filename.summary.txt
         fi
 
-        kubectl get $kind -A -o yaml > $base_filename.yaml
+        kubectl get $kind -A -o yaml --show-managed-fields > $base_filename.yaml
       fi
     done
 }
@@ -98,6 +98,10 @@ function cluster_info_dump() {
   kubectl get events -A -o yaml | format_and_sort_events > $dump_dir/events.log
 
   dump_additional_resources $dump_dir $additional_resources
+
+  # dump CAPI secrets
+  kubectl get secret -A --field-selector=type=cluster.x-k8s.io/secret                                > $dump_dir/Secrets-capi.summary.txt
+  kubectl get secret -A --field-selector=type=cluster.x-k8s.io/secret -o yaml --show-managed-fields  > $dump_dir/Secrets-capi.yaml
 }
 
 echo "Start debug-on-exit at: $(date -Iseconds)"
