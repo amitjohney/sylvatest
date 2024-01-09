@@ -9,6 +9,9 @@
 additional_resources="
   Namespaces
   HelmReleases
+  HelmRepositories
+  HelmCharts
+  GitRepositories
   Kustomizations
   StatefulSets
   Jobs
