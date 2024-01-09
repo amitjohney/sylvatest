@@ -325,6 +325,9 @@ units:
         createNamespace: true
       values:
         securityContext:
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
           allowPrivilegeEscalation: false
           capabilities:
             drop:
