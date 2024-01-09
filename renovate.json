@@ -132,6 +132,21 @@
       "description": "Regroup sylva-units-operator updates",
       "matchPackagePatterns": ".*sylva-units-operator.*",
       "groupName": "sylva-units-operator"
+    },
+    {
+      "description": "Catch all changes related to values files and run generate_units_documentation script",
+      "matchFileNames": [
+        "**/**values.yaml",
+        "kustomize-units/**/**"
+      ],
+      "postUpgradeTasks": {
+        "commands": [
+          "pip install pyyaml",
+          "tools/generate_units_documentation.py"
+        ],
+        "fileFilters": ["charts/sylva-units/units-description.md"],
+        "executionMode": "update"
+      }
     }
   ],
   "customManagers": [
