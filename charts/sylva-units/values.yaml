@@ -2683,7 +2683,7 @@ units:
     info:
       description: Creates a list of os images
       details: |
-        This unit creates a configmap containing the os images (and their details in the case of Sylva diskimage-builder ones) 
+        This unit creates a configmap containing the os images (and their details in the case of Sylva diskimage-builder ones)
         to be further served by os-image-server
       internal: true
     repo: sylva-core
