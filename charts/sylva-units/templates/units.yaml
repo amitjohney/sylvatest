@@ -1,9 +1,24 @@
+{{- $origUnitTemplates := deepCopy .Values.unit_templates -}}{{/* we need to preserve this, to defer template computation of _unit_name_ */}}
 {{- $envAll := set . "Values" (include "interpret-values-gotpl" . | fromJson) -}}
 {{ range $unit_name, $unit_def := .Values.units }}
 
   {{- if include "unit-enabled" (tuple $envAll $unit_name) -}}
     {{/* inherit settings from any specified unit_template */}}
-    {{- $unit_def := mergeOverwrite (deepCopy ($envAll.Values.unit_templates | dig ($unit_def.unit_template | default "") dict)) $unit_def -}}
+    {{- if $unit_def.unit_template -}}
+      {{- if not (hasKey $envAll.Values.unit_templates $unit_def.unit_template) -}}
+        {{ fail (printf "unit %s has 'unit_template: %s', but no such template is declared in unit_templates" $unit_name $unit_def.unit_template) }}
+      {{- end -}}
+      {{/* interpret _unit_name_ in unit template */}}
+      {{- $_ := set $envAll.Values "_unit_name_" $unit_name -}}
+      {{- $unit_template := deepCopy (index $origUnitTemplates $unit_def.unit_template) }}
+      {{- $unit_template := index (tuple $envAll (index $origUnitTemplates $unit_def.unit_template) | include "interpret-inner-gotpl" | fromJson) "result" -}}
+      {{/* merge unit definition with unit template */}}
+      {{- $unit_def = mergeOverwrite $unit_template $unit_def -}}
+    {{- end -}}
+
+    {{- if not (or (hasKey $unit_def "kustomization_spec") (hasKey $unit_def "helmrelease_spec")) -}}
+      {{- fail (printf "unit %s has neither kustomization_spec or helmrelease_spec" $unit_name) -}}
+    {{- end -}}
 
     {{/*********** Prepare labels used in all generated objects */}}
 
@@ -288,6 +303,10 @@ stringData:
                     "name" $unit_name)
                 ) -}}
       {{- $_ := set $kustomization_spec "wait" false -}}
+    {{- end -}}
+
+    {{- if not (hasKey $kustomization_spec "path") -}}
+      {{- fail (printf "unit '%s': kustomization_spec has no 'path' specififed" $unit_name) -}}
     {{- end -}}
 
     {{- if and (gt (len (get $kustomization_spec "healthChecks" | default dict)) 0) (get $kustomization_spec "wait" | default false) -}}

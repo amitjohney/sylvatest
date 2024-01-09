@@ -5669,6 +5669,11 @@
                   "required": [
                     "kustomization_spec"
                   ]
+                },
+                {
+                  "required": [
+                    "unit_template"
+                  ]
                 }
               ]
             },
@@ -5698,11 +5703,22 @@
                     },
                     {
                       "if": {
-                        "not": {
-                          "required": [
-                            "helmrelease_spec"
-                          ]
-                        }
+                        "allOf": [
+                          {
+                            "not": {
+                              "required": [
+                                "helmrelease_spec"
+                              ]
+                            }
+                          },
+                          {
+                            "not": {
+                              "required": [
+                                "unit_template"
+                              ]
+                            }
+                          }
+                        ]
                       },
                       "then": {
                         "properties": {
