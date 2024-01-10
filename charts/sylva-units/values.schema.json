@@ -6054,7 +6054,7 @@
               "type": "string"
             },
             "k8s-version": {
-              "tyoe": "string"
+              "type": "string"
             },
             "k8s-flavor": {
               "type": "string",

@@ -717,7 +717,7 @@ properties:
           os:
             type: string
           k8s-version:
-            tyoe: string
+            type: string
           k8s-flavor:
             type: string
             pattern: "^(rke2|kubeadm)$"
