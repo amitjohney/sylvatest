@@ -79,7 +79,7 @@
 | **namespace-defs** | creates sylva-system namespace and other namespaces to be used by various units |  | True | Kustomize | N/A |
 | **neuvector-init** | sets up Neuvector prerequisites<br><br>it generates namespace, certificate, admin password, policy exception for using latest tag images (required for the pod managing the database of vulnerabilities since this DB is updated often) |  | True | Kustomize | N/A |
 | **node-annotation-from-label** | manages cluster node labels |  | True | Kustomize | N/A |
-| **os-images-info** | Creates a list of os images<br><br>This unit creates a configmap containing the os images (and their details in the case of Sylva diskimage-builder ones)<br>to be further served by os-image-server |  | True | Kustomize | N/A |
+| **os-images-info** | Creates a list of OS images<br><br>This unit creates a configmap containing the OS images (and their details in the case of Sylva diskimage-builder ones)<br>to be further served by os-image-server |  | True | Kustomize | N/A |
 | **pause-cluster-reconciliation** | (specific to CAPO:) makes sure cluster reconciliation is paused during some operation<br><br>workaround for https://gitlab.com/sylva-projects/sylva-core/-/issues/309 |  | True | Kustomize | N/A |
 | **pivot** | moves ClusterAPI objects from bootstrap cluster to management cluster |  | True | Kustomize | N/A |
 | **postgres-init** | initializes Postgresql for Keycloak |  | True | Kustomize | N/A |
