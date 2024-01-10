@@ -95,7 +95,7 @@ function push_and_sign {
       local chart_name=$2
 
       if !(artifact_integrity $tgz_file); then
-        echo "[ERROR] cannot push and sign $chart_name because its content differs from an existing OCI artefact"
+        echo "[ERROR] cannot push and sign $chart_name because its content differs from the content of the already existing OCI artifact"
         return 1
       fi
       
