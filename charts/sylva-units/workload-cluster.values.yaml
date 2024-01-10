@@ -222,17 +222,9 @@ units:
     enabled: yes
     unit_template: base-deps
 
-  sriov-psp:
-    enabled: yes
-    unit_template: base-deps
-
   sriov-resources:
     # can be enabled at runtime if desired:
     #enabled: true
-    unit_template: base-deps
-
-  cinder-csi-psp:
-    enabled: true
     unit_template: base-deps
 
   cinder-csi:

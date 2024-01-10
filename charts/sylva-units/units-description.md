@@ -8,7 +8,7 @@
 | **capo** | installs OpenStack CAPI infra provider | core-component |  | [Kustomize](https://github.com/kubernetes-sigs/cluster-api-provider-openstack/releases/download/v0.9.0/infrastructure-components.yaml) | v0.9.0 |
 | **capv** | installs vSphere CAPI infra provider | core-component |  | [Kustomize](https://github.com/kubernetes-sigs/cluster-api-provider-vsphere/releases/download/v1.8.7/infrastructure-components.yaml) | v1.8.7 |
 | **cert-manager** | installs cert-manager, an X.509 certificate controller | core-component |  | [Helm](https://charts.jetstack.io) | v1.13.3 |
-| **cluster** | holds the Cluster API definition for the cluster | core-component |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git) | 0.1.24 |
+| **cluster** | holds the Cluster API definition for the cluster | core-component |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git) | 0.1.25 |
 | **flux-system** | contains Flux definitions *to manage the Flux system itself via gitops*<br><br>Note that Flux is always installed on the current cluster as a pre-requisite to installing the chart | core-component |  | [Kustomize](https://github.com/fluxcd/flux2/releases/download/v2.2.2/install.yaml) | v2.2.2 |
 | **heat-operator** | installs OpenStack Heat operator | core-component |  | [Kustomize](https://gitlab.com/sylva-projects/sylva-elements/heat-operator.git/config/default?ref=v0.0.6-pre) | v0.0.6-pre |
 | **calico** | install Calico CNI | stable |  | [Helm](https://rke2-charts.rancher.io) | v3.25.001, v3.26.101 |
@@ -55,7 +55,6 @@
 | **capi-providers-pivot-ready** | checks if management cluster is ready for pivot<br><br>This unit only has dependencies, but does not create resources. It is here only to have a single thing to look at to determine if everything is ready for pivot (see bootstrap.values.yaml pivot unit) |  | True | Kustomize | N/A |
 | **capi-rancher-import** | installs the capi-rancher-import operator, which let's us import Cluster AIP workload clusters in management cluster's Rancher |  | True | Helm | N/A |
 | **capo-cluster-resources** | installs OpenStack stack for capo cluster prerequisites |  | True | Kustomize | N/A |
-| **cinder-csi-psp** | configures security policies for OpenStack Cinder CSI |  | True | Kustomize | N/A |
 | **cis-operator-scan** | allows for running a CIS scan for management cluster<br><br>it generates a report which can be viewed and downloaded in CSV from the Rancher UI, at https://rancher.sylva/dashboard/c/local/cis/cis.cattle.io.clusterscan |  | True | Kustomize | N/A |
 | **cluster-creator-login** | configures Rancher account used for workload cluster imports |  | True | Kustomize | N/A |
 | **cluster-creator-policy** | Kyverno policy for cluster creator<br><br>This units defines a Kyverno policy to distribute the Kubeconfig of cluster creator<br>in all workload cluster namespaces, to allow the import of workload clusters in<br>Rancher. |  | True | Kustomize | N/A |
@@ -86,7 +85,6 @@
 | **resume-cluster-reconciliation** | makes sure cluster reconciliation is on<br><br>workaround for https://gitlab.com/sylva-projects/sylva-core/-/issues/309 |  | True | Kustomize | N/A |
 | **sandbox-privileged-namespace** | creates the sandbox namespace used to perform privileged operations like debugging a node |  | True | Kustomize | N/A |
 | **shared-workload-clusters-settings** | manages parameters which would be shared between management and workload clusters |  | True | Kustomize | N/A |
-| **sriov-psp** | configures security policies for SRIOV |  | True | Kustomize | N/A |
 | **sriov-resources** | configures SRIOV resources |  | True | Helm | N/A |
 | **sylva-ca** | provides a Certificate Authority for units of the Sylva stack |  | True | Kustomize | N/A |
 | **sylva-ca-certs** | configures Sylva internal certificate authority |  | True | Kustomize | N/A |

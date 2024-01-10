@@ -69,7 +69,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.1.24
+        tag: 0.1.25
 
   local-path-provisioner:
     kind: GitRepository
@@ -749,11 +749,6 @@ units:
           chart: rancher-cis-benchmark
           version: 4.0.0
       targetNamespace: cis-operator-system
-      values:
-        global:
-          cattle:
-            psp:
-              enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") | include "preserve-type" }}'
 
   cis-operator-scan:
     info:
@@ -816,7 +811,6 @@ units:
           version: 2.6.6
       targetNamespace: neuvector
       values:
-        psp: '{{ .Values.cluster.cis_profile | eq "cis-1.6" | include "as-bool" }}'
         leastPrivilege: true
         internal:
           certmanager:
@@ -1891,21 +1885,6 @@ units:
           - effect: NoSchedule
             key: node-role.kubernetes.io/control-plane
 
-  cinder-csi-psp:
-    info:
-      description: configures security policies for OpenStack Cinder CSI
-      internal: true
-    enabled_conditions:
-    - '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") }}'
-    - '{{ tuple . "cinder-csi" | include "unit-enabled" }}'
-    depends_on:
-      namespace-defs: true
-    repo: sylva-core
-    kustomization_spec:
-      path: ./kustomize-units/cinder-csi-psp
-      targetNamespace: cinder-csi
-      wait: true
-
   cinder-csi:
     info:
       description: installs OpenStack Cinder CSI
@@ -1914,7 +1893,6 @@ units:
     - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     depends_on:
       namespace-defs: true
-      cinder-csi-psp: '{{ tuple . "cinder-csi-psp" | include "unit-enabled" }}'
     helm_repo_url: https://kubernetes.github.io/cloud-provider-openstack
     helmrelease_spec:
       chart:
@@ -2403,11 +2381,6 @@ units:
           version: 102.0.2+up40.1.2
       install:
         createNamespace: true
-      values:
-        global:
-          cattle:
-            psp:
-              enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") | include "as-bool" }}'
 
   monitoring:
     info:
@@ -2426,11 +2399,6 @@ units:
           version: 102.0.2+up40.1.2
       install:
         createNamespace: true
-      values:
-        global:
-          cattle:
-            psp:
-              enabled: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") | include "as-bool" }}'
       # Disable drift detection for rancher-monitoring webhooks
       _postRenderers:
         - kustomize:
@@ -2531,7 +2499,6 @@ units:
     enabled: false
     depends_on:
       sriov-crd: true
-      sriov-psp: '{{ tuple . "sriov-psp" | include "unit-enabled" }}'
     helm_repo_url: https://charts.rancher.io/
     helmrelease_spec:
       releaseName: sriov
@@ -2559,20 +2526,6 @@ units:
                       securityContext:
                         runAsGroup: 3000
                         runAsUser: 2000
-
-  sriov-psp:
-    info:
-      description: configures security policies for SRIOV
-      internal: true
-    enabled_conditions:
-    - '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") }}'
-    - '{{ (tuple . "sriov" | include "unit-enabled") }}'
-    depends_on:
-      sriov-crd: true
-    repo: sylva-core
-    kustomization_spec:
-      path: ./kustomize-units/workload-cluster-sriov-psp
-      wait: true
 
   sriov-resources:
     info:
@@ -2647,7 +2600,6 @@ units:
           chart: longhorn
           version: 102.2.3+up1.4.4
       values:
-        enablePSP: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") (.Values.cluster.cis_profile | eq "cis-1.6") | include "preserve-type" }}'
         defaultSettings:
           createDefaultDiskLabeledNodes: true
           defaultDataPath: /var/lib/longhorn
