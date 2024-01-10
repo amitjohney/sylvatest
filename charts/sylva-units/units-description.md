@@ -34,7 +34,7 @@
 | **monitoring-crd** | installs monitoring stack CRDs | stable |  | [Helm](https://charts.rancher.io/) | 102.0.2+up40.1.2 |
 | **multus** | installs Multus | stable |  | [Helm](https://rke2-charts.rancher.io/) | v3.9.3-build2023010901 |
 | **os-image-server** | Deploys a web server on management cluster which serves OS images for baremetal clusters. | stable |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/os-image-server.git) | 1.8.0 |
-| **postgres** | installs Postgresql for keycloak | stable |  | [Helm](https://charts.bitnami.com/bitnami) | 13.2.24 |
+| **postgres** | installs Postgresql for keycloak | stable |  | [Helm](https://charts.bitnami.com/bitnami) | 13.2.28 |
 | **rancher** | installs Rancher | stable |  | [Helm](https://releases.rancher.com/server-charts/latest) | 2.7.9 |
 | **sriov** | installs SRIOV operator | stable |  | [Helm](https://charts.rancher.io/) | 102.1.0+up0.1.0 |
 | **sriov-crd** | installs SRIOV CRDs | stable |  | [Helm](https://charts.rancher.io/) | 102.1.0+up0.1.0 |
