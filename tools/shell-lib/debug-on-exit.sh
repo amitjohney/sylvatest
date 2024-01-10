@@ -88,6 +88,12 @@ function format_and_sort_events() {
 function cluster_info_dump() {
   local cluster=$1
   local dump_dir=$cluster-cluster-dump
+
+  echo "Checking if $cluster cluster is reachable"
+  if ! timeout 10s kubectl get nodes > /dev/null 2>&1 ;then
+    echo "$cluster cluster is unreachable - aborting dump"
+    exit 0
+  fi
   echo "Dumping resources for $cluster cluster in $dump_dir"
 
   kubectl cluster-info dump -A -o yaml --output-directory=$dump_dir
