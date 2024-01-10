@@ -196,7 +196,7 @@ function artifact_exists {
   echo "Checking if artifact $1 exists..."
 
   if (flux pull artifact $1 -o /tmp); then
-  # artifact exist
+    # artifact exists
      if [[ -v COSIGN_PRIVATE_KEY ]] && [[ -v COSIGN_PASSWORD ]]; then
         echo "Check is artifact $1 is signed with the correct key"
       if cosign verify --key env://COSIGN_PUBLIC_KEY $1; then
