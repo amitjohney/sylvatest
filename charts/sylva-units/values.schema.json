@@ -6000,6 +6000,20 @@
               "$ref": "#/$defs/string-with-gotpl"
             }
           ]
+        },
+        "gitea": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "const": ""
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
         }
       }
     },

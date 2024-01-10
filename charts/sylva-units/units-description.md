@@ -18,6 +18,9 @@
 | **cis-operator** | install CIS operator | stable |  | [Helm](https://charts.rancher.io) | 4.0.0 |
 | **external-secrets-operator** | installs the External Secrets operator | stable |  | [Helm](https://charts.external-secrets.io) | 0.9.11 |
 | **flux-webui** | installs Weave GitOps Flux web GUI | stable |  | [Helm](https://github.com/weaveworks/weave-gitops.git) | v0.38.0 |
+| **gitea** | installs Gitea | stable |  | [Helm](https://dl.gitea.com/charts/) | 9.5.1 |
+| **gitea-postgresql-ha** | installs PostgreSQL HA cluster for Gitea | stable |  | [Helm](https://charts.bitnami.com/bitnami) | 11.9.4 |
+| **gitea-redis** | installs Redis cluster for Gitea | stable |  | [Helm](https://charts.bitnami.com/bitnami) | 9.1.1 |
 | **ingress-nginx** | installs Nginx ingress controller | stable |  | [Helm](https://rke2-charts.rancher.io) | 4.5.202, 4.6.101 |
 | **k8s-gateway** | installs k8s gateway (coredns + plugin to resolve external service names to ingress IPs)<br><br>is here only to allow for DNS resolution of Ingress hosts (FQDNs), used for importing workload clusters into Rancher and for flux-webui to use Keycloak SSO | stable |  | [Helm](https://ori-edge.github.io/k8s_gateway/) | 2.1.0 |
 | **keycloak** | initializes and configures Keycloak | stable |  | [Kustomize](https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/23.0.4/kubernetes/keycloaks.k8s.keycloak.org-v1.yml) | 23.0.4 |
@@ -59,6 +62,9 @@
 | **coredns** | configures DNS inside cluster |  | True | Kustomize | N/A |
 | **eso-secret-stores** | defines External Secrets stores |  | True | Kustomize | N/A |
 | **first-login-rancher** | configure Rancher authentication for admin |  | True | Kustomize | N/A |
+| **gitea-eso** | write secrets in gitea namespace in gitea expected format |  | True | Kustomize | N/A |
+| **gitea-keycloak-resources** | deploys Gitea OIDC client in Sylva's Keycloak realm |  | True | Kustomize | N/A |
+| **gitea-secrets** | create random secret that will be used by gitea application. secrets are sync with vault. |  | True | Kustomize | N/A |
 | **keycloak-add-client-scope** | configures Keycloak client-scope<br><br>a job to manually add a custom client-scope to sylva realm (on top of default ones) while CRD option does not yet provide good results (overrides defaults) |  | True | Kustomize | N/A |
 | **keycloak-oidc-external-secrets** | configures OIDC secrets for Keycloack |  | True | Kustomize | N/A |
 | **keycloak-resources** | configures keycloak resources |  | True | Kustomize | N/A |

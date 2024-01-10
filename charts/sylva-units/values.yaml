@@ -380,6 +380,7 @@ units:
         - '{{ tuple "components/vault" (tuple . "vault" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/rancher" (tuple . "rancher" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/cattle-monitoring" (tuple . "monitoring" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/gitea" (tuple . "gitea" | include "unit-enabled") | include "set-only-if" }}'
 
 # Postgresql deployment for keycloak
   postgres-init:
@@ -2852,6 +2853,299 @@ units:
       wait: true
       prune: true
 
+  # Gitea-unit
+  gitea-secrets:
+    info:
+      description: >
+        create random secret that will be used by gitea application.
+        secrets are sync with vault.
+      internal: true
+    enabled_conditions:
+    - '{{ tuple . "gitea" | include "unit-enabled" }}'
+    depends_on:
+      namespace-defs: true
+      vault-config-operator: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/gitea/secrets
+      wait: true
+
+  gitea-eso:
+    info:
+      description: >
+        write secrets in gitea namespace in gitea expected format
+      internal: true
+    enabled_conditions:
+    - '{{ tuple . "gitea" | include "unit-enabled" }}'
+    depends_on:
+      namespace-defs: true
+      sylva-ca-certs: true
+      eso-secret-stores: true
+      gitea-keycloak-resources: true
+      gitea-secrets: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/gitea/eso
+      wait: false
+      healthChecks:
+        - apiVersion: v1
+          kind: Secret
+          name: gitea-keycloak-oidc-auth
+          namespace: gitea
+        - apiVersion: v1
+          kind: Secret
+          name: gitea-admin
+          namespace: gitea
+        - apiVersion: v1
+          kind: Secret
+          name: gitea-postgres-secrets
+          namespace: gitea
+        - apiVersion: v1
+          kind: Secret
+          name: gitea-redis
+          namespace: gitea
+        - apiVersion: v1
+          kind: Secret
+          name: sylva-ca.crt
+          namespace: gitea
+
+  gitea-keycloak-resources:
+    info:
+      description: >
+        deploys Gitea OIDC client in Sylva's Keycloak realm
+      internal: true
+    enabled_conditions:
+    - '{{ tuple . "gitea" | include "unit-enabled" }}'
+    depends_on:
+      keycloak: true
+      keycloak-legacy-operator: true
+      keycloak-resources: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/gitea/keycloak-resources
+      targetNamespace: keycloak
+      postBuild:
+        substitute:
+          GITEA_DNS: '{{ .Values.external_hostnames.gitea }}'
+      healthChecks:
+        - apiVersion: v1
+          kind: Secret
+          name: keycloak-client-secret-gitea-client  # this secret is a byproduct of the gitea-client KeycloakClient resource
+          namespace: keycloak
+
+  gitea-redis:
+    info:
+      description: installs Redis cluster for Gitea
+      maturity: stable
+    enabled_conditions:
+    - '{{ tuple . "gitea" | include "unit-enabled" }}'
+    depends_on:
+      namespace-defs: true
+      gitea-eso: true
+      gitea-keycloak-resources: true
+      gitea-secrets: true
+    helm_repo_url: https://charts.bitnami.com/bitnami
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: redis-cluster
+          version: 9.1.1
+      targetNamespace: gitea
+      releaseName: gitea-redis
+      values:
+        usePassword: true
+        existingSecret: gitea-redis
+        existingSecretPasswordKey: password
+        global:
+          storageClass: "{{ .Values._internal.default_storage_class }}"
+        persistence:
+          size: 8Gi
+
+  gitea-postgresql-ha:
+    info:
+      description: installs PostgreSQL HA cluster for Gitea
+      maturity: stable
+    enabled_conditions:
+    - '{{ tuple . "gitea" | include "unit-enabled" }}'
+    depends_on:
+      namespace-defs: true
+      gitea-eso: true
+      gitea-keycloak-resources: true
+      gitea-secrets: true
+    helm_repo_url: https://charts.bitnami.com/bitnami
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: postgresql-ha
+          version: 11.9.4
+      targetNamespace: gitea
+      releaseName: gitea-postgres
+      values:
+        global:
+          storageClass: "{{ .Values._internal.default_storage_class }}"
+        postgresql:
+          username: gitea
+          database: gitea
+          existingSecret: gitea-postgres-secrets
+        pgpool:
+          existingSecret: gitea-postgres-secrets
+        persistence:
+          size: 8Gi
+
+  gitea:
+    info:
+      description: installs Gitea
+      maturity: stable
+    enabled: false
+    depends_on:
+      cert-manager: true
+      gitea-eso: true
+      gitea-keycloak-resources: true
+      gitea-secrets: true
+      gitea-redis: true
+      gitea-postgresql-ha: true
+      namespace-defs: true
+    annotations:
+      sylvactl/readyMessage: "Gitea can be reached at https://{{ .Values.external_hostnames.gitea }} ({{ .Values.external_hostnames.gitea }} must resolve to {{ .Values.display_external_ip }})"
+    helm_repo_url: https://dl.gitea.com/charts/
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: gitea
+          version: 9.5.1
+      targetNamespace: gitea
+      releaseName: gitea
+      values:
+        containerSecurityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          privileged: false
+          readOnlyRootFilesystem: true
+          runAsGroup: 1000
+          runAsNonRoot: true
+          runAsUser: 1000
+          seccompProfile:
+            type: RuntimeDefault
+        redis-cluster:
+          enabled: false
+        postgresql:
+          enabled: false
+        postgresql-ha:
+          enabled: false
+        persistence:
+          enabled: true
+          size: 10Gi
+          storageClass: "{{ .Values._internal.default_storage_class }}"
+          accessModes:
+            - >-
+                {{- if eq .Values._internal.default_storage_class_RWX_support "true" -}}
+                  ReadWriteMany
+                {{- else -}}
+                  ReadWriteOnce
+                {{- end -}}
+        replicaCount: >-
+          {{- if eq .Values._internal.default_storage_class_RWX_support "true" -}}
+          {{ 3 | include "preserve-type" }}
+          {{- else -}}
+          {{ 1 | include "preserve-type" }}
+          {{- end -}}
+        strategy:
+          type: >-
+            {{- if eq .Values._internal.default_storage_class_RWX_support "true" -}}
+              RollingUpdate
+            {{- else -}}
+              Recreate
+            {{- end -}}
+        gitea:
+          admin:
+            existingSecret: gitea-admin
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+          oauth:
+            - name: "keycloack-sylva"
+              provider: "openidConnect"
+              existingSecret: gitea-keycloak-oidc-auth
+              autoDiscoverUrl: 'https://{{ .Values.external_hostnames.keycloak }}/realms/sylva/.well-known/openid-configuration'
+
+          config:
+            cron:
+              ENABLED: false
+            cron.GIT_GC_REPOS:
+              ENABLED: false
+            server:
+              ENABLE_PPROF: true
+            database:
+              DB_TYPE: postgres
+              HOST: gitea-postgres-postgresql-ha-pgpool.gitea.svc.cluster.local:5432
+              NAME: gitea
+              USER: gitea
+              # define by env variable: PASSWD
+              SCHEMA: public
+            session:
+              PROVIDER: redis
+              # define by env variable: PROVIDER_CONFIG
+            cache:
+              ADAPTER: redis
+              # define by env variable: HOST
+            queue:
+              TYPE: redis
+              # define by env variable: CONN_STR
+            indexer:
+              REPO_INDEXER_ENABLED: false
+              ISSUE_INDEXER_ENABLED: false
+
+          additionalConfigFromEnvs:
+            - name: GITEA__DATABASE__PASSWD # define DB password
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: gitea-postgres-secrets
+            - name: GITEA__QUEUE__CONN_STR # redis connection string for queue
+              valueFrom:
+                secretKeyRef:
+                  key: connection_string
+                  name: gitea-redis
+            - name: GITEA__SESSION__PROVIDER_CONFIG # redis connection string for session
+              valueFrom:
+                secretKeyRef:
+                  key: connection_string
+                  name: gitea-redis
+            - name: GITEA__CACHE__HOST # redis connection string for queue
+              valueFrom:
+                secretKeyRef:
+                  key: connection_string
+                  name: gitea-redis
+        ingress:
+          enabled: true
+          className: nginx
+          annotations:
+            cert-manager.io/cluster-issuer: ca-issuer
+            nginx.ingress.kubernetes.io/proxy-body-size: 8m
+          tls:
+          - hosts:
+              - '{{ .Values.external_hostnames.gitea }}'
+            secretName: gitea-tls
+          hosts:
+            - host: '{{ .Values.external_hostnames.gitea }}'
+              paths:
+              - path: /
+                pathType: Prefix
+        extraVolumes:
+          - secret:
+              defaultMode: 420
+              secretName: sylva-ca.crt
+            name: sylva-ca
+        extraVolumeMounts:
+          - mountPath: /etc/ssl/certs/sylva-ca.crt
+            name: sylva-ca
+            readOnly: true
+            subPath: ca.crt
+
+
 ##### stuff related to the 'cluster' unit #####
 #
 # all these values under 'cluster' are passed as values to sylva-capi-cluster chart
@@ -3030,6 +3324,7 @@ external_hostnames:
   neuvector: 'neuvector.{{ .Values.cluster_external_domain }}'
   harbor: 'harbor.{{ .Values.cluster_external_domain }}'
   os_image_server: ''
+  gitea: 'gitea.{{ .Values.cluster_external_domain }}'
 
 keycloak: {}
 
@@ -3158,6 +3453,12 @@ _internal:
   default_storage_class_unit: >-
     {{- $default_storage_class := tuple . .Values._internal.default_storage_class | include "interpret-as-string" -}}
     {{- index (tuple . .Values._internal.storage_class_unit_map | include "interpret-inner-gotpl" | fromJson) "result" | dig $default_storage_class (printf "storage class unit not found for %s" $default_storage_class) -}}
+
+  storage_class_RWX_support:
+    - longhorn
+  default_storage_class_RWX_support: >-
+    {{- $default_storage_class := tuple . .Values._internal.default_storage_class | include "interpret-as-string" -}}
+    {{- has $default_storage_class .Values._internal.storage_class_RWX_support -}}
 
   vault_replicas: >-
     {{ or (.Values.cluster.capi_providers.infra_provider | eq "capd") (and (lt (int .Values.cluster.control_plane_replicas) 3) (eq .Values._internal.default_storage_class_unit "local-path")) | ternary 1 3  }}
