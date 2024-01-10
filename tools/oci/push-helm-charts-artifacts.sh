@@ -187,7 +187,7 @@ function show_status {
 }
 
 function artifact_exists {
-  # if the environment variable FORCE_HELM_CHART_PROCESSING is set to true, the helm cshart is processed even if it exists
+  # if the environment variable FORCE_HELM_CHART_PROCESSING is set to true, the helm chart is processed even if it exists
   if [[ $FORCE_HELM_CHART_PROCESSING == "true" ]]; then
           echo "Force processing artifact $1 ..."
           return 1
