@@ -1276,6 +1276,9 @@ units:
                   drop:
                     - ALL
   capa:
+    info:
+      description: installs capa CAPI infra provider, for aws
+      maturity: core-component
     repo: sylva-core
     depends_on:
       cert-manager: true
