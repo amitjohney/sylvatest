@@ -127,7 +127,7 @@ units:
   calico-crd:
     # overload calico-crd definition in bootstrap context to deploy in the management cluster
     depends_on:
-      cluster: true
+      cluster-reachable: true
     helmrelease_spec:
       kubeConfig:
         secretRef:
@@ -138,7 +138,7 @@ units:
   calico:
     # overload calico definition in bootstrap context to deploy in the management cluster
     depends_on:
-      cluster: true
+      cluster-reachable: true
     helmrelease_spec:
       kubeConfig:
         secretRef:
@@ -148,7 +148,7 @@ units:
 
   tigera-clusterrole:
     depends_on:
-      cluster: true
+      cluster-reachable: true
     kustomization_spec:
       kubeConfig:
         secretRef:
@@ -156,7 +156,7 @@ units:
 
   namespace-defs:
     depends_on:
-      cluster: true
+      cluster-reachable: true
     repo: sylva-core
     kustomization_spec:
       kubeConfig:
@@ -170,7 +170,7 @@ units:
       description: installs flux in management cluster during bootstrap
       internal: true
     depends_on:
-      cluster: true
+      cluster-reachable: true
       # FIXME; Flux wait/healthcheck on management cluster does not work as expected, it becomes ready as soon as manifests are applied
       # cluster readyness will actually be ensured by the retries on installations of this kustomization for now.
       # maybe cluster CRD is not compatible with kstatus? (see https://fluxcd.io/flux/units/kustomize/kustomization/#health-assessment)
@@ -460,6 +460,7 @@ units_override_enabled:
   - ingress-nginx
   - os-image-server
   - cluster
+  - cluster-reachable
   - namespace-defs
   - calico-crd
   - calico

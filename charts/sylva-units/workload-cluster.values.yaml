@@ -56,7 +56,7 @@ unit_templates:
     # we put here the list of base units that most units will need to depend on
     # they correspond to "the workload cluster is ready for stuff to be deployed on it"
     depends_on:
-      cluster: true
+      cluster-reachable: true
       namespace-defs: true
       calico: '{{ tuple . "calico" | include "unit-enabled" }}'
 
@@ -112,6 +112,9 @@ units:
       targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
       storageNamespace: '{{ .Release.Namespace }}' # (in mgmt cluster)
 
+  cluster-reachable:
+    enabled: true
+
   resume-cluster-reconciliation:
     enabled: true
     kustomization_spec:
@@ -127,45 +130,41 @@ units:
   namespace-defs:
     enabled: true
     depends_on:
-      cluster: true
+      cluster-reachable: true
     kustomization_spec:
       targetNamespace: null  # if we don't do this, there are errors because namespaces are a non-namespaced resource
 
   calico-crd:
     enabled: true
     depends_on:
+      cluster-reachable: true
       namespace-defs: true
-      cluster: true
 
   tigera-clusterrole:
     enabled: true
     depends_on:
+      cluster-reachable: true
       namespace-defs: true
-      cluster: true
 
   calico:
     enabled: true
     depends_on:
+      cluster-reachable: true
       namespace-defs: true
-      cluster: true
 
   harbor:
     # can be enabled at runtime if desired:
     #enabled: true
-    depends_on:
-      namespace-defs: true
-      cluster: true
+    unit_template: base-deps
 
   metallb:
     enabled: true
-    depends_on:
-      calico: true
+    unit_template: base-deps
 
   ingress-nginx:
     enabled: true
+    unit_template: base-deps
     depends_on:
-      cluster: true
-      namespace-defs: true
       capo-cluster-resources: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     helmrelease_spec:
       values:
