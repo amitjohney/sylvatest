@@ -90,6 +90,18 @@ units:
     enabled: true
   capo-contrail-bgpaas:
     enabled: true
+  gitea:
+    enabled: true
+  gitea-secrets:
+    enabled: true
+  gitea-eso:
+    enabled: true
+  gitea-keycloak-resources:
+    enabled: true
+  gitea-redis:
+    enabled: true
+  gitea-postgresql-ha:
+    enabled: true
 
 cluster:
   control_plane_replicas: 3
