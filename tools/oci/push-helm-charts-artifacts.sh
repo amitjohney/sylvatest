@@ -79,7 +79,7 @@ function artifact_integrity {
 
   artifact_url=$OCI_REGISTRY$artifact_name:${artifact_version}
   
-  # The integrity test does make only if the OCI artefact exist
+  # The integrity test makes sense only if the OCI artifact exists
   if (flux pull artifact $artifact_url -o /tmp); then
     echo "Checking the integrity of the existing unsigned artifact $artifact_name..."
     mkdir /tmp/$tgz_file
