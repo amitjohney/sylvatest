@@ -1,0 +1,4 @@
+---
+cluster:
+  capo:
+    image_name: "opensuse-15.5-plain-rke2-1.26.9-0.1.1"
