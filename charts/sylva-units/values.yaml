@@ -1641,6 +1641,23 @@ units:
       _components:
         - '{{ tuple "components/dev-ci-cronjob-schedule" (list "dev" "ci" | has .Values.env_type) | include "set-only-if" }}'
 
+  cluster-reachable:
+    info:
+      internal: true
+      description: ensure that created clusters are reachable, and make failure a bit more explicit if it is not the case
+      details: >
+        This unit will be enabled in bootstrap cluster to check connectivity to management cluster
+        and in various workload-cluster namespaces in management cluster to check connectivity to workload clusters
+    unit_template: dummy
+    enabled: false
+    depends_on:
+      cluster: true
+    kustomization_spec:
+      targetNamespace: default
+      kubeConfig:
+        secretRef:
+          name: '{{ .Values.cluster.name }}-kubeconfig'
+
   heat-operator:
     info:
       description: installs OpenStack Heat operator
