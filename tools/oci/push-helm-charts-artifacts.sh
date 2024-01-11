@@ -198,15 +198,15 @@ function artifact_exists {
   if (flux pull artifact $1 -o /tmp); then
     # artifact exists
      if [[ -v COSIGN_PRIVATE_KEY ]] && [[ -v COSIGN_PASSWORD ]]; then
-        echo "Check is artifact $1 is signed with the correct key"
-      if cosign verify --key env://COSIGN_PUBLIC_KEY $1; then
-        echo "Artifact $1 exists and is already signed with the correct key, skipping it"
-        # Don't process the artifact if it exists and properly signed
-        return 0
-      else
-        echo "Artifact $1 exists and should be signed"
-        return 1
-      fi
+       echo "Check if artifact $1 is signed with the correct key"
+       if cosign verify --key env://COSIGN_PUBLIC_KEY $1; then
+         echo "Artifact $1 exists and is already signed with the correct key, skipping it"
+         # Don't process the artifact if it exists and properly signed
+         return 0
+       else
+         echo "Artifact $1 exists and needs to be signed"
+         return 1
+       fi
      fi
      # artifact exists and no signing material available
      return 0
