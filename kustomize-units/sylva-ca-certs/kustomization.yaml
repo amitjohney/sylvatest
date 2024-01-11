@@ -3,3 +3,6 @@ kind: Kustomization
 
 resources:
   - flux-webui-tls.yaml
+  - minio-monitoring-tenant-tls.yaml
+  - minio-operator-console-tls.yaml
+

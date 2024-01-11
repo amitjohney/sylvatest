@@ -1924,6 +1924,9 @@ units:
           VAULT_DNS: '{{ .Values.external_hostnames.vault }}'
           KEYCLOAK_DNS: '{{ .Values.external_hostnames.keycloak }}'
           FLUX_WEBUI_DNS: '{{ .Values.external_hostnames.flux }}'
+          MINIO_OPERATOR_CONSOLE_DNS: '{{ .Values.external_hostnames.minio_operator_console }}'
+          MINIO_MONITORING_TENANT_DNS: '{{ .Values.external_hostnames.minio_monitoring_tenant }}'
+          MINIO_MONITORING_TENANT_CONSOLE_DNS: '{{ .Values.external_hostnames.minio_monitoring_tenant_console }}'
       wait: true
       _components:
         - '{{ tuple "components/keycloak-tls" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
@@ -3317,6 +3320,10 @@ external_hostnames:
   harbor: 'harbor.{{ .Values.cluster_external_domain }}'
   os_image_server: ''
   gitea: 'gitea.{{ .Values.cluster_external_domain }}'
+  minio_operator_console: 'minio-operator-console.{{ .Values.cluster_external_domain }}'
+  minio_monitoring_tenant: 'minio-monitoring-tenant.{{ .Values.cluster_external_domain }}'
+  minio_monitoring_tenant_console: 'minio-monitoring-tenant-console.{{ .Values.cluster_external_domain }}'
+
 
 keycloak: {}
 
@@ -3539,3 +3546,218 @@ shared_workload_clusters_values:
 shared_workload_clusters_secret_values:
   cluster:
     capo: '{{ tuple (dict "clouds_yaml" (.Values.cluster | dig "capo" "clouds_yaml" dict)) (.Values.cluster | dig "capo" "clouds_yaml" dict) | include "set-only-if" }}'
+
+  minio-operator:
+    info:
+      description: install minio operator need it to create minio tenants
+      details: using minio operator we can create multiple S3 tenants
+      maturity: beta
+    depends_on:
+      sylva-ca-certs: true
+    annotations:
+      sylvactl/readyMessage: "minio operator console can be reached at https://{{ .Values.external_hostnames.minio_operator_console }} ({{ .Values.external_hostnames.minio_operator_console }} must resolve to {{ .Values.display_external_ip }})"
+    repo: minio-operator
+    helmrelease_spec:
+      releaseName: minio-operator
+      targetNamespace: minio-operator
+      chart:
+        spec:
+          chart: helm/operator
+          version: v5.0.11
+      install:
+        createNamespace: true
+      values:
+        operator:
+          containerSecurityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+              ephemeral-storage: 500Mi
+        console:
+          enabled: true
+          containerSecurityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          ingress:
+            enabled: true
+            ingressClassName: nginx
+            host: '{{ .Values.external_hostnames.minio_operator_console }}'
+            path: /
+            pathType: Prefix
+            tls:
+              - hosts:
+                  - '{{ .Values.external_hostnames.minio_operator_console }}'
+                secretName: minio-operator-console-tls
+
+  minio-monitoring-tenant:
+    info:
+      description: create minio tenant for monitoring setup 
+      details: loki and thanos are using S3 object interface for storage (minio) 
+      maturity: beta
+    enabled_conditions:
+      - '{{ tuple . "monitoring" | include "unit-enabled" }}'
+    depends_on:
+      minio-operator: true
+      sylva-ca-certs: true
+    annotations:
+      sylvactl/readyMessage: "minio tenant monitoring console can be reached at https://{{ .Values.external_hostnames.minio_monitoring_tenant_console }} ({{ .Values.external_hostnames.minio_monitoring_tenant_console }} must resolve to {{ .Values.display_external_ip }})"
+    repo: minio-operator
+    helmrelease_spec:
+      releaseName: minio-tenant
+      targetNamespace: minio-monitoring-tenant
+      chart:
+        spec:
+          chart: helm/tenant
+          version: v5.0.11
+      install:
+        createNamespace: true
+      values:
+        tenant:
+          name: monitoring
+          configuration:
+            name: storage-configuration
+          pools:
+            - servers: 2
+              name: pool-0
+              volumesPerserver: 4
+              size: 3Gi
+              storageClassName: '{{ .Values._internal.default_storage_class }}'
+              containerSecurityContext:
+                runAsUser: 1000
+                runAsGroup: 1000
+                runAsNonRoot: true
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                seccompProfile:
+                  type: RuntimeDefault
+              securityContext:
+                runAsUser: 1000
+                runAsGroup: 1000
+                fsGroup: 1000
+                fsGroupChangePolicy: "OnRootMismatch"
+                runAsNonRoot: true
+                seccompProfile:
+                  type: RuntimeDefault
+          metrics:
+            enabled: disable
+          features:
+            bucketDNS: false
+            enableSFTP: false
+          users:
+            - name: storage-user
+          buckets:
+            - name: "thanos"
+              region: "monitoring-cluster"
+              objectLock: false
+            - name: "loki"
+              region: "monitoring-cluster"
+              objectLock: false
+            - name: "loki-chunks"
+              region: "monitoring-cluster"
+              objectLock: false
+            - name: "loki-ruler"
+              region: "monitoring-cluster"
+              objectLock: false
+            - name: "loki-admin"
+              region: "monitoring-cluster"
+              objectLock: false
+            - name: "testbucket"
+              region: "monitoring-cluster"
+              objectLock: false
+          ## Prometheus Operator's Service Monitor for MinIO Tenant Pods.
+          prometheusOperator: false
+          logging:
+            anonymous: true
+            json: true
+            quiet: true
+        ingress:
+          api:
+            enabled: false
+            ingressClassName: nginx
+            host: '{{ .Values.external_hostnames.minio_monitoring_tenant }}'
+            path: /
+            pathType: Prefix
+            tls:
+              - hosts:
+                  - '{{ .Values.external_hostnames.minio_monitoring_tenant }}'
+                secretName: minio-monitoring-tenant-tls
+          console:
+            enabled: false
+            ingressClassName: nginx
+            host: '{{ .Values.external_hostnames.minio_monitoring_tenant_console }}'
+            path: /
+            pathType: Prefix
+            tls:
+              - hosts:
+                  - '{{ .Values.external_hostnames.minio_monitoring_tenant_console }}'
+                secretName: minio-monitoring-tenant-tls
+        extraResources:
+          - |
+            apiVersion: v1
+            kind: Secret
+            metadata:
+              name: storage-configuration
+              namespace: minio-monitoring
+            type: Opaque
+            stringData:
+              config.env: |-
+                export MINIO_ROOT_USER="minio"
+                export MINIO_ROOT_PASSWORD='{{ .Values.admin_password }}'
+                export MINIO_STORAGE_CLASS_STANDARD="EC:2"
+                export MINIO_BROWSER="on"
+          - |
+            apiVersion: v1
+            kind: Secret
+            type: Opaque
+            metadata:
+              name: storage-user
+              namespace: minio-monitoring
+            stringData:
+              CONSOLE_ACCESS_KEY: console
+              CONSOLE_SECRET_KEY: '{{ .Values.admin_password }}'
+
+  minio-monitoring-tenant-ingress:
+    info:
+      description: fix for minio tenant helm chart ingress issue (Client sent an HTTP request to an HTTPS server)
+      details: there is some issue with ingress setup via charts values https://gitlab.com/sylva-projects/sylva-core/-/issues/828
+      maturity: beta
+    depends_on:
+      minio-monitoring-tenant: true
+      ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/minio-monitoring-tenant
+      postBuild:
+        substitute:
+          MINIO_MONITORING_DNS: '{{ .Values.minio_monitoring_tenant.external_hostname }}'
+          MINIO_MONITORING_TENANT_CONSOLE_DNS: '{{ .Values.minio_monitoring_tenant_console.external_hostname }}'
+      wait: true
+
