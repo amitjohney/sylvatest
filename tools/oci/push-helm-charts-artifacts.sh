@@ -73,37 +73,41 @@ function check_invalid_semver_tag {
 
 function artifact_integrity {
   local tgz_file=$1
- 
-  artifact_name=$(echo $tgz_file | sed 's/-.*//')
-  artifact_version=$(echo $tgz_file | sed 's/\.tgz//' | sed 's/.*-//')
-
-  artifact_url=$OCI_REGISTRY$artifact_name:${artifact_version}
+  local artifact_name=$2
+  local artifact_version=$3
   
+  #artifact_version=$(echo $tgz_file | sed 's/\.tgz//' | sed 's/.*-//')
+
+  artifact_url=$OCI_REGISTRY/$artifact_name:${artifact_version}
+
   # The integrity test makes sense only if the OCI artifact exists
   if (flux pull artifact $artifact_url -o /tmp); then
     echo "Checking the integrity of the existing unsigned artifact $artifact_name..."
     tmp_dir=$(mktemp -d /tmp/tgz-XXXXXXX)
     tar -xzvf $tgz_file -C $tmp_dir
     # make a diff between the tgz file and the artifact pulled
-    diff -qr /tmp/$artifact_name /tmp/$tgz_file/$artifact_name
+    diff -qr /tmp/$artifact_name $tmp_dir/$artifact_name
   fi
 }
 
 function push_and_sign {
  
       local tgz_file=$1
-      local chart_name=$2
+      local artifact_name=$2
+      local artifact_version=$3
 
-      if !(artifact_integrity $tgz_file); then
-        echo "[ERROR] cannot push and sign $chart_name because its content differs from the content of the already existing OCI artifact"
+      echo "checking integrity of $tgz_file against $artifact_name $artifact_version"
+
+      if !(artifact_integrity $tgz_file $artifact_name $artifact_version); then
+        echo "[ERROR] cannot push and sign $artifact_name because its content differs from the content of the already existing OCI artifact"
         return 1
       fi
-      
+            
       helm push $tgz_file $OCI_REGISTRY >output 2>&1
       local digest=$(grep 'Digest:' output | sed 's/^.*: //')
       if [[ -v COSIGN_PRIVATE_KEY ]] && [[ -v COSIGN_PASSWORD ]]; then
-      # Sign the Helm chart, it adds a new tag
-         cosign sign -y --key  env://COSIGN_PRIVATE_KEY  "$REGISTRY_URI/${chart_name}@${digest}"
+      # Sign the Helm chart. Cosign uploads a new tag.
+         cosign sign -y --tlog-upload=false --key  env://COSIGN_PRIVATE_KEY  "$REGISTRY_URI/${artifact_name}@${digest}"
       fi
       rm -f output
 }
@@ -113,6 +117,7 @@ function process_chart_in_helm_repo {
   local chart_name=$2
   local chart_version=$3
   local artifact_name=$4
+  local version_to_check=$5
 
   local tgz_file="$chart_name-$chart_version.tgz"
 
@@ -133,9 +138,9 @@ function process_chart_in_helm_repo {
 
         tgz_file=$new_tgz_file
       fi
-
       # Push Helm chart to OCI, then sign if signing material is available
-      push_and_sign $tgz_file $chart_name
+ 
+      push_and_sign $tgz_file $artifact_name $version_to_check
       rm -f $tgz_file
     else
       if ls $chart_name*tgz >/dev/null 2>&1; then
@@ -164,7 +169,7 @@ function process_chart_in_git {
     helm package --version $revision $TMPD/$chart_path
     if [[ -e $tgz_file ]]; then
       # Push Helm chart to OCI, then sign if signing material is available
-      push_and_sign $tgz_file $chart_name
+      push_and_sign $tgz_file $chart_name $revision
       #flux push artifact $OCI_REGISTRY/$chart_name:$git_revision --path=$chart_path --source=$git_repo --revision=$git_revision ${creds:-}
     else
       error $chart_name "The $tgz_file is not present after the 'helm package' operation, check that the chart version is correct"
@@ -197,13 +202,14 @@ function can_skip_artifact_push {
   if (flux pull artifact $1 -o /tmp); then
     # artifact exists
      if [[ -v COSIGN_PRIVATE_KEY ]] && [[ -v COSIGN_PASSWORD ]]; then
-       echo "Check if artifact $1 is signed with the correct key"
-       if cosign verify --key env://COSIGN_PUBLIC_KEY $1; then
-         echo "Artifact $1 exists and is already signed with the correct key, skipping it"
+       artifact_uri=$(echo $1 | sed 's/oci:\/\///')
+       echo "Check if artifact $artifact_uri is signed with the correct key"
+       if cosign verify --insecure-ignore-tlog=true --key env://COSIGN_PUBLIC_KEY $artifact_uri; then
+         echo "Artifact $artifact_uri exists and is already signed with the correct key, skipping it"
          # Don't process the artifact if it exists and properly signed
          return 0
        else
-         echo "Artifact $1 exists and needs to be signed"
+         echo "Artifact $artifact_uri exists and needs to be signed"
          return 1
        fi
      fi
@@ -224,6 +230,10 @@ fi
 
 if ! [[ -v COSIGN_PRIVATE_KEY ]]; then
    echo "[WARNING] Unable to sign the Helm Charts, the private key is not set"
+else
+   # The script shall sign the artifacts
+   # cosign uploads a new tag to the registry, so the script performs a docker login
+   docker login registry.gitlab.com -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
 fi
 
 if ! [[ -v COSIGN_PASSWORD ]]; then
@@ -275,7 +285,7 @@ for unit_name in $(yq -r '(.units | ... comments="" | keys())[]' $VALUES_FILE | 
           continue
         fi
 
-        process_chart_in_helm_repo $helm_repo_url $chart $version $artifact_name
+        process_chart_in_helm_repo $helm_repo_url $chart $version $artifact_name ${version_to_check/+/_}
       done
     else
       ## Helm charts in git repository ##
