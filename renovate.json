@@ -175,7 +175,7 @@
       "description": "Match github releases defined via a direct link in kustomizations",
       "customType": "regex",
       "fileMatch": "kustomization.y[a]?ml",
-      "matchStrings": ["https:\/\/github\.com\/(?<depName>.*\/.*?)\/releases\/download\/(?<currentValue>.*?)\/"
+      "matchStrings": ["https:\/\/github[.]com\/(?<depName>.*\/.*?)\/releases\/download\/(?<currentValue>.*?)\/"
       ],
       "datasourceTemplate": "github-releases"
     },
