@@ -102,7 +102,7 @@ units:
     enabled: true
   gitea-postgresql-ha:
     enabled: true
-  minio-operator: 
+  minio-operator:
     enabled: true
   minio-monitoring-tenant:
     enabled: true
