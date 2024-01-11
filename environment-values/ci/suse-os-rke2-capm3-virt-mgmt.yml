@@ -11,3 +11,13 @@ cluster:
     machine_image_url: http://os-image-server-opensuse-15-5-plain-rke2-1-26-9.os-images.svc.cluster.local:8080/opensuse-15.5-plain-rke2-1.26.9.raw
     machine_image_format: raw
     machine_image_checksum: http://os-image-server-opensuse-15-5-plain-rke2-1-26-9.os-images.svc.cluster.local:8080/opensuse-15.5-plain-rke2-1.26.9.raw.sha256sum
+
+units:
+  multus:
+    enabled: true
+  multus-ready:
+    enabled: true
+  kubevirt:
+    enabled: true
+  kubevirt-test-vms:
+    enabled: true
