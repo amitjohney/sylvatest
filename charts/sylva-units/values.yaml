@@ -3617,8 +3617,8 @@ shared_workload_clusters_secret_values:
 
   minio-monitoring-tenant:
     info:
-      description: create minio tenant for monitoring setup 
-      details: loki and thanos are using S3 object interface for storage (minio) 
+      description: create minio tenant for monitoring setup
+      details: loki and thanos are using S3 object interface for storage (minio)
       maturity: beta
     enabled_conditions:
       - '{{ tuple . "monitoring" | include "unit-enabled" }}'
