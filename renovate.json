@@ -124,6 +124,18 @@
       "allowedVersions": "<1.14"
     },
     {
+      "description": "Prevent helm rancher update to over 102 due to compatibility issue with rancher 2.8",
+      "matchPackageNames": [
+        "rancher-monitoring-crd",
+        "rancher-monitoring",
+        "sriov-crd",
+        "sriov",
+        "longhorn-crd",
+        "longhorn"
+      ],
+      "allowedVersions": "<103"
+    },
+    {
       "description": "Regroup workload-cluster-operator updates",
       "matchPackagePatterns": ".*workload-cluster-operator.*",
       "groupName": "workload-cluster-operator"
