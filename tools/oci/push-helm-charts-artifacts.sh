@@ -82,8 +82,8 @@ function artifact_integrity {
   # The integrity test makes sense only if the OCI artifact exists
   if (flux pull artifact $artifact_url -o /tmp); then
     echo "Checking the integrity of the existing unsigned artifact $artifact_name..."
-    mkdir /tmp/$tgz_file
-    tar -xzvf $tgz_file -C /tmp/$tgz_file
+    tmp_dir=$(mktemp -d /tmp/tgz-XXXXXXX)
+    tar -xzvf $tgz_file -C $tmp_dir
     # make a diff between the tgz file and the artifact pulled
     diff -qr /tmp/$artifact_name /tmp/$tgz_file/$artifact_name
   fi
@@ -100,7 +100,6 @@ function push_and_sign {
       fi
       
       helm push $tgz_file $OCI_REGISTRY >output 2>&1
-      cat output
       local digest=$(grep 'Digest:' output | sed 's/^.*: //')
       if [[ -v COSIGN_PRIVATE_KEY ]] && [[ -v COSIGN_PASSWORD ]]; then
       # Sign the Helm chart, it adds a new tag
@@ -186,7 +185,7 @@ function show_status {
   fi
 }
 
-function artifact_exists {
+function can_skip_artifact_push {
   # if the environment variable FORCE_HELM_CHART_PROCESSING is set to true, the helm chart is processed even if it exists
   if [[ $FORCE_HELM_CHART_PROCESSING == "true" ]]; then
           echo "Force processing artifact $1 ..."
@@ -271,7 +270,7 @@ for unit_name in $(yq -r '(.units | ... comments="" | keys())[]' $VALUES_FILE | 
         version_to_check=$(check_invalid_semver_tag $version)
         echo "Version to check: $version_to_check"
         artifact_url=$OCI_REGISTRY/$artifact_name:${version_to_check/+/_}
-        if (artifact_exists $artifact_url); then
+        if (can_skip_artifact_push $artifact_url); then
           echo "Skipping $chart processing, $artifact_name:$version_to_check already exists in $OCI_REGISTRY"
           continue
         fi
@@ -290,7 +289,7 @@ for unit_name in $(yq -r '(.units | ... comments="" | keys())[]' $VALUES_FILE | 
 
       ## no processing is needed if the OCI artifact already exist in the OCI repository
       artifact_url=$OCI_REGISTRY/$chart_name:${git_revision/+/_}
-      if (artifact_exists $artifact_url); then
+      if (can_skip_artifact_push $artifact_url); then
         echo "Skipping $chart_name processing, $chart_name:$git_revision already exists in $OCI_REGISTRY"
         echo -e $section_end
         continue
