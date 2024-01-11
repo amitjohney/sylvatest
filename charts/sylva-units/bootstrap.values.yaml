@@ -446,6 +446,12 @@ units:
 
 display_external_ip: '{{ .Values.metal3 | dig "external_bootstrap_ip" (.Values.metal3 | dig "bootstrap_ip" "127.0.0.1") }}'
 
+no_proxy_additional:
+  # we need to use the same services/pods CIDRs as the ones we hardcode for bootstrap kind cluster in tools/shell-lib/common.sh
+  # in KIND_POD_SUBNET and KIND_SVC_SUBNET
+  100.96.0.0/16: true
+  100.100.0.0/16: true
+
 cluster_public_endpoint: '{{ tuple (printf "https://%s:%s" .Values._internal.bootstrap_node_ip "8443") (tuple . "libvirt-metal" | include "unit-enabled") | include "set-only-if" }}'
 
 # only those components will be enabled on bootstrap cluster (this overrides 'units.<component>.enabled')
