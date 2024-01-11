@@ -3757,7 +3757,7 @@ shared_workload_clusters_secret_values:
       path: ./kustomize-units/minio-monitoring-tenant
       postBuild:
         substitute:
-          MINIO_MONITORING_DNS: '{{ .Values.minio_monitoring_tenant.external_hostname }}'
-          MINIO_MONITORING_TENANT_CONSOLE_DNS: '{{ .Values.minio_monitoring_tenant_console.external_hostname }}'
+          MINIO_MONITORING_TENANT_DNS: '{{ .Values.external_hostnames.minio_monitoring_tenant }}'
+          MINIO_MONITORING_TENANT_CONSOLE_DNS: '{{ .Values.external_hostnames.minio_monitoring_tenant_console }}'
       wait: true
 
