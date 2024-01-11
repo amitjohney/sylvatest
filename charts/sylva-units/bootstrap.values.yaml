@@ -458,6 +458,7 @@ units_override_enabled:
   - '{{ .Values._internal.metal3_unit }}'
   - bootstrap-local-path
   - ingress-nginx
+  - os-images-info
   - os-image-server
   - cluster
   - cluster-reachable
