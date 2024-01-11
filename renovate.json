@@ -200,6 +200,15 @@
       "datasourceTemplate": "helm"
     },
     {
+      "description": "Match Sylva diskimagebuilder",
+      "customType": "regex",
+      "fileMatch": "charts/sylva-units/values.yaml",
+      "matchStrings": [
+        "#\\s?renovate: depName=(?<depName>.*?)\\n*?sylva_diskimagebuilder_version: (?<currentValue>.*)"
+      ],
+      "datasourceTemplate": "gitlab-tags"
+    },
+    {
       "description": "Match images used by operators",
       "customType": "regex",
       "fileMatch": "charts/sylva-units/values.yaml",
