@@ -2697,7 +2697,7 @@ units:
         substitute:
           JOB_NAME: create-image-info
           JOB_TARGET_NAMESPACE: sylva-system
-          JOB_CHECKSUM: '{{ .Values | toJson | sha256sum }}'
+          JOB_CHECKSUM: '{{ mergeOverwrite (deepCopy .Values.os_images) .Values.sylva_diskimagebuilder_images | toJson | sha256sum }}'
       _patches:
         - target:
             kind: Job
