@@ -120,6 +120,13 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: v1.26.2
 
+  minio-operator:
+    kind: GitRepository
+    spec:
+      url: https://github.com/minio/operator.git
+      ref:
+        tag: v5.0.11
+
 helm_repo_spec_default:
   interval: 60m0s
 
@@ -3146,7 +3153,7 @@ units:
     info:
       description: install minio operator need it to create minio tenants
       details: using minio operator we can create multiple S3 tenants
-      maturity: beta
+      maturity: stable
     depends_on:
       namespace-defs: true
       sylva-ca-certs: true
@@ -3215,7 +3222,7 @@ units:
     info:
       description: create minio tenant for monitoring setup
       details: loki and thanos are using S3 object interface for storage (minio)
-      maturity: beta
+      maturity: stable
     enabled_conditions:
       - '{{ tuple . "monitoring" | include "unit-enabled" }}'
     depends_on:
