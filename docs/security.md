@@ -515,7 +515,7 @@ envVars: # if using proxy
       - name: http_proxy
         value: http://proxy.example:8080
       - name: no_proxy
-        value: localhost,127.0.0.0/8,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8,172.20.36.130,keycloak.sylva,.cluster.local,.cluster.local.,.svc,.sylva
+        value: localhost,127.0.0.0/8,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8,172.20.36.130,keycloak.sylva,.cluster.local,.cluster.local.,.svc
 ```
 
 Dependency track displays all imported SBOMs and gives a summary of the vulnerabilities for each of them:
