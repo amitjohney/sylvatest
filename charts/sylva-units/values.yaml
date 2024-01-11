@@ -3484,6 +3484,8 @@ sylva_core_oci_registry: '{{ .Values.sylva_base_oci_registry }}/sylva-core'
 
 k8s_version_short: "1.26"
 
+### https://gitlab.com/sylva-projects/sylva-elements/diskimage-builder/-/releases/0.1.5
+# renovate: registryUrl=gitlab-tags depName=sylva-projects/sylva-elements/diskimage-builder/-/releases/
 sylva_diskimagebuilder_version: 0.1.5
 
 sylva_diskimagebuilder_images:
