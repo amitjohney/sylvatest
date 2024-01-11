@@ -3484,6 +3484,8 @@ sylva_core_oci_registry: '{{ .Values.sylva_base_oci_registry }}/sylva-core'
 
 k8s_version_short: "1.26"
 
+# Renovate Bot needs additional information to detect sylva diskimage-builder version
+# renovate: depName=sylva-projects/sylva-elements/diskimage-builder
 sylva_diskimagebuilder_version: 0.1.5
 
 sylva_diskimagebuilder_images:
