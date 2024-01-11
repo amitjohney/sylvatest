@@ -704,6 +704,26 @@ properties:
     patternProperties:
       "^[a-z0-9][a-z0-9-]{1,50}[a-z0-9]$":        # image name should be k8s object compatible and not be more than 52 chars long
         type: object
+        properties:
+          uri:
+            type: string
+            anyOf:
+              - pattern: "^(https?://.*|)$"
+              - pattern: "^(oci://.*)$"
+          filename:
+            type: string
+          checksum:
+            type: string
+          os:
+            type: string
+          k8s-version:
+            type: string
+          k8s-flavor:
+            type: string
+            pattern: "^(rke2|kubeadm)$"
+        required:
+          - uri
+          - filename
 
   libvirt_metal:  # -------------------------------
     # the values are values of the libvirt-metal chart
@@ -796,6 +816,22 @@ properties:
               format: ipv4
             - type: string
               format: hostname
+
+  sylva_diskimagebuilder_version:  # -------------------------------
+    type: string
+
+  sylva_diskimagebuilder_images:  # -------------------------------
+    type: object
+    additionalProperties: false
+    patternProperties:
+      "^[a-z0-9][a-z0-9._-]{1,50}[a-z0-9]$":
+        type: object
+        additionalProperties: false
+        properties:
+          enabled:
+            type: boolean
+          default_enabled:
+            type: boolean
 
   _internal:  # -------------------------------
     type: object
