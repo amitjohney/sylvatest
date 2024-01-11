@@ -385,6 +385,8 @@ units:
         - '{{ tuple "components/sriov" (tuple . "sriov" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/cattle-monitoring" (tuple . "monitoring" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/gitea" (tuple . "gitea" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/minio-operator" (tuple . "minio-operator" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/minio-monitoring-tenant" (tuple . "minio-monitoring-tenant" | include "unit-enabled") | include "set-only-if" }}'
 
 # Postgresql deployment for keycloak
   postgres-init:
@@ -3553,6 +3555,7 @@ shared_workload_clusters_secret_values:
       details: using minio operator we can create multiple S3 tenants
       maturity: beta
     depends_on:
+      namespace-defs: true
       sylva-ca-certs: true
     annotations:
       sylvactl/readyMessage: "minio operator console can be reached at https://{{ .Values.external_hostnames.minio_operator_console }} ({{ .Values.external_hostnames.minio_operator_console }} must resolve to {{ .Values.display_external_ip }})"
@@ -3565,7 +3568,7 @@ shared_workload_clusters_secret_values:
           chart: helm/operator
           version: v5.0.11
       install:
-        createNamespace: true
+        createNamespace: false
       values:
         operator:
           containerSecurityContext:
@@ -3623,6 +3626,7 @@ shared_workload_clusters_secret_values:
     enabled_conditions:
       - '{{ tuple . "monitoring" | include "unit-enabled" }}'
     depends_on:
+      namespace-defs: true
       minio-operator: true
       sylva-ca-certs: true
     annotations:
@@ -3636,7 +3640,7 @@ shared_workload_clusters_secret_values:
           chart: helm/tenant
           version: v5.0.11
       install:
-        createNamespace: true
+        createNamespace: false
       values:
         tenant:
           name: monitoring

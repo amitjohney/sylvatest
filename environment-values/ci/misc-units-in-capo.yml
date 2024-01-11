@@ -102,6 +102,10 @@ units:
     enabled: true
   gitea-postgresql-ha:
     enabled: true
+  minio-operator: 
+    enabled: true
+  minio-monitoring-tenant:
+    enabled: true
 
 cluster:
   control_plane_replicas: 3
