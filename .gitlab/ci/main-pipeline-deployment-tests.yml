@@ -280,3 +280,10 @@ capm3-rke2-virt-equinix-suse-metal3-suse-os:
   variables:
     MGMT_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2-capm3-virt-mgmt.yml
     WC_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2-capm3-virt-wkld.yml
+
+capm3-kubeadm-virt-equinix-deploy-suse:
+  extends: capm3-rke2-virt-equinix-deploy-suse
+  variables:
+    ENV_TAG: "${CI_PIPELINE_ID}-capm3-kubeadm-virt"
+    MGMT_ADDITIONAL_VALUES: environment-values/ci/ubuntu-os-kubeadm-capm3-virt-mgmt.yml
+    WC_ADDITIONAL_VALUES: environment-values/ci/ubuntu-os-kubeadm-capm3-virt-wkld.yml

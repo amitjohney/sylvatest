@@ -109,8 +109,10 @@ function cluster_info_dump() {
   dump_additional_resources $dump_dir $additional_resources
 
   # dump CAPI secrets
-  kubectl get secret -A --field-selector=type=cluster.x-k8s.io/secret                                > $dump_dir/Secrets-capi.summary.txt
-  kubectl get secret -A --field-selector=type=cluster.x-k8s.io/secret -o yaml --show-managed-fields  > $dump_dir/Secrets-capi.yaml
+  kubectl get secret -A --field-selector=type=cluster.x-k8s.io/secret &&\
+  kubectl get secret -A --field-selector=type=infrastructure.cluster.x-k8s.io/secret                               > $dump_dir/Secrets-capi.summary.txt
+  kubectl get secret -A --field-selector=type=cluster.x-k8s.io/secret -o yaml --show-managed-fields &&\
+  kubectl get secret -A --field-selector=type=infrastructure.cluster.x-k8s.io/secret -o yaml --show-managed-fields > $dump_dir/Secrets-capi.yaml
 }
 
 echo "Start debug-on-exit at: $(date -Iseconds)"
