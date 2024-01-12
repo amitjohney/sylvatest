@@ -2539,6 +2539,10 @@ units:
             securityContext:
               seccompProfile:
                 type: RuntimeDefault
+          worker:
+            securityContext:
+              seccompProfile:
+                type: RuntimeDefault
       _postRenderers:
         - kustomize:
             patches:
