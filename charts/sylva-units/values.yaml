@@ -3223,6 +3223,7 @@ units:
       description: create minio tenant for monitoring setup
       details: loki and thanos are using S3 object interface for storage (minio)
       maturity: stable
+    enabled: true
     enabled_conditions:
       - '{{ tuple . "monitoring" | include "unit-enabled" }}'
     depends_on:
