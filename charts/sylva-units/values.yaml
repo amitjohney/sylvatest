@@ -1154,38 +1154,10 @@ units:
                 resources:
                   - "helmreleases"
                 verbs: ["get", "list", "watch", "patch", "update"]
-              - apiGroups: [""]
-                resources:
-                  - "nodes"
-                verbs: ["get", "list", "watch", "patch", "update"]
               - apiGroups: ["external-secrets.io"]
                 resources:
                   - "externalsecrets"
                 verbs: ["get", "list", "watch", "patch", "update"]
-        config:
-          # -- Resource types to be skipped by the Kyverno policy engine, removed [Node,*,*] [Node/*,*,*] entries
-          resourceFilters:
-            - '[Event,*,*]'
-            - '[*/*,kube-system,*]'
-            - '[*/*,kube-public,*]'
-            - '[*/*,kube-node-lease,*]'
-            - '[APIService,*,*]'
-            - '[APIService/*,*,*]'
-            - '[TokenReview,*,*]'
-            - '[SubjectAccessReview,*,*]'
-            - '[SelfSubjectAccessReview,*,*]'
-            - '[Binding,*,*]'
-            - '[Pod/binding,*,*]'
-            - '[ReplicaSet,*,*]'
-            - '[ReplicaSet/*,*,*]'
-            - '[AdmissionReport,*,*]'
-            - '[AdmissionReport/*,*,*]'
-            - '[ClusterAdmissionReport,*,*]'
-            - '[ClusterAdmissionReport/*,*,*]'
-            - '[BackgroundScanReport,*,*]'
-            - '[BackgroundScanReport/*,*,*]'
-            - '[ClusterBackgroundScanReport,*,*]'
-            - '[ClusterBackgroundScanReport/*,*,*]'
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:
@@ -1254,23 +1226,6 @@ units:
             {{ index (tuple . .Values.shared_workload_clusters_values | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | indent 4 }}
     kustomization_substitute_secrets:
       SECRET_VALUES: '{{ index (tuple . .Values.shared_workload_clusters_secret_values | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | b64enc }}'
-
-  node-annotation-from-label:
-    info:
-      description: manages cluster node labels
-      internal: true
-    enabled: false # it blocks RKE2 node registrations when bootstrap is slower (for CAPM3 deployments) than Kyverno ClusterPolicy webhook install, https://gitlab.com/sylva-projects/sylva-core/-/issues/660
-    enabled_conditions:
-    - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
-    depends_on:
-      kyverno: '{{ tuple . "kyverno" | include "unit-enabled" }}'
-    repo: sylva-core
-    kustomization_spec:
-      path: ./kustomize-units/node-annotation-from-label
-      wait: true
-      postBuild:
-        substitute:
-          NODE_LABEL_KEY_LIST: '{{ mergeOverwrite (.Values.cluster | dig "rke2" "node_annotations" dict) (.Values.cluster | dig "control_plane" "rke2" "node_annotations" dict) (.Values.cluster | dig "machine_deployment_default" "rke2" "node_annotations" dict) | keys | toJson }}' # need to address .cluster.machine_deployments.X.rke2.node_annotations
 
   capi:
     info:
