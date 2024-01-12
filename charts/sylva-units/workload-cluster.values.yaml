@@ -88,6 +88,20 @@ units:
                   protocol: [tcp, tcp, tcp, udp]
                   remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
 
+  os-images-info:
+    enabled: true
+    kustomization_spec:
+      # because this resource lives in the mgmt cluster:
+      kubeConfig: null
+      targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
+
+  get-openstack-images:
+    enabled: true
+    kustomization_spec:
+      # because this resource lives in the mgmt cluster:
+      kubeConfig: null
+      targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
+
   cluster:
     enabled: true
     depends_on:

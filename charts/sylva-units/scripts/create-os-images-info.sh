@@ -12,7 +12,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: os-images-info
-  namespace: sylva-system
+  namespace: ${TARGET_NAMESPACE}
 data:
   values.yaml: |
     osImages:

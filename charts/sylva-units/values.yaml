@@ -1638,6 +1638,7 @@ units:
       '{{ .Values.cluster.capi_providers.infra_provider }}': true
       '{{ .Values.cluster.capi_providers.bootstrap_provider }}': true
       capo-cluster-resources: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+      get-openstack-images: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
       '{{ .Values._internal.metal3_unit }}': '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
       sylva-system/os-image-server: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
     labels:
@@ -1680,6 +1681,9 @@ units:
           name: capo-cluster-resources
           valuesKey: worker_servergroup_id
           targetPath: machine_deployment_default.capo.server_group_id
+          optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
+        - kind: ConfigMap
+          name: openstack-images-uuids  ## this ConfigMap is a byproduct of the get-openstack-images job
           optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
     # we pass everything that is under `cluster` to this unit that uses sylva-capi-cluster chart
     # (we do it via a secret because some of the values are credentials in many scenarios)
@@ -2848,7 +2852,7 @@ units:
       postBuild:
         substitute:
           JOB_NAME: create-image-info
-          JOB_TARGET_NAMESPACE: sylva-system
+          JOB_TARGET_NAMESPACE: '{{ .Release.Namespace }}'
           JOB_CHECKSUM:
             '{{
             list
@@ -2886,7 +2890,7 @@ units:
           patch: >-
             - op: replace
               path: /metadata/name
-              value: create-image-info-sylva-system-cm
+              value: create-image-info-{{ .Release.Namespace }}-cm
             - op: replace
               path: /data/kube-job.sh
               value: |
@@ -3395,7 +3399,7 @@ units:
       postBuild:
         substitute:
           JOB_NAME: get-openstack-images
-          JOB_TARGET_NAMESPACE: sylva-system
+          JOB_TARGET_NAMESPACE: '{{ .Release.Namespace }}'
           JOB_ORAS_INSECURE_CLIENT: '{{ .Values.oci_registry_insecure | quote }}'
           JOB_CHECKSUM:
             '{{
@@ -3450,7 +3454,8 @@ cluster:
 
   capo:
     # flavor_name: m1.large # Openstack flavor name
-    # image_name: # OpenStack image name
+    # image_key: # key of an image in os_images or sylva_diskimage_builder
+    # image_name: # (deprecated, please use image_key instead) - OpenStack image name (one of image_key and image_name must be set, but not both)
     # ssh_key_name: # OpenStack VM SSH key
     # network_id: # OpenStack network used for nodes and VIP port
     # rootVolume: {} # Let this parameter empty if you don't intent to use root volume
@@ -3842,12 +3847,16 @@ shared_workload_clusters_values:
     dns_resolver: true
     capo:
       image_name: '{{ .Values.cluster.capo.image_name | include "set-if-defined" }}'
+      image_key: '{{ .Values.cluster.capo.image_key | include "set-if-defined" }}'
       network_id: '{{ .Values.cluster.capo.network_id | include "set-if-defined" }}'
   units:
     cluster-import:
       enabled: '{{ tuple . "rancher" | include "unit-enabled" }}'
   metal3:
     provider: '{{ .Values.metal3.provider }}'
+  sylva_diskimagebuilder_version: '{{ .Values.sylva_diskimagebuilder_version }}'
+  sylva_diskimagebuilder_images: '{{ .Values.sylva_diskimagebuilder_images | include "preserve-type" }}'
+  os_images: '{{ .Values.os_images | include "preserve-type" }}'
 
 shared_workload_clusters_secret_values:
   cluster:
