@@ -3329,7 +3329,7 @@ units:
             kind: Secret
             metadata:
               name: storage-configuration
-              namespace: minio-monitoring
+              namespace: minio-monitoring-tenant
             type: Opaque
             stringData:
               config.env: |-
@@ -3343,7 +3343,7 @@ units:
             type: Opaque
             metadata:
               name: storage-user
-              namespace: minio-monitoring
+              namespace: minio-monitoring-tenant
             stringData:
               CONSOLE_ACCESS_KEY: console
               CONSOLE_SECRET_KEY: '{{ .Values.admin_password }}'
