@@ -2381,18 +2381,18 @@ units:
     helm_repo_url: https://prometheus-community.github.io/helm-charts
     helmrelease_spec:
       releaseName: snmp-exporter
-      targetNamespace: cattle-monitoring-system
+      targetNamespace: snmp-exporter
       chart:
         spec:
           chart: prometheus-snmp-exporter
           version: 1.8.1
       install:
-        createNamespace: false
+        createNamespace: true
       values:
         fullnameOverride: 'snmp-exporter'
         serviceMonitor:
           enabled: true
-          namespace: cattle-monitoring-system
+          namespace: snmp-exporter
           params: |
             {{- $result := list -}}
             {{- range $device := .Values.snmp.devices }}
@@ -2404,6 +2404,34 @@ units:
             {{- $result = append $result $service_monitor -}}
             {{- end }}
             {{- $result | include "preserve-type" -}}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+        containerSecurityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+      _postRenderers:
+        - kustomize:
+            patchesStrategicMerge:
+              - kind: Deployment
+                apiVersion: apps/v1
+                metadata:
+                  name: snmp-exporter
+                spec:
+                  template:
+                    spec:
+                      containers:
+                      - name: configmap-reload
+                        securityContext:
+                          allowPrivilegeEscalation: false
+                          capabilities:
+                            drop:
+                              - ALL
+
     helm_secret_values:
       config: |
         {{- $files := .Files }}
@@ -2421,6 +2449,7 @@ units:
             priv_password: '{{ $group_keys.auth.priv_password }}'
           {{- $files.Get $oid_file | nindent 2 }}
         {{- end -}}
+
 
   multus:
     info:
