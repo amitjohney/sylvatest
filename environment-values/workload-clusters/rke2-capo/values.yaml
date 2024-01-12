@@ -5,6 +5,9 @@ cluster:
   control_plane_replicas: 1
   capo:
     ssh_key_name: # put the name of your nova SSH keypair here
+  rke2:
+    nodeAnnotations:
+      sylva.org/test-annotation-scope: 'ci'
   machine_deployments:
     md0:
       replicas: 1

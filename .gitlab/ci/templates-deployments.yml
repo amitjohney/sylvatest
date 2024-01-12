@@ -349,3 +349,39 @@ include:
     - export HURL_keycloak_url=$(kubectl --kubeconfig management-cluster-kubeconfig  get ingress -n keycloak keycloak-ingress -o jsonpath='{ .spec.tls[].hosts[] }')
     - export HURL_harbor_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n harbor harbor-ingress -o jsonpath='{ .spec.tls[].hosts[] }')
     - hurl -k ./tools/login-test/*.hurl --test --color --noproxy=".$domain"  --report-junit $HURL_JUNIT_REPORT --report-html .
+
+.test-rke2-node-annotations:
+  stage: deployment-test
+  variables:
+    CLUSTER_TYPE: workload
+  script:
+    - !reference [.test_scripts, edit_hosts_file]
+    - !reference [.test_scripts, test_no_sso]
+    - echo "-- Testing RKE2 workload cluster nodes annotation. Job started at '$CI_JOB_STARTED_AT'."
+    # the $WORKLOAD_CLUSTER_NAME-rancher.yaml file below is the kubeconfig previously downloaded from Rancher server through Rancher API
+    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_test_rke2_node_annotation[collapsed=true]\r\e[0KTesting RKE2 node annotations\e[0m"
+    - |
+      for cp_node in $(kubectl get --kubeconfig $WORKLOAD_CLUSTER_NAME-rancher.yaml nodes -o jsonpath='{ $.items[?(@.metadata.annotations.cluster\.x-k8s\.io\/owner-kind == "RKE2ControlPlane")].metadata.name}'); do
+        echo -e "Testing specific annotation presence for RKE2 node $cp_node"
+        test_annotation_value=$(kubectl get --kubeconfig $WORKLOAD_CLUSTER_NAME-rancher.yaml nodes $cp_node -o yaml | yq '.metadata.annotations."sylva.org/test-annotation-scope"')
+        if [[ "${test_annotation_value}" == "ci" ]]; then
+          echo -e "RKE2 node $cp_node has the expected annotation"
+        else
+          echo -e "CP RKE2 node $cp_node does not have the expected annotation, it has:\n$(kubectl get --kubeconfig $WORKLOAD_CLUSTER_NAME-rancher.yaml nodes $cp_node -o yaml | yq '.metadata.annotations')"
+          exit_code=1
+        fi
+      done
+    - |
+      for md_node in $(kubectl get --kubeconfig $WORKLOAD_CLUSTER_NAME-rancher.yaml nodes -o jsonpath='{ $.items[?(@.metadata.annotations.cluster\.x-k8s\.io\/owner-kind == "MachineSet")].metadata.name}'); do
+        echo -e "Testing specific annotation presence for RKE2 node $md_node"
+        test_annotation_value=$(kubectl get --kubeconfig $WORKLOAD_CLUSTER_NAME-rancher.yaml nodes $md_node -o yaml | yq '.metadata.annotations."sylva.org/test-annotation-scope"')
+        if [[ "${test_annotation_value}" == "ci" ]]; then
+          echo -e "RKE2 node $md_node has the expected annotation"
+        else
+          echo -e "MD RKE2 node $md_node does not have the expected annotation, it has:\n$(kubectl get --kubeconfig $WORKLOAD_CLUSTER_NAME-rancher.yaml nodes $md_node -o yaml | yq '.metadata.annotations')"
+          exit_code=1
+        fi
+      done
+    - exit ${exit_code:-0}
+    - echo "-- All done"
+    - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_test_rke2_node_annotation\r\e[0K"

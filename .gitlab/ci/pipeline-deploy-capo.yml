@@ -14,6 +14,13 @@ include:
       when: never
     - when: on_success
 
+# and rules to run only for rke2 envs
+.rules:skip-if-kubeadm:
+  rules:
+    - if: $ENV_NAME =~ /^kubeadm/
+      when: never
+    - when: on_success
+
 default:
   tags:
     - $CAPO_PLATFORM_TAG
@@ -56,6 +63,13 @@ test-workload-cluster-no-sso:
   extends:
     - .test-workload-cluster-no-sso
     - .rules:skip-if-only-deploy-mgmt
+
+test-rke2-node-annotations:
+  extends:
+    - .test-rke2-node-annotations
+    - .rules:skip-if-kubeadm
+  before_script:
+    - apk add jq
 
 # ----------------------------------------------------------
 
