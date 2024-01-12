@@ -15,6 +15,7 @@ password=os.getenv('PASSWORD_SSO')
 rancher_url=os.getenv('rancher_url')
 vault_url=os.getenv('vault_url')
 flux_url=os.getenv('flux_url')
+harbor_url=os.getenv('harbor_url')
 workload_name=os.getenv('WORKLOAD_CLUSTER_NAME')
 download_file=os.getenv('PWD')
 
@@ -192,6 +193,52 @@ def flux_sso(endpoint, username, password):
   browser.quit()
 
 
+def harbor_sso(endpoint, username, password):
+  print("--------------------------------")
+  print("Checking SSO auth Harbor")
+  browser = webdriver.Firefox(options=options)
+  url='https://' + endpoint
+  browser.get(url)
+  print(browser.current_url)
+  print(browser.title)
+  browser.implicitly_wait(10)
+  delay = 30
+  try:
+    element_present = EC.presence_of_element_located((By.XPATH, '//button[@id="log_oidc"]'))
+    WebDriverWait(browser, delay).until(element_present)
+  except TimeoutException:
+    print ("Cannot access SSO option")
+    exit (1)
+  browser.find_element(By.XPATH, '//button[@id="log_oidc"]').click()
+  print("Redirect to SSO")
+  try:
+    element_present = EC.presence_of_element_located((By.ID,"username"))
+    WebDriverWait(browser, delay).until(element_present)
+  except TimeoutException:
+    print ("Cannot access SSO Sign In page")
+    exit (1)
+  print(browser.title)
+  print(browser.current_url)
+  browser.find_element(By.ID,"username").send_keys(username)
+  browser.find_element(By.ID,"password").send_keys(password)
+  browser.find_element(By.ID,"kc-login").click()
+  print(browser.current_url)
+  print("Waiting to be redirect towards harbor UI home page")
+  time.sleep(25)
+  print("Redirect to harbor UI home page")
+  try:
+    element_present = EC.presence_of_element_located((By.XPATH, '//a[@href="/harbor/registries"]'))
+    WebDriverWait(browser, delay).until(element_present)
+    print(browser.current_url)
+    print(Fore.GREEN + "Harbor SSO check done")
+    print(Style.RESET_ALL)
+  except TimeoutException:
+    print ("Cannot access the Harbor UI")
+    exit(1)
+  browser.delete_all_cookies()
+  browser.quit()
+
 rancher_sso( rancher_url, user, password, workload_name )
 vault_sso( vault_url, user, password )
 flux_sso( flux_url, user, password )
+harbor_sso( harbor_url, user, password )

@@ -263,6 +263,7 @@ include:
     - export vault_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n vault vault -o jsonpath='{ .spec.tls[].hosts[] }')
     - export rancher_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n cattle-system rancher -o jsonpath='{ .spec.tls[].hosts[] }')
     - export keycloak_url=$(kubectl --kubeconfig management-cluster-kubeconfig  get ingress -n keycloak keycloak-ingress -o jsonpath='{ .spec.tls[].hosts[] }')
+    - export harbor_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n harbor harbor-ingress -o jsonpath='{ .spec.tls[].hosts[] }')
     - export USER_SSO=$(kubectl --kubeconfig ./management-cluster-kubeconfig -n keycloak get secrets/credential-sylva-sylva-admin-keycloak -o jsonpath='{.data.username}'| base64 -d)
     - export PASSWORD_SSO=$(kubectl --kubeconfig ./management-cluster-kubeconfig -n keycloak get secrets/credential-sylva-sylva-admin-keycloak -o jsonpath='{.data.password}'| base64 -d)
     - echo "Test dependencies and initialize firefox/driver"
@@ -329,4 +330,5 @@ include:
     - export HURL_vault_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n vault vault -o jsonpath='{ .spec.tls[].hosts[] }')
     - export HURL_rancher_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n cattle-system rancher -o jsonpath='{ .spec.tls[].hosts[] }'); export domain=$(echo $HURL_rancher_url | cut -f2 -d .)
     - export HURL_keycloak_url=$(kubectl --kubeconfig management-cluster-kubeconfig  get ingress -n keycloak keycloak-ingress -o jsonpath='{ .spec.tls[].hosts[] }')
+    - export HURL_harbor_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n harbor harbor-ingress -o jsonpath='{ .spec.tls[].hosts[] }')
     - hurl -k ./tools/login-test/*.hurl --test --color --noproxy=".$domain"  --report-junit $HURL_JUNIT_REPORT --report-html .
