@@ -2747,7 +2747,16 @@ units:
         substitute:
           JOB_NAME: create-image-info
           JOB_TARGET_NAMESPACE: sylva-system
-          JOB_CHECKSUM: '{{ mergeOverwrite (deepCopy .Values.os_images) .Values.sylva_diskimagebuilder_images | toJson | sha256sum }}'
+          JOB_CHECKSUM:
+            '{{
+            list
+              .Values._internal.sylva_core_version
+              (mergeOverwrite (deepCopy .Values.os_images) .Values.sylva_diskimagebuilder_images)
+              .Values.sylva_diskimagebuilder_version
+              .Values.sylva_base_oci_registry
+              .Values.proxies
+            | toJson | sha256sum
+            }}'
       _patches:
         - target:
             kind: Job
@@ -3594,9 +3603,9 @@ _internal:
 
   vault_no_affinity: {}
 
-  # this is used in source_templates.sylva-core below
-  # and in any unit using sylva-units Helm chart
-  sylva_core_version: ''
+  # this is used in use-oci-artifacts.values.yaml
+  # and in a few other places
+  sylva_core_version: '{{ .Chart.Version }}'
 
   sylva_core_existing_source: '{{ .Values.unit_helmrelease_kustomization_spec_default.sourceRef }}'
 

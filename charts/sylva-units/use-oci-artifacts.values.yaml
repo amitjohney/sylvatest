@@ -74,6 +74,7 @@
 #           version: v0.0.23
 
 _internal:
+  # we need to remove the commit id suffix from .Chart.Version
   sylva_core_version: '{{ regexReplaceAll "[+][0-9]+$" .Chart.Version "" }}'
 
 source_templates:
