@@ -2541,7 +2541,6 @@ units:
                 type: RuntimeDefault
           worker:
             securityContext:
-              privileged: false
               seccompProfile:
                 type: RuntimeDefault
       _postRenderers:
