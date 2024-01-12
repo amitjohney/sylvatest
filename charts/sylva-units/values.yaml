@@ -465,12 +465,34 @@ units:
       wait: true
       targetNamespace: kubevirt-tests
 
+  harbor-init:
+    info:
+      description: sets up Harbor prerequisites
+      details: it generates namespace, certificate, admin password, OIDC configuration
+      internal: true
+    depends_on:
+      sylva-ca: true
+      keycloak-resources: true
+      kyverno: true
+      vault: true
+      vault-config-operator: true
+      keycloak-add-client-scope: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/harbor-init
+      wait: true
+      postBuild:
+        substitute:
+          HARBOR_DNS: '{{ .Values.external_hostnames.harbor }}'
+          KEYCLOAK_DNS: '{{ .Values.external_hostnames.keycloak }}'
+
   harbor:
     info:
       description: installs Harbor
       maturity: beta
     depends_on:
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
+      harbor-init: true
     annotations:
       sylvactl/readyMessage: "Harbor UI can be reached at https://{{ .Values.external_hostnames.harbor }} ({{ .Values.external_hostnames.harbor }} must resolve to {{ .Values.display_external_ip }})"
     helm_repo_url: https://helm.goharbor.io
@@ -503,17 +525,40 @@ units:
             #trivy:
               #storageClass: '{{ .Values._internal.default_storage_class }}'
               #size: 8Gi
+        externalURL: 'https://{{ .Values.external_hostnames.harbor }}'
+        existingSecretAdminPassword: "harbor-init"
         expose:
           ingress:
             enabled: true
             hosts:
               core: '{{ .Values.external_hostnames.harbor }}'
+          tls:
+            enabled: true
+            certSource: secret
+            secret:
+              secretName: harbor-tls
         notary:
           enabled: false
         trivy:
           enabled: false
       _postRenderers:
         - kustomize:
+            patchesStrategicMerge:
+              - kind: Deployment
+                apiVersion: apps/v1
+                metadata:
+                  name: harbor-core
+                spec:
+                  template:
+                    spec:
+                      containers:
+                        - name: core
+                          env:
+                            - name: CONFIG_OVERWRITE_JSON
+                              valueFrom:
+                                secretKeyRef:
+                                  key: CONFIG_OVERWRITE_JSON
+                                  name: "harbor-oidc"
             patches:
               - target:
                   kind: Deployment|StatefulSet
@@ -993,6 +1038,7 @@ units:
         substitute:
           RANCHER_DNS: '{{ .Values.external_hostnames.rancher }}'
           FLUX_WEBUI_DNS: '{{ .Values.external_hostnames.flux }}'
+          HARBOR_DNS: '{{ .Values.external_hostnames.harbor }}'
           NEUVECTOR_DNS: '{{ tuple .Values.external_hostnames.neuvector (tuple . "neuvector" | include "unit-enabled") | include "set-only-if" }}'
           VAULT_DNS: '{{ .Values.external_hostnames.vault }}'
           EXPIRE_PASSWORD_DAYS: '{{ int .Values.keycloak.keycloak_expire_password_days }}'
@@ -1010,6 +1056,10 @@ units:
           name: keycloak-client-secret-flux-webui-client  # this secret is a byproduct of the flux-webui-client KeycloakClient resource
           namespace: keycloak
         - '{{ tuple (dict "apiVersion" "v1" "kind" "Secret" "name" "keycloak-client-secret-neuvector-client" "namespace" "keycloak") (tuple . "neuvector" | include "unit-enabled") | include "set-only-if" }}'  # # this secret is a byproduct of the neuvector client KeycloakClient resource
+        - apiVersion: v1
+          kind: Secret
+          name: keycloak-client-secret-harbor-client  # this secret is a byproduct of the harbor-client KeycloakClient resource
+          namespace: keycloak
 
 
   keycloak-add-client-scope:

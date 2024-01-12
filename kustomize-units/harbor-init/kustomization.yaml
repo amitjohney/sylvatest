@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - harbor-namespace.yaml
+  - harbor-secret.yaml
+  - harbor-config.yaml
+  - harbor-tls.yaml
+  - eso-sylva-ca-harbor.yaml
+  - eso-harbor-oidc.yaml
+  - kyverno-harbor-clusterpolicies.yaml
