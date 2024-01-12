@@ -81,12 +81,10 @@
 | **neuvector-init** | sets up Neuvector prerequisites<br><br>it generates namespace, certificate, admin password, policy exception for using latest tag images (required for the pod managing the database of vulnerabilities since this DB is updated often) |  | True | Kustomize | N/A |
 | **node-annotation-from-label** | manages cluster node labels |  | True | Kustomize | N/A |
 | **os-images-info** | Creates a list of os images<br><br>This unit creates a configmap containing the os images (and their details in the case of Sylva diskimage-builder ones)<br>to be further served by os-image-server |  | True | Kustomize | N/A |
-| **pause-cluster-reconciliation** | (specific to CAPO:) makes sure cluster reconciliation is paused during some operation<br><br>workaround for https://gitlab.com/sylva-projects/sylva-core/-/issues/309 |  | True | Kustomize | N/A |
 | **pivot** | moves ClusterAPI objects from bootstrap cluster to management cluster |  | True | Kustomize | N/A |
 | **postgres-init** | initializes Postgresql for Keycloak |  | True | Kustomize | N/A |
 | **rancher-keycloak-oidc-provider** | configures Rancher for Keycloak OIDC integration |  | True | Kustomize | N/A |
 | **rancher-monitoring-clusterid-inject** | injects Rancher cluster ID in Helm values of Rancher monitoring chart |  | True | Kustomize | N/A |
-| **resume-cluster-reconciliation** | makes sure cluster reconciliation is on<br><br>workaround for https://gitlab.com/sylva-projects/sylva-core/-/issues/309 |  | True | Kustomize | N/A |
 | **sandbox-privileged-namespace** | creates the sandbox namespace used to perform privileged operations like debugging a node |  | True | Kustomize | N/A |
 | **shared-workload-clusters-settings** | manages parameters which would be shared between management and workload clusters |  | True | Kustomize | N/A |
 | **sriov-resources** | configures SRIOV resources |  | True | Helm | N/A |

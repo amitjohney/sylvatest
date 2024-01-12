@@ -115,18 +115,6 @@ units:
   cluster-reachable:
     enabled: true
 
-  resume-cluster-reconciliation:
-    enabled: true
-    kustomization_spec:
-      kubeConfig: null
-      targetNamespace: null
-
-  pause-cluster-reconciliation:
-    enabled: true
-    kustomization_spec:
-      kubeConfig: null
-      targetNamespace: null
-
   namespace-defs:
     enabled: true
     depends_on:
