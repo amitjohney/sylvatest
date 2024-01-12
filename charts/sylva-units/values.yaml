@@ -876,9 +876,13 @@ units:
             enabled: true # setting PVC to true imposes 1 replica https://github.com/neuvector/neuvector-helm/issues/110#issuecomment-1251921734
             accessModes:
               - ReadWriteOnce
+          podAnnotations:
+            kube-score/ignore: "container-security-context-privileged,container-security-context-user-group-id"
         enforcer:
           image:
             repository: neuvector/enforcer
+          podAnnotations:
+            kube-score/ignore: "container-security-context-privileged,container-security-context-user-group-id"
         manager:
           image:
             repository: neuvector/manager
@@ -892,6 +896,8 @@ units:
               nginx.ingress.kubernetes.io/backend-protocol: https
             tls: true
             secretName: neuvector-tls
+          podAnnotations:
+            kube-score/ignore: "container-security-context-privileged,container-security-context-user-group-id"
         cve:
           updater:
             image:
@@ -1910,6 +1916,48 @@ units:
           calicoNetwork:
             bgp: Enabled
           registry: UseDefault
+        podAnnotations:
+          "kube-score/ignore": "container-security-context-privileged,container-security-context-user-group-id"
+      _postRenderers:
+        - kustomize:
+            patches:
+            - patch: |
+               - op: add
+                 path: "/metadata/annotations/kube-score~1ignore"
+                 value: "container-security-context-privileged,container-security-context-user-group-id"
+               - op: add
+                 path: "/spec/template/spec/metadata/annotations/kube-score~1ignore"
+                 value: "container-security-context-privileged,container-security-context-user-group-id"
+               - op: add
+                 path: "/spec/template/spec/containers/0/securityContext/allowPrivilegeEscalation"
+                 value: false
+               - op: add
+                 path: "/spec/template/spec/containers/0/securityContext/capabilities/drop"
+                 value: ["ALL"]
+               - op: add
+                 path: "/spec/template/spec/containers/0/securityContext/readOnlyRootFilesystem"
+                 value: true
+               - op: add
+                 path: "/spec/template/spec/containers/1/securityContext/allowPrivilegeEscalation"
+                 value: false
+               - op: add
+                 path: "/spec/template/spec/containers/1/securityContext/capabilities/drop"
+                 value: ["ALL"]
+               - op: add
+                 path: "/spec/template/spec/containers/1/securityContext/readOnlyRootFilesystem"
+                 value: true
+               - op: add
+                 path: "/spec/template/spec/containers/2/securityContext/allowPrivilegeEscalation"
+                 value: false
+               - op: add
+                 path: "/spec/template/spec/containers/2/securityContext/capabilities/drop"
+                 value: ["ALL"]
+               - op: add
+                 path: "/spec/template/spec/containers/2/securityContext/readOnlyRootFilesystem"
+                 value: true
+              target:
+                kind: DaemonSet
+                name: calico-node
 
   metallb:
     info:
@@ -1997,6 +2045,29 @@ units:
             allowVolumeExpansion: true
             parameters:
               type: "{{ .Values.openstack.storageClass.type }}"
+        csi:
+          plugin:
+            controllerPlugin:
+              podSecurityContext:
+                runAsNonRoot: true
+                runAsUser: 65533
+                runAsGroup: 65533
+              securityContext:
+                capabilities:
+                  drop:
+                  - "ALL"
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+            nodePlugin:
+              securityContext:
+                capabilities:
+                  drop:
+                  - "ALL"
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+        commonAnnotations:
+          "kube-score/ignore": "container-security-context-privileged,container-security-context-user-group-id"
+
     helm_secret_values:
       secret:
         enabled: "true"
