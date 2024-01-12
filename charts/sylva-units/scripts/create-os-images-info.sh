@@ -40,4 +40,5 @@ done
 
 # Update configmap
 echo "Updating os-images-info configmap"
+unset https_proxy  # for https://gitlab.com/sylva-projects/sylva-core/-/issues/859
 kubectl apply -f $configmap_file
