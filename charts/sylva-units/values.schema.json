@@ -6041,6 +6041,9 @@
                 },
                 {
                   "pattern": "^(oci://.*)$"
+                },
+                {
+                  "pattern": "^{{ .Values.sylva_base_oci_registry }}/.*$"
                 }
               ]
             },

@@ -710,6 +710,7 @@ properties:
             anyOf:
               - pattern: "^(https?://.*|)$"
               - pattern: "^(oci://.*)$"
+              - pattern: "^{{ .Values.sylva_base_oci_registry }}/.*$"
           filename:
             type: string
           checksum:
