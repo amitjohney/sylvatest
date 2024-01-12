@@ -325,6 +325,9 @@ units:
         createNamespace: true
       values:
         securityContext:
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
           allowPrivilegeEscalation: false
           capabilities:
             drop:
@@ -2585,20 +2588,33 @@ units:
         rancher-nfd:
           image:
             tag: v0.13.2-build20230605
+          master:
+            securityContext:
+              seccompProfile:
+                type: RuntimeDefault
+          worker:
+            securityContext:
+              seccompProfile:
+                type: RuntimeDefault
       _postRenderers:
         - kustomize:
-            patchesStrategicMerge:
-              - kind: Deployment
-                apiVersion: apps/v1
-                metadata:
+            patches:
+              - target:
+                  kind: Deployment
                   name: sriov
-                  namespace: cattle-sriov-system
-                spec:
-                  template:
-                    spec:
-                      securityContext:
-                        runAsGroup: 3000
-                        runAsUser: 2000
+                patch: |-
+                  - op: add
+                    path: /spec/template/spec/containers/0/securityContext
+                    value:
+                      runAsNonRoot: true
+                      seccompProfile:
+                        type: RuntimeDefault
+                      allowPrivilegeEscalation: false
+                      capabilities:
+                        drop:
+                          - ALL
+                      runAsGroup: 3000
+                      runAsUser: 2000
 
   sriov-resources:
     info:
