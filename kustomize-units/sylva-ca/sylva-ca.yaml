@@ -12,6 +12,7 @@ metadata:
   namespace: cert-manager
 spec:
   isCA: true
+  duration: 25920h  # 25920h is approx. 3 years
   commonName: Sylva CA
   secretName: ca-key-pair
   privateKey:
