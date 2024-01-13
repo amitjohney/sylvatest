@@ -544,6 +544,10 @@ units:
           enabled: false
         trivy:
           enabled: false
+        proxy:
+          httpProxy: '{{ get .Values.proxies "http_proxy" }}'
+          httpsProxy: '{{ get .Values.proxies "https_proxy" }}'
+          noProxy: '{{ include "sylva-units.no_proxy" . }}'
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:
