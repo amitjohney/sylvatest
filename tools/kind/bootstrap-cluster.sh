@@ -50,6 +50,7 @@ networking:
   serviceSubnet: "${KIND_SVC_SUBNET}"
 nodes:
 - role: control-plane
+  image: kindest/node:v1.26.6@sha256:6e2d8b28a5b601defe327b98bd1c2d1930b49e5d8c512e1895099e4504007adb
 EOF
 )
 
