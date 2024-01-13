@@ -121,8 +121,8 @@ function retrieve_kubeconfig {
 }
 
 function ensure_flux {
-    if ! kubectl get namespace flux-system &>/dev/null; then
-        echo_b "\U0001F503 Install flux"
+    if ! flux -n flux-system check &>/dev/null; then
+        echo_b "\U0001F503 Install/Upgrade flux"
         flux install --components "source-controller,kustomize-controller,helm-controller" --namespace=flux-system --export > ${BASE_DIR}/kustomize-units/flux-system/offline/manifests.yaml
         if yq -e '.oci_registry_extra_ca_certs' ${ENV_PATH}/values.yaml &>/dev/null; then
             if ! yq -e '.components[] | select(. == "../components/extra-ca")' ${BASE_DIR}/kustomize-units/flux-system/offline/kustomization.yaml &> /dev/null; then
