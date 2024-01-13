@@ -40,4 +40,6 @@ done
 
 # Update configmap
 echo "Updating os-images-info configmap"
+# Unset proxy settings, if any were needed for oras tool, before connecting to local bootstrap cluster
+unset https_proxy
 kubectl apply -f $configmap_file
