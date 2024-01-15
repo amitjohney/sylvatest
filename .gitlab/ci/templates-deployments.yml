@@ -8,6 +8,13 @@ include:
 
 .common-deployment:
   setup_ci_values:
+    - |
+      function update_values_file() {
+        echo -e "Applying values from \\e[1;94m$1\\e[0m to \\e[1;92m$values_file\\e[0m"
+        yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file $1
+        echo "Content of $values_file:"
+        cat $values_file
+      }
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_common[collapsed=true]\r\e[0KRunning common deployment steps\e[0m"
     - |
       if [[ ${CLUSTER_TYPE} == 'workload' ]]; then
@@ -54,17 +61,18 @@ include:
     - yq -i '.cluster.name = strenv(CLUSTER_CI_NAME)' $values_file
     - yq -i '.env_type = "ci"' $values_file
     - |
-      if [ ${CUSTOM_VALUES_FILE} ]; then
-        yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file $CUSTOM_VALUES_FILE
+      if [ -n "${CUSTOM_MGMT_VALUES_FILE}" ] && [ "${CLUSTER_TYPE}" = "management" ]; then
+        update_values_file ${CUSTOM_MGMT_VALUES_FILE}
+      fi
+    - |
+      if [ -n "${CUSTOM_WC_VALUES_FILE}" ] && [ "${CLUSTER_TYPE}" = "workload" ]; then
+        update_values_file ${CUSTOM_WC_VALUES_FILE}
       fi
     - |
       if [ -n "${REMOTE_VALUES}" ]; then
         echo -e "This pipeline is a cross project pipeline."
-        echo -e "Applying custome remote values to $values_file."
         echo "${REMOTE_VALUES}" > /tmp/remote_values.yaml
-        cat /tmp/remote_values.yaml
-        yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file /tmp/remote_values.yaml
-        cat $values_file
+        update_values_file /tmp/remote_values.yaml
       fi
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_common\r\e[0K"
     - |
@@ -116,13 +124,11 @@ include:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_update_values[collapsed=true]\r\e[0KApply specific values\e[0m"
     - |
       if [ -n "${SPECIFIC_VALUES_FILE}" ]; then
-        echo -e "Applying values from \\e[1;94m$SPECIFIC_VALUES_FILE\\e[0m to \\e[1;92m$values_file\\e[0m"
-        yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file $SPECIFIC_VALUES_FILE
+        update_values_file $SPECIFIC_VALUES_FILE
       else
         echo -e "No specific values to apply"
       fi
-      echo "Content of $values_file:"
-      cat $values_file
+
     - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_update_values\r\e[0K"
   os_cloud:
     # the OS_* variables below are set in the gitlab runner configuration
