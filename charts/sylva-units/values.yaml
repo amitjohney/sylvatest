@@ -1286,6 +1286,17 @@ units:
       path: ./kustomize-units/capa
       wait: true
 
+  cloud-formation-operator:
+    info:
+      description: installs cloudstack operator
+      maturity: core-component
+    repo: sylva-core
+    depends_on:
+      cert-manager: true
+    kustomization_spec:
+      path: ./kustomize-units/cloud-formation-operator
+      wait: true
+
   capm3:
     info:
       description: installs Metal3 CAPI infra provider, for baremetal
