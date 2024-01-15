@@ -55,8 +55,7 @@ EOF
 
 KIND_CONFIG_REGISTRY=$(cat <<EOF
 containerdConfigPatchesJSON6902:
-- '[{"op": "remove", "path": "/plugins/io.containerd.grpc.v1.cri/registry/mirrors"}]'
-- '[{"op": "add", "path": "/plugins/io.containerd.grpc.v1.cri/registry/config_path", "value": "/etc/containerd/registry.d"}]'
+- '[{"op": "add", "path": "/plugins/io.containerd.grpc.v1.cri/registry", "value": {"config_path": "/etc/containerd/registry.d"}}]'
 EOF
 )
 
