@@ -16,6 +16,8 @@ units:
     enabled: false
   shared-workload-clusters-settings:
     enabled: false
+  harbor:
+    enabled: false
 
 cluster:
   capd:
