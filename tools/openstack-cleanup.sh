@@ -58,10 +58,9 @@ do
   fi
 done
 
-for vol in $(openstack ${OS_ARGS} volume list --status available --long -c Name -c Properties -f json | jq -r ".[] | select(.Properties.\"cinder.csi.openstack.org/cluster\" == \"$CAPO_TAG\").Name"); do
-        echo "openstack ${OS_ARGS} volume delete $vol --purge"
-        openstack ${OS_ARGS} volume delete $vol --purge
-done
+volumes=$(openstack ${OS_ARGS} volume list --status available --long -c Name -c Properties -f json | jq -r ".[] | select(.Properties.\"cinder.csi.openstack.org/cluster\" == \"$CAPO_TAG\").Name")
+echo "openstack ${OS_ARGS} volume delete --purge $volumes"
+openstack ${OS_ARGS} volume delete --purge $volumes
 
 if [ -n "$(openstack ${OS_ARGS} server list -f value --tags ${CAPO_TAG})" ]; then
     echo "The following CAPO machines tagged ${CAPO_TAG} were not removed, please try again, and delete the corresponding stacks"
