@@ -17,6 +17,7 @@ metadata:
       and rights granted to that service account. The default service account should be configured such that it does not provide
       a service account token and does not have any explicit rights assignments.
 spec:
+  failurePolicy: Ignore
   rules:
   - name: disable-automountserviceaccounttoken
     match:
