@@ -2390,6 +2390,7 @@ units:
         createNamespace: true
       values:
         fullnameOverride: 'snmp-exporter'
+        replicas: 3
         serviceMonitor:
           enabled: true
           namespace: snmp-exporter
