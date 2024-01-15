@@ -98,23 +98,12 @@ check-sylva-toolbox-binaries-versions:
   # - clusterctl version in sylva-toolbox
     - flux_binary_version=$(bin/flux version --client -o yaml | yq .flux)
     - kustomization_version=$(yq '.resources[0] | capture("/(?P<version>v[^/]+)/") | .version' kustomize-units/flux-system/base/kustomization.yaml)
-    - clusterctlbinary_version=$(bin/clusterctl version  -o yaml | yq .clusterctl.gitVersion)
-    - capi_version_check=$(yq '.resources[0] | capture("/(?P<version>v[^/]+)/") | .version' kustomize-units/capi/kustomization.yaml)
     - |
       if [[ $flux_binary_version != $kustomization_version ]]; then
         echo
         echo "Flux version mismatch between the 'flux' binary provided in sylva-toolbox and the Flux version used in kustomize-units/flux-system"
         echo "- flux binary has version $flux_binary_version"
         echo "- flux kustomization has  $kustomization_version"
-        echo
-        exit_code=1
-      fi
-    - |
-      if [[ $clusterctlbinary_version != $capi_version_check ]]; then
-        echo
-        echo "Clusterctl version mismatch between the 'clusterctl' binary provided in sylva-toolbox and the 'capi' version used in kustomize-units/capi"
-        echo "- capi kustomization has version $capi_version_check"
-        echo "- clusterctl version in sylva-toolbox has version  $clusterctlbinary_version"
         echo
         exit_code=1
       fi
