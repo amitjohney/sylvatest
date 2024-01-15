@@ -382,6 +382,7 @@ units:
         - '{{ tuple "components/keycloak" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/vault" (tuple . "vault" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/rancher" (tuple . "rancher" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/sriov" (tuple . "sriov" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/cattle-monitoring" (tuple . "monitoring" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/gitea" (tuple . "gitea" | include "unit-enabled") | include "set-only-if" }}'
 
@@ -2523,7 +2524,7 @@ units:
       releaseName: sriov-crd
       targetNamespace: cattle-sriov-system
       install:
-        createNamespace: true
+        createNamespace: false
       chart:
         spec:
           chart: sriov-crd
@@ -2549,33 +2550,6 @@ units:
         rancher-nfd:
           image:
             tag: v0.13.2-build20230605
-          master:
-            securityContext:
-              seccompProfile:
-                type: RuntimeDefault
-          worker:
-            securityContext:
-              seccompProfile:
-                type: RuntimeDefault
-      _postRenderers:
-        - kustomize:
-            patches:
-              - target:
-                  kind: Deployment
-                  name: sriov
-                patch: |-
-                  - op: add
-                    path: /spec/template/spec/containers/0/securityContext
-                    value:
-                      runAsNonRoot: true
-                      seccompProfile:
-                        type: RuntimeDefault
-                      allowPrivilegeEscalation: false
-                      capabilities:
-                        drop:
-                          - ALL
-                      runAsGroup: 3000
-                      runAsUser: 2000
 
   sriov-resources:
     info:
