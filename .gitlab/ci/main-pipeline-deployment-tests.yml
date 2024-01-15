@@ -16,9 +16,10 @@ variables:
   KIND_CLUSTER_NAME: bootstrap-${ENV_TAG}
   MANAGEMENT_CLUSTER_NAME: mgmt-${ENV_TAG}
   WORKLOAD_CLUSTER_NAME: wc-${ENV_TAG}
-  # Common variables to both management and workload clusters
-  # Used for specific deployment (capo-fip etc...)
-  CUSTOM_VALUES_FILE: ""
+  # Used to define specific management cluster deployment (capo-fip etc...)
+  CUSTOM_MGMT_VALUES_FILE: ""
+  # Used to define specific workload cluster deployment (capm3-rke2-virt-*-suse-os etc...)
+  CUSTOM_WC_VALUES_FILE: ""
   # Used for cross repo pipelines
   REMOTE_VALUES: ""
   # Management cluster relative variables
@@ -210,7 +211,7 @@ capo-misc-units-deploy:
   variables:
     ENV_NAME: rke2-capo
     CAPO_TAG: "${ENV_TAG_OCI}-misc"
-    CUSTOM_VALUES_FILE: environment-values/ci/misc-units-in-capo.yml
+    CUSTOM_MGMT_VALUES_FILE: environment-values/ci/misc-units-in-capo.yml
     MGMT_WATCH_TIMEOUT_MIN: 45
     ONLY_DEPLOY_MGMT: "TRUE"
   trigger:
@@ -222,7 +223,7 @@ capo-fip-deploy:
   variables:
     ENV_NAME: kubeadm-capo
     CAPO_TAG: "${ENV_TAG_OCI}-fip"
-    CUSTOM_VALUES_FILE: environment-values/ci/capo-fip.yml
+    CUSTOM_MGMT_VALUES_FILE: environment-values/ci/capo-fip.yml
     MGMT_WATCH_TIMEOUT_MIN: 20
     ONLY_DEPLOY_MGMT: "TRUE"
     E2E_JOB_MR_PARITY: none
@@ -253,23 +254,23 @@ capm3-rke2-virt-equinix-deploy-suse:
 capo-rke2-suse-os:
   extends: capo-rke2-deploy
   variables:
-    CUSTOM_VALUES_FILE: environment-values/ci/suse-os-rke2-capo.yml
+    CUSTOM_MGMT_VALUES_FILE: environment-values/ci/suse-os-rke2-capo.yml
+    CUSTOM_WC_VALUES_FILE: environment-values/ci/suse-os-rke2-capo.yml
 
 capo-rke2-oci-suse-os:
   extends: capo-rke2-oci-deploy
   variables:
-    CUSTOM_VALUES_FILE: environment-values/ci/suse-os-rke2-capo.yml
+    CUSTOM_MGMT_VALUES_FILE: environment-values/ci/suse-os-rke2-capo.yml
+    CUSTOM_WC_VALUES_FILE: environment-values/ci/suse-os-rke2-capo.yml
 
 capm3-rke2-virt-equinix-suse-os:
   extends: capm3-rke2-virt-equinix-deploy
   variables:
-    CUSTOM_VALUES_FILE: environment-values/ci/suse-os-rke2-capm3-virt-mgmt.yml
-    WC_DEPLOYMENT_CUSTOM: environment-values/ci/suse-os-rke2-capm3-virt-wkld.yml
-    WC_UPDATE_CUSTOM: environment-values/ci/suse-os-rke2-capm3-virt-wkld-multus.yml
+    CUSTOM_MGMT_VALUES_FILE: environment-values/ci/suse-os-rke2-capm3-virt-mgmt.yml
+    CUSTOM_WC_VALUES_FILE: environment-values/ci/suse-os-rke2-capm3-virt-wkld.yml
 
 capm3-rke2-virt-equinix-suse-metal3-suse-os:
   extends: capm3-rke2-virt-equinix-deploy-suse
   variables:
-    CUSTOM_VALUES_FILE: environment-values/ci/suse-os-rke2-capm3-virt-mgmt.yml
-    WC_DEPLOYMENT_CUSTOM: environment-values/ci/suse-os-rke2-capm3-virt-wkld.yml
-    WC_UPDATE_CUSTOM: environment-values/ci/suse-os-rke2-capm3-virt-wkld-multus.yml
+    CUSTOM_MGMT_VALUES_FILE: environment-values/ci/suse-os-rke2-capm3-virt-mgmt.yml
+    CUSTOM_WC_VALUES_FILE: environment-values/ci/suse-os-rke2-capm3-virt-wkld.yml
