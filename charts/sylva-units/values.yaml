@@ -1288,7 +1288,7 @@ units:
 
   cloud-formation-operator:
     info:
-      description: installs cloudstack operator
+      description: installs cloudstack operator unit
       maturity: core-component
     repo: sylva-core
     depends_on:
