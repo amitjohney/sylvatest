@@ -1697,7 +1697,8 @@ units:
       images:
         - name: controller
           newName: registry.gitlab.com/sylva-projects/sylva-elements/sylva-units-operator
-          newTag: 0.0.0-pre3
+          newTag: ""
+          branch: main
 
   workload-cluster-operator:
     info:
