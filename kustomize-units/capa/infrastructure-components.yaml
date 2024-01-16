@@ -12933,6 +12933,8 @@ spec:
           value: http://172.20.73.196:3128
         - name: HTTPS_PROXY
           value: http://172.20.73.196:3128
+        - name: NO_PROXY
+          value: "localhost,127.0.0.1,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8,172.20.18.0/24,0.0.0.0,10.43.0.1"
         image: registry.k8s.io/cluster-api-aws/cluster-api-aws-controller:v2.2.5
         imagePullPolicy: IfNotPresent
         livenessProbe:
