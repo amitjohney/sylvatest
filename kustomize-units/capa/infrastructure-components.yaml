@@ -12929,6 +12929,10 @@ spec:
         env:
         - name: AWS_SHARED_CREDENTIALS_FILE
           value: /home/.aws/credentials
+        - name: HTTP_PROXY
+          value: http://172.20.73.196:3128
+        - name: HTTPS_PROXY
+          value: http://172.20.73.196:3128
         image: registry.k8s.io/cluster-api-aws/cluster-api-aws-controller:v2.2.5
         imagePullPolicy: IfNotPresent
         livenessProbe:
