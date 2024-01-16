@@ -1592,9 +1592,8 @@ units:
       suspend-on-pivot: "yes"  # must be suspended before pivot
     kustomization_spec:
       healthChecks:
-        # wait for OpenStackCluster when this provider is used, as Cluster will be seen as non-ready when it will be paused (as observedGeneration will differ from generation)
-        - apiVersion: '{{ (eq .Values.cluster.capi_providers.infra_provider "capo") | ternary "infrastructure.cluster.x-k8s.io/v1alpha6" "cluster.x-k8s.io/v1beta1" }}'
-          kind: '{{       (eq .Values.cluster.capi_providers.infra_provider "capo") | ternary "OpenStackCluster"                         "Cluster" }}'
+        - apiVersion: "cluster.x-k8s.io/v1beta1"
+          kind: "Cluster"
           name: '{{ .Values.cluster.name }}'
           namespace: '{{ .Release.Namespace }}'
         # wait for the control plane to be ready (the api/version/kind to look for depends on the bootstrap provider in use)
@@ -1743,80 +1742,6 @@ units:
     kustomization_substitute_secrets:
       CAPO_CLOUD_YAML: '{{ .Values.cluster.capo.clouds_yaml  | toYaml | b64enc }}'
       CAPO_CACERT: '{{ (.Values.cluster.capo.cacert|default "") | b64enc }}'
-
-
-  pause-cluster-reconciliation:
-    info:
-      description: (specific to CAPO:) makes sure cluster reconciliation is paused during some operation
-      details: workaround for https://gitlab.com/sylva-projects/sylva-core/-/issues/309
-      internal: true
-    enabled_conditions:
-    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
-    # Following condition is required in bootstrap phase, when sylva-units is installed in management-cluster
-    # with cluster unit disabled before pivoting, this unit can't depend on a disabled unit in that case
-    - '{{ tuple . "cluster" | include "unit-enabled" }}'
-    depends_on:
-      cluster: true
-    repo: sylva-core
-    kustomization_spec:
-      path: ./kustomize-units/kube-job
-      wait: true
-      force: true
-      postBuild:
-        substitute:
-          JOB_NAME: '{{ .Values.cluster.name }}-pause-cluster'
-          JOB_TARGET_NAMESPACE: '{{ .Release.Namespace }}'
-          JOB_CHECKSUM: '{{ .Values | toJson | sha256sum }}'
-      _patches:
-      - target:
-          kind: ConfigMap
-        patch: |
-          - op: replace
-            path: /metadata/name
-            value: '{{ .Values.cluster.name }}-pause-cluster-{{ .Release.Namespace }}-cm'
-          - op: replace
-            path: /data/kube-job.sh
-            value: |
-              #!/bin/bash
-              set -e
-              MD=$(kubectl -n $TARGET_NAMESPACE get MachineDeployment -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }}  -o json | jq '.items|length')
-              if [ $MD -gt 0 ];then
-                kubectl -n $TARGET_NAMESPACE wait MachineDeployment -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }} --for condition=Ready --timeout 600s
-              fi
-              kubectl -n $TARGET_NAMESPACE patch cluster.cluster.x-k8s.io  {{ .Values.cluster.name }} --type merge -p '{"spec":{"paused": true}}'
-
-  resume-cluster-reconciliation:
-    info:
-      description: makes sure cluster reconciliation is on
-      details: workaround for https://gitlab.com/sylva-projects/sylva-core/-/issues/309
-      internal: true
-    enabled_conditions:
-    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
-    # should not be enabled on first run when cluster unit is not yet created
-    - '{{ not (lookup "kustomize.toolkit.fluxcd.io/v1" "Kustomization" .Release.Namespace "cluster" | empty) }}'
-    repo: sylva-core
-    kustomization_spec:
-      path: ./kustomize-units/kube-job
-      wait: true
-      force: true
-      postBuild:
-        substitute:
-          JOB_NAME: '{{ .Values.cluster.name }}-resume-cluster'
-          JOB_TARGET_NAMESPACE: '{{ .Release.Namespace }}'
-          JOB_CHECKSUM: '{{ .Values | toJson | sha256sum }}'
-      _patches:
-      - target:
-          kind: ConfigMap
-        patch: |
-          - op: replace
-            path: /metadata/name
-            value: '{{ .Values.cluster.name }}-resume-cluster-{{ .Release.Namespace }}-cm'
-          - op: replace
-            path: /data/kube-job.sh
-            value: |
-              #!/bin/bash
-              kubectl -n $TARGET_NAMESPACE get cluster.cluster.x-k8s.io {{ .Values.cluster.name }} || { echo "Cluster does not exist yet, nothing to do."; exit 0; }
-              kubectl -n $TARGET_NAMESPACE patch cluster.cluster.x-k8s.io {{ .Values.cluster.name }} --type merge -p '{"spec":{"paused": false}}'
 
   calico-crd:
     info:
