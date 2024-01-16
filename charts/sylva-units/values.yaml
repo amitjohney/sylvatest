@@ -3154,6 +3154,7 @@ units:
       description: install minio operator need it to create minio tenants
       details: using minio operator we can create multiple S3 tenants
       maturity: stable
+    enabled: true
     depends_on:
       namespace-defs: true
       sylva-ca-certs: true
@@ -3225,7 +3226,8 @@ units:
       maturity: stable
     enabled: true
     enabled_conditions:
-      - '{{ tuple . "monitoring" | include "unit-enabled" }}'
+      - '{{ tuple . "minio-operator" | include "unit-enabled" }}'
+      - '{{ tuple . "monitoring" | include "unit-enabled" }}'      
     depends_on:
       namespace-defs: true
       minio-operator: true
@@ -3546,9 +3548,6 @@ external_hostnames:
   os_image_server: ''
   gitea: 'gitea.{{ .Values.cluster_external_domain }}'
   minio_operator_console: 'minio-operator-console.{{ .Values.cluster_external_domain }}'
-  minio_monitoring_tenant: 'minio-monitoring-tenant.{{ .Values.cluster_external_domain }}'
-  minio_monitoring_tenant_console: 'minio-monitoring-tenant-console.{{ .Values.cluster_external_domain }}'
-
 
 keycloak: {}
 
@@ -3771,5 +3770,3 @@ shared_workload_clusters_values:
 shared_workload_clusters_secret_values:
   cluster:
     capo: '{{ tuple (dict "clouds_yaml" (.Values.cluster | dig "capo" "clouds_yaml" dict)) (.Values.cluster | dig "capo" "clouds_yaml" dict) | include "set-only-if" }}'
-
-
