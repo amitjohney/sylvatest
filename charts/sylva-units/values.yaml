@@ -537,13 +537,13 @@ units:
               #size: 32Gi
             jobservice:
               storageClass: '{{ .Values._internal.default_storage_class }}'
-              #size: 8Gi
+              size: 256M
             database:
               storageClass: '{{ .Values._internal.default_storage_class }}'
-              #size: 8Gi
+              size: 256M
             redis:
               storageClass: '{{ .Values._internal.default_storage_class }}'
-              #size: 8Gi
+              size: 256M
             #trivy:
               #storageClass: '{{ .Values._internal.default_storage_class }}'
               #size: 8Gi
