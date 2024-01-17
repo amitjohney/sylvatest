@@ -67,12 +67,22 @@ def get_version_and_source(values, unit_name, unit):
         helm_repo_url = get_or_empty(unit, "helm_repo_url")
         return {"source_url": helm_repo_url, "version": helmrelease_spec_version, "source_type": source_type}
 
+    url = ""
+    version = ""
+
     repo = get_or_empty(unit, "repo")
     if repo:
-        tag = get_or_empty(values, "source_templates", repo, "spec", "ref", "tag")
         url = get_or_empty(values, "source_templates", repo, "spec", "url")
+        ref = get_or_empty(values, "source_templates", repo, "spec", "ref")
+        if not ref:
+            raise Exception(f"unit {unit_name} / repo {repo}, no spec.ref")
+        tag = ref.get("tag")
         if tag:
-            return {"source_url": url, "version": tag, "source_type": source_type}
+            version = tag
+        else:
+            version = ref.get("branch") or ref.get("commit")
+            if not version:
+                raise Exception(f"unit {unit_name} / repo {repo}, spec.ref has neither tag, commit or branch (??)")
 
     kustomize_unit_path = get_or_empty(unit, "kustomization_spec", "path")
     if kustomize_unit_path:
@@ -85,13 +95,10 @@ def get_version_and_source(values, unit_name, unit):
                 print(f" you need to set the path manually with units.{unit_name}.info.kustomization_path")
         kustomize_unit_version_source = search_version_in_kustomize_unit_files(kustomize_unit_path)
         if kustomize_unit_version_source:
-            return {
-                "source_url": kustomize_unit_version_source["source"],
-                "version": kustomize_unit_version_source["version"],
-                "source_type": source_type,
-            }
+            url = kustomize_unit_version_source["source"]
+            version = kustomize_unit_version_source["version"]
 
-    return dict()
+    return {"source_url": url, "version": version, "source_type": source_type}
 
 
 def search_version_in_kustomize_unit_files(kustomize_unit_path):
