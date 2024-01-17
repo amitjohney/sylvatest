@@ -8,9 +8,9 @@ units:
   kubevirt-test-vms:
     enabled: true
   harbor:
-    enable: false
+    enabled: false
   harbor-init:
-    enable: false
+    enabled: false
 
 cluster:
   kubelet_extra_args:
