@@ -40,7 +40,7 @@ variables:
       Path to a file use to customize the value file
       used during the management cluster DEPLOYMENT
   MGMT_UPDATE_CUSTOM:
-    value: "environment-values/ci/enable-multus.yml"
+    value: "environment-values/ci/ci-enabled-units.yml"
     description: |
       Path to a file use to customize the value file
       used during the management cluster UPDATE
@@ -55,7 +55,7 @@ variables:
       Path to a file use to customize the value file
       used during the workload cluster DEPLOYMENT
   WC_UPDATE_CUSTOM:
-    value: "environment-values/ci/enable-multus.yml"
+    value: "environment-values/ci/ci-enabled-units.yml"
     description: |
       Path to a file use to customize the value file
       used during the workload cluster UPDATE
