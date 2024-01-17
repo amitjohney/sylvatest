@@ -2571,6 +2571,11 @@ units:
         serviceMonitor:
           enabled: true
           namespace: snmp-exporter
+          relabelings:
+            - sourceLabels: [__param_module]
+              targetLabel: module
+            - sourceLabels: [__param_target]
+              targetLabel: instance
           params: |
             {{- $result := list -}}
             {{- range $device := .Values.snmp.devices }}
