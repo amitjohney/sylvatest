@@ -516,9 +516,6 @@ units:
             registry:
               storageClass: '{{ .Values._internal.default_storage_class }}'
               #size: 32Gi
-            chartmuseum:
-              storageClass: '{{ .Values._internal.default_storage_class }}'
-              #size: 32Gi
             jobservice:
               storageClass: '{{ .Values._internal.default_storage_class }}'
               #size: 8Gi
