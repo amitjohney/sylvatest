@@ -37,6 +37,7 @@ Ensure that no_proxy covers everything that we need by adding the values defined
        {{- $no_proxy_list = append $no_proxy_list ($bmc_mgmt.host | splitList ":" | first) }}
      {{- end }}
    {{- end }}
-   {{- append (splitList "," .Values.proxies.no_proxy) ($no_proxy_list| join ",") | join "," | splitList ","| uniq | join "," }}
+   {{- $no_proxy_list = concat $no_proxy_list (splitList "," .Values.proxies.no_proxy) -}}
+   {{- without $no_proxy_list "" | uniq | join "," }}
  {{- end }}
 {{- end }}
