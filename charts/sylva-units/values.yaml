@@ -69,7 +69,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.1.25
+        tag: 0.1.26
 
   local-path-provisioner:
     kind: GitRepository
@@ -3209,6 +3209,12 @@ cluster:
       - capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}
 
   machine_deployment_default:
+    machine_deployment_spec:
+      strategy:
+        rollingUpdate:
+          maxUnavailable: 1
+          # use maxSurge 0 for baremetal deployments
+          maxSurge: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" | ternary 0 1 | include "preserve-type" }}'
     capo:
       security_group_names:
       - default
