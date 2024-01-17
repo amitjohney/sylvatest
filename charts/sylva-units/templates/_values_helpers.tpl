@@ -6,6 +6,7 @@ Ensure that no_proxy covers everything that we need by adding the values defined
   {{- $envAll := . }}
   {{- $no_proxy_base  := dict
       "localhost" "true"
+      "127.0.0.1" "true"
       ".svc" "true"
       (printf ".%s" .Values.cluster_external_domain) "true"
       ".cluster.local." "true"
