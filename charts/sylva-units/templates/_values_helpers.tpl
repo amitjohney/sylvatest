@@ -19,12 +19,7 @@ Ensure that no_proxy covers everything that we need by adding the values defined
         {{- $no_proxy_list = append $no_proxy_list $no_proxy_item -}}
     {{- end -}}
   {{- end }}
-  {{- range .Values.cluster.cluster_services_cidrs }}
-    {{- $no_proxy_list = append $no_proxy_list . -}}
-  {{- end }}
-  {{- range .Values.cluster.cluster_pods_cidrs }}
-    {{- $no_proxy_list = append $no_proxy_list . -}}
-  {{- end }}
+  {{- $no_proxy_list = concat $no_proxy_list .Values.cluster.cluster_services_cidrs .Values.cluster.cluster_pods_cidrs -}}
   {{- if .Values.cluster.capm3 }}
     {{- if .Values.cluster.capm3.public_pool_network -}}
       {{- $no_proxy_list = append $no_proxy_list (printf "%s/%s" .Values.cluster.capm3.public_pool_network .Values.cluster.capm3.public_pool_prefix) -}}

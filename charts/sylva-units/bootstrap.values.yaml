@@ -21,6 +21,16 @@ _internal:
     (.Values.metal3.external_bootstrap_ip | default .Values.metal3.bootstrap_ip | default "")
     | include "interpret-ternary"
     -}}
+  kind_kubeadm_networking:  # used to populate no_proxy_additional with kind pod and services subnets
+    '{{
+    lookup "v1" "ConfigMap" "kube-system" "kubeadm-config"
+      | dig "data" "ClusterConfiguration" ""
+      | fromYaml | default dict
+      | dig "networking" (dict "podSubnet" "0.0.0.0/32" "serviceSubnet" "0.0.0.0/32")
+      | include "preserve-type"
+    }}'
+    # the 0.0.0.0/32 values above are juste here to let us "helm template" with this
+    # file without errors
 
 
 unit_kustomization_spec_default:
@@ -448,9 +458,9 @@ display_external_ip: '{{ .Values.metal3 | dig "external_bootstrap_ip" (.Values.m
 
 no_proxy_additional:
   # we need to use the same services/pods CIDRs as the ones we hardcode for bootstrap kind cluster in tools/shell-lib/common.sh
-  # in KIND_POD_SUBNET and KIND_SVC_SUBNET
-  100.96.0.0/16: true
-  100.100.0.0/16: true
+  # in KIND_POD_SUBNET and KIND_SVC_SUBNET, which we can retrieve by reading the kubeadm-config configmap
+  '{{ .Values._internal.kind_kubeadm_networking.podSubnet }}': true
+  '{{ .Values._internal.kind_kubeadm_networking.serviceSubnet }}': true
 
 cluster_public_endpoint: '{{ tuple (printf "https://%s:%s" .Values._internal.bootstrap_node_ip "8443") (tuple . "libvirt-metal" | include "unit-enabled") | include "set-only-if" }}'
 
