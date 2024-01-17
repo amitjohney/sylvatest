@@ -102,7 +102,16 @@ elif yq -e '.cluster.capi_providers.infra_provider = "capd"' ${VALUES_FILE} &>/d
 fi
 
 echo -e "Creating kind cluster with following config:\n$KIND_CONFIG"
-echo "$KIND_CONFIG" | kind create cluster --name $KIND_CLUSTER_NAME --config=-
+if yq -e '.registry_mirrors.hosts_config."docker.io".[0].mirror_url' ${VALUES_FILE} &>/dev/null; then
+    DOCKER_REGISTRY_MIRROR=$(yq -e '.registry_mirrors.hosts_config."docker.io".[0].mirror_url' ${VALUES_FILE} | sed 's~http[s]*://~~g')
+    # remove version path from mirror url if present
+    if [[ $DOCKER_REGISTRY_MIRROR =~ /v[0-9]+/ ]]; then
+      DOCKER_REGISTRY_MIRROR=$(echo "$DOCKER_REGISTRY_MIRROR" | sed 's~/v[0-9]\+/~/~g')
+    fi
+    KINDEST_VERSION=$(strings $(which kind) |grep kindest/node:v | sed -e 's~.*\(kindest/node:.*\)@.*~\1~')
+    DOCKER_IMAGE_PARAM="--image $(echo $DOCKER_REGISTRY_MIRROR/$KINDEST_VERSION)"
+fi
+echo "$KIND_CONFIG" | kind create cluster --name $KIND_CLUSTER_NAME $DOCKER_IMAGE_PARAM --config=-
 
 if [[ -n ${LIBVIRT_METAL_ENABLED} ]]; then
     docker exec ${KIND_CLUSTER_NAME}-control-plane systemctl --now enable nomasquerade.service
