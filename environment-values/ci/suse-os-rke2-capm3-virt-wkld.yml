@@ -11,3 +11,13 @@ cluster:
     machine_image_url: http://{{ .Values.cluster.mgmt_cluster_external_ip }}/opensuse-15.5-plain-rke2-1.26.9.raw
     machine_image_format: raw
     machine_image_checksum: http://{{ .Values.cluster.mgmt_cluster_external_ip }}/opensuse-15.5-plain-rke2-1.26.9.raw.sha256sum
+
+units:
+  multus:
+    enabled: true
+  multus-ready:
+    enabled: true
+  kubevirt:
+    enabled: true
+  kubevirt-test-vms:
+    enabled: true
