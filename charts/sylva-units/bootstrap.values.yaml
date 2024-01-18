@@ -31,6 +31,9 @@ unit_helmrelease_spec_default:
   interval: 100000m
 
 units:
+  snmp-exporter:
+    enabled_conditions: null
+    enabled: true
   metal3-suse:
     enabled_conditions:
       - '{{ tuple . "capm3" | include "unit-enabled" }}'
