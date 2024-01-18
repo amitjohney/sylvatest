@@ -3529,8 +3529,8 @@ external_hostnames:
   os_image_server: ''
   gitea: 'gitea.{{ .Values.cluster_external_domain }}'
   minio_operator_console: 'minio-operator-console.{{ .Values.cluster_external_domain }}'
-  minio_monitoring_tenant: 'minio_monitoring_tenant.{{ .Values.cluster_external_domain }}'
-  minio_monitoring_tenant_console: 'minio_monitoring_tenant_console.{{ .Values.cluster_external_domain }}'
+  minio_monitoring_tenant: 'minio-monitoring-tenant.{{ .Values.cluster_external_domain }}'
+  minio_monitoring_tenant_console: 'minio-monitoring-tenant-console.{{ .Values.cluster_external_domain }}'
 
 
 keycloak: {}
