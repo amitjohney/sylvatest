@@ -439,6 +439,11 @@ units:
 
   vsphere-cpi:
     # overload vsphere-cpi definition in bootstrap context to deploy in the management cluster
+    # setting the same dependencies of the capv cluster unit in order to run in parallel
+    depends_on:
+      capi: true
+      capv: true
+      '{{ .Values.cluster.capi_providers.bootstrap_provider }}': true
     helmrelease_spec:
       kubeConfig:
         secretRef:
