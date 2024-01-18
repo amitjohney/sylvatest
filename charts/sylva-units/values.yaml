@@ -127,6 +127,14 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: 0.0.1
 
+  prometheus-rules:
+    kind: GitRepository
+    spec:
+      url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-prometheus-rules.git
+      ref:
+        tag: 0.1.0
+
+
 helm_repo_spec_default:
   interval: 60m0s
 
@@ -3389,6 +3397,26 @@ units:
             readOnly: true
             subPath: ca.crt
 
+  sylva-prometheus-rules:
+    info:
+      description: installs Gitea
+      maturity: stable
+    enabled: true
+      enabled_conditions:
+        - '{{ tuple . "minio" | include "unit-enabled" }}'
+      annotations:
+        sylvactl/readyMessage: "prometheus rules deployed"
+      repo: sylva-prometheus-rules
+      helmrelease_spec:
+        releaseName: sylva-prometheus-rules
+        targetNamespace: sylva-prometheus-rules
+        chart:
+          spec:
+          chart:
+          version:
+        install:
+          createNamespace: true
+        values:
 
 # Not yet ready, need to get os_images into the script
   get-openstack-images:
