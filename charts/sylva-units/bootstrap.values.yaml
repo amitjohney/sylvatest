@@ -472,6 +472,7 @@ units_override_enabled:
   - management-cluster-flux
   - management-cluster-configs
   - management-sylva-units
+  - monitoring-crd
   - monitoring
   - snmp-exporter
   - pivot
