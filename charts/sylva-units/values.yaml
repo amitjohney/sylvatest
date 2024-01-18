@@ -3307,6 +3307,8 @@ units:
           api:
             enabled: true
             ingressClassName: nginx
+            annotations:
+              nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
             host: '{{ .Values.external_hostnames.minio_monitoring_tenant }}'
             path: /
             pathType: Prefix
@@ -3317,6 +3319,8 @@ units:
           console:
             enabled: true
             ingressClassName: nginx
+            annotations:
+              nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
             host: '{{ .Values.external_hostnames.minio_monitoring_tenant_console }}'
             path: /
             pathType: Prefix
