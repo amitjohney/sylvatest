@@ -8,4 +8,4 @@ resources:
 - multus-nw.yaml
 - multus-vm.yaml
 - cirros-vm.yaml
-- cpumanager-fg-vmi.yaml
+- cpumanager-fg-vm.yaml
