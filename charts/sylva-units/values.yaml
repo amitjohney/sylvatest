@@ -2415,6 +2415,9 @@ units:
           capabilities:
             drop:
               - ALL
+          seccompProfile:
+            type: RuntimeDefault
+          runAsNonRoot: true
       _postRenderers:
         - kustomize:
             patches:
@@ -2422,25 +2425,16 @@ units:
                   kind: Deployment
                 patch: |-
                   - op: add
-                    path: /spec/template/spec/containers/0/securityContext
+                    path: /spec/template/spec/containers/1
                     value:
-                      runAsNonRoot: true
-                      seccompProfile:
-                        type: RuntimeDefault
-                      allowPrivilegeEscalation: false
-                      capabilities:
-                        drop:
-                          - ALL
-                  - op: add
-                    path: /spec/template/spec/containers/1/securityContext
-                    value:
-                      runAsNonRoot: true
-                      seccompProfile:
-                        type: RuntimeDefault
-                      allowPrivilegeEscalation: false
-                      capabilities:
-                        drop:
-                          - ALL
+                      securityContext:
+                        runAsNonRoot: true
+                        seccompProfile:
+                          type: RuntimeDefault
+                        allowPrivilegeEscalation: false
+                        capabilities:
+                          drop:
+                            - ALL
 
     helm_secret_values:
       config: |
