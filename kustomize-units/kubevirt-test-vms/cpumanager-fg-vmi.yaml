@@ -1,7 +1,7 @@
 apiVersion: kubevirt.io/v1
-kind: VirtualMachineInstance
+kind: VirtualMachine
 metadata:
-  name: cpumanager-fg-test-vmi
+  name: cpumanager-fg-test-vm
 spec:
   domain:
     cpu:
