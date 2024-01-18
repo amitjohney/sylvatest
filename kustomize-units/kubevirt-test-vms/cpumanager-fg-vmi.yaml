@@ -1,8 +1,9 @@
 apiVersion: kubevirt.io/v1
-kind: VirtualMachine
+kind: VirtualMachineInstance
 metadata:
   name: cpumanager-fg-test-vm
 spec:
+  terminationGracePeriodSeconds: 0
   domain:
     cpu:
       sockets: 2
@@ -11,7 +12,7 @@ spec:
       dedicatedCpuPlacement: true
     resources:
       limits:
-        memory: 2Gi
+        memory: 1024M
     devices:
       disks:
         - name: containerdisk
@@ -20,12 +21,6 @@ spec:
         - name: cloudinitdisk
           disk:
             bus: virtio
-      interfaces:
-      - name: default
-        masquerade: {}
-  networks:
-  - name: default
-    pod: {}
   volumes:
   - name: containerdisk
     containerDisk:
