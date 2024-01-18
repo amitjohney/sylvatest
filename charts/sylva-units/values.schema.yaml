@@ -145,6 +145,7 @@ required:
   - proxies
   - env_type
   - registry_mirrors
+  - image_signature
 
 properties:
 
@@ -802,6 +803,16 @@ properties:
   env_type:  # -------------------------------
     type: string
     pattern: "^(dev|ci|prod)$"
+
+  image_signature: # -------------------------------
+    type: object
+    additionalProperties: false
+    properties:
+      action: # -------------------------------
+        type: string
+        pattern: "^(Audit|Enforce)$"
+      repository:  # -------------------------------
+        type: string
 
   ntp:  # -------------------------------
     type: object
