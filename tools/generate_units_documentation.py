@@ -97,6 +97,12 @@ def get_version_and_source(values, unit_name, unit):
         if kustomize_unit_version_source:
             url = kustomize_unit_version_source["source"]
             version = kustomize_unit_version_source["version"]
+        elif repo == "sylva-core" and get_or_empty(unit, "info", "internal") == "":
+            raise Exception(f"kustomize-based unit {unit_name}: 'info.internal' not set, implicitly False, "
+                            f"but no source URL or version could be guessed. "
+                            f"If this unit is fully defined in sylva-core then you need to set "
+                            f"'info.internal: true', or, if this unit relies on something upstream we "
+                            f"need to find out why the upstream URL and version aren't detected under {kustomize_unit_path}.")
 
     return {"source_url": url, "version": version, "source_type": source_type}
 
