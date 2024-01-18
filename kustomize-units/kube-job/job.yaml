@@ -31,7 +31,8 @@ spec:
             drop:
               - ALL
           runAsNonRoot: true
-          runAsUser: 1000
+          runAsUser: ${RUNASUSER:-1000}
+          runAsGroup: ${RUNASGROUP:-1000}
           privileged: false
           seccompProfile:
             type: RuntimeDefault

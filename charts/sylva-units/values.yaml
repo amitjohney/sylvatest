@@ -1091,6 +1091,8 @@ units:
         substitute:
           JOB_NAME: keycloak-add-client-scope-job
           JOB_TARGET_NAMESPACE: keycloak
+          RUNASUSER: '10000'
+          RUNASGROUP: '10000'
       _patches:
       - target:
           kind: Job
@@ -1495,10 +1497,10 @@ units:
             storageClass: '{{ .Values._internal.default_storage_class }}'
         podSecurityContext:
           runAsNonRoot: true
-          runAsUser: 1000
+          runAsUser: 10000
         securityContext:
           runAsNonRoot: true
-          runAsUser: 1000
+          runAsUser: 10000
       valuesFrom:
         - kind: Secret
           name: metal3-secrets
@@ -1570,7 +1572,7 @@ units:
                       containers:
                       - name: local-path-provisioner
                         securityContext:
-                          runAsUser: 1000
+                          runAsUser: 10000
 
   cluster:
     info:
@@ -2147,8 +2149,8 @@ units:
               - ALL
           privileged: false
           runAsNonRoot: true
-          runAsGroup: 1
-          runAsUser: 1
+          runAsGroup: 10000
+          runAsUser: 10000
           seccompProfile:
             type: RuntimeDefault
         conf:
