@@ -10,6 +10,8 @@
 
 source $(dirname $0)/tools/shell-lib/common.sh
 
+check_args
+
 validate_input_values
 
 check_apply_kustomizations

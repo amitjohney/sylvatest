@@ -2,6 +2,8 @@
 
 source tools/shell-lib/common.sh
 
+check_args
+
 if ! command -v helm &>/dev/null; then
     echo "helm binary is required by this tool, please install it"
     exit 1
