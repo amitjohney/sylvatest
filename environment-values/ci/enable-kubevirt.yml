@@ -19,5 +19,5 @@ cluster:
     feature-gates: "TopologyManager=true,CPUManager=true"
     topology-manager-policy: "best-effort"
     cpu-manager-policy: "static"
-    system-reserved: "cpu=100m"
-    kube-reserved: "cpu=100m"
+    system-reserved: "cpu=100m,memory=200Mi"
+    kube-reserved: "cpu=100m,memory=200Mi"
