@@ -3450,11 +3450,11 @@ _internal:
   ha_cluster:
 
     # immutable ha_cluster.mode : keep track of first install mode HA or non-HA
-    mode: '{{ lookup "v1" "Secret" "sylva-system" "sylva-units-values" | dig "data" "values" "" | b64dec | fromYaml | default dict | dig "_internal" "ha_cluster" "mode" (ge (int .Values.cluster.control_plane_replicas) 3  | ternary "ha" "non-ha") }}'
+    mode: '{{ lookup "v1" "Secret" .Release.Namespace "sylva-units-values" | dig "data" "values" "" | b64dec | fromYaml | default dict | dig "_internal" "ha_cluster" "mode" (ge (int .Values.cluster.control_plane_replicas) 3  | ternary "ha" "non-ha") }}'
 
     # variable just used to trigger error while requested control_plane_replicas is incompatible with ha_cluster.mode computed during first install
     checkpoint: >-
-      {{- $current_config := lookup "v1" "Secret" "sylva-system" "sylva-units-values" | dig "data" "values" "" | b64dec | fromYaml | default dict -}}
+      {{- $current_config := lookup "v1" "Secret" .Release.Namespace "sylva-units-values" | dig "data" "values" "" | b64dec | fromYaml | default dict -}}
       {{- if dig "_internal" "ha_cluster" "mode" "" $current_config -}}
         {{- if eq $current_config._internal.ha_cluster.mode "ha" -}}
           {{- gt (int .Values.cluster.control_plane_replicas) 2  | ternary "ok" "" | required (print "requested control_plane_replicas=" .Values.cluster.control_plane_replicas ": can't continue, current mode is HA, requires a value >=3") -}}
