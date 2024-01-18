@@ -2417,21 +2417,30 @@ units:
               - ALL
       _postRenderers:
         - kustomize:
-            patchesStrategicMerge:
-              - kind: Deployment
-                apiVersion: apps/v1
-                metadata:
-                  name: snmp-exporter
-                spec:
-                  template:
-                    spec:
-                      containers:
-                      - name: configmap-reload
-                        securityContext:
-                          allowPrivilegeEscalation: false
-                          capabilities:
-                            drop:
-                              - ALL
+            patches:
+              - target:
+                  kind: Deployment
+                patch: |-
+                  - op: add
+                    path: /spec/template/spec/containers/0/securityContext
+                    value:
+                      runAsNonRoot: true
+                      seccompProfile:
+                        type: RuntimeDefault
+                      allowPrivilegeEscalation: false
+                      capabilities:
+                        drop:
+                          - ALL
+                  - op: add
+                    path: /spec/template/spec/containers/1/securityContext
+                    value:
+                      runAsNonRoot: true
+                      seccompProfile:
+                        type: RuntimeDefault
+                      allowPrivilegeEscalation: false
+                      capabilities:
+                        drop:
+                          - ALL
 
     helm_secret_values:
       config: |
