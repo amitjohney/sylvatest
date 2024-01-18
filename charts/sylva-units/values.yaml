@@ -2358,6 +2358,15 @@ units:
           version: 102.0.2+up40.1.2
       install:
         createNamespace: true
+      values:
+        grafana:
+          sidecar:
+            dashboards:
+              enabled: true
+              searchNamespace: ALL
+              multicluster:
+                global:
+                  enabled: true
       # Disable drift detection for rancher-monitoring webhooks
       _postRenderers:
         - kustomize:
