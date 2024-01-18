@@ -32,9 +32,9 @@ unit_helmrelease_spec_default:
 
 units:
   snmp-exporter:
-    enabled_conditions:
-      - '{{ tuple . "capm3" | include "unit-enabled" }}'
-    enabled: true
+    enabled_conditions: []
+    depends_on:
+      monitoring: false
   metal3-suse:
     enabled_conditions:
       - '{{ tuple . "capm3" | include "unit-enabled" }}'
@@ -473,6 +473,7 @@ units_override_enabled:
   - management-cluster-flux
   - management-cluster-configs
   - management-sylva-units
+  - snmp-exporter
   - pivot
   - heat-operator
   - capo-cluster-resources
