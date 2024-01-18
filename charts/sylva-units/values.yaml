@@ -3154,7 +3154,6 @@ units:
       description: install minio operator need it to create minio tenants
       details: using minio operator we can create multiple S3 tenants
       maturity: stable
-    enabled: true
     depends_on:
       namespace-defs: true
       sylva-ca-certs: true
@@ -3224,7 +3223,6 @@ units:
       description: create minio tenant for monitoring setup
       details: loki and thanos are using S3 object interface for storage (minio)
       maturity: stable
-    enabled: true
     enabled_conditions:
       - '{{ tuple . "minio-operator" | include "unit-enabled" }}'
       - '{{ tuple . "monitoring" | include "unit-enabled" }}'      
