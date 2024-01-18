@@ -1,31 +1,37 @@
 apiVersion: kubevirt.io/v1
-kind: VirtualMachineInstance
+kind: VirtualMachine
 metadata:
-  name: cpumanager-fg-test-vmi
+  name: cpumanager-fg-test-vm
 spec:
-  terminationGracePeriodSeconds: 0
-  domain:
-    cpu:
-      sockets: 2
-      cores: 1
-      threads: 1
-      dedicatedCpuPlacement: true
-    resources:
-      limits:
-        memory: 1024M
-    devices:
-      disks:
-        - name: containerdisk
-          disk:
-            bus: virtio
-        - name: cloudinitdisk
-          disk:
-            bus: virtio
-  volumes:
-  - name: containerdisk
-    containerDisk:
-      image: quay.io/kubevirt/cirros-container-disk-demo:v1.1.0
-  - name: cloudinitdisk
-    cloudInitNoCloud:
-      userDataBase64: SGkuXG4=
-
+  running: true
+  template:
+    metadata:
+      labels:
+        kubevirt.io/size: small
+        kubevirt.io/domain: testvm
+    spec:
+      terminationGracePeriodSeconds: 0
+      domain:
+        cpu:
+          sockets: 2
+          cores: 1
+          threads: 1
+          dedicatedCpuPlacement: true
+        resources:
+          limits:
+            memory: 64M
+        devices:
+          disks:
+            - name: containerdisk
+              disk:
+                bus: virtio
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
+      volumes:
+      - name: containerdisk
+        containerDisk:
+          image: quay.io/kubevirt/cirros-container-disk-demo:v1.1.0
+      - name: cloudinitdisk
+        cloudInitNoCloud:
+          userDataBase64: SGkuXG4=
