@@ -3307,7 +3307,7 @@ units:
             quiet: true
         ingress:
           api:
-            enabled: false
+            enabled: true
             ingressClassName: nginx
             host: '{{ .Values.external_hostnames.minio_monitoring_tenant }}'
             path: /
@@ -3317,7 +3317,7 @@ units:
                   - '{{ .Values.external_hostnames.minio_monitoring_tenant }}'
                 secretName: minio-monitoring-tenant-tls
           console:
-            enabled: false
+            enabled: true
             ingressClassName: nginx
             host: '{{ .Values.external_hostnames.minio_monitoring_tenant_console }}'
             path: /
@@ -3350,23 +3350,6 @@ units:
             stringData:
               CONSOLE_ACCESS_KEY: console
               CONSOLE_SECRET_KEY: '{{ .Values.admin_password }}'
-
-  minio-monitoring-tenant-ingress:
-    info:
-      description: fix for minio tenant helm chart ingress issue (Client sent an HTTP request to an HTTPS server)
-      details: there is some issue with ingress setup via charts values https://gitlab.com/sylva-projects/sylva-core/-/issues/828
-      maturity: beta
-    depends_on:
-      minio-monitoring-tenant: true
-      ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
-    repo: sylva-core
-    kustomization_spec:
-      path: ./kustomize-units/minio-monitoring-tenant
-      postBuild:
-        substitute:
-          MINIO_MONITORING_TENANT_DNS: '{{ .Values.external_hostnames.minio_monitoring_tenant }}'
-          MINIO_MONITORING_TENANT_CONSOLE_DNS: '{{ .Values.external_hostnames.minio_monitoring_tenant_console }}'
-      wait: true
 
 ##### stuff related to the 'cluster' unit #####
 #
