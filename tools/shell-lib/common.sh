@@ -18,13 +18,15 @@ else
   export IN_CI=0
 fi
 
-if ! [[ $# -eq 1 && (-f ${1}/kustomization.yaml || -L ${1}/kustomization.yaml) ]]; then
-    echo "Usage: $0 [env_name]"
+function check_args() {
+  if ! [[ ${#BASH_ARGV[@]} -eq 1 && (-f ${BASH_ARGV[0]}/kustomization.yaml || -L ${BASH_ARGV[0]}/kustomization.yaml) ]]; then 
+    echo "Usage: $BASH_ARGV0 [env_name]"
     echo "This script expects to find a kustomization in [env_name] directory to generate management-cluster configuration and secrets"
     exit 1
-else
-    export ENV_PATH=$(readlink -f $1)
-fi
+  else
+    export ENV_PATH=$(readlink -f ${BASH_ARGV[0]})
+  fi
+}
 
 function _kustomize {
   kustomize build --load-restrictor LoadRestrictionsNone $1
