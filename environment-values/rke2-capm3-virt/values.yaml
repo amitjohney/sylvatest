@@ -68,8 +68,11 @@ cluster:
 
   baremetal_host_default:
     bmh_metadata:
+      annotations:
+        disk: /dev/vdb
+        sylvaproject.org/longhorn-disks: disk/by-path/pci-0000:00:0b.0
       labels:
-        cluster-role: control-plane
+        longhorn: "true"
     bmh_spec:
       online: false
       description: control plane node
@@ -84,10 +87,7 @@ cluster:
     management-cp:
       bmh_metadata:
         labels:
-          longhorn: "true"
-        annotations:
-          disk: /dev/vdb
-          sylvaproject.org/longhorn-disks: disk/by-path/pci-0000:00:0b.0
+          cluster-role: control-plane
       bmh_spec:
         bmc:
           address: redfish-virtualmedia://{{ .Values._internal.bootstrap_node_ip }}:8000/redfish/v1/Systems/c0014001-b10b-f001-c0de-feeb1e54ee15

@@ -231,26 +231,6 @@ capo-fip-deploy:
     include: .gitlab/ci/pipeline-deploy-capo.yml
     strategy: depend
 
-capm3-rke2-virt-equinix-deploy:
-  extends: .default-trigger
-  variables:
-    ENV_NAME: rke2-capm3-virt
-    METAL3_PROVIDER: sylva
-    DOCKER_HOST: ""
-  trigger:
-    include: .gitlab/ci/pipeline-deploy-rke2-capm3-virt-equinix.yml
-    strategy: depend
-
-capm3-rke2-virt-equinix-deploy-suse:
-  extends: .default-trigger
-  variables:
-    ENV_NAME: rke2-capm3-virt
-    METAL3_PROVIDER: suse
-    DOCKER_HOST: ""
-  trigger:
-    include: .gitlab/ci/pipeline-deploy-rke2-capm3-virt-equinix.yml
-    strategy: depend
-
 capo-rke2-suse-os:
   extends: capo-rke2-deploy
   variables:
@@ -263,14 +243,35 @@ capo-rke2-oci-suse-os:
     CUSTOM_MGMT_VALUES_FILE: environment-values/ci/suse-os-rke2-capo.yml
     CUSTOM_WC_VALUES_FILE: environment-values/ci/suse-os-rke2-capo.yml
 
-capm3-rke2-virt-equinix-suse-os:
-  extends: capm3-rke2-virt-equinix-deploy
+capm3-HA-ubuntu-rke2-virt-equinix-deploy:
+  ## just for testing ##############
+  rules:
+    - when: always
+  #############################
+  extends: .default-trigger
+  variables:
+    ENV_NAME: rke2-capm3-virt
+    METAL3_PROVIDER: sylva
+    DOCKER_HOST: ""
+    CUSTOM_MGMT_VALUES_FILE: environment-values/rke2-capm3-virt/ha.yaml
+    RUNNER_PLAN: m3.small.x86
+  trigger:
+    include: .gitlab/ci/pipeline-deploy-rke2-capm3-virt-equinix.yml
+    strategy: depend
+
+capm3-ubuntu-m3/suse-rke2-virt-equinix-deploy:
+  extends: capm3-HA-ubuntu-rke2-virt-equinix-deploy
+  variables:
+    METAL3_PROVIDER: suse
+
+capm3-suseOS-rke2-virt-equinix-deploy:
+  extends: capm3-HA-ubuntu-rke2-virt-equinix-deploy
   variables:
     CUSTOM_MGMT_VALUES_FILE: environment-values/ci/suse-os-rke2-capm3-virt-mgmt.yml
     CUSTOM_WC_VALUES_FILE: environment-values/ci/suse-os-rke2-capm3-virt-wkld.yml
 
-capm3-rke2-virt-equinix-suse-metal3-suse-os:
-  extends: capm3-rke2-virt-equinix-deploy-suse
+capm3-HA-suseOS-m3/suse-rke2-virt-equinix-deploy:
+  extends: capm3-ubuntu-m3/suse-rke2-virt-equinix-deploy
   variables:
     CUSTOM_MGMT_VALUES_FILE: environment-values/ci/suse-os-rke2-capm3-virt-mgmt.yml
     CUSTOM_WC_VALUES_FILE: environment-values/ci/suse-os-rke2-capm3-virt-wkld.yml
