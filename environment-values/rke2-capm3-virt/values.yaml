@@ -64,8 +64,11 @@ cluster:
 
   baremetal_host_default:
     bmh_metadata:
+      annotations:
+        disk: /dev/vdb
+        sylvaproject.org/longhorn-disks: disk/by-path/pci-0000:00:0b.0
       labels:
-        cluster-role: control-plane
+        longhorn: "true"
     bmh_spec:
       online: false
       description: control plane node
@@ -77,17 +80,14 @@ cluster:
         deviceName: /dev/vda
 
   baremetal_hosts:
-    management-cp:
+    management-cp-0:
       bmh_metadata:
         labels:
-          longhorn: "true"
-        annotations:
-          disk: /dev/vdb
-          sylvaproject.org/longhorn-disks: disk/by-path/pci-0000:00:0b.0
+          cluster-role: control-plane
       bmh_spec:
         bmc:
           address: redfish-virtualmedia://{{ .Values._internal.bootstrap_node_ip }}:8000/redfish/v1/Systems/c0014001-b10b-f001-c0de-feeb1e54ee15
-        bootMACAddress: 48:df:37:e7:82:94 # This mac doesn't correspond to any interface, it only needs to be unique amon baremetalHosts
+        bootMACAddress: 52:54:00:44:44:00
 
 
 units:
@@ -110,13 +110,13 @@ units:
 libvirt_metal:
   #image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/libvirt-metal:0.1.4  # customize if wanted
   nodes:
-    management-cp:
+    management-cp-0:
       redfishPort: 8000
       memGB: 16
       numCPUs: 8
 
-    workload-cp:
-      redfishPort: 8001
+    workload-cp-0:
+      redfishPort: 8010
       memGB: 6 # IPA allocates half of it to tmpfs, if must be large enough to store the image.
       numCPUs: 4
 
