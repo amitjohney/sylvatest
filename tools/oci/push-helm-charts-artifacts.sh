@@ -76,16 +76,19 @@ function artifact_integrity {
   local artifact_name=$2
   local artifact_version=$3
   
+  # to be tested: these two lines should avoid passing $3
   #artifact_version=$(echo $tgz_file | sed 's/\.tgz//' | sed 's/.*-//')
+  #artifact_url=$OCI_REGISTRY/$artifact_name:${artifact_version/+/_}
 
   artifact_url=$OCI_REGISTRY/$artifact_name:${artifact_version}
 
   # The integrity test makes sense only if the OCI artifact exists
   if (flux pull artifact $artifact_url -o /tmp); then
-    echo "Checking the integrity of the existing unsigned artifact $artifact_name..."
+    echo "Checking the integrity of the existing unsigned artifact $artifact_name:${artifact_version} :: $artifact_url"
     tmp_dir=$(mktemp -d /tmp/tgz-XXXXXXX)
     tar -xzvf $tgz_file -C $tmp_dir
     # make a diff between the tgz file and the artifact pulled
+    echo "---------- make a diff --------------"
     diff -qr /tmp/$artifact_name $tmp_dir/$artifact_name
   fi
 }
