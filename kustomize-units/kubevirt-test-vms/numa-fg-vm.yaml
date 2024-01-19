@@ -21,10 +21,10 @@ spec:
             guestMappingPassthrough: { }
         resources:
           limits:
-            memory: 64Mi
+            memory: 64M
         memory:
           hugepages:
-            pageSize: 2Mi
+            pageSize: 2M
         devices:
           disks:
             - name: containerdisk
