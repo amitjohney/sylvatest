@@ -4705,6 +4705,19 @@
               "type": "null"
             }
           ]
+        },
+        "prevent_deletion": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "allOf": [

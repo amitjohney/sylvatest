@@ -48,3 +48,6 @@ units:
 
 keycloak:
   keycloak_expire_password_days: 30
+
+cluster:
+  prevent_deletion: true
