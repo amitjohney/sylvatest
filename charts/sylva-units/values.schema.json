@@ -2546,8 +2546,7 @@
                     {
                       "enum": [
                         "cabpk",
-                        "cabpr",
-                        "cabpe"
+                        "cabpr"
                       ]
                     },
                     {
