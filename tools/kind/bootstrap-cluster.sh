@@ -97,7 +97,7 @@ fi
 # Use docker-in-docker address as api endpoint when running in docker-in-docker
 if [[ -n "$DOCKER_IP" ]]; then
     KIND_CONFIG=$(echo "$KIND_CONFIG" | yq '.networking.apiServerPort = 6443 | .networking.apiServerAddress = env(DOCKER_IP)')
-elif yq -e '.cluster.capi_providers.infra_provider = "capd"' ${VALUES_FILE} &>/dev/null; then
+elif yq -e '.cluster.capi_providers.infra_provider == "capd"' ${VALUES_FILE} &>/dev/null; then
     KIND_CONFIG=$(echo "$KIND_CONFIG" | yq '.nodes[0].extraMounts += [{"hostPath": "/var/run/docker.sock", "containerPath": "/var/run/docker.sock"}]')
 fi
 
