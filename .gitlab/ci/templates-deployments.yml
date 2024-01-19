@@ -109,10 +109,14 @@ include:
           #the CI_COMPONENT_* variables below are set in the gitlab runner configuration
           #and allow to enable extra kustomize components needed in the context of the platform
           #on which this test actually runs
-          git clone --depth=1 https://foo:${CI_COMPONENT_REPO_PAT}@${CI_COMPONENT_REPO}
-          export CI_COMPONENT="https://${CI_COMPONENT_REPO}//${CI_COMPONENT_REPO_PATH}-base?ref=2023-12-11"
+          git clone -b tets_nexus --depth=1 https://foo:${CI_COMPONENT_REPO_PAT}@${CI_COMPONENT_REPO}
+          export CI_COMPONENT="https://${CI_COMPONENT_REPO}//${CI_COMPONENT_REPO_PATH}-base?ref=test-loic"
           if [ $(yq '.components | length' $ENV_PATH/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' $ENV_PATH/kustomization.yaml; fi
           yq -i '.components += strenv(CI_COMPONENT)' $ENV_PATH/kustomization.yaml
+
+          yq -e '.oci_registry_extra_ca_certs' $(basename ${CI_COMPONENT_REPO} .git)/${CI_COMPONENT_REPO_PATH}-base/values.yaml > oci_registry.yml
+          yq -i '.oci_registry_extra_ca_certs = "'"$(< oci_registry.yml)"'"' $values_file
+
           yq -e '.registry_mirrors' $(basename ${CI_COMPONENT_REPO} .git)/${CI_COMPONENT_REPO_PATH}-base/values.yaml > registry_mirrors.yml
           yq -i eval-all 'select(fileIndex==0).registry_mirrors = select(fileIndex==1) | select(fileIndex==0)' $values_file registry_mirrors.yml
           if [[ ${CLUSTER_TYPE} == 'workload' ]]; then
