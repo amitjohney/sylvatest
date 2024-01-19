@@ -29,7 +29,7 @@ _internal:
       | dig "networking" (dict "podSubnet" "0.0.0.0/32" "serviceSubnet" "0.0.0.0/32")
       | include "preserve-type"
     }}'
-    # the 0.0.0.0/32 values above are juste here to let us "helm template" with this
+    # the 0.0.0.0/32 values above are just here to let us use "helm template" with this
     # file without errors
 
 
