@@ -69,7 +69,8 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.1.26
+        #tag: 0.1.26
+        branch: jagrati/test
 
   local-path-provisioner:
     kind: GitRepository
@@ -1290,6 +1291,27 @@ units:
                 capabilities:
                   drop:
                     - ALL
+  capa:
+    info:
+      description: installs capa CAPI infra provider, for aws
+      maturity: core-component
+    repo: sylva-core
+    depends_on:
+      cert-manager: true
+    kustomization_spec:
+      path: ./kustomize-units/capa
+      wait: true
+
+  cloud-formation-operator:
+    info:
+      description: installs cloudstack operator unit
+      maturity: core-component
+    repo: sylva-core
+    depends_on:
+      cert-manager: true
+    kustomization_spec:
+      path: ./kustomize-units/cloud-formation-operator
+      wait: true
 
   capm3:
     info:
