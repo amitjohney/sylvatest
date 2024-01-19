@@ -66,7 +66,7 @@ EOF
 
 done
 
-for f in $(find environment-values kustomize-units -type f -name 'kustomization.yaml' | sed -r 's|/[^/]+$||')
+for f in $(find environment-values kustomize-units -type f -name 'kustomization.yaml' | grep -v '/ci/private/' | sed -r 's|/[^/]+$||')
 do
 cat <<EOF
 
