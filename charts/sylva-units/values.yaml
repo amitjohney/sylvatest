@@ -185,7 +185,7 @@ units:
   #     description: <short unit description>
   #     details: <more detailed data about unit purpose and usage>
   #     maturity: <level of integration in sylva stack of corresponding component>
-  #     internal: true <for internal sylva units>
+  #     internal: true <for units fully defined in sylva-core/kustomize-units without relying on external resources>
   #     version: <force declarative version, not recommended>
   #   enabled: boolean or GoTPL
   #   repo: <name of the repo under 'source_templates'> (for use with kustomization_spec)
