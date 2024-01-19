@@ -886,6 +886,15 @@ allOf:
             capi_providers:
               properties:
                 infra_provider:
+                  const: capa
+
+  - if:
+      properties:
+        cluster:
+          properties:
+            capi_providers:
+              properties:
+                infra_provider:
                   const: capo
     then:
       properties:
