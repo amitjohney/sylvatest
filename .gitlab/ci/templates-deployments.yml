@@ -264,9 +264,9 @@ include:
       unset https_proxy http_proxy
       export rancher_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n cattle-system rancher -o jsonpath='{ .spec.tls[].hosts[] }')
       BOOTSTRAP_PASSWORD=$(kubectl --kubeconfig management-cluster-kubeconfig -n cattle-system get secret bootstrap-secret -o jsonpath='{.data.bootstrapPassword}' | base64 -d)
-      TOKEN=$(curl --insecure -s https://$rancher_url/v3-public/localProviders/local?action=login -H 'content-type: application/json' --data-binary '{"username":"admin","password":"'$BOOTSTRAP_PASSWORD'","ttl":60000}' | jq -r .token)
-      KUBECONFIG=$(curl --insecure -s https://$rancher_url/v3/clusters/  -H "Authorization: Bearer $TOKEN" | jq '.data[] | select (.name=="'$WORKLOAD_CLUSTER_NAME-capi'") | .actions.generateKubeconfig'  | tr -d '"')
-      curl --insecure -s -X POST $KUBECONFIG -H "Authorization: Bearer $TOKEN" | jq -r .config > $WORKLOAD_CLUSTER_NAME-rancher.yaml
+      TOKEN=$(curl --insecure -s https://$rancher_url/v3-public/localProviders/local?action=login -H 'content-type: application/json' --data-binary '{"username":"admin","password":"'$BOOTSTRAP_PASSWORD'","ttl":60000}' | yq eval '.token' -r -)
+      KUBECONFIG=$(curl --insecure -s https://$rancher_url/v3/clusters/ -H "Authorization: Bearer $TOKEN" | yq eval '.data[] | select(.name == "'$WORKLOAD_CLUSTER_NAME-capi'") | .actions.generateKubeconfig' - | tr -d '"')
+      curl --insecure -s -X POST $KUBECONFIG -H "Authorization: Bearer $TOKEN" | yq eval '.config' -r - > $WORKLOAD_CLUSTER_NAME-rancher.yaml
 
 .test-workload-cluster:
   stage: deployment-test
@@ -307,8 +307,6 @@ include:
 
 .test-workload-cluster-no-sso:
   stage: deployment-test
-  before_script:
-    - apk add jq
   script:
     - !reference [.test_scripts, edit_hosts_file]
     - !reference [.test_scripts, test_no_sso]
