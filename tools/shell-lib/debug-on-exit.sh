@@ -35,9 +35,9 @@ additional_resources="
   DockerClusters
   DockerMachineTemplates
   DockerMachines
-  VSphereClusters.*cluster.x-k8s.io
-  VSphereMachineTemplates.*cluster.x-k8s.io
-  VSphereMachines.*cluster.x-k8s.io
+  VSphereClusters.*infrastructure.cluster.x-k8s.io
+  VSphereMachineTemplates.*infrastructure.cluster.x-k8s.io
+  VSphereMachines.*infrastructure.cluster.x-k8s.io
   OpenStackClusters
   OpenStackMachineTemplates
   OpenStackMachines
