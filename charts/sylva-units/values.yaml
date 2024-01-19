@@ -419,7 +419,7 @@ units:
       chart:
         spec:
           chart: postgresql
-          version: 13.2.29
+          version: 13.3.1
       targetNamespace: keycloak
       values:
         global:
