@@ -2,7 +2,7 @@
 
 ## Need for declarative Longhorn settings and Sylva context
 
-According to the [documentation](https://longhorn.io/docs/1.5.1/advanced-resources/default-disk-and-node-config/#customizing-default-disks-for-new-nodes) for the [latest release](https://github.com/longhorn/longhorn/releases), depending on whether a node’s label `node.longhorn.io/create-default-disk: 'config'` is present, Longhorn CSI will check for the `node.longhorn.io/default-disks-config` annotation and create default disks according to it. <br/>
+According to the [documentation](https://longhorn.io/docs/1.5.3/advanced-resources/default-disk-and-node-config/#customizing-default-disks-for-new-nodes), depending on whether a node’s label `node.longhorn.io/create-default-disk: 'config'` is present, Longhorn will check for the `node.longhorn.io/default-disks-config` annotation and create default disks according to it (w). <br/>
 
 Starting with its `v0.2.0` version, the [`cluster-api-provider-rke2`](https://github.com/rancher-sandbox/cluster-api-provider-rke2), aka `CABPR`, supports injecting node annotations via `RKE2ControlPlane.spec.agentConfig.nodeAnnotations` for control-plane nodes (for worker nodes the `RKE2ConfigTemplate.spec.template.spec.agentConfig.nodeAnnotations` is not effective, but is being worked-around within [`sylva-capi-cluster`](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster) according to https://gitlab.com/sylva-projects/sylva-core/-/issues/417#note_1668330146) on top of the existent support for injecting node labels, through `RKE2ControlPlane.spec.agentConfig.nodeLabels` and `RKE2ConfigTemplate.spec.template.spec.agentConfig.nodeLabels`. All this is made available by `sylva-units` (through [`sylva-capi-cluster`](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster)) chart values like:
 
@@ -84,7 +84,7 @@ cluster:
     my-bmh-foo:
       bmh_metadata:
         annotations:
-          sylvaproject.org/default-longhorn-disks-config: '[ { "path":"/var/longhorn/disks/disk_by-path_pci-0000:18:00.0-scsi-0:3:111:0", "allowScheduling":true, "storageReserved":0, "tags":[ "ssd", "fast" ] }]'
+          sylvaproject.org/default-longhorn-disks-config: '[ { "path":"/var/longhorn/disks/disk_by-path_pci-0000:18:00.0-scsi-0:3:111:0", "allowScheduling":true, "storageReserved":0, "tags":[ "ssd", "fast" ] }, { "path":"/var/longhorn/disks/sde", "storageReserved":0, "allowScheduling":true, "tags":[ "hdd", "slow" ] } ]'
 
 ```
 
@@ -121,7 +121,7 @@ kind: Node
 metadata:
   annotations:
     node.longhorn.io/default-disks-config: '[{"path":"/var/longhorn/disks/disk_by-path_pci-0000:18:00.0-scsi-0:3:111:0",
-      "storageReserved":0, "allowScheduling":true, "tags":[ "ssd", "fast" ]}]'
+      "storageReserved":0, "allowScheduling":true, "tags":[ "ssd", "fast" ]}, {"path":"/var/longhorn/disks/sde", "storageReserved":0, "allowScheduling":true, "tags":[ "hdd", "slow" ]}]'
     :
     rke2.io/node-args: '["server","--cluster-cidr","100.72.0.0/16","--cni","calico","--kubelet-arg","anonymous-auth=false","--kubelet-arg","provider-id=metal3://sylva-system/mgmt-cluster-my-bmh-foo/mgmt-cluster-cp-056108e4c3-5b9sj","--node-label","--node-label","node.longhorn.io/create-default-disk=config","--profile","cis-1.23","--service-cidr","100.73.0.0/16","--tls-san","172.18.0.2","--tls-san","192.168.100.2","--token","********"]'
   labels:
@@ -146,6 +146,20 @@ vda   252:0    0   50G  0 disk
 vdb   252:16   0   50G  0 disk
 vdc   252:32   0   50G  0 disk /var/longhorn/disks/disk_by-path_pci-0000:18:00.0-scsi-0:3:111:0
 root@gmt-cluster-my-bmh-foo:/#
+
+```
+
+When passing the value of this annotation to the BMH, we base64 encode it to avoid issues with parsing the complex JSON structure during cloud-init init phase. We base64 decode it during cloud-init commands injection.
+
+```terminal
+
+$ kubectl get secrets sylva-units-values -o yaml | yq .data.values | base64 -d | yq '.cluster.baremetal_hosts."management-cp".bmh_metadata.annotations'
+sylvaproject.org/default-longhorn-disks-config: '[{"path":"/var/longhorn/disks/disk_by-path_pci-0000:00:0b.0", "storageReserved":0, "allowScheduling":true, "tags":[ "ssd", "fast" ]}]'
+$ kubectl get bmh mgmt-cluster-management-cp -o yaml | yq .metadata.annotations
+meta.helm.sh/release-name: cluster
+meta.helm.sh/release-namespace: sylva-system
+sylvaproject.org/default-longhorn-disks-config: W3sicGF0aCI6Ii92YXIvbG9uZ2hvcm4vZGlza3MvZGlza19ieS1wYXRoX3BjaS0wMDAwOjAwOjBiLjAiLCAic3RvcmFnZVJlc2VydmVkIjowLCAiYWxsb3dTY2hlZHVsaW5nIjp0cnVlLCAidGFncyI6WyAic3NkIiwgImZhc3QiIF19XQ==
+$
 
 ```
 

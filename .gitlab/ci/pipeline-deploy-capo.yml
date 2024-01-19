@@ -68,8 +68,6 @@ test-rke2-node-annotations:
   extends:
     - .test-rke2-node-annotations
     - .rules:skip-if-kubeadm
-  before_script:
-    - apk add jq
 
 # ----------------------------------------------------------
 

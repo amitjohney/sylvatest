@@ -117,7 +117,6 @@ test-rke2-node-annotations:
     - .rules:skip-if-kubeadm
   before_script:
     - !reference [.ensure_sylva_toolbox]
-    - apk add jq
 
 #----------------------------------------------------------
 

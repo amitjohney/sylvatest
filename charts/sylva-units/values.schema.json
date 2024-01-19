@@ -660,6 +660,19 @@
                 }
               ]
             },
+            "image_key": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "flavor_name": {
               "anyOf": [
                 {
@@ -2170,6 +2183,19 @@
                         }
                       ]
                     },
+                    "image_key": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "$ref": "#/$defs/string-with-gotpl"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "flavor_name": {
                       "anyOf": [
                         {
@@ -2584,7 +2610,10 @@
           "anyOf": [
             {
               "type": "integer",
-              "minimum": 1
+              "minimum": 1,
+              "not": {
+                "multipleOf": 2
+              }
             },
             {
               "$ref": "#/$defs/string-with-gotpl"
@@ -2688,6 +2717,19 @@
               "type": "object",
               "properties": {
                 "image_name": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "image_key": {
                   "anyOf": [
                     {
                       "type": "string"
@@ -4406,6 +4448,19 @@
                             }
                           ]
                         },
+                        "image_key": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
                         "flavor_name": {
                           "anyOf": [
                             {
@@ -4718,6 +4773,51 @@
               "type": "null"
             }
           ]
+        },
+        "os_images": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "patternProperties": {
+                ".*": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "openstack_glance_uuid": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/$defs/openstack-uuid"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "allOf": [
@@ -4793,11 +4893,22 @@
                 "anyOf": [
                   {
                     "required": [
-                      "image_name",
                       "ssh_key_name",
                       "network_id",
                       "clouds_yaml",
                       "resources_tag"
+                    ],
+                    "oneOf": [
+                      {
+                        "required": [
+                          "image_name"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "image_key"
+                        ]
+                      }
                     ]
                   },
                   {
