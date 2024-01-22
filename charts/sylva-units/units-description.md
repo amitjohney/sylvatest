@@ -31,6 +31,8 @@
 | **longhorn** | installs Longhorn CSI | stable |  | [Helm](https://charts.rancher.io/) | 102.2.3+up1.4.4 |
 | **metal3** | install Metal3 operator | stable |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3.git) | 0.7.3 |
 | **metallb** | installs MetalLB operator | stable |  | [Helm](https://metallb.github.io/metallb) | 0.13.12 |
+| **minio-monitoring-tenant** | create minio tenant for monitoring setup<br><br>loki and thanos are using S3 object interface for storage (minio) | stable |  | Helm | v5.0.11 |
+| **minio-operator** | install minio operator need it to create minio tenants<br><br>using minio operator we can create multiple S3 tenants | stable |  | Helm | v5.0.11 |
 | **monitoring** | installs monitoring stack | stable |  | [Helm](https://charts.rancher.io/) | 102.0.2+up40.1.2 |
 | **multus** | installs Multus | stable |  | [Helm](https://rke2-charts.rancher.io/) | v3.9.3-build2023010901 |
 | **os-image-server** | Deploys a web server on management cluster which serves OS images for baremetal clusters. | stable |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/os-image-server.git) | 1.8.0 |
