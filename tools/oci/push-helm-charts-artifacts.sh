@@ -74,22 +74,30 @@ function check_invalid_semver_tag {
 function artifact_integrity {
   local tgz_file=$1
   local artifact_name=$2
-  local artifact_version=$3
   
-  # to be tested: these two lines should avoid passing $3
-  #artifact_version=$(echo $tgz_file | sed 's/\.tgz//' | sed 's/.*-//')
-  #artifact_url=$OCI_REGISTRY/$artifact_name:${artifact_version/+/_}
+  # calculate artifact_version from the tgz filename instead of passing it through
+  # $version_to_check from process_chart_in_helm_repo)
+  # or $revision from process_chart_in_git 
+  #local artifact_version=$3
+  #artifact_url=$OCI_REGISTRY/$artifact_name:${artifact_version}
 
-  artifact_url=$OCI_REGISTRY/$artifact_name:${artifact_version}
+  artifact_version=$(echo $tgz_file | sed 's/\.tgz//' | sed 's/.*-//')
+  artifact_url=$OCI_REGISTRY/$artifact_name:${artifact_version/+/_}
+  ######
+
   rm -rf /tmp/*
   # The integrity test makes sense only if the OCI artifact exists
   if (flux pull artifact $artifact_url -o /tmp); then
     echo "Checking the integrity of the existing unsigned artifact $artifact_name:${artifact_version} :: $artifact_url"
+    pulled_name=$(ls /tmp)  # to handle situation where articat is renamed e.g. s/core/neuvector-core
     tmp_dir=$(mktemp -d /tmp/tgz-XXXXXXX)
     tar -xzvf $tgz_file -C $tmp_dir
     # make a diff between the tgz file and the artifact pulled
     echo "---------- make a diff --------------"
-    diff -qr /tmp/$artifact_name $tmp_dir/$artifact_name
+    # cleanup files that and directories that must not be checked in diff
+    find /tmp -name Chart.lock -type f -delete
+    find /tmp -depth -name .git -type d -exec rm -rv {} +
+    diff -qr /tmp/$pulled_name $tmp_dir/$pulled_name
   fi
 }
 
@@ -97,11 +105,10 @@ function push_and_sign {
  
       local tgz_file=$1
       local artifact_name=$2
-      local artifact_version=$3
 
       echo "checking integrity of $tgz_file against $artifact_name $artifact_version"
 
-      if !(artifact_integrity $tgz_file $artifact_name $artifact_version); then
+      if !(artifact_integrity $tgz_file $artifact_name); then
         echo "[ERROR] cannot push and sign $artifact_name because its content differs from the content of the already existing OCI artifact"
         return 1
       fi
@@ -143,7 +150,7 @@ function process_chart_in_helm_repo {
       fi
       # Push Helm chart to OCI, then sign if signing material is available
  
-      push_and_sign $tgz_file $artifact_name $version_to_check
+      push_and_sign $tgz_file $artifact_name
       rm -f $tgz_file
     else
       if ls $chart_name*tgz >/dev/null 2>&1; then
@@ -172,7 +179,7 @@ function process_chart_in_git {
     helm package --version $revision $TMPD/$chart_path
     if [[ -e $tgz_file ]]; then
       # Push Helm chart to OCI, then sign if signing material is available
-      push_and_sign $tgz_file $chart_name $revision
+      push_and_sign $tgz_file $chart_name
       #flux push artifact $OCI_REGISTRY/$chart_name:$git_revision --path=$chart_path --source=$git_repo --revision=$git_revision ${creds:-}
     else
       error $chart_name "The $tgz_file is not present after the 'helm package' operation, check that the chart version is correct"
