@@ -709,6 +709,12 @@ properties:
             format: hostname
           - const: ''
           - $ref: "#/$defs/string-with-gotpl"
+      loki:  # -------------------------------
+        anyOf:
+          - type: string
+            format: hostname
+          - const: ''
+          - $ref: "#/$defs/string-with-gotpl"
 
   external_certificates:  # -------------------------------
     type: object
