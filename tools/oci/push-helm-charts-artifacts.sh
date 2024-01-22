@@ -106,6 +106,8 @@ function push_and_sign {
       local tgz_file=$1
       local artifact_name=$2
 
+      artifact_version=$(echo $tgz_file | sed 's/\.tgz//' | sed 's/.*-//')
+
       echo "checking integrity of $tgz_file against $artifact_name $artifact_version"
 
       if !(artifact_integrity $tgz_file $artifact_name); then
