@@ -111,6 +111,10 @@ function cluster_info_dump() {
   # dump CAPI secrets
   kubectl get secret -A --field-selector=type=cluster.x-k8s.io/secret                                > $dump_dir/Secrets-capi.summary.txt
   kubectl get secret -A --field-selector=type=cluster.x-k8s.io/secret -o yaml --show-managed-fields  > $dump_dir/Secrets-capi.yaml
+
+  set +e
+  helm get manifest metallb | grep "kind:" > $dump_dir/metallb-helm-get-manifest-kinds.log
+  flux tree kustomization metallb > $dump_dir/metallb-flux-tree.log
 }
 
 echo "Start debug-on-exit at: $(date -Iseconds)"

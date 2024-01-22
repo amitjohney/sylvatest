@@ -18,6 +18,8 @@ units:
     enabled: false
   harbor:
     enabled: false
+  rancher:
+    enabled: false
 
   # workaround until we move to > 1.26.6
   calico:
