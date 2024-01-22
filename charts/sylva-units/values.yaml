@@ -120,6 +120,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: v1.26.2
 
+<<<<<<< HEAD
   sylva-dashboards:
     kind: GitRepository
     spec:
@@ -128,11 +129,14 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
         tag: 0.0.1
 
   loki:
+=======
+  loki-scalable:
+>>>>>>> 617f477c (changed unit name from loki to loki-scalable (in the near futre the loki microservice (distributed) version will be also installed for better performance))
     kind: GitRepository
     spec:
       url: https://github.com/grafana/loki.git
       ref:
-        tag: v2.9.2
+        tag: v2.9.3
 
 helm_repo_spec_default:
   interval: 60m0s
@@ -401,6 +405,7 @@ units:
         - '{{ tuple "components/sriov" (tuple . "sriov" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/cattle-monitoring" (tuple . "monitoring" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/gitea" (tuple . "gitea" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/loki-scalable" (tuple . "loki-scalable" | include "unit-enabled") | include "set-only-if" }}'
 
 # Postgresql deployment for keycloak
   postgres-init:
@@ -1997,6 +2002,34 @@ units:
             ignore-volume-az = true
             {{- end -}}
 
+<<<<<<< HEAD
+=======
+  sylva-ca-certs:
+    info:
+      description: configures Sylva internal certificate authority
+      internal: true
+    depends_on:
+      namespace-defs: true
+      cert-manager: true
+      sylva-ca: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/sylva-ca-certs
+      postBuild:
+        substitute:
+          RANCHER_DNS: '{{ .Values.external_hostnames.rancher }}'
+          VAULT_DNS: '{{ .Values.external_hostnames.vault }}'
+          KEYCLOAK_DNS: '{{ .Values.external_hostnames.keycloak }}'
+          FLUX_WEBUI_DNS: '{{ .Values.external_hostnames.flux }}'
+          LOKI_DNS: '{{ .Values.external_hostnames.loki }}'
+      wait: true
+      _components:
+        - '{{ tuple "components/keycloak-tls" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/rancher-tls" (tuple . "rancher" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/vault-tls" (tuple . "vault" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/loki-tls" (tuple . "loki-distributed" | include "unit-enabled") | include "set-only-if" }}'
+
+>>>>>>> 617f477c (changed unit name from loki to loki-scalable (in the near futre the loki microservice (distributed) version will be also installed for better performance))
   synchronize-secrets:
     info:
       description: allows secrets from Vault to be consumed other units, relies on ExternalSecrets
@@ -3396,27 +3429,28 @@ units:
             readOnly: true
             subPath: ca.crt
 
-  loki:
+  loki-scalable:
     info:
-      description: installs loki used for log collecting
+      description: install loki in simple scalable mode, loki is used for logs storage
       maturity: stable
     depends_on:
+      namespace-defs: true
       sylva-ca-certs: true
-      #minio-monitoring: true
+      #minio-monitoring-tenant: true
     enabled_conditions:
       - '{{ tuple . "monitoring" | include "unit-enabled" }}'
     annotations:
       sylvactl/readyMessage: "loki can be reached at https://{{ .Values.external_hostnames.loki }} ({{ .Values.external_hostnames.loki }} must resolve to {{ .Values.display_external_ip }})"
-    repo: loki
+    repo: loki-scalable
     helmrelease_spec:
       releaseName: loki
-      targetNamespace: loki
+      targetNamespace: loki-scalable
       chart:
         spec:
           chart: production/helm/loki
           version: v2.9.2
       install:
-        createNamespace: true
+        createNamespace: false
       values:
         global:
           dnsService: "rke2-coredns-rke2-coredns"
