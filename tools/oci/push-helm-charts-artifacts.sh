@@ -79,6 +79,9 @@ function artifact_integrity {
   # $version_to_check from process_chart_in_helm_repo)
   # or $revision from process_chart_in_git 
   artifact_version=$(echo $tgz_file | sed 's/\.tgz//' | sed 's/.*-//')
+
+  echo "checking integrity of $tgz_file against $artifact_name $artifact_version"
+
   artifact_url=$OCI_REGISTRY/$artifact_name:${artifact_version/+/_}
 
   rm -rf /tmp/*
