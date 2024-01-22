@@ -78,18 +78,14 @@ function artifact_integrity {
   # calculate artifact_version from the tgz filename instead of passing it through
   # $version_to_check from process_chart_in_helm_repo)
   # or $revision from process_chart_in_git 
-  #local artifact_version=$3
-  #artifact_url=$OCI_REGISTRY/$artifact_name:${artifact_version}
-
   artifact_version=$(echo $tgz_file | sed 's/\.tgz//' | sed 's/.*-//')
   artifact_url=$OCI_REGISTRY/$artifact_name:${artifact_version/+/_}
-  ######
 
   rm -rf /tmp/*
   # The integrity test makes sense only if the OCI artifact exists
   if (flux pull artifact $artifact_url -o /tmp); then
     echo "Checking the integrity of the existing unsigned artifact $artifact_name:${artifact_version} :: $artifact_url"
-    pulled_name=$(ls /tmp)  # to handle situation where articat is renamed e.g. s/core/neuvector-core
+    pulled_name=$(ls /tmp)  # to handle the situations where articat is renamed e.g. s/core/neuvector-core
     tmp_dir=$(mktemp -d /tmp/tgz-XXXXXXX)
     tar -xzvf $tgz_file -C $tmp_dir
     # make a diff between the tgz file and the artifact pulled
