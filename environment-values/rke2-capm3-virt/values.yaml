@@ -71,7 +71,7 @@ cluster:
         longhorn: "true"
     bmh_spec:
       online: false
-      description: control plane node
+      description: management cluster node
       bmc:
         disableCertificateVerification: true
       bootMode: legacy
