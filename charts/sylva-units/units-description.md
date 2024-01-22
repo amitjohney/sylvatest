@@ -29,9 +29,13 @@
 | **libvirt-metal** | installs libvirt for baremetal emulation<br/><br/>this unit is used in bootstrap cluster for baremetal testing | stable |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/container-images/libvirt-metal.git) | 0.1.8 |
 | **local-path-provisioner** | installs local-path CSI | stable |  | [Helm](https://github.com/rancher/local-path-provisioner.git) | v0.0.24 |
 <<<<<<< HEAD
+<<<<<<< HEAD
 | **longhorn** | installs Longhorn CSI | stable |  | [Helm](https://charts.rancher.io/) | 103.2.1+up1.5.3 |
 =======
 | **loki** | installs loki used for log collecting | stable |  | Helm | v2.9.2 |
+=======
+| **loki-scalable** | install loki in simple scalable mode, loki is used for logs storage | stable |  | Helm | v2.9.2 |
+>>>>>>> 092beb0e (changed unit name from loki to loki-scalable (in the near futre the loki microservice (distributed) version will be also installed for better performance))
 | **longhorn** | installs Longhorn CSI | stable |  | [Helm](https://charts.rancher.io/) | 102.2.3+up1.4.4 |
 >>>>>>> 3d989868 (initial commit (2))
 | **metal3** | install Metal3 operator | stable |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3.git) | 0.7.3 |

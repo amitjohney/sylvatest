@@ -3,7 +3,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: loki-tls
-  namespace: loki
+  namespace: loki-scalable
 spec:
   secretName: loki-tls
   # Currently the certificate is trusted by the Sylva CA by referring to the ca-issuer.

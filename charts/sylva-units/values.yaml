@@ -140,12 +140,13 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-snmp-resources.git
       ref:
         tag: 0.0.3
+
   loki:
     kind: GitRepository
     spec:
       url: https://github.com/grafana/loki.git
       ref:
-        tag: v2.9.2
+        tag: v2.9.3
 
 helm_repo_spec_default:
   interval: 60m0s
@@ -418,6 +419,7 @@ units:
         - '{{ tuple "components/gitea" (tuple . "gitea" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/minio-operator" (tuple . "minio-operator" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/minio-monitoring-tenant" (tuple . "minio-monitoring-tenant" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/loki" (tuple . "loki" | include "unit-enabled") | include "set-only-if" }}'
 
 # Postgresql deployment for keycloak
   postgres-init:
@@ -3586,6 +3588,7 @@ units:
               - hosts:
                   - '{{ .Values.external_hostnames.minio_operator_console }}'
                 secretName: minio-operator-console-tls
+
   minio-monitoring-tenant-init:
     info:
       description: sets up MinIO certificate for minio-monitoring-tenant
@@ -3758,11 +3761,12 @@ units:
 
   loki:
     info:
-      description: installs loki used for log collecting
+      description: install loki in simple scalable mode, loki is used for logs storage
       maturity: stable
     depends_on:
+      namespace-defs: true
       sylva-ca-certs: true
-      #minio-monitoring: true
+      #minio-monitoring-tenant: true
     enabled_conditions:
       - '{{ tuple . "monitoring" | include "unit-enabled" }}'
     annotations:
@@ -3776,7 +3780,7 @@ units:
           chart: production/helm/loki
           version: v2.9.2
       install:
-        createNamespace: true
+        createNamespace: false
       values:
         global:
           dnsService: "rke2-coredns-rke2-coredns"
