@@ -3186,6 +3186,10 @@ cluster:
   # Nodes number for control-plane
   control_plane_replicas: 3
 
+  kubelet_extra_args:
+    # increase max-pods for single-node deployments
+    max-pods: '{{ tuple 196 (eq (.Values._internal.node_count | int) 1) | include "set-only-if" }}'
+
   capo:
     # flavor_name: m1.large # Openstack flavor name
     # image_name: # OpenStack image name
@@ -3534,6 +3538,15 @@ _internal:
   k8s_version_map:
     1.26: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.26.9+rke2r1" "v1.26.9" }}'
 
+  # total number of nodes in this cluster
+  node_count:
+    '
+    {{- $n := .Values.cluster.control_plane_replicas -}}
+    {{- range $_, $md := .Values.cluster.machine_deployments -}}
+      {{- $n = add $n $md.replicas -}}
+    {{- end -}}
+    {{ $n | include "preserve-type" }}
+    '
 
 shared_workload_clusters_values:
   ntp: '{{ .Values.ntp | include "set-if-defined" }}'
