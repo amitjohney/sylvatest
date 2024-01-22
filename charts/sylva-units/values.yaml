@@ -1245,6 +1245,9 @@ units:
       cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/capi
+      postBuild:
+        substitute:
+          force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
       wait: true
 
   capd:
@@ -1329,6 +1332,9 @@ units:
       cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/cabpk
+      postBuild:
+        substitute:
+          force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
       wait: true
 
   cabpr:
