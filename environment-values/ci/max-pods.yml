@@ -1,4 +1,0 @@
-cluster:
-  control_plane_replicas: 3
-  kubelet_extra_args:
-    max-pods: "111"
