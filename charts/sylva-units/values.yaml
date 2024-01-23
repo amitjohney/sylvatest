@@ -3629,7 +3629,7 @@ units:
         gateway:
           enabled: false
           verboseLogging: true
-          replicas: 2
+          replicas: '{{ int .Values._internal.node_count | gt 2 | ternary 1 2 }}'
           nginxConfig:
             httpSnippet: |-
               client_max_body_size 50M;
