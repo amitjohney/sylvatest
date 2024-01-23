@@ -15,7 +15,8 @@ units:
     enabled: true
   sriov:
     enabled: true
-
+  sriov-resources:
+    enabled: true
 cluster:
   kubelet_extra_args:
     max-pods: "228"
@@ -25,3 +26,14 @@ cluster:
     cpu-manager-policy: "static"
     system-reserved: "cpu=100m,memory=500Mi"
     kube-reserved: "cpu=100m,memory=500Mi"
+
+sriov:
+  node_policies:
+    dl360-sriov:
+      resourceName: sriov
+      numVfs: 16
+      deviceType: "vfio-pci"
+      nicSelector:
+        pfNames:
+          - ens2f0
+
