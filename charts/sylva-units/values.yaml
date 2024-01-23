@@ -62,7 +62,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3.git
       ref:
-        tag: 0.7.0
+        tag: 0.7.3
 
   sylva-capi-cluster:
     kind: GitRepository
@@ -1481,7 +1481,7 @@ units:
         images:
           baremetalOperator:
             repository: quay.io/metal3-io/baremetal-operator
-            tag: "v0.4.0"
+            tag: "v0.5.0"
           ironic:
             repository: quay.io/metal3-io/ironic
             tag: "capm3-v1.5.2"
