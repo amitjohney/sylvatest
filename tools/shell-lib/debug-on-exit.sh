@@ -146,7 +146,16 @@ if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
         echo -e "We'll check next workload cluster $workload_cluster_name"
         workload_cluster_namespace=$(kubectl get cluster.cluster --all-namespaces -o=custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace | grep "$workload_cluster_name" | awk -F ' ' '{print $2}')
         kubectl -n $workload_cluster_namespace get secret $workload_cluster_name-kubeconfig -o jsonpath='{.data.value}' | base64 -d > $BASE_DIR/workload-cluster-kubeconfig
-        export KUBECONFIG=$BASE_DIR/workload-cluster-kubeconfig
+
+        if timeout 10s kubectl --kubeconfig=$BASE_DIR/workload-cluster-kubeconfig get nodes > /dev/null 2>&1; then
+          export KUBECONFIG=$BASE_DIR/workload-cluster-kubeconfig
+        else
+          # in case of baremetal emulation workload cluster in only accessible from Rancher
+          # and rancher API certificates does not mach expected (so kubectl must be used with insecure-skip-tls-verify)
+          ./tools/shell-lib/get-wc-kubeconfig-from-rancher.sh $workload_cluster_name > $BASE_DIR/workload-cluster-kubeconfig-rancher
+          yq -i e '.clusters[0].cluster.insecure-skip-tls-verify = true' $BASE_DIR/workload-cluster-kubeconfig-rancher
+          export KUBECONFIG=$BASE_DIR/workload-cluster-kubeconfig-rancher
+        fi
 
         cluster_info_dump workload
     fi
