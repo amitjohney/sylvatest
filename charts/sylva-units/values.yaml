@@ -2027,7 +2027,7 @@ units:
         - '{{ tuple "components/keycloak-tls" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/rancher-tls" (tuple . "rancher" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/vault-tls" (tuple . "vault" | include "unit-enabled") | include "set-only-if" }}'
-        - '{{ tuple "components/loki-tls" (tuple . "loki-distributed" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/loki-tls" (tuple . "loki-scalable" | include "unit-enabled") | include "set-only-if" }}'
 
 >>>>>>> 617f477c (changed unit name from loki to loki-scalable (in the near futre the loki microservice (distributed) version will be also installed for better performance))
   synchronize-secrets:
@@ -3436,7 +3436,7 @@ units:
     depends_on:
       namespace-defs: true
       sylva-ca-certs: true
-      minio-monitoring-tenant: true
+      #minio-monitoring-tenant: true
     enabled_conditions:
       - '{{ tuple . "minio-monitoring-tenant" | include "unit-enabled" }}'
     annotations:
