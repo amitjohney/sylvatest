@@ -4806,6 +4806,41 @@
               "capi_providers": {
                 "properties": {
                   "infra_provider": {
+                    "const": "capa"
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "capa"
+            ],
+            "properties": {
+              "capa": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "ssh_key_name"
+                    ]
+                  },
+                  {
+                    "$ref": "#/$defs/string-with-gotpl"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "capi_providers": {
+                "properties": {
+                  "infra_provider": {
                     "const": "capv"
                   }
                 }
