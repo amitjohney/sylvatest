@@ -1808,6 +1808,13 @@ units:
           registry: UseDefault
 
   calico-wireguard:
+    info:
+      description: Enable wireguard in the Calico CNI
+      details: |
+        When calico-wireguard is enabled, all the inter-node communications
+        of the platform are encapsulated in an encrypted wireguard tunnel.
+      internal: true
+      maturity: beta
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/calico-wireguard
