@@ -120,12 +120,12 @@ for TEMPLATE_CR in ${TEMPLATE_TYPES_CR[@]}; do
 
                 if [[ "$could_be_removed" == "true" ]]; then
                     echo -e "\n\t Preparing deletion of $TEMPLATE_RESOURCE_SHORT/$TEMPLATE_RESOURCE_INSTANCE"
-                    owner_ref_count=$(kubectl -n "$TARGET_NAMESPACE" get "$TEMPLATE_RESOURCE/$TEMPLATE_RESOURCE_INSTANCE" -o yaml | yq '.metadata.ownerReferences | length')
+                    owner_ref_count=$(kubectl -n "$TARGET_NAMESPACE" get "$TEMPLATE_RESOURCE/$TEMPLATE_RESOURCE_INSTANCE" -o json | jq '.metadata.ownerReferences | length')
                     if [[ $owner_ref_count != "0" ]]; then
                         echo -e "\n\t **NOT** deleting $TEMPLATE_RESOURCE_SHORT/$TEMPLATE_RESOURCE_INSTANCE, because it still has ownerReferences (anomaly in this tool ?)"
-                        kubectl -n "$TARGET_NAMESPACE" get "$TEMPLATE_RESOURCE/$TEMPLATE_RESOURCE_INSTANCE" -o yaml | yq '.metadata.ownerReferences'
+                        kubectl -n "$TARGET_NAMESPACE" get "$TEMPLATE_RESOURCE/$TEMPLATE_RESOURCE_INSTANCE" -o json | jq '.metadata.ownerReferences'
                     else
-                        TEMPLATE_RESOURCE_API_VERSION=$(kubectl -n "$TARGET_NAMESPACE" get "$TEMPLATE_RESOURCE/$TEMPLATE_RESOURCE_INSTANCE" -o yaml | yq .apiVersion)
+                        TEMPLATE_RESOURCE_API_VERSION=$(kubectl -n "$TARGET_NAMESPACE" get "$TEMPLATE_RESOURCE/$TEMPLATE_RESOURCE_INSTANCE" -o json | jq .apiVersion)
 
                         echo -e "\n\t Deleting $TEMPLATE_RESOURCE_SHORT/$TEMPLATE_RESOURCE_INSTANCE"
                         kubectl -n "$TARGET_NAMESPACE" delete "$TEMPLATE_RESOURCE/$TEMPLATE_RESOURCE_INSTANCE" | sed 's/^/\'$'\t/'
@@ -142,9 +142,9 @@ reportingComponent: capi-garbage-cleanup
 message: capi-garbage-cleanup deleted $TEMPLATE_RESOURCE/$TEMPLATE_RESOURCE_INSTANCE
 reason: capi-garbage-cleanup determined that this object isn't referred to anymore
 firstTimestamp: $(date -Iseconds -u | sed 's/+00:00/Z/')
-involvedObject:*
+involvedObject:
   apiVersion: $TEMPLATE_RESOURCE_API_VERSION
-  kind: $TEMPLATE_RESOURCE
+  kind: $TEMPLATE_RESOURCE_SHORT
   name: $TEMPLATE_RESOURCE_INSTANCE
   namespace: $TARGET_NAMESPACE
 action: delete
