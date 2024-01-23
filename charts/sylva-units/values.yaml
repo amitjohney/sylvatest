@@ -3896,7 +3896,7 @@ units:
               seccompProfile:
                 type: RuntimeDefault
         write:
-          replicas: 2
+          replicas: '{{ int .Values._internal.node_count | gt 2 | ternary 1 2 }}'
           autoscaling:
             enable: true
             minReplicas: 2
