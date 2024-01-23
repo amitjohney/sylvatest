@@ -3596,7 +3596,7 @@ units:
         tablemanager:
           enabled: false
         read:
-          replicas: 2
+          replicas: '{{ int .Values._internal.node_count | gt 2 | ternary 1 2 }}'
           podSecurityContext:
             seccompProfile:
               type: RuntimeDefault
