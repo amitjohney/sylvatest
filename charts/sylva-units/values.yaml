@@ -2387,6 +2387,90 @@ units:
                   path: /metadata/annotations/helm.toolkit.fluxcd.io~1driftDetection
                   value: disabled
 
+  snmp-exporter:
+    info:
+      description: installs SNMP exporter
+      maturity: beta
+    enabled_conditions:
+    - '{{ tuple . "monitoring" | include "unit-enabled" }}'
+    - '{{ .Values.snmp.devices | empty | not }}'
+    - '{{ .Values.snmp.groups | empty | not }}'
+    depends_on:
+      monitoring: true
+    helm_repo_url: https://prometheus-community.github.io/helm-charts
+    helmrelease_spec:
+      releaseName: snmp-exporter
+      targetNamespace: snmp-exporter
+      chart:
+        spec:
+          chart: prometheus-snmp-exporter
+          version: 1.8.1
+      install:
+        createNamespace: true
+      values:
+        fullnameOverride: 'snmp-exporter'
+        replicas: 3
+        serviceMonitor:
+          enabled: true
+          namespace: snmp-exporter
+          params: |
+            {{- $result := list -}}
+            {{- range $device := .Values.snmp.devices }}
+            {{- $service_monitor := dict "name" (lower $device.name) -}}
+            {{- $module := list -}}
+            {{- $module := append $module $device.group -}}
+            {{- $_ := set $service_monitor "module" $module -}}
+            {{- $_ := set $service_monitor "target" $device.ip -}}
+            {{- $result = append $result $service_monitor -}}
+            {{- end }}
+            {{- $result | include "preserve-type" -}}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+        containerSecurityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+      _postRenderers:
+        - kustomize:
+            patchesStrategicMerge:
+              - kind: Deployment
+                apiVersion: apps/v1
+                metadata:
+                  name: snmp-exporter
+                spec:
+                  template:
+                    spec:
+                      containers:
+                      - name: configmap-reload
+                        securityContext:
+                          allowPrivilegeEscalation: false
+                          capabilities:
+                            drop:
+                              - ALL
+
+    helm_secret_values:
+      config: |
+        {{- $files := .Files }}
+        {{- range $group_name, $group_keys := .Values.snmp.groups }}
+        {{ $oid_file := printf "configs/snmp-exporter/%s.yaml" $group_keys.hw_type }}
+        {{- $group_name }}:
+          version: {{ $group_keys.version }}
+          auth:
+            community: '{{ $group_keys.auth.community }}'
+            security_level: '{{ $group_keys.auth.security_level }}'
+            username: '{{ $group_keys.auth.username }}'
+            password: '{{ $group_keys.auth.password }}'
+            auth_protocol: '{{ $group_keys.auth.auth_protocol }}'
+            priv_protocol: '{{ $group_keys.auth.priv_protocol }}'
+            priv_password: '{{ $group_keys.auth.priv_password }}'
+          {{- $files.Get $oid_file | nindent 2 }}
+        {{- end -}}
+
+
   multus:
     info:
       description: installs Multus
@@ -3573,3 +3657,40 @@ shared_workload_clusters_values:
 shared_workload_clusters_secret_values:
   cluster:
     capo: '{{ tuple (dict "clouds_yaml" (.Values.cluster | dig "capo" "clouds_yaml" dict)) (.Values.cluster | dig "capo" "clouds_yaml" dict) | include "set-only-if" }}'
+
+snmp:
+  devices: []
+  groups: {}
+
+# Sample snmp configuration as it needs to be added in the secrets.yaml file
+# snmp:
+#   devices:
+#     - name: server1
+#       ip: 1.2.3.4
+#       group: dell1
+#     - name: server2
+#       ip: 5.6.7.8
+#       group: hp1
+#   groups:
+#     dell1:
+#       version: 3
+#       auth:
+#         community: public
+#         security_level: authPriv
+#         username: snmp
+#         password: xxxxx
+#         auth_protocol: MD5
+#         priv_protocol: AES
+#         priv_password: xxxxx
+#       hw_type: dell
+#     hp1:
+#       version: 3
+#       auth:
+#         community: public
+#         security_level: authPriv
+#         username: snmp
+#         password: xxxxx
+#         auth_protocol: MD5
+#         priv_protocol: AES
+#         priv_password: xxxxx
+#       hw_type: hp

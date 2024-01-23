@@ -124,6 +124,26 @@ libvirt_metal:
       memGB: 6 # IPA allocates half of it to tmpfs, if must be large enough to store the image.
       numCPUs: 4
 
+# dummy configuration to allow deployment of snmp-exporter
+snmp:
+  devices:
+    - name: bar
+      ip: 192.168.100.2
+      group: foo
+  groups:
+    foo:
+      version: 3
+      auth:
+        community: public
+        security_level: authPriv
+        username: user
+        password: xxxxxx
+        auth_protocol: MD5
+        priv_protocol: AES
+        priv_password: xxxxxx
+      hw_type: dell
+
+
 #proxies:
 #  # put your own proxy settings here if you need
 #  http_proxy: ""

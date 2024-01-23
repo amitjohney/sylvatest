@@ -46,6 +46,10 @@ units:
           cattle:
             clusterId: local
 
+  snmp-exporter:
+    enabled: '{{ tuple . "capm3" | include "unit-enabled" }}'
+
+
 keycloak:
   keycloak_expire_password_days: 30
 
