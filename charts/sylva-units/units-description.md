@@ -30,12 +30,15 @@
 | **local-path-provisioner** | installs local-path CSI | stable |  | [Helm](https://github.com/rancher/local-path-provisioner.git) | v0.0.24 |
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 | **longhorn** | installs Longhorn CSI | stable |  | [Helm](https://charts.rancher.io/) | 103.2.1+up1.5.3 |
 =======
 | **loki** | installs loki used for log collecting | stable |  | Helm | v2.9.2 |
 =======
 | **loki-scalable** | install loki in simple scalable mode, loki is used for logs storage | stable |  | Helm | v2.9.2 |
 >>>>>>> 092beb0e (changed unit name from loki to loki-scalable (in the near futre the loki microservice (distributed) version will be also installed for better performance))
+=======
+>>>>>>> f65e9088 (Apply 1 suggestion(s) to 1 file(s))
 | **longhorn** | installs Longhorn CSI | stable |  | [Helm](https://charts.rancher.io/) | 102.2.3+up1.4.4 |
 >>>>>>> 3d989868 (initial commit (2))
 | **metal3** | install Metal3 operator | stable |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3.git) | 0.7.3 |
@@ -54,9 +57,14 @@
 | **flux-webui-init** | initializes and configures flux-webui | beta | True | Kustomize | N/A |
 | **harbor** | installs Harbor | beta |  | [Helm](https://helm.goharbor.io) | 1.14.0 |
 | **kubevirt** | installs kubevirt | beta |  | [Helm](https://suse-edge.github.io/charts) | 0.2.1 |
+<<<<<<< HEAD
 | **metal3-suse** | installs SUSE-maintained Metal3 operator | beta |  | [Helm](https://suse-edge.github.io/charts) | 0.6.0 |
 | **minio-monitoring-tenant** | creates a MinIO tenant for the monitoring stack<br/><br/>Loki and Thanos will use this MinIO S3 storage | beta |  | Helm | v5.0.11 |
 | **minio-operator** | install MinIO operator<br/><br/>MinIO operator is used to manage multiple S3 tenants | beta |  | Helm | v5.0.11 |
+=======
+| **loki-scalable** | installs Loki log storage in simple scalable mode | beta |  | Helm | v2.9.2 |
+| **metal3-suse** | installs SUSE-maintained Metal3 operator | beta |  | [Helm](https://suse-edge.github.io/charts) | 0.5.0 |
+>>>>>>> f65e9088 (Apply 1 suggestion(s) to 1 file(s))
 | **neuvector** | installs Neuvector | beta |  | [Helm](https://neuvector.github.io/neuvector-helm) | 2.6.6 |
 | **rancher-init** | initializes and configures Rancher | beta | True | Kustomize | N/A |
 | **snmp-exporter** | installs SNMP exporter | beta |  | [Helm](https://prometheus-community.github.io/helm-charts) | 1.8.1 |
