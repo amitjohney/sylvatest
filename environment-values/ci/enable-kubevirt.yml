@@ -11,6 +11,10 @@ units:
     enabled: false
   harbor-init:
     enabled: false
+  sriov-crd:
+    enabled: true
+  sriov:
+    enabled: true
 
 cluster:
   kubelet_extra_args:
