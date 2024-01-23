@@ -120,7 +120,6 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: v1.26.2
 
-<<<<<<< HEAD
   sylva-dashboards:
     kind: GitRepository
     spec:
@@ -128,10 +127,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: 0.0.1
 
-  loki:
-=======
   loki-scalable:
->>>>>>> 617f477c (changed unit name from loki to loki-scalable (in the near futre the loki microservice (distributed) version will be also installed for better performance))
     kind: GitRepository
     spec:
       url: https://github.com/grafana/loki.git
@@ -2002,34 +1998,6 @@ units:
             ignore-volume-az = true
             {{- end -}}
 
-<<<<<<< HEAD
-=======
-  sylva-ca-certs:
-    info:
-      description: configures Sylva internal certificate authority
-      internal: true
-    depends_on:
-      namespace-defs: true
-      cert-manager: true
-      sylva-ca: true
-    repo: sylva-core
-    kustomization_spec:
-      path: ./kustomize-units/sylva-ca-certs
-      postBuild:
-        substitute:
-          RANCHER_DNS: '{{ .Values.external_hostnames.rancher }}'
-          VAULT_DNS: '{{ .Values.external_hostnames.vault }}'
-          KEYCLOAK_DNS: '{{ .Values.external_hostnames.keycloak }}'
-          FLUX_WEBUI_DNS: '{{ .Values.external_hostnames.flux }}'
-          LOKI_DNS: '{{ .Values.external_hostnames.loki }}'
-      wait: true
-      _components:
-        - '{{ tuple "components/keycloak-tls" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
-        - '{{ tuple "components/rancher-tls" (tuple . "rancher" | include "unit-enabled") | include "set-only-if" }}'
-        - '{{ tuple "components/vault-tls" (tuple . "vault" | include "unit-enabled") | include "set-only-if" }}'
-        - '{{ tuple "components/loki-tls" (tuple . "loki-scalable" | include "unit-enabled") | include "set-only-if" }}'
-
->>>>>>> 617f477c (changed unit name from loki to loki-scalable (in the near futre the loki microservice (distributed) version will be also installed for better performance))
   synchronize-secrets:
     info:
       description: allows secrets from Vault to be consumed other units, relies on ExternalSecrets
@@ -3431,8 +3399,7 @@ units:
 
   loki-scalable:
     info:
-      description: installs Loki log storage
-      detail: install Loki in simple scalable mode
+      description: installs Loki log storage in simple scalable mode
       maturity: beta
     depends_on:
       namespace-defs: true
@@ -3441,7 +3408,7 @@ units:
     enabled_conditions:
       - '{{ tuple . "minio-monitoring-tenant" | include "unit-enabled" }}'
     annotations:
-      sylvactl/readyMessage: "loki can be reached at https://{{ .Values.external_hostnames.loki }} ({{ .Values.external_hostnames.loki }} must resolve to {{ .Values.display_external_ip }})"
+      sylvactl/readyMessage: Loki can be reached at https://{{ .Values.external_hostnames.loki }} ({{ .Values.external_hostnames.loki }} must resolve to {{ .Values.display_external_ip }})
     repo: loki-scalable
     helmrelease_spec:
       releaseName: loki
