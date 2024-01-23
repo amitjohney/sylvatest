@@ -3788,8 +3788,9 @@ units:
 
   loki:
     info:
-      description: install loki in simple scalable mode, loki is used for logs storage
-      maturity: stable
+      description: installs Loki log storage
+      detail: install Loki in simple scalable mode
+      maturity: beta
     depends_on:
       namespace-defs: true
       sylva-ca-certs: true
