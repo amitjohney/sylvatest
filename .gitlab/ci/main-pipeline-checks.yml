@@ -5,6 +5,7 @@
 
 .generator-base:
   stage: test
+  interruptible: true
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       changes:
@@ -41,6 +42,7 @@ chart-jobs:
 .lint-base:
   stage: test
   needs: []
+  interruptible: true
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
     - if: '$CI_PIPELINE_SOURCE == "pipeline"'

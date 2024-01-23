@@ -2,6 +2,7 @@
 image: $CI_IMAGE
 
 default:
+  interruptible: true
   before_script:
     - chart_dir=charts/${HELM_NAME}
     # we replace 'helm' by a wrapper ignoring the warnings about symlinks
