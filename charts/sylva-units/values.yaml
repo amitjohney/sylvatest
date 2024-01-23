@@ -3436,9 +3436,9 @@ units:
     depends_on:
       namespace-defs: true
       sylva-ca-certs: true
-      #minio-monitoring-tenant: true
+      minio-monitoring-tenant: true
     enabled_conditions:
-      - '{{ tuple . "monitoring" | include "unit-enabled" }}'
+      - '{{ tuple . "minio-monitoring-tenant" | include "unit-enabled" }}'
     annotations:
       sylvactl/readyMessage: "loki can be reached at https://{{ .Values.external_hostnames.loki }} ({{ .Values.external_hostnames.loki }} must resolve to {{ .Values.display_external_ip }})"
     repo: loki-scalable
