@@ -29,4 +29,10 @@ commits = [
 regexes = [
             '''AKIAIOSFODNN7EXAMPLE''',
             '''xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx''',
+            '''"changeme"''',
+            '''"RancherPass"''',
+            '''"FluxPass"''',
+            '''"SylvaCIpass"''',
+            '''"minio1234"''',
+            '''"harbor-init"''',
           ]
