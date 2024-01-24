@@ -948,17 +948,8 @@ allOf:
                     values:
                       not:
                         required: [helmrelease_spec]
-
+  
   # additional constraints for .openstack
-  - if:
-      properties:
-        cluster:
-          properties:
-            capi_providers:
-              properties:
-                infra_provider:
-                  const: capa
-
   - if:
       properties:
         cluster:
