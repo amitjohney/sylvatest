@@ -78,7 +78,9 @@ And the associated values.yaml containing proxy definitions:
 proxies:
   http_proxy: http_proxy=http://acme.corp.proxy.com
   https_proxy: http_proxy=http://acme.corp.proxy.com
-  no_proxy=localhost,127.0.0.1,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8
+
+no_proxy_additional:
+  corp.com: true
 ```
 
 These configuration values can then be easely consumed by any deployment that just has to reference this unit in its environment-value's kustomization:

@@ -4,17 +4,8 @@ Ensure that no_proxy covers everything that we need by adding the values defined
 */}}
 {{- define "sylva-units.no_proxy" -}}
   {{- $envAll := . }}
-  {{- $no_proxy_base  := dict
-      "localhost" "true"
-      "127.0.0.1" "true"
-      ".svc" "true"
-      (printf ".%s" .Values.cluster_external_domain) "true"
-      ".cluster.local." "true"
-      ".cluster.local" "true"
-  -}}
-  {{- $no_proxy_merged := mergeOverwrite $no_proxy_base .Values.no_proxy_additional -}}
   {{- $no_proxy_list := list -}}
-  {{- range $no_proxy_item, $val := $no_proxy_merged -}}
+  {{- range $no_proxy_item, $val := .Values.no_proxy_additional -}}
     {{- if $val -}}
         {{- $no_proxy_list = append $no_proxy_list $no_proxy_item -}}
     {{- end -}}

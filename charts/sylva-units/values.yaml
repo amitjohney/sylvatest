@@ -3454,11 +3454,20 @@ sriov:
 proxies:
   https_proxy: ""
   http_proxy: ""
-  no_proxy: ""
+  no_proxy: ""  # you can also use no_proxy_additional, see below
 
-# disable default values for no_proxy (localhost,.svc,.cluster.local.,.cluster.local,.sylva)
+# you can disable default values for no_proxy (localhost,.svc,.cluster.local.,.cluster.local,.sylva)
 # Ex: localhost: false
-no_proxy_additional: {}
+no_proxy_additional:
+  10.0.0.0/8: true
+  192.168.0.0/16: true
+  172.16.0.0/12: true
+  localhost: true
+  127.0.0.1: true
+  .svc: true
+  '{{ printf ".%s" .Values.cluster_external_domain }}': true
+  .cluster.local.: true
+  .cluster.local: true
 
 # configure containerd registry mirrors following https://github.com/containerd/containerd/blob/main/docs/hosts.md
 registry_mirrors:
