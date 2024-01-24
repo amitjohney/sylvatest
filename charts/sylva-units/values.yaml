@@ -1933,7 +1933,6 @@ units:
           newName: registry.gitlab.com/sylva-projects/sylva-elements/heat-operator
           newTag: 0.0.7
 
-
   sylva-units-operator:
     info:
       description: installs sylva-units operator
