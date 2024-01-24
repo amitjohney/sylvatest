@@ -49,23 +49,8 @@ Wait for infra provider Cluster
 
 */}}
 
-{{- $cluster_kind := "" -}}
-{{- $cluster_apiVersion := "" -}}
-{{- if $cluster.capi_providers.infra_provider | eq "capo" -}}
-  {{- $cluster_kind = "OpenStackCluster" -}}
-  {{- $cluster_apiVersion = "infrastructure.cluster.x-k8s.io/v1alpha6" -}}
-{{- else if $cluster.capi_providers.infra_provider | eq "capv" -}}
-  {{- $cluster_kind = "VSphereCluster" -}}
-  {{- $cluster_apiVersion = "infrastructure.cluster.x-k8s.io/v1beta1" -}}
-{{- else if $cluster.capi_providers.infra_provider | eq "capm3" -}}
-  {{- $cluster_kind = "Metal3Cluster" -}}
-  {{- $cluster_apiVersion = "infrastructure.cluster.x-k8s.io/v1beta1" -}}
-{{- else if $cluster.capi_providers.infra_provider | eq "capd" -}}
-  {{- $cluster_kind = "DockerCluster" -}}
-  {{- $cluster_apiVersion = "infrastructure.cluster.x-k8s.io/v1beta1" -}}
-{{- else -}}
-  {{- fail (printf "sylva-units cluster-healthchecks named template would need to be extended to support CAPI infra provider %s" $cluster.capi_providers.infra_provider) -}}
-{{- end }}
+{{- $cluster_kind := lookup "cluster.x-k8s.io/v1beta1" "Cluster" {{ $ns }} {{ $cluster.name }}| dig "spec" "infrastructureRef" "kind" "" -}}
+{{- $cluster_apiVersion := lookup "cluster.x-k8s.io/v1beta1" "Cluster" {{ $ns }} {{ $cluster.name }}| dig "spec" "infrastructureRef" "apiVersion" "" -}}
 
     - apiVersion: {{ $cluster_apiVersion }}
       kind: {{ $cluster_kind }}
