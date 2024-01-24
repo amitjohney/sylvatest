@@ -2905,6 +2905,35 @@
             }
           ]
         },
+        "capa": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "ssh_key_name": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^[0-9A-Za-z@._ -]+$"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "capv": {
           "anyOf": [
             {
