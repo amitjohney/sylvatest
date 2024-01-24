@@ -111,30 +111,34 @@ function cluster_info_dump() {
   # dump CAPI secrets
   kubectl get secret -A --field-selector=type=cluster.x-k8s.io/secret                                > $dump_dir/Secrets-capi.summary.txt
   kubectl get secret -A --field-selector=type=cluster.x-k8s.io/secret -o yaml --show-managed-fields  > $dump_dir/Secrets-capi.yaml
+
+  echo -e "\nDisplay cluster resources usage per node"
+  # From https://github.com/kubernetes/kubernetes/issues/17512
+  kubectl get nodes --no-headers | awk '{print $1}' | xargs -I {} sh -c 'echo {} ; kubectl describe node {} | grep Allocated -A 5 | grep -ve Event -ve Allocated -ve percent -ve -- ; echo '
 }
 
 echo "Start debug-on-exit at: $(date -Iseconds)"
 
-echo "Docker containers"
+echo -e "\nDocker containers"
 docker ps
 
-echo "System info"
+echo -e "\nSystem info"
 free -h
 df -h || true
 
 if [[ $(kind get clusters) =~ $KIND_CLUSTER_NAME ]]; then
   cluster_info_dump bootstrap
-  echo "Dump node logs"
+  echo -e "\nDump node logs"
   docker ps -q -f name=management-cluster-control-plane* | xargs -I % -r docker exec % journalctl -e
 fi
 
 if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
     export KUBECONFIG=${KUBECONFIG:-$BASE_DIR/management-cluster-kubeconfig}
 
-    echo "Get nodes in management cluster"
+    echo -e "\nGet nodes in management cluster"
     kubectl --request-timeout=3s get nodes
 
-    echo "Get pods in management cluster"
+    echo -e "\nGet pods in management cluster"
     kubectl --request-timeout=3s get pods -A
 
     cluster_info_dump management
@@ -153,7 +157,8 @@ if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
           # in case of baremetal emulation workload cluster is only accessible from Rancher
           # and rancher API certificates does not mach expected (so kubectl must be used with insecure-skip-tls-verify)
           ./tools/shell-lib/get-wc-kubeconfig-from-rancher.sh $workload_cluster_name > $BASE_DIR/workload-cluster-kubeconfig-rancher
-          yq -i e '.clusters[0].cluster.insecure-skip-tls-verify = true' $BASE_DIR/workload-cluster-kubeconfig-rancher
+          yq -i e '.clusters[].cluster.insecure-skip-tls-verify = true' $BASE_DIR/workload-cluster-kubeconfig-rancher
+          yq -i e 'del(.clusters[].cluster.certificate-authority-data)' $BASE_DIR/workload-cluster-kubeconfig-rancher
           export KUBECONFIG=$BASE_DIR/workload-cluster-kubeconfig-rancher
         fi
 
