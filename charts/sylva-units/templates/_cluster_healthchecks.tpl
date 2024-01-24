@@ -48,7 +48,9 @@ Wait for Cluster resource:
 Wait for infra provider Cluster
 
 */}}
+{{- $foo := lookup "v1" "Namespace" "" "sylva-system")" -}}
 
+{{- if contains $foo "sylva-system" }}
 {{- $cluster_kind := lookup "cluster.x-k8s.io/v1beta1" "Cluster" $ns $cluster.name | dig "spec" "infrastructureRef" "kind" "" -}}
 {{- $cluster_apiVersion := lookup "cluster.x-k8s.io/v1beta1" "Cluster" $ns $cluster.name | dig "spec" "infrastructureRef" "apiVersion" "" -}}
 
@@ -116,5 +118,6 @@ Waiting for the cluster kubeconfig Secret is a workaround
       name: dummy-deps-cluster-ready-sleep
       namespace: kube-job
 {{ end }}
-
+{{ else }}
+{{ end }}
 {{ end -}}
