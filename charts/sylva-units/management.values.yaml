@@ -36,6 +36,9 @@ units:
   cabpr:  # RKE2
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
 
+  cabpe:  # EKS
+    enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpe" }}'
+
   os-image-server:
     enabled: '{{ tuple . .Values._internal.metal3_unit | include "unit-enabled" }}'
 
