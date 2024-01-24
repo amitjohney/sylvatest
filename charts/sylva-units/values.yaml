@@ -3393,7 +3393,7 @@ cluster:
     # ssh_key: ''
     numCPUs: 4
 
-  capa:
+  #capa:
     # ssh_key_name: ""
 
   capm3:
