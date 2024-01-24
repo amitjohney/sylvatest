@@ -48,9 +48,9 @@ Wait for Cluster resource:
 Wait for infra provider Cluster
 
 */}}
-{{- $foo := lookup "v1" "Namespace" "" "sylva-system")" -}}
 
-{{- if contains $foo "sylva-system" }}
+{{- $cluster_k := lookup "apiextensions.k8s.io/v1" "customresourcedefinition.apiextensions.k8s.io" "" "clusters.cluster.x-k8s.io" -}}
+{{- if $cluster_k }}
 {{- $cluster_kind := lookup "cluster.x-k8s.io/v1beta1" "Cluster" $ns $cluster.name | dig "spec" "infrastructureRef" "kind" "" -}}
 {{- $cluster_apiVersion := lookup "cluster.x-k8s.io/v1beta1" "Cluster" $ns $cluster.name | dig "spec" "infrastructureRef" "apiVersion" "" -}}
 
@@ -66,17 +66,8 @@ on the CAPI bootstrap provider being used.
 
 */}}
 
-{{- $cp_kind := "" -}}
-{{- $cp_apiVersion := "" -}}
-{{- if $cluster.capi_providers.bootstrap_provider | eq "cabpk" -}}
-  {{- $cp_kind = "KubeadmControlPlane" -}}
-  {{- $cp_apiVersion = "controlplane.cluster.x-k8s.io/v1beta1" -}}
-{{- else if $cluster.capi_providers.bootstrap_provider | eq "cabpr" -}}
-  {{- $cp_kind = "RKE2ControlPlane" -}}
-  {{- $cp_apiVersion = "controlplane.cluster.x-k8s.io/v1alpha1" -}}
-{{- else -}}
-  {{- fail (printf "sylva-units cluster-healthchecks named template would need to be extended to support CAPI infra bootstrap provider %s" $cluster.capi_providers.bootstrap_provider) -}}
-{{- end }}
+{{- $cp_kind := lookup "cluster.x-k8s.io/v1beta1" "Cluster" $ns $cluster.name | dig "spec" "controlPlaneRef" "kind" "" -}}
+{{- $cp_apiVersion := lookup "cluster.x-k8s.io/v1beta1" "Cluster" $ns $cluster.name | dig "spec" "controlPlaneRef" "apiVersion" "" -}}
 
     - apiVersion: {{ $cp_apiVersion }}
       kind: {{ $cp_kind }}
@@ -118,6 +109,5 @@ Waiting for the cluster kubeconfig Secret is a workaround
       name: dummy-deps-cluster-ready-sleep
       namespace: kube-job
 {{ end }}
-{{ else }}
 {{ end }}
 {{ end -}}
