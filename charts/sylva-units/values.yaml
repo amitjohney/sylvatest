@@ -1358,8 +1358,6 @@ units:
       description: installs eks CAPI bootstrap provider
       maturity: core-component
     repo: sylva-core
-    depends_on:
-      cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/cabpe
       wait: true
