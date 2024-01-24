@@ -2651,8 +2651,6 @@ units:
       values:
         defaultSettings:
           createDefaultDiskLabeledNodes: true
-          defaultDataPath: /var/lib/longhorn
-          autoCleanupSystemGeneratedSnapshot: true
           allowVolumeCreationWithDegradedAvailability: false
           storageMinimalAvailablePercentage: 10
 
