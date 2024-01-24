@@ -1352,6 +1352,17 @@ units:
     kustomization_spec:
       path: ./kustomize-units/cabpk
       wait: true
+  
+  cabpe:
+    info:
+      description: installs eks CAPI bootstrap provider
+      maturity: core-component
+    repo: sylva-core
+    depends_on:
+      cert-manager: true
+    kustomization_spec:
+      path: ./kustomize-units/cabpe
+      wait: true
 
   cabpr:
     info:
