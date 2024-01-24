@@ -57,6 +57,16 @@ units:
     enabled_conditions:
       - '{{ tuple . "capm3" | include "unit-enabled" }}'
 
+  capo-check-resources:
+    kustomization_spec:
+      postBuild:
+        substitute:
+          CLUSTER_TYPE: management
+
+  heat-operator:
+    depends_on:
+      capo-check-resources: true
+
   metal3-suse:
     enabled_conditions:
       - '{{ tuple . "capm3" | include "unit-enabled" }}'
@@ -534,3 +544,4 @@ units_override_enabled:
   - libvirt-metal
   - vsphere-cpi
   - get-openstack-images
+  - capo-check-resources

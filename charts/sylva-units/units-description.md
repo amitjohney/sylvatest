@@ -62,6 +62,7 @@
 | **capd-metallb-config** | configures MetalLB in a capd context |  | True | Kustomize | N/A |
 | **capi-providers-pivot-ready** | checks if management cluster is ready for pivot<br/><br/>This unit only has dependencies, but does not create resources. It is here only to have a single thing to look at to determine if everything is ready for pivot (see bootstrap.values.yaml pivot unit) |  | True | Kustomize | N/A |
 | **capi-rancher-import** | installs the capi-rancher-import operator, which let's us import Cluster AIP workload clusters in management cluster's Rancher |  | True | Helm | N/A |
+| **capo-check-resources** | Trigger a job to verify if available OpenStack resources are enough for deployment |  | True | Kustomize | N/A |
 | **capo-cluster-resources** | installs OpenStack Heat stack for CAPO cluster prerequisites |  | True | Kustomize | N/A |
 | **cis-operator-scan** | allows for running a CIS scan for management cluster<br/><br/>it generates a report which can be viewed and downloaded in CSV from the Rancher UI, at https://rancher.sylva/dashboard/c/local/cis/cis.cattle.io.clusterscan |  | True | Kustomize | N/A |
 | **cluster-creator-login** | configures Rancher account used for workload cluster imports |  | True | Kustomize | N/A |
