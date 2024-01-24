@@ -49,8 +49,8 @@ Wait for infra provider Cluster
 
 */}}
 
-{{- $cluster_kind := lookup "cluster.x-k8s.io/v1beta1" "Cluster" {{ $ns }} {{ $cluster.name }}| dig "spec" "infrastructureRef" "kind" "" -}}
-{{- $cluster_apiVersion := lookup "cluster.x-k8s.io/v1beta1" "Cluster" {{ $ns }} {{ $cluster.name }}| dig "spec" "infrastructureRef" "apiVersion" "" -}}
+{{- $cluster_kind := lookup "cluster.x-k8s.io/v1beta1" "Cluster" $ns $cluster.name | dig "spec" "infrastructureRef" "kind" "" -}}
+{{- $cluster_apiVersion := lookup "cluster.x-k8s.io/v1beta1" "Cluster" $ns $cluster.name | dig "spec" "infrastructureRef" "apiVersion" "" -}}
 
     - apiVersion: {{ $cluster_apiVersion }}
       kind: {{ $cluster_kind }}
