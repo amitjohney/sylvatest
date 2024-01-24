@@ -237,7 +237,7 @@ def convert_to_markdown_table(units, headers, sort_function=sort_by_name):
     for unit in units:
         if unit.get("hidden", False):
             continue
-        items = [str(unit[key]).strip().replace("\n", "<br>") for key in headers]
+        items = [str(unit[key]).strip().replace("\n", "<br/>") for key in headers]
         table_md_lines.append("| " + " | ".join(items) + " |")
     md_content = "<!-- markdownlint-disable MD044 -->\n"
     md_content += "\n".join(header_md_lines + table_md_lines)
@@ -266,7 +266,7 @@ def generate_full_md_table():
         unit["name"] = f"**{unit['name']}**"
         unit["full description"] = f"{unit['description']}"
         if unit['details']:
-            unit["full description"] += f"<br><br>{unit['details']}"
+            unit["full description"] += f"<br/><br/>{unit['details']}"
     headers = ["name", "full description", "maturity", "internal", "source", "version"]
     return convert_to_markdown_table(units_data, headers, sort_by_maturity)
 
