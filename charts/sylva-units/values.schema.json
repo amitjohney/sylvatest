@@ -2530,7 +2530,8 @@
                         "capd",
                         "capo",
                         "capv",
-                        "capm3"
+                        "capm3",
+                        "capa"
                       ]
                     },
                     {
@@ -2546,7 +2547,8 @@
                     {
                       "enum": [
                         "cabpk",
-                        "cabpr"
+                        "cabpr",
+                        "cabpe"
                       ]
                     },
                     {
@@ -2884,6 +2886,35 @@
                           ]
                         }
                       }
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "capa": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "ssh_key_name": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^[0-9A-Za-z@._ -]+$"
                     },
                     {
                       "$ref": "#/$defs/string-with-gotpl"
@@ -4798,6 +4829,41 @@
                       "network_id",
                       "clouds_yaml",
                       "resources_tag"
+                    ]
+                  },
+                  {
+                    "$ref": "#/$defs/string-with-gotpl"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "capi_providers": {
+                "properties": {
+                  "infra_provider": {
+                    "const": "capa"
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "capa"
+            ],
+            "properties": {
+              "capa": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "ssh_key_name"
                     ]
                   },
                   {

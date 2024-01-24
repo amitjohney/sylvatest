@@ -69,7 +69,8 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.1.27
+        #tag: 0.1.27
+        branch: jagrati/test
 
   local-path-provisioner:
     kind: GitRepository
@@ -1293,6 +1294,27 @@ units:
                 capabilities:
                   drop:
                     - ALL
+  capa:
+    info:
+      description: installs capa CAPI infra provider, for aws
+      maturity: core-component
+    repo: sylva-core
+    depends_on:
+      cert-manager: true
+    kustomization_spec:
+      path: ./kustomize-units/capa
+      wait: true
+
+  cloud-formation-operator:
+    info:
+      description: installs cloudstack operator unit
+      maturity: core-component
+    repo: sylva-core
+    depends_on:
+      cert-manager: true
+    kustomization_spec:
+      path: ./kustomize-units/cloud-formation-operator
+      wait: true
 
   capm3:
     info:
@@ -1335,6 +1357,15 @@ units:
       postBuild:
         substitute:
           force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
+      wait: true
+  
+  cabpe:
+    info:
+      description: installs eks CAPI bootstrap provider
+      maturity: core-component
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/cabpe
       wait: true
 
   cabpr:
@@ -3361,6 +3392,9 @@ cluster:
     #     networkName: ""
     # ssh_key: ''
     numCPUs: 4
+
+  capa:
+    # ssh_key_name: ""
 
   capm3:
     nodeReuse: '{{ not (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpr") | include "as-bool" }}'  # until https://gitlab.com/sylva-projects/sylva-core/-/issues/705 is solved

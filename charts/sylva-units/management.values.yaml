@@ -12,6 +12,12 @@ units:
   capo:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
 
+  capa:
+    enabled: true
+
+  cloud-formation-operator:
+    enabled: true
+
   capm3:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
 
@@ -29,6 +35,9 @@ units:
 
   cabpr:  # RKE2
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
+
+  cabpe:  # EKS
+    enabled: true
 
   os-image-server:
     enabled: '{{ tuple . .Values._internal.metal3_unit | include "unit-enabled" }}'
