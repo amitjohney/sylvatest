@@ -8,4 +8,4 @@ clouds.yaml
 sylva-units-preview/
 
 # Sops decyphered
-environment-values/ci/private/falcon-base/values.yaml
+environment-values/ci/private/falcon-base/secrets.yaml

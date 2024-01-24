@@ -6,8 +6,8 @@ cluster:
     bootstrap_provider: cabpk
   capo:
     image_name: ubuntu-jammy-plain-kubeadm-1.26.9-0.0.12
-    ssh_key_name: # OpenStack Nova SSH keypair is provided by Kustomize component remote target in CI
-    network_id: # OpenStack Neutron network id is provided by Kustomize component remote target in CI
+    ssh_key_name: # OpenStack Nova SSH keypair is provided by runner context in CI
+    network_id: # OpenStack Neutron network id is provided by runner context in CI
 
   machine_deployments:
     md0:

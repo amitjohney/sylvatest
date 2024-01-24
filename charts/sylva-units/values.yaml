@@ -3259,7 +3259,7 @@ cluster:
 
   metallb_helm_oci_url: ""  # for an OCI-based deployment this is overridden in use-oci-artifacts.values.yaml
   metallb_helm_version: '{{ .Values.units.metallb.helmrelease_spec.chart.spec.version }}'
-  metallb_helm_extra_ca_certs: '{{ .Values.oci_registry_extra_ca_certs | include "set-if-defined" }}'
+  metallb_helm_extra_ca_certs: ""  # for an OCI-based deployment this is overridden in use-oci-artifacts.values.yaml
 
   capv:
     # image_name: # vSphere image name
