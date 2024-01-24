@@ -9,3 +9,6 @@ sylva-units-preview/
 
 # Sops decyphered
 environment-values/ci/private/falcon-base/secrets.yaml
+
+# Gitleaks reports
+reports/
