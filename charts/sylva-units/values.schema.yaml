@@ -948,7 +948,7 @@ allOf:
                     values:
                       not:
                         required: [helmrelease_spec]
-  
+
   # additional constraints for .openstack
   - if:
       properties:
