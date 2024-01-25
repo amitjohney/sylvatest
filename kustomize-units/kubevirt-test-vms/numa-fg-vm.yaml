@@ -24,7 +24,7 @@ spec:
             memory: 64M
         memory:
           hugepages:
-            pageSize: 1024K
+            pageSize: 1024Ki
         devices:
           disks:
             - name: containerdisk
