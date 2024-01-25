@@ -1,0 +1,15 @@
+---
+os_images:
+  opensuse-15-5-plain-rke2-1-26-9:
+    uri: oci://registry.gitlab.com/sylva-projects/sylva-elements/diskimage-builder/opensuse-15.5-plain-rke2-1.26.9:0.1.2
+    filename: opensuse-15.5-plain-rke2-1.26.9.raw
+    checksum: c78ffc27f8ab7d51cca6e73449b0f41afc47090a546ea2ba43fcbc82acdef6a3
+
+cluster:
+  capi_providers:
+    bootstrap_provider: cabpk
+  capm3:
+    # following are needed to override the Ubuntu based image (in environment-values/workload-clusters/rke2-capm3-virt/values.yaml) for capm3-rke2-virt CIs
+    machine_image_url: http://{{ .Values.cluster.mgmt_cluster_external_ip }}/opensuse-15.5-plain-rke2-1.26.9.raw
+    machine_image_format: raw
+    machine_image_checksum: http://{{ .Values.cluster.mgmt_cluster_external_ip }}/opensuse-15.5-plain-rke2-1.26.9.raw.sha256sum

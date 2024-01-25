@@ -107,9 +107,9 @@ metaData:
 ```yaml
 
 postRKE2Commands:
-  {{- if .Values.enable_longhorn }}
+  :
   - /var/lib/rancher/rke2/bin/kubectl --kubeconfig /etc/rancher/rke2/rke2.yaml annotate node $(hostname) {{ printf "%s=%s" "node.longhorn.io/default-disks-config" `{{ ds.meta_data.sylva_longhorn_disks }}` }}
-
+  - /var/lib/rancher/rke2/bin/kubectl --kubeconfig /etc/rancher/rke2/rke2.yaml label node $(hostname) node.longhorn.io/create-default-disk=config
 ```
 
 - which will result in a bootstrapped node like:
