@@ -1,9 +1,9 @@
 ---
-os_images:
-  opensuse-15-5-plain-rke2-1-26-9:
-    uri: oci://registry.gitlab.com/sylva-projects/sylva-elements/diskimage-builder/opensuse-15.5-plain-rke2-1.26.9:0.1.2
-    filename: opensuse-15.5-plain-rke2-1.26.9.raw
-    checksum: c78ffc27f8ab7d51cca6e73449b0f41afc47090a546ea2ba43fcbc82acdef6a3
+sylva_diskimagebuilder_images:
+  ubuntu-jammy-plain-rke2-1.26.9:
+    default_enabled: false
+  opensuse-15.5-plain-rke2-1.26.9:
+    default_enabled: true
 
 cluster:
   capm3:
