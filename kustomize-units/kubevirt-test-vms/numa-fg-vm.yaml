@@ -21,7 +21,7 @@ spec:
             guestMappingPassthrough: { }
         resources:
           limits:
-            memory: 64M
+            memory: 65536Ki
         memory:
           hugepages:
             pageSize: 1024Ki
