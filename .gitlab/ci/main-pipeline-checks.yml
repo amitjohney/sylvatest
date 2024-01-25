@@ -90,8 +90,9 @@ check-docs-markdown:
 check-sylva-toolbox-binaries-versions:
   extends: [.lint-base, .docker-service]
   script:
-    - eval $(grep ^SYLVA_TOOLBOX_ tools/shell-lib/common.sh)
+    - eval $(grep '^SYLVA_' tools/shell-lib/common.sh)
     - mkdir bin
+    - echo docker run --rm ${SYLVA_TOOLBOX_REGISTRY}/${SYLVA_TOOLBOX_IMAGE}:${SYLVA_TOOLBOX_VERSION}
     - docker run --rm ${SYLVA_TOOLBOX_REGISTRY}/${SYLVA_TOOLBOX_IMAGE}:${SYLVA_TOOLBOX_VERSION} | tar xz -C bin
   # this job checks that the different versions of binaries that we use are aligned:
   # - flux binary in sylva-toolbox

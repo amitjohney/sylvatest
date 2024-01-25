@@ -5,9 +5,10 @@ export BASE_DIR="$(realpath $(dirname $0))"
 export PATH=${BASE_DIR}/bin:${PATH}
 export KIND_CLUSTER_NAME=${KIND_CLUSTER_NAME:-sylva}
 
+SYLVA_BASE_OCI_REGISTRY=${SYLVA_BASE_OCI_REGISTRY:-registry.gitlab.com/sylva-projects}
 SYLVA_TOOLBOX_VERSION=${SYLVA_TOOLBOX_VERSION:-"v0.3.2"}
 SYLVA_TOOLBOX_IMAGE=${SYLVA_TOOLBOX_IMAGE:-container-images/sylva-toolbox}
-SYLVA_TOOLBOX_REGISTRY=${SYLVA_TOOLBOX_REGISTRY:-registry.gitlab.com/sylva-projects/sylva-elements}
+SYLVA_TOOLBOX_REGISTRY=${SYLVA_TOOLBOX_REGISTRY:-${SYLVA_BASE_OCI_REGISTRY}/sylva-elements}
 export KIND_POD_SUBNET=${KIND_POD_SUBNET:-100.100.0.0/16}
 export KIND_SVC_SUBNET=${KIND_SVC_SUBNET:-100.96.0.0/16}
 
@@ -16,6 +17,10 @@ if [[ -n "${CI_JOB_NAME:-}" ]]; then
   SYLVACTL_SAVE=1
 else
   export IN_CI=0
+fi
+
+if [[ -f ${BASE_DIR}/sylva.env ]]; then
+  source ${BASE_DIR}/sylva.env
 fi
 
 function check_args() {
@@ -220,7 +225,9 @@ function force_reconcile() {
 }
 
 function define_source() {
-  sed "s/CURRENT_COMMIT/${CURRENT_COMMIT}/" "$@" | sed "s,SYLVA_CORE_REPO,${SYLVA_CORE_REPO},g" "$@"
+  sed "s/CURRENT_COMMIT/${CURRENT_COMMIT}/" "$@" | \
+    sed "s,SYLVA_CORE_REPO,${SYLVA_CORE_REPO},g" "$@" | \
+    sed "s,SYLVA_BASE_OCI_REGISTRY,${SYLVA_BASE_OCI_REGISTRY},g" "$@"
 }
 
 function inject_bootstrap_values() {

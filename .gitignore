@@ -6,6 +6,7 @@ clouds.yaml
 .gitlab-ci-local-variables.yml
 .gitlab-ci-local/
 sylva-units-preview/
+sylva.env
 
 # Sops decyphered
 environment-values/ci/private/falcon-base/secrets.yaml
