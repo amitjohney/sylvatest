@@ -22,9 +22,9 @@ spec:
         resources:
           limits:
             memory: 64M
-#        memory:
-#          hugepages:
-#            pageSize: 2M
+        memory:
+          hugepages:
+            pageSize: 1024K
         devices:
           disks:
             - name: containerdisk
