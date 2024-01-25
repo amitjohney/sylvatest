@@ -90,6 +90,7 @@
 | **sriov-resources** | configures SRIOV resources |  | True | Helm | N/A |
 | **sylva-ca** | provides a Certificate Authority for units of the Sylva stack |  | True | Kustomize | N/A |
 | **sylva-ca-certs** | configures Sylva internal certificate authority |  | True | Kustomize | N/A |
+| **sylva-dashboards** | adds Sylva-specific Grafana dashboards |  |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-dashboards.git) | 0.0.1 |
 | **synchronize-secrets** | allows secrets from Vault to be consumed other units, relies on ExternalSecrets |  | True | Kustomize | N/A |
 | **tigera-clusterrole** | is here to allow for upgrading Calico chart when upgrading cluster<br/><br/>For v1.25.x to v1.26.x, see https://gitlab.com/sylva-projects/sylva-core/-/issues/664 |  | True | Kustomize | N/A |
 | **vault-oidc** | configures Vault to be used with OIDC |  | True | Kustomize | N/A |

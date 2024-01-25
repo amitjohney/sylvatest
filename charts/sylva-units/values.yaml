@@ -120,6 +120,13 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: v1.26.2
 
+  sylva-dashboards:
+    kind: GitRepository
+    spec:
+      url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-dashboards.git
+      ref:
+        tag: 0.0.1
+
 helm_repo_spec_default:
   interval: 60m0s
 
@@ -2470,6 +2477,25 @@ units:
           {{- $files.Get $oid_file | nindent 2 }}
         {{- end -}}
 
+
+  sylva-dashboards:
+    info:
+      description: adds Sylva-specific Grafana dashboards
+    enabled_conditions:
+      - '{{ tuple . "monitoring" | include "unit-enabled" }}'
+    depends_on:
+      monitoring: true
+    repo: sylva-dashboards
+    helm_chart_artifact_name: sylva-dashboards
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: .
+      targetNamespace: sylva-dashboards
+      install:
+        createNamespace: true
+      values:
+        namespace: sylva-dashboards
 
   multus:
     info:
