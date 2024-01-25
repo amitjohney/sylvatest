@@ -41,6 +41,7 @@ cluster:
         #     ssh_authorized_keys:
         #       - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDZ2hUiLBgImN1v66ZW1k3SjGKvLypBGCecONYQxZQlRn3T8mACLJNQtwrIQpf4nbzFgWnvq0oOZYw2hm+XCoQe8/T+t6dnmwVeKl3Gsm4N6szuEhpwzv7kV0WALe6tUM2JlFXu5tHX1HXKwH+dOHdzMJBDnwwOf1cUtGkmJEzx4ECgSqxOcc7bpJhdDZj3+dyg9UneLa/AitLStRQn4sklyrVzNsOIRhvWsaIn9/jEu2miO5ttrSp7NfgEUgitEiQZ9H37Z91++536Kmo4v7PnFWltNFI5BG8jLfcQzXMaq2gBoKXjiQh1TTT0aj+rTD//1DZAqhWxd5xIgMRewy9FaRYRt4dqKkvz1325gTr+wmJ2/uDP/wlcvi3pJq/Qq24Z4ZLl9sg7IRxJaiNvFxKL0kKFOCZRhxIST4LWLE/1A8Eb5hIpHzk7gWfN3IPi/9QfloCQ8ysLIe2Q3PkcsZhBENu3ug1EVzfEvdx40C9pZrF4/T7Bg1WOV6hPYfJnxg0= gitlab-runner@otccaasbm-runner
 
+
         bootcmd:
           - if [ ! -f "/var/lib/grub-init" ]; then
           - touch "/var/lib/grub-init"
