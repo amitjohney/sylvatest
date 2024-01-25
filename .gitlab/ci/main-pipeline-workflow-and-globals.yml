@@ -18,6 +18,7 @@ stages:
   - build
   - deploy
   - delete
+  - gitleaks
 
 default:
   tags:
@@ -37,9 +38,13 @@ gitleaks:
 # Customize gitleak job imported from to-be-continuous in order to checkout main
 # (needed for git to be able to retrieve commits from this branch not in main)
 gitleaks-custom:
+  stage: gitleaks
   extends: gitleaks
+  needs: []
   before_script:
     - git checkout main && git checkout -
     - !reference [gitleaks, before_script]
   rules:
+    - if: '$CI_PIPELINE_SOURCE == "pipeline"'
+      when: never
     - when: always
