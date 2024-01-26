@@ -6859,7 +6859,8 @@
             ]
           },
           "required": [
-            "info"
+            "info",
+            "unit_templates"
           ],
           "allOf": [
             {

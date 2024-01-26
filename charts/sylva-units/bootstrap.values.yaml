@@ -33,6 +33,10 @@ _internal:
     # file without errors
 
 
+unit_templates:
+  base-deps:
+    depends_on: null  # don't inherit dependencies from management.values.yaml
+
 unit_kustomization_spec_default:
   interval: 100000m   # for bootstrap, we don't care about having flux update things on the longterm
   retryInterval: 30s  # but we want it to retry quickly so that the system converges faster (quicker reaction when a dependency is met)
@@ -111,6 +115,7 @@ units:
       internal: true
     enabled_conditions:
       - '{{ tuple . .Values._internal.metal3_unit | include "unit-enabled" }}'
+    unit_templates: []
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/bootstrap-local-path
@@ -185,6 +190,7 @@ units:
       # cluster readyness will actually be ensured by the retries on installations of this kustomization for now.
       # maybe cluster CRD is not compatible with kstatus? (see https://fluxcd.io/flux/units/kustomize/kustomization/#health-assessment)
       calico: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
+    unit_templates: []
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/flux-system/base
@@ -219,6 +225,7 @@ units:
     depends_on:
       management-cluster-flux: true
       namespace-defs: true
+    unit_templates: []
     repo: sylva-core
     kustomization_spec:
       # FIXME: This is very hacky, we should use an ad-hoc kustomization instead of this job to re-create configmap and secrets on maangement cluster
@@ -319,6 +326,7 @@ units:
     enabled: yes
     depends_on:
       management-sylva-units: true
+    unit_templates: []
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kube-job
@@ -445,6 +453,7 @@ units:
       description: installs libvirt for baremetal emulation
       details: this unit is used in bootstrap cluster for baremetal testing
       maturity: stable
+    unit_templates: []
     enabled_conditions:
     - '{{ not (.Values.libvirt_metal.nodes | empty) }}'
     depends_on:

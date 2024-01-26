@@ -490,6 +490,8 @@ properties:
 
         required:
           - info
+          - unit_templates  # we make this mandatory to set to avoid people mistakenly forgetting to inherit from base-deps
+                            # if there really is not intention to not inherit from base-deps, this can be set to '[]'
 
         allOf:
           - anyOf:  # require having at least helmrelease_spec or
