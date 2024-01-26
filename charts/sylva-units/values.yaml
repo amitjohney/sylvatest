@@ -3477,7 +3477,7 @@ units:
       minio-operator: true
       sylva-ca-certs: true
     annotations:
-      sylvactl/readyMessage: "minio tenant monitoring console can be reached at https://{{ .Values.external_hostnames.minio_monitoring_tenant_console }} ({{ .Values.external_hostnames.minio_monitoring_tenant_console }} must resolve to {{ .Values.display_external_ip }})"
+      sylvactl/readyMessage: MinIO monitoring tenant console can be reached at https://{{ .Values.external_hostnames.minio_monitoring_tenant_console }} ({{ .Values.external_hostnames.minio_monitoring_tenant_console }} must resolve to {{ .Values.display_external_ip }})
     repo: minio-operator
     helmrelease_spec:
       releaseName: minio-tenant
