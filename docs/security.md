@@ -50,17 +50,17 @@ spec:
 
 ## Password Management
 
-The Sylva units offering a web UI (**Keycloak**, **Rancher**, **Hashicorp vault** and **flux-webui**) are configured with local administration accounts, which passwords/tokens are unique and randomly generated.
+The Sylva units offering a web UI (`keycloak`, `rancher`, `vault`, `flux-webui`, `harbor` and `neuvector`) are configured with local administration accounts, whose passwords/tokens are unique and randomly generated.
 
-The passwords for **Keycloak**, **Rancher** and **flux-webui** can be retrieved from **Vault** (see next section).
+The passwords for `Keycloak`, `Rancher`, `Neuvector`  and `flux-webui` can be retrieved from `Vault` (see next section).
 
-In addition, Sylva is shipped with a Single-Sign-On (SSO) service provided by **Keycloak**. The user can thus connect to **Vault**, **Rancher** and **Flux-Webui** after being redirected once to **Keycloak** authentication. The SSO account to use is `sylva-admin` (login `sylva-admin`) from the  **Keycloak** realm `sylva`. The password for this account can be provided in your environment-values file `secrets.yaml` like showed below, but this not encouraged, except possibly for dev, test or CI environments.
+In addition, Sylva is shipped with a Single-Sign-On (SSO) service provided by `Keycloak`. The user can thus connect to `Vault`, `Rancher`, `Flux-Webui` and `Neuvector` after being redirected once to `Keycloak` authentication. The SSO account to use is `sylva-admin` (login `sylva-admin`) from the  `Keycloak` realm `sylva`. The password for this account can be provided in your environment-values file `secrets.yaml` like showed below, but this not encouraged, except possibly for dev, test or CI environments.
 
 ```yaml
 admin_password:  < a password following the password policy >
 ```
 
-> **_IMPORTANT NOTICE:_** this password must follow the **Keycloak** password policy: length(12) and upperCase(1) and lowerCase(1) and digits(1), otherwise the user `sylva-admin` is not created.
+> **_IMPORTANT NOTICE:_** this password must follow the `Keycloak` password policy: length(12) and upperCase(1) and lowerCase(1) and digits(1), otherwise the user `sylva-admin` is not created.
 
 The following command will generate a password compliant with the password policy:
 
@@ -68,19 +68,19 @@ The following command will generate a password compliant with the password polic
 < /dev/urandom tr -dc 'A-Za-z0-9' | head -c12
 ```
 
-If you don't set a password here, helm shall pick a random one. You can retrieve it in **vault** (secret/sso-account) by using the vault root token to authenticate against Vault (see next section) or by using the following command:
+If you don't set a password here, helm shall pick a random one. You can retrieve it in `vault` (secret/sso-account) by using the vault root token to authenticate against Vault (see next section) or by using the following command:
 
 ```shell
  kubectl get secrets sylva-units-values -o template="{{ .data.values }}" | base64 -d | grep admin_password
 ```
 
-## Hashicorp Vault
+## Vault
 
-The passwords for **Keycloak**, **Rancher** and **flux-webui** can be retrieved from **Vault**. You can authenticate against **Vault** through the OIDC authentication method or by using the **Vault** root token. <br/>
+The passwords for `Keycloak`, `Rancher`, `flux-webui` and `Neuvector` can be retrieved from `Vault`. You can authenticate against `Vault` through the OIDC authentication method or by using the `Vault` root token. <br/>
 
-> **_NOTE:_** If you don't provide `.admin_password` in the environment file `secrets.yaml`, connect to Vault by using the **Vault** root token and retrieve the randomly generated password for the SSO account in the vault path `/secret/sso-account`.
+> **_NOTE:_** If you don't provide `.admin_password` in the environment file `secrets.yaml`, connect to Vault by using the `Vault` root token and retrieve the randomly generated password for the SSO account in the vault path `/secret/sso-account`.
 
-Note also that the OIDC authentication has restricted rights on **Vault** paths in comparison to the root token authentication, which, by nature, has full privileges on **Vault** resources:
+Note also that the OIDC authentication has restricted rights on `Vault` paths in comparison to the root token authentication, which, by nature, has full privileges on `Vault` resources:
 
 | Privilege                                                                        | OIDC authentication | Root Token Authentication |
 | -------------------------------------------------------------------------------- | ------------------- | ------------------------- |
@@ -98,7 +98,7 @@ Note also that the OIDC authentication has restricted rights on **Vault** paths 
 
 ![vault-oidc-redirection](./img/security/vault-oidc-redirect.png)
 
-Once authenticated against **Vault**, the local account password of each management cluster service can be retrieved either from the **Vault GUI** or the **Vault CLI**.
+Once authenticated against `Vault`, the local account password of each management cluster service can be retrieved either from the `Vault GUI` or the `Vault CLI`.
 
 ### Token authentication
 
@@ -155,23 +155,23 @@ bootstrapPassword        <..bla bla..>
 
 ## Identity and Access Management
 
-Identity and Access Management is addressed by **Keycloak** providing user management, single-sign-on, user federation and identity brokering.
+Identity and Access Management is addressed by `Keycloak` providing user management, single-sign-on, user federation and identity brokering.
 
 ### Keycloak Admin Console
 
-To administrate **Keycloak**, go to the "Keycloak GUI", e.g. `https://keycloak.sylva` and select the [Administration Console](https://keycloak.sylva/admin/master/console).
+To administrate `Keycloak`, go to the "Keycloak GUI", e.g. `https://keycloak.sylva` and select the [Administration Console](https://keycloak.sylva/admin/master/console).
 
 ![keycloak-ui](./img/security/keycloak-ui.png)
 
-Then use the password in **Vault** under the path `secret/keycloak` to authenticate against **Keycloak** (the login name is `admin` by default, see sections above to learn how to get secrets from **Vault**).
+Then use the password in `Vault` under the path `secret/keycloak` to authenticate against `Keycloak` (the login name is `admin` by default, see sections above to learn how to get secrets from `Vault`).
 
-> **_NOTE_**: when connecting to the administration console, you are logged in as administrator of the realm `master`. The administrator gets all privileges on other realms, i.e. `sylva`. It is thus useless to connect to the realm `sylva` with the `sylva-admin` credentials. Actually if this credential might grant access to realm `sylva`, it has no authorizations on **Keycloak** ressources.
+> **_NOTE_**: when connecting to the administration console, you are logged in as administrator of the realm `master`. The administrator gets all privileges on other realms, i.e. `sylva`. It is thus useless to connect to the realm `sylva` with the `sylva-admin` credentials. Actually if this credential might grant access to realm `sylva`, it has no authorizations on `Keycloak` resources.
 
 ![keycloak-login](./img/security/keycloak-login.png)
 
 ### Password Policy
 
-Any passwords generated by Sylva follows a password policy enforced either on **Keycloak** (for user creation) or **Vault** (for generation of random secrets). For example, below is the policy definition at **Vault** side:
+Any passwords generated by Sylva follows a password policy enforced either on `Keycloak` (for user creation) or `Vault` (for generation of random secrets). For example, below is the policy definition at `Vault` side:
 
 ```yaml
 apiVersion: redhatcop.redhat.io/v1alpha1
@@ -200,9 +200,9 @@ spec:
 
 ### User Management
 
-The users and groups are centralized on **Keycloak**. They can be created on **Keycloak** (as depicted below) or imported from an external user federation (LDAP, AD, etc...)
+The users and groups are centralized on `Keycloak`. They can be created on `Keycloak` (as depicted below) or imported from an external user federation (LDAP, AD, etc...)
 
-> **_IMPORTANT NOTICE:_** Configuring an external user federation is out of scope of Sylva. However, if an external user federation is configured, the local **keycloak** accounts (e.g. `sylva-admin`) cannot be used anymore, unless the federation is configured to allow **keycloak** writing in the remote user directory. However granting such a privilege to **Keycloak** might raise a security risk that should be seriously evaluated.
+> **_IMPORTANT NOTICE:_** Configuring an external user federation is out of scope of Sylva. However, if an external user federation is configured, the local `keycloak` accounts (e.g. `sylva-admin`) cannot be used anymore, unless the federation is configured to allow `keycloak` writing in the remote user directory. However granting such a privilege to `Keycloak` might raise a security risk that should be seriously evaluated.
 
 ![keycloak-users](./img/security/keycloak-user.png)
 
@@ -236,11 +236,11 @@ It can be interesting to configure Keycloak to rely on an external identity prov
 
 ### Access Control to workload Clusters
 
-If **Keycloak** plays a key role in access control to the workload cluster, it must be clear that **Keycloak** only manages the authentication of the users. The authorization part (i.e. define who can do what) is configured at the OIDC client (i.e. **Rancher**) side. For example, the following picture shows Rancher binding the admin role to the group infra-admins:
+If `Keycloak` plays a key role in access control to the workload cluster, it must be clear that `Keycloak` only manages the authentication of the users. The authorization part (i.e. define who can do what) is configured at the OIDC client (i.e. `Rancher`) side. For example, the following picture shows Rancher binding the admin role to the group infra-admins:
 
 ![Rancher-role-binding](./img/security/role-binding.png)
 
-You can manage the binding from the Rancher Web UI via the `sylva-admin` account but, note that in this case, the  `sylva-admin`  account must be member of the Keycloak groups to bind. It is clearly unwanted and, thus, the group binding via the **Rancher** web-ui is only for testing purpose.
+You can manage the binding from the Rancher Web UI via the `sylva-admin` account but, note that in this case, the  `sylva-admin`  account must be member of the Keycloak groups to bind. It is clearly unwanted and, thus, the group binding via the `Rancher` web-ui is only for testing purpose.
 
 It is recommended to not use the GUI but to manage the group binding the via Rancher CRD (`globalrolebinding`, `projectroletemplatebindings` and `clusterroletemplatebindings`) or even with [Terraform Rancher provider](https://registry.terraform.io/providers/rancher/rancher2/latest/docs). Below are examples of CRD based binding:
 
@@ -258,7 +258,7 @@ globalRoleName: admin
 groupPrincipalName: keycloakoidc_group://infra-admins
 ```
 
-Summarizing, **Rancher** acts as an authentication proxy, allowing a fine-grained access control relying on **Keycloak** users/groups management as depicted below.
+Summarizing, `Rancher` acts as an authentication proxy, allowing a fine-grained access control relying on `Keycloak` users/groups management as depicted below.
 
 ![sylva-rbac](./img/security/sylva-rbac.jpg)
 
@@ -525,3 +525,96 @@ Dependency track displays all imported SBOMs and gives a summary of the vulnerab
 Then, for each images, we can have the list of components (softwares and packages) and check for their vulnerabilities:
 
 ![dt-components](./img/security/dt-component-vulns.png)
+
+## Suse Neuvector
+
+The optional unit "Neuvector" addresses the platform Zero Trust Security by providing vulnerability Management, Compliance, Runtime Security, Supply Chain Security, Network Visibility and Container Segmentation. Please refer to the [SUSE Neuvector Official documentation](https://www.suse.com/products/neuvector/) for further details.
+
+### Neuvector admin console
+
+To administrate Neuvector, you can access its Web UI: `https://neuvector.<cluster_domain_name>`,  e.g. at https://neuvector.sylva.
+
+![neuvecto-login](./img/security/neuvector-login.png)
+
+### OIDC authentication
+
+To login with OIDC clic on the "Login with OpenID" button.
+
+![neuvector-oidc-redirection](./img/security/neuvector-oidc-redirect.png)
+
+Then enter a personal identifier and password.
+The user must belong to the `infra-admins` group in Keycloak in order to be able to modify the configuration, or to the `neuvector-readers` group in order to have a read-only access.
+
+### Local authentication
+
+To login with a local account click on the "Login" button.
+The only account provisioned is `admin`. You can retrieve the password from Vault under the path `secret/neuvector`.
+Connection with this account should be reserved to emergency cases, when OIDC authentication is broken.
+
+### Neuvector dashboard
+
+![neuvector-dashboard](./img/security/neuvector-dashboard.png)
+
+From the Neuvector dashboard you can:
+
+- visualize the network activity
+- manage the assets
+- manage the policy
+- manage the security risks
+- manage the Notifications
+- manage Neuvector settings
+
+### Neuvector modes
+
+Neuvector defines 3 modes for the resources scanned.
+
+- Discover. In this mode Neuvector discovers the infrastructure, the running services and applications and automatically builds white list of network rules
+- Monitor. In this mode Neuvector monitors run-time violations of security events and raises security events
+- Protect. In this mode Neuvector blocks any network violation and attacks detected
+
+Neuvector default settings keep resources in discover mode. Manual action is needed to switch them to Monitor mode.
+
+It is recommended to rapidly switch to the monitor mode, then after a reasonable observation period, switch to the Protect mode. Note that the Protect mode can raise denial of services if resource control policies are poorly learned.
+
+### Network activity
+
+![neuvector-network-activity](./img/security/neuvector-network-activity.png)
+
+The view can be filtered by criteria such as namespaces to make it more readable.
+This view highlights unexpected network flows that correspond potentially to malicious behaviors.
+
+### Assets management
+
+From the assets management menu you can:
+
+- visualize the platforms registered on Neuvector and launch security scans
+- visualize the namespaces and their resources (workloads, pods, services)
+- visualize the nodes and access to the result of their compliance check and their vulnerabilities
+- visualize the containers and their state
+
+### Policies management
+
+From the Policy management menu you can:
+
+- add, update or remove admission control policies
+- add, update or remove group policies
+- add, update or remove network policies
+
+### security risks management
+
+From the Policy management menu you can manage:
+
+- Vulnerabilies and vulnerabilities profile
+- Compliance and compliance profile
+
+### notification management
+
+From the Notification management menu you can display:
+
+- security events, which include three sub-types: violation, threats, and incidents
+- risk reports
+- events
+
+Note that Notification are stored in memory with a rolling limit of 4K per type and sub-type.
+
+**It is recommended to forward these security events to a SIEM system** by configuring the Syslog feature under Settings > Configuration > Syslog.
