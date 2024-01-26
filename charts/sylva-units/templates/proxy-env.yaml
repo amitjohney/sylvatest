@@ -9,4 +9,4 @@ data:
 {{- range tuple "http_proxy" "https_proxy" }}
   {{ . }}: {{ get $envAll.Values.proxies . | quote }}
 {{- end }}
-  no_proxy: {{ include "sylva-units.no_proxy" . | quote }}
+  no_proxy: {{ include "sylva-units.no_proxy" (tuple .) | quote }}
