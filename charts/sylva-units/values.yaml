@@ -2786,6 +2786,11 @@ units:
               value:
                 name: no_proxy
                 value: '{{ include "sylva-units.no_proxy" . }}'
+            - op: add
+              path: /spec/template/spec/containers/0/env/2
+              value:
+                name: oci_registry_insecure
+                value: '{{ .Values.oci_registry_insecure }}'
         - target:
             kind: ConfigMap
           patch: >-
@@ -3414,6 +3419,8 @@ openstack:
     #type: xxx  # please provide the cinder volume type, e.g. 'ceph_sas' (must exist in OpenStack)
   control_plane_affinity_policy: soft-anti-affinity
   worker_affinity_policy: soft-anti-affinity
+
+oci_registry_insecure: false
 
 metal3:
   provider: sylva # sylva or suse

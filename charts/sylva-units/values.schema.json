@@ -6200,6 +6200,9 @@
     "oci_registry_extra_ca_certs": {
       "type": "string"
     },
+    "oci_registry_insecure": {
+      "type": "boolean"
+    },
     "registry_mirrors": {
       "type": "object",
       "additionalProperties": false,
