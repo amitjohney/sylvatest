@@ -71,3 +71,4 @@ spec:
           sylva-units-chart-version: "{{ .Chart.Version }}"
           release-time: "{{ $time }}"
           values-checksum: "{{ $values_checksum }}"
+          additional-info: | {{ .Values.additional_sylva_units_status_info | toYaml | nindent 12 }}

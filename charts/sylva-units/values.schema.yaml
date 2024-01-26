@@ -837,6 +837,9 @@ properties:
           default_enabled:
             type: boolean
 
+  additional_sylva_units_status_info:  # -------------------------------
+    type: object
+
   _internal:  # -------------------------------
     type: object
 
