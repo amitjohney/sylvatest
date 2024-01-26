@@ -6645,9 +6645,12 @@
             "info": {
               "$ref": "#/$defs/unit_info"
             },
-            "unit_template": {
-              "type": "string",
-              "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+            "unit_templates": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+              }
             },
             "repo": {
               "anyOf": [
@@ -6873,7 +6876,7 @@
                 },
                 {
                   "required": [
-                    "unit_template"
+                    "unit_templates"
                   ]
                 }
               ]
@@ -6915,7 +6918,7 @@
                           {
                             "not": {
                               "required": [
-                                "unit_template"
+                                "unit_templates"
                               ]
                             }
                           }

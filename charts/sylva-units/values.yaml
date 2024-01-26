@@ -252,8 +252,10 @@ units:
   #
   #   helm_secret_values: # (dict), if set what is put here is injected in HelmRelease.valuesFrom as a Secret
   #   kustomization_substitute_secrets: # (dict), if set what is put here is injected in Kustomization.postBuild.substituteFrom as a Secret
-  #   unit_template: optional, today used only for units that use sylva-units itself
-  #                  the settings for the unit are inherited from the corresponding entry under unit_templates
+  #   unit_templates: optional, list of names of "unit templates"
+  #                   unit templates are defined under "unit_templates"
+  #                   the settings for the unit are inherited from the corresponding entries under .Values.unit_templates,
+  #                   merging them in the specified order
 
   flux-system:
     info:

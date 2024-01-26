@@ -349,9 +349,11 @@ properties:
           info:
             $ref: "#/$defs/unit_info"
 
-          unit_template:
-            type: string
-            pattern: "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+          unit_templates:
+            type: array
+            items:
+              type: string
+              pattern: "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
 
           repo:  # -------------------------------
             anyOf:
@@ -496,8 +498,8 @@ properties:
               - helmrelease_spec
             - required:
               - kustomization_spec
-            - required:  # we relax this check if 'unit_template' is used
-              - unit_template
+            - required:  # we relax this check if 'unit_templates' is used
+              - unit_templates
 
           - anyOf:
             # for a unit which is explicitly disabled, we don't mandate anything else
@@ -521,10 +523,10 @@ properties:
               # there are some things we need on kustomization_spec
               # but that aren't needed in the case where we specify helmrelease_spec,
               # (see example where we need that under bootstrap.values.yaml:units.sylva-units)
-              # or in the case where unit_template is used
+              # or in the case where unit_templates is used
               #
               # (note that we have a check for the presence of 'path' in the final resource in templates/units.yaml
-              #  to ensure it's presence when unit_template is used)
+              #  to ensure it's presence when unit_templates is used)
               - if:
                   allOf:
                     - not:
@@ -532,7 +534,7 @@ properties:
                           - helmrelease_spec
                     - not:
                         required:
-                          - unit_template
+                          - unit_templates
                 then:
                   properties:
                     kustomization_spec:

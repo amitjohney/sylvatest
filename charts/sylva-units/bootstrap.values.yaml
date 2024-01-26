@@ -268,7 +268,8 @@ units:
       internal: true
     depends_on:
       management-cluster-configs: true
-    unit_template: sylva-units
+    unit_templates:
+    - sylva-units
     labels:
       suspend-on-pivot: "yes"  # this unit must be suspended before pivot
     # Use a kustomization_spec alongside an helmrelease_spec,
