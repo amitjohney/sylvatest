@@ -3400,8 +3400,8 @@ units:
 
   minio-operator:
     info:
-      description: install minio operator need it to create minio tenants
-      details: using minio operator we can create multiple S3 tenants
+      description: install MinIO operator
+      details: MinIO operator is used to manage multiple S3 tenants
       maturity: stable
     depends_on:
       namespace-defs: true
