@@ -120,7 +120,7 @@ units:
           cattle_agent_kustomize_source:
             apiVersion: source.toolkit.fluxcd.io/v1beta2
             kind: OCIRepository
-            spec: '{{ mergeOverwrite .Values.oci_repo_spec_default (dig "capi-rancher-import" "spec" "undefined spec" .Values.source_templates) | include "preserve-type" }}'
+            spec: '{{ mergeOverwrite .Values.oci_repo_spec_default (deepCopy (dig "capi-rancher-import" "spec" "undefined spec" .Values.source_templates)) | include "preserve-type" }}'
           cattle_agent_kustomize_path: .
 
   flux-system:
