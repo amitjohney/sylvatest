@@ -3410,8 +3410,6 @@ units:
       sylvactl/readyMessage: "minio operator console can be reached at https://{{ .Values.external_hostnames.minio_operator_console }} ({{ .Values.external_hostnames.minio_operator_console }} must resolve to {{ .Values.display_external_ip }})"
     repo: minio-operator
     helmrelease_spec:
-      releaseName: minio-operator
-      targetNamespace: minio-operator
       chart:
         spec:
           chart: helm/operator
