@@ -73,7 +73,7 @@
         {{- if $schema.scheme | eq "oci" -}}
           {{- $helm_repo_spec = dict "type" "oci" -}}
         {{- end -}}
-      {{- $helm_repo_spec = mergeOverwrite $helm_repo_spec $envAll.Values.helm_repo_spec_default (dict "url" $unit_def.helm_repo_url) -}}
+      {{- $helm_repo_spec = mergeOverwrite $helm_repo_spec (deepCopy $envAll.Values.helm_repo_spec_default) (dict "url" $unit_def.helm_repo_url) -}}
 
       {{/*
       we inject a sourceRef pointing to our dynamically created HelmRepository
@@ -101,7 +101,7 @@ spec: {{ $helm_repo_spec | toYaml | nindent 2 }}
     {{/* here, if "helmrelease_spec" is used, we define the spec of the inner HelmRelease */}}
     {{- if hasKey $unit_def "helmrelease_spec" -}}
       {{/* this is where we refer to ./kustomize-units/helmrelease-generic */}}
-      {{- $kustomization_spec_overrides = mergeOverwrite $kustomization_spec_overrides $envAll.Values.unit_helmrelease_kustomization_spec_default -}}
+      {{- $kustomization_spec_overrides = mergeOverwrite $kustomization_spec_overrides (deepCopy $envAll.Values.unit_helmrelease_kustomization_spec_default) -}}
 
       {{/* combine '_postRenderers' with 'postRenderers' */}}
       {{- $post_renderers := concat ($unit_def.helmrelease_spec | dig "_postRenderers" list)
@@ -179,7 +179,7 @@ spec: {{ $helm_repo_spec | toYaml | nindent 2 }}
 
       {{/* produce the HelmRelease specification, merging the different sources we have */}}
       {{- $helmrelease_spec := dict "releaseName" $unit_name -}}
-      {{- $helmrelease_spec := mergeOverwrite $helmrelease_spec $envAll.Values.unit_helmrelease_spec_default $unit_def.helmrelease_spec $helmrelease_spec_overrides (dict "postRenderers" $post_renderers) -}}
+      {{- $helmrelease_spec := mergeOverwrite $helmrelease_spec (deepCopy $envAll.Values.unit_helmrelease_spec_default) (deepCopy $unit_def.helmrelease_spec) (deepCopy $helmrelease_spec_overrides) (dict "postRenderers" $post_renderers) -}}
 
       {{/* if the merge above resulted in setting kubeConfig or targetNamespace to null, remove them from the dict */}}
       {{- if hasKey $helmrelease_spec "kubeConfig" -}}

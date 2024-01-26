@@ -30,7 +30,7 @@ script: |-
   server = "https://{{ $registry }}"
   {{- range $_, $config := $mirrors }}
   [host."{{ $config.mirror_url }}"]
-  {{- range $setting,$value := mergeOverwrite (deepCopy $defaultSettings) (get $config "registry_settings" | default dict) }}
+  {{- range $setting,$value := mergeOverwrite (deepCopy $defaultSettings) (deepCopy (get $config "registry_settings" | default dict)) }}
     {{ $setting }} = {{ $value | toJson }}
   {{- end -}}
   {{- end }}
