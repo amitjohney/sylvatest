@@ -60,6 +60,13 @@ rules:
     resources:
       - kubeadmconfigtemplates
       - rke2configtemplates
+  - apiGroups: [""]
+    verbs:
+      - get
+      - list
+      - create
+    resources:
+      - events
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
