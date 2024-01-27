@@ -8,6 +8,8 @@ The results are summarized by the following table:
 
 | Date                      | Management Cluster CAPI Providers | Sylva-Core main commit ID        | Management cluster result                    | Workload cluster result              | Test logs (only for failed tests) |
 |---------------------------|-----------------------------------|----------------------------------|----------------------------------------------|--------------------------------------|-----------------------------------|
+|2024-01-27 01:29|rke2-capv|8dbcf32a7fd29db2eba5fc8fb1e139a1070144b0|:white_check_mark:|:white_check_mark:||
+|2024-01-27 01:26|kubeadm-capv|8dbcf32a7fd29db2eba5fc8fb1e139a1070144b0|:white_check_mark:|:white_check_mark:||
 |2024-01-26 01:26|rke2-capv|8fde65e219510515e306544b7cdf8059833dad5f|:white_check_mark:|:white_check_mark:||
 |2024-01-26 01:23|kubeadm-capv|8fde65e219510515e306544b7cdf8059833dad5f|:white_check_mark:|:white_check_mark:||
 |2024-01-25 01:23|rke2-capv|54fe662cb7a3d4248469883cf830428c490070b4|:white_check_mark:|:white_check_mark:||
