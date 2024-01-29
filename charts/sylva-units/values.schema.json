@@ -6601,6 +6601,22 @@
           }
         }
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "env_type": {
+            "const": "prod"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "admin_password": {
+            "const": "{{ .Values._internal.default_password }}"
+          }
+        }
+      }
     }
   ]
 }
