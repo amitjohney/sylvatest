@@ -1048,3 +1048,11 @@ allOf:
 
                 vsphere_conf:
                   type: object
+  - if:
+      properties:
+        env_type:
+          const: prod
+    then:
+      properties:
+        admin_password:  # ---------setting an admin password in not allowed when env_type----------------------
+          const: '{{ .Values._internal.default_password }}' # on prod, the admin password must be internal.default_password

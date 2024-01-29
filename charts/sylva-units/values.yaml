@@ -3452,6 +3452,7 @@ vsphere:
 cluster_external_ip: 55.55.55.55
 
 # Admin password that will be configured by default on various units  # FIXME, only used for SSO today see https://gitlab.com/sylva-projects/sylva-core/-/issues/503
+# [WARNING] This value cannot be overwritten on production environment (env_type: prod)
 admin_password: '{{ .Values._internal.default_password }}'
 
 flux_webui:
