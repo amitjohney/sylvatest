@@ -267,9 +267,10 @@
       "matchStrings": [
         "SYLVA_TOOLBOX_VERSION:-\"(?<currentValue>.*)\".",
         "SYLVA_TOOLBOX_IMAGE:-(?<depName>.*).",
-        "SYLVA_TOOLBOX_REGISTRY:-(?<registryUrl>.*)."
+        "SYLVA_BASE_OCI_REGISTRY:-(?<base_registryUrl>.*).",
+        "SYLVA_TOOLBOX_REGISTRY:-.*\/(?<uri_registryUrl>.*)."
       ],
-      "registryUrlTemplate": "https://{{{ registryUrl }}}",
+      "registryUrlTemplate": "https://{{{ base_registryUrl }}}/{{{ uri_registryUrl }}}",
       "datasourceTemplate": "docker"
     }
   ]
