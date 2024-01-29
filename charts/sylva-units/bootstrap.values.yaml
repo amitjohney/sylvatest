@@ -497,3 +497,4 @@ units_override_enabled:
   - multus-ready
   - libvirt-metal
   - vsphere-cpi
+  - get-openstack-images

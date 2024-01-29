@@ -13,6 +13,9 @@ openstack:
   storageClass:
     name: cinder-ceph-ssd
     type: ceph_sas
+
+oci_registry_insecure: true
+
 oci_registry_extra_ca_certs: |-
   -----BEGIN CERTIFICATE-----
   MIIFPTCCAyWgAwIBAgIUBCG7warv3pzIgFvBb+wgUZUODDswDQYJKoZIhvcNAQEL
