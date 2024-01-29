@@ -61,12 +61,12 @@ include:
     - yq -i '.cluster.name = strenv(CLUSTER_CI_NAME)' $values_file
     - yq -i '.env_type = "ci"' $values_file
     - |
-      if [ -n "${CUSTOM_MGMT_VALUES_FILE}" ] && [ "${CLUSTER_TYPE}" = "management" ]; then
-        update_values_file ${CUSTOM_MGMT_VALUES_FILE}
+      if [ -n "${MGMT_ADDITIONAL_VALUES}" ] && [ "${CLUSTER_TYPE}" = "management" ]; then
+        update_values_file ${MGMT_ADDITIONAL_VALUES}
       fi
     - |
-      if [ -n "${CUSTOM_WC_VALUES_FILE}" ] && [ "${CLUSTER_TYPE}" = "workload" ]; then
-        update_values_file ${CUSTOM_WC_VALUES_FILE}
+      if [ -n "${WC_ADDITIONAL_VALUES}" ] && [ "${CLUSTER_TYPE}" = "workload" ]; then
+        update_values_file ${WC_ADDITIONAL_VALUES}
       fi
     - |
       if [ -n "${REMOTE_VALUES}" ]; then
@@ -191,7 +191,7 @@ include:
     - !reference [.common-deployment, setup_ci_values]
     - ./bootstrap.sh environment-values/${ENV_NAME}
   variables:
-    SPECIFIC_VALUES_FILE: $MGMT_DEPLOYMENT_CUSTOM
+    SPECIFIC_VALUES_FILE: $MGMT_INITIAL_ADDITIONAL_VALUES
 
 .update-management:
   extends: .management-base
@@ -200,7 +200,7 @@ include:
     - !reference [.common-deployment, setup_ci_values]
     - ./apply.sh environment-values/${ENV_NAME}
   variables:
-    SPECIFIC_VALUES_FILE: $MGMT_UPDATE_CUSTOM
+    SPECIFIC_VALUES_FILE: $MGMT_UPDATE_ADDITIONAL_VALUES
 
 .workload-base:
   extends: .docker-service
@@ -228,7 +228,7 @@ include:
     - !reference [.common-deployment, setup_ci_values]
     - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
   variables:
-    SPECIFIC_VALUES_FILE: $WC_DEPLOYMENT_CUSTOM
+    SPECIFIC_VALUES_FILE: $WC_INITIAL_ADDITIONAL_VALUES
 
 .update-workload:
   extends: .workload-base
@@ -237,7 +237,7 @@ include:
     - !reference [.common-deployment, setup_ci_values]
     - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
   variables:
-    SPECIFIC_VALUES_FILE: $WC_UPDATE_CUSTOM
+    SPECIFIC_VALUES_FILE: $WC_UPDATE_ADDITIONAL_VALUES
 
 .cleanup-capo:
   stage: delete
