@@ -55,30 +55,6 @@ cluster:
         #   - cloud-init clean --reboot
         #   - fi
 
-libvirt_metal:
-  nodes:
-    management-cp:
-      redfishPort: 8000
-      memGB: 16
-      numCPUs: 8
-      hugepages:
-        enabled: true
-        sizes:
-          - size: 2M
-            count: 6000
-          - size: 1G
-            count: 2
-
-    workload-cp:
-      redfishPort: 8001
-      memGB: 6
-      numCPUs: 4
-      hugepages:
-        enabled: true
-        sizes:
-          - size: 2M
-            count: 6000
-
 sriov:
   node_policies:
     dl360-sriov:
