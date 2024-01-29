@@ -16,10 +16,16 @@ variables:
   KIND_CLUSTER_NAME: bootstrap-${ENV_TAG}
   MANAGEMENT_CLUSTER_NAME: mgmt-${ENV_TAG}
   WORKLOAD_CLUSTER_NAME: wc-${ENV_TAG}
-  # Used to define specific management cluster deployment (capo-fip etc...)
-  CUSTOM_MGMT_VALUES_FILE: ""
-  # Used to define specific workload cluster deployment (capm3-rke2-virt-*-suse-os etc...)
-  CUSTOM_WC_VALUES_FILE: ""
+  MGMT_ADDITIONAL_VALUES:
+    value: ""
+    description: |
+      Path to a file for customizing the values used
+      during all management cluster stages
+  WC_ADDITIONAL_VALUES:
+    value: ""
+    description: |
+      Path to a file for customizing the values used
+      during all workload cluster stages
   # Used for cross repo pipelines
   REMOTE_VALUES: ""
   # Management cluster relative variables
@@ -34,31 +40,31 @@ variables:
     value: "45"
     description: "bootstrap.sh timeout for bootstrap cluster"
   # Customize values files
-  MGMT_DEPLOYMENT_CUSTOM:
+  MGMT_INITIAL_ADDITIONAL_VALUES:
     value: ""
     description: |
-      Path to a file use to customize the value file
-      used during the management cluster DEPLOYMENT
-  MGMT_UPDATE_CUSTOM:
+      Path to a file for customizing the values used
+      during the management cluster deployment stage
+  MGMT_UPDATE_ADDITIONAL_VALUES:
     value: "environment-values/ci/ci-enabled-units.yml"
     description: |
-      Path to a file use to customize the value file
-      used during the management cluster UPDATE
+      Path to a file for customizing the values used
+      during the management cluster update stage
   # Workload cluster relative variables
   APPLY_WC_WATCH_TIMEOUT_MIN:
     value: "30"
     description: "apply-workload-cluster.sh timeout"
   # Customize values files
-  WC_DEPLOYMENT_CUSTOM:
+  WC_INITIAL_ADDITIONAL_VALUES:
     value: ""
     description: |
-      Path to a file use to customize the value file
-      used during the workload cluster DEPLOYMENT
-  WC_UPDATE_CUSTOM:
+      Path to a file for customizing the values used
+      during the workload cluster deployment stage
+  WC_UPDATE_ADDITIONAL_VALUES:
     value: "environment-values/ci/ci-enabled-units.yml"
     description: |
-      Path to a file use to customize the value file
-      used during the workload cluster UPDATE
+      Path to a file for customizing the values used
+      during the workload cluster update stage
   DEPLOYMENT_FLAVOR:
     value: ""
     description: |
@@ -82,11 +88,11 @@ variables:
     when: manual
   - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_DEPLOYMENTS && $CI_JOB_NAME =~ $DEPLOYMENT_FLAVOR'
     variables:
-      MGMT_DEPLOYMENT_CUSTOM: environment-values/ci/control-plane-replicas-3.yml
-      MGMT_UPDATE_CUSTOM: environment-values/ci/dummy-rolling-update-trigger.yml
+      MGMT_INITIAL_ADDITIONAL_VALUES: environment-values/ci/control-plane-replicas-3.yml
+      MGMT_UPDATE_ADDITIONAL_VALUES: environment-values/ci/max-pods.yml
       APPLY_WATCH_TIMEOUT_MIN: 40
-      WC_DEPLOYMENT_CUSTOM: environment-values/ci/control-plane-replicas-3.yml
-      WC_UPDATE_CUSTOM: environment-values/ci/dummy-rolling-update-trigger.yml
+      WC_INITIAL_ADDITIONAL_VALUES: environment-values/ci/control-plane-replicas-3.yml
+      WC_UPDATE_ADDITIONAL_VALUES: environment-values/ci/max-pods.yml
       APPLY_WC_WATCH_TIMEOUT_MIN: 40
   - if: $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/ && ($E2E_JOB_MR_PARITY == "any" || ($E2E_JOB_MR_PARITY == "even" && $CI_OPEN_MERGE_REQUESTS =~ /[02468]$/) || ($E2E_JOB_MR_PARITY == "odd" && $CI_OPEN_MERGE_REQUESTS =~ /[13579]$/))
   - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
@@ -211,7 +217,7 @@ capo-misc-units-deploy:
   variables:
     ENV_NAME: rke2-capo
     CAPO_TAG: "${ENV_TAG_OCI}-misc"
-    CUSTOM_MGMT_VALUES_FILE: environment-values/ci/misc-units-in-capo.yml
+    MGMT_ADDITIONAL_VALUES: environment-values/ci/misc-units-in-capo.yml
     MGMT_WATCH_TIMEOUT_MIN: 45
     ONLY_DEPLOY_MGMT: "TRUE"
   trigger:
@@ -223,7 +229,7 @@ capo-fip-deploy:
   variables:
     ENV_NAME: kubeadm-capo
     CAPO_TAG: "${ENV_TAG_OCI}-fip"
-    CUSTOM_MGMT_VALUES_FILE: environment-values/ci/capo-fip.yml
+    MGMT_ADDITIONAL_VALUES: environment-values/ci/capo-fip.yml
     MGMT_WATCH_TIMEOUT_MIN: 20
     ONLY_DEPLOY_MGMT: "TRUE"
     E2E_JOB_MR_PARITY: none
@@ -254,23 +260,23 @@ capm3-rke2-virt-equinix-deploy-suse:
 capo-rke2-suse-os:
   extends: capo-rke2-deploy
   variables:
-    CUSTOM_MGMT_VALUES_FILE: environment-values/ci/suse-os-rke2-capo.yml
-    CUSTOM_WC_VALUES_FILE: environment-values/ci/suse-os-rke2-capo.yml
+    MGMT_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2-capo.yml
+    WC_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2-capo.yml
 
 capo-rke2-oci-suse-os:
   extends: capo-rke2-oci-deploy
   variables:
-    CUSTOM_MGMT_VALUES_FILE: environment-values/ci/suse-os-rke2-capo.yml
-    CUSTOM_WC_VALUES_FILE: environment-values/ci/suse-os-rke2-capo.yml
+    MGMT_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2-capo.yml
+    WC_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2-capo.yml
 
 capm3-rke2-virt-equinix-suse-os:
   extends: capm3-rke2-virt-equinix-deploy
   variables:
-    CUSTOM_MGMT_VALUES_FILE: environment-values/ci/suse-os-rke2-capm3-virt-mgmt.yml
-    CUSTOM_WC_VALUES_FILE: environment-values/ci/suse-os-rke2-capm3-virt-wkld.yml
+    MGMT_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2-capm3-virt-mgmt.yml
+    WC_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2-capm3-virt-wkld.yml
 
 capm3-rke2-virt-equinix-suse-metal3-suse-os:
   extends: capm3-rke2-virt-equinix-deploy-suse
   variables:
-    CUSTOM_MGMT_VALUES_FILE: environment-values/ci/suse-os-rke2-capm3-virt-mgmt.yml
-    CUSTOM_WC_VALUES_FILE: environment-values/ci/suse-os-rke2-capm3-virt-wkld.yml
+    MGMT_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2-capm3-virt-mgmt.yml
+    WC_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2-capm3-virt-wkld.yml
