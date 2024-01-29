@@ -47,7 +47,7 @@ spec:
           mountPath: /opt/scripts/push-images-to-glance.py
           subPath: push-images-to-glance.py
           readOnly: true
-        - name: os-image-info
+        - name: os-images-info
           mountPath: /opt/config
         - name: tmp-storage
           mountPath: /tmp
@@ -62,12 +62,12 @@ spec:
           items:
           - key: script.py
             path: push-images-to-glance.py
-      - name: os-image-info
+      - name: os-images-info
         configMap:
           name: os-images-info
           items:
           - key: values.yaml
-            path: os-image-info.yaml
+            path: os-images-info.yaml
       - name: tmp-storage
         emptyDir:
           medium: Memory

@@ -114,7 +114,7 @@ configmap = {}
 
 ##############################
 # Parse the YAML string resulted from loading the contents of the ConfigMap/os-images-info
-os_images_info_path = '/opt/config/os-image-info.yaml'
+os_images_info_path = '/opt/config/os-images-info.yaml'
 with open(os_images_info_path, 'r') as file:
     os_images = yaml.safe_load(file.read())
 os_images = os_images['osImages']
@@ -178,14 +178,14 @@ metadata = client.V1ObjectMeta(
 )
 
 # Convert configmap to yaml-formatted string
-yaml_string = yaml.dump(configmap, default_flow_style=False)
+yaml_string = yaml.dump({'os_images': configmap}, default_flow_style=False)  # os_images is the key expected for sylva-capi-cluster chart values
 
 # Create a ConfigMap object
 body = client.V1ConfigMap(
     api_version="v1",
     kind="ConfigMap",
     metadata=metadata,
-    data={'values': yaml_string}
+    data={'values.yaml': yaml_string}
 )
 
 def create_or_update_configmap(api_instance, namespace, body):
