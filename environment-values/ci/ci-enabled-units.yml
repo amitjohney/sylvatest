@@ -4,6 +4,5 @@ units:
     enabled: true
   sriov:
     enabled: true
-  longhotn:
+  longhorn:
     enabled: true
-    
