@@ -60,6 +60,7 @@
 | **cluster-garbage-collector** | installs cronjob responsible for unused CAPI resources cleaning |  | True | Kustomize | N/A |
 | **cluster-import** | imports workload cluster into Rancher |  | True | Kustomize | N/A |
 | **cluster-reachable** | ensure that created clusters are reachable, and make failure a bit more explicit if it is not the case<br/><br/>This unit will be enabled in bootstrap cluster to check connectivity to management cluster and in various workload-cluster namespaces in management cluster to check connectivity to workload clusters |  | True | Kustomize | N/A |
+| **cluster-ready** | unit to check readiness of cluster CAPI objects |  | True | Kustomize | N/A |
 | **coredns** | configures DNS inside cluster |  | True | Kustomize | N/A |
 | **eso-secret-stores** | defines External Secrets stores |  | True | Kustomize | N/A |
 | **first-login-rancher** | configure Rancher authentication for admin |  | True | Kustomize | N/A |
