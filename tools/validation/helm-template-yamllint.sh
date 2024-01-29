@@ -69,7 +69,7 @@ if [ -d $chart_dir/test-values ] && [ -n "$test_dirs" ] ; then
     echo -e "\e[0Ksection_start:`date +%s`:helm_more_values\r\e[0K--------------- Checking values from test-values/$(basename $dir) with 'helm template' and 'yamllint' ..."
 
     set +e
-    helm template ${HELM_NAME} $chart_dir $(ls $dir/*.y*ml | grep -v test-spec.yaml | sed -e 's/^/--values /') \
+    helm template ${HELM_NAME} $chart_dir $(ls $dir/*.y*ml | sort | grep -v test-spec.yaml | sed -e 's/^/--values /') \
       | yamllint - -d "$(cat < ${BASE_DIR}/.gitlab/ci/configuration/yamllint.yaml) $(cat < ${BASE_DIR}/.gitlab/ci/configuration/yamllint-helm-template-rules)"
     exit_code=$?
     set -e
