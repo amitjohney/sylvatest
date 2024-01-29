@@ -12430,11 +12430,10 @@ spec:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  #annotations:
-    #${AWS_CONTROLLER_IAM_ROLE/#arn/eks.amazonaws.com/role-arn: arn}
+  annotations:
+    ${AWS_CONTROLLER_IAM_ROLE/#arn/eks.amazonaws.com/role-arn: arn}
   labels:
     cluster.x-k8s.io/provider: infrastructure-aws
-    clusterctl.cluster.x-k8s.io: ""
     control-plane: controller-manager
   name: capa-controller-manager
   namespace: capa-system
@@ -12853,6 +12852,17 @@ subjects:
   namespace: capa-system
 ---
 apiVersion: v1
+data:
+  credentials: ${AWS_B64ENCODED_CREDENTIALS}
+kind: Secret
+metadata:
+  labels:
+    cluster.x-k8s.io/provider: infrastructure-aws
+  name: capa-manager-bootstrap-credentials
+  namespace: capa-system
+type: Opaque
+---
+apiVersion: v1
 kind: Service
 metadata:
   labels:
@@ -12909,8 +12919,7 @@ spec:
           preferredDuringSchedulingIgnoredDuringExecution:
           - preference:
               matchExpressions:
-              #- key: ${K8S_CP_LABEL:=node-role.kubernetes.io/control-plane}
-              - key: node-role.kubernetes.io/control-plane
+              - key: ${K8S_CP_LABEL:=node-role.kubernetes.io/control-plane}
                 operator: Exists
             weight: 10
           - preference:
@@ -12921,20 +12930,12 @@ spec:
       containers:
       - args:
         - --leader-elect
-        #- --feature-gates=EKS=${CAPA_EKS:=true},EKSEnableIAM=${CAPA_EKS_IAM:=false},EKSAllowAddRoles=${CAPA_EKS_ADD_ROLES:=false},EKSFargate=${EXP_EKS_FARGATE:=false},MachinePool=${EXP_MACHINE_POOL:=false},EventBridgeInstanceState=${EVENT_BRIDGE_INSTANCE_STATE:=false},AutoControllerIdentityCreator=${AUTO_CONTROLLER_IDENTITY_CREATOR:=true},BootstrapFormatIgnition=${EXP_BOOTSTRAP_FORMAT_IGNITION:=false},ExternalResourceGC=${EXP_EXTERNAL_RESOURCE_GC:=false},AlternativeGCStrategy=${EXP_ALTERNATIVE_GC_STRATEGY:=false},TagUnmanagedNetworkResources=${TAG_UNMANAGED_NETWORK_RESOURCES:=true}
-        - --feature-gates=EKS=true,EKSEnableIAM=false,EKSAllowAddRoles=false,EKSFargate=false,MachinePool=false,EventBridgeInstanceState=false,AutoControllerIdentityCreator=true,BootstrapFormatIgnition=false,ExternalResourceGC=false,AlternativeGCStrategy=false,TagUnmanagedNetworkResources=true
-        #- --v=${CAPA_LOGLEVEL:=0}
-        - --v=0
+        - --feature-gates=EKS=${CAPA_EKS:=true},EKSEnableIAM=${CAPA_EKS_IAM:=false},EKSAllowAddRoles=${CAPA_EKS_ADD_ROLES:=false},EKSFargate=${EXP_EKS_FARGATE:=false},MachinePool=${EXP_MACHINE_POOL:=false},EventBridgeInstanceState=${EVENT_BRIDGE_INSTANCE_STATE:=false},AutoControllerIdentityCreator=${AUTO_CONTROLLER_IDENTITY_CREATOR:=true},BootstrapFormatIgnition=${EXP_BOOTSTRAP_FORMAT_IGNITION:=false},ExternalResourceGC=${EXP_EXTERNAL_RESOURCE_GC:=false},AlternativeGCStrategy=${EXP_ALTERNATIVE_GC_STRATEGY:=false},TagUnmanagedNetworkResources=${TAG_UNMANAGED_NETWORK_RESOURCES:=true}
+        - --v=${CAPA_LOGLEVEL:=0}
         - --metrics-bind-addr=0.0.0.0:8080
         env:
         - name: AWS_SHARED_CREDENTIALS_FILE
           value: /home/.aws/credentials
-        - name: HTTP_PROXY
-          value: http://172.20.73.196:3128
-        - name: HTTPS_PROXY
-          value: http://172.20.73.196:3128
-        - name: NO_PROXY
-          value: "localhost,127.0.0.1,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8,172.20.18.0/24,0.0.0.0,10.43.0.1"
         image: registry.k8s.io/cluster-api-aws/cluster-api-aws-controller:v2.2.5
         imagePullPolicy: IfNotPresent
         livenessProbe:
