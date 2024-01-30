@@ -14,6 +14,9 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/args/2
         value: --feature-gates=ClusterTopology=false,KubeadmBootstrapFormatIgnition=false
+      - op: replace
+        path: /spec/replicas
+        value: ${replicas}
   - target:
       group: apps
       version: v1
@@ -27,6 +30,9 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/args/3
         value: --bootstrap-token-ttl=15m
+      - op: replace
+        path: /spec/replicas
+        value: ${replicas}
 
   - target:
       group: apiextensions.k8s.io

@@ -3,6 +3,8 @@
 # These value are meant to be used as overrides to the default values from values.yaml
 # when the chart is instantiated in the bootstrap cluster
 _internal:
+  ha_cluster:
+    mode: "non-ha"
   default_storage_class_unit: "bootstrap-local-path"
   libvirt_metal_networks: '[{"name": "provisioning", "namespace": "default",  "ips": ["192.168.10.123"]}, { "name": "management", "namespace": "default"}]'
   bootstrap_node_ip: |-

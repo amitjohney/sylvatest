@@ -37,3 +37,6 @@ patches:
       - op: add
         path: /spec/template/spec/serviceAccountName
         value: capv-manager
+      - op: replace
+        path: /spec/replicas
+        value: ${replicas}

@@ -282,6 +282,7 @@ units:
         substitute:
           var_substitution_enabled: "true" # To force substitution when configmap does not exist
           EXTRA_CA_CERTS: '{{ tuple (.Values.oci_registry_extra_ca_certs | default "" | b64enc) .Values.oci_registry_extra_ca_certs | include "set-only-if" }}'
+          replicas: '{{ .Values._internal.default_replicas }}'
         substituteFrom:
         - kind: ConfigMap
           name: proxy-env-vars
@@ -1420,6 +1421,7 @@ units:
       postBuild:
         substitute:
           force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
+          replicas: '{{ .Values._internal.default_replicas }}'
       wait: true
 
   capd:
@@ -1450,6 +1452,9 @@ units:
       cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/capo
+      postBuild:
+        substitute:
+          replicas: '{{ .Values._internal.default_replicas }}'
       wait: true
       _patches:
         - target:
@@ -1469,7 +1474,9 @@ units:
                 capabilities:
                   drop:
                     - ALL
-
+            - op: replace
+              path: /spec/replicas
+              value: ${replicas}
   capm3:
     info:
       description: installs Metal3 CAPI infra provider, for baremetal
@@ -1486,6 +1493,7 @@ units:
         substitute:
           force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
           enableBMHNameBasedPreallocation: "true"
+          replicas: '{{ .Values._internal.default_replicas }}'
       wait: true
 
   capv:
@@ -1502,6 +1510,7 @@ units:
       postBuild:
         substitute:
           force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
+          replicas: '{{ .Values._internal.default_replicas }}'
       wait: true
 
   cabpk:
@@ -1518,6 +1527,7 @@ units:
       postBuild:
         substitute:
           force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
+          replicas: '{{ .Values._internal.default_replicas }}'
       wait: true
 
   cabpr:
@@ -1531,6 +1541,10 @@ units:
       cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/cabpr
+      postBuild:
+        substitute:
+          force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
+          replicas: '{{ .Values._internal.default_replicas }}'
       wait: true
       _patches:
         - target:
@@ -1550,6 +1564,9 @@ units:
                 capabilities:
                   drop:
                     - ALL
+            - op: replace
+              path: /spec/replicas
+              value: ${replicas}
         - target:
             group: apps
             version: v1
@@ -1567,6 +1584,9 @@ units:
                 capabilities:
                   drop:
                     - ALL
+            - op: replace
+              path: /spec/replicas
+              value: ${replicas}
   metal3-suse:
     info:
       description: installs SUSE-maintained Metal3 operator
