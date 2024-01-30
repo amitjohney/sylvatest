@@ -91,10 +91,16 @@ def push_image_to_glance(file, manifest, image_name, image_format):
                 allow_duplicates=True
             )
             logger.info(f"  Image UUID: {image.id}")
+
             # Update the image with custom properties
             logger.info(f"  Updating image properties on image...")
             image_properties = manifest
             image_properties.update({'owner_specified.openstack.md5': _checksum})
+
+            # we rewrite the size key, because Glance gives us a Forbidden 403
+            # if we try to set this one
+            image_properties = {f"_{k}" if k == "size" else k: v for k, v in image_properties.items()}
+
             logger.info(f"  {image_properties}")
             updated_image = conn.image.update_image(
                 image.id,
