@@ -660,6 +660,19 @@
                 }
               ]
             },
+            "image_key": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "flavor_name": {
               "anyOf": [
                 {
@@ -1466,6 +1479,7 @@
                         "not": {
                           "required": [
                             "bond_mode",
+                            "bondXmitHashPolicy",
                             "interfaces",
                             "type"
                           ]
@@ -1489,9 +1503,30 @@
                         "not": {
                           "required": [
                             "bond_mode",
+                            "bondXmitHashPolicy",
                             "interfaces"
                           ]
                         }
+                      }
+                    },
+                    {
+                      "if": {
+                        "required": [
+                          "bond_mode"
+                        ],
+                        "properties": {
+                          "bond_mode": {
+                            "enum": [
+                              "balance-xor",
+                              "802.3ad"
+                            ]
+                          }
+                        }
+                      },
+                      "then": {
+                        "required": [
+                          "bondXmitHashPolicy"
+                        ]
                       }
                     }
                   ],
@@ -1521,6 +1556,20 @@
                             "balance-tlb",
                             "balance-alb",
                             "802.3ad"
+                          ]
+                        },
+                        {
+                          "$ref": "#/$defs/string-with-gotpl"
+                        }
+                      ]
+                    },
+                    "bondXmitHashPolicy": {
+                      "anyOf": [
+                        {
+                          "enum": [
+                            "layer2",
+                            "layer2+3",
+                            "layer3+4"
                           ]
                         },
                         {
@@ -1990,6 +2039,49 @@
                   "type": "null"
                 }
               ]
+            },
+            "ip_preallocations": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "public": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "ipv4"
+                        },
+                        {
+                          "$ref": "#/$defs/string-with-gotpl"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "provisioning": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "ipv4"
+                        },
+                        {
+                          "$ref": "#/$defs/string-with-gotpl"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             }
           }
         },
@@ -2158,6 +2250,19 @@
                   "type": "object",
                   "properties": {
                     "image_name": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "$ref": "#/$defs/string-with-gotpl"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "image_key": {
                       "anyOf": [
                         {
                           "type": "string"
@@ -2580,11 +2685,46 @@
             }
           ]
         },
+        "etcd": {
+          "anyOf": [
+            {
+              "type": "object"
+            },
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "additionalProperties": true,
+          "properties": {
+            "quota-backend-bytes": {
+              "type": "string"
+            },
+            "auto-compaction-retention": {
+              "type": "string"
+            },
+            "auto-compaction-mode": {
+              "type": "string",
+              "enum": [
+                "periodic",
+                "revision"
+              ]
+            }
+          }
+        },
         "control_plane_replicas": {
           "anyOf": [
             {
               "type": "integer",
-              "minimum": 1
+              "minimum": 1,
+              "not": {
+                "multipleOf": 2
+              }
             },
             {
               "$ref": "#/$defs/string-with-gotpl"
@@ -2688,6 +2828,19 @@
               "type": "object",
               "properties": {
                 "image_name": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "image_key": {
                   "anyOf": [
                     {
                       "type": "string"
@@ -4406,6 +4559,19 @@
                             }
                           ]
                         },
+                        "image_key": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
                         "flavor_name": {
                           "anyOf": [
                             {
@@ -4718,6 +4884,51 @@
               "type": "null"
             }
           ]
+        },
+        "os_images": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "patternProperties": {
+                ".*": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "openstack_glance_uuid": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/$defs/openstack-uuid"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "allOf": [
@@ -4793,11 +5004,22 @@
                 "anyOf": [
                   {
                     "required": [
-                      "image_name",
                       "ssh_key_name",
                       "network_id",
                       "clouds_yaml",
                       "resources_tag"
+                    ],
+                    "oneOf": [
+                      {
+                        "required": [
+                          "image_name"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "image_key"
+                        ]
+                      }
                     ]
                   },
                   {
