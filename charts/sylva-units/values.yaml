@@ -1407,8 +1407,8 @@ units:
     info:
       description: installs Kyverno
       maturity: core-component
-    unit_templates:
-    - base-deps
+    #unit_templates:
+    #- base-deps
     helm_repo_url: https://kyverno.github.io/kyverno
     helmrelease_spec:
       chart:
