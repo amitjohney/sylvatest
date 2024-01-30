@@ -173,7 +173,7 @@ for os_name, os_image_info in os_images.items():
             pass
 
         logger.info("Updating configmap")
-        configmap.update({os_name: image['id'] })
+        configmap.update({os_name: {'openstack_glance_uuid': image['id']}})
     else:
         logger.info('\n'.join([f"Image already in glance: Name: {image.name}, UUID: {image.id}, OS Name: {os_name}" for image in is_image_in_glance if image.get('checksum') == md5_checksum])) # add image name in manifest without tag and get it from there if needed.
         configmap.update({os_name: {'openstack_glance_uuid': is_image_in_glance[0]['id']}})
