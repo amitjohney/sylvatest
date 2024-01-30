@@ -106,7 +106,6 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: manik-0.1
 
-
   vault-operator:
     kind: GitRepository
     spec:
