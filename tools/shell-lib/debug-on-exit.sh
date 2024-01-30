@@ -1,3 +1,8 @@
+#!/usr/bin/bash 
+
+source tools/shell-lib/common.sh
+echo BASE_DIR=$BASE_DIR/../..
+
 # Grab some info in case of failure, essentially usefull to troubleshoot CI, fell free to add your own commands while troubleshooting
 
 # list of kinds to dump
@@ -53,7 +58,7 @@ function dump_additional_resources() {
     shift
     for cr in $@; do
       echo "Dumping resources $cr in the whole cluster"
-      if kubectl api-resources | grep -qi $cr ; then
+      if kubectl api-resources | grep -i $cr >/dev/null ; then
         base_filename=$cluster_dir/${cr/.\**/}
         kind=${cr/\*/}  # transform the .* used for matching kubectl api-resource, into a plain '.'
                         # (see Clusters.*cluster.x-k8s.io above)
@@ -96,13 +101,13 @@ function cluster_info_dump() {
   fi
   echo "Dumping resources for $cluster cluster in $dump_dir"
 
-  kubectl cluster-info dump -A -o yaml --output-directory=$dump_dir
-
-  # produce a readable ordered log of events for each namespace
-  for events_yaml in $(find $dump_dir -name events.yaml); do
-    format_and_sort_events < $events_yaml > ${events_yaml//.yaml}.log
-  done
-
+#  kubectl cluster-info dump -A -o yaml --output-directory=$dump_dir
+#
+#  # produce a readable ordered log of events for each namespace
+#  for events_yaml in $(find $dump_dir -name events.yaml); do
+#    format_and_sort_events < $events_yaml > ${events_yaml//.yaml}.log
+#  done
+#
   # same in a single file
   kubectl get events -A -o yaml | format_and_sort_events > $dump_dir/events.log
 
@@ -139,15 +144,15 @@ if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
 
     cluster_info_dump management
 
-    workload_cluster_name=$(kubectl get cluster.cluster -A -o jsonpath='{ $.items[?(@.metadata.namespace != "sylva-system")].metadata.name }')
-    if [[ -z "$workload_cluster_name" ]]; then
-        echo -e "There's no workload cluster for this deployment. All done"
-    else
-        echo -e "We'll check next workload cluster $workload_cluster_name"
-        workload_cluster_namespace=$(kubectl get cluster.cluster --all-namespaces -o=custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace | grep "$workload_cluster_name" | awk -F ' ' '{print $2}')
-        kubectl -n $workload_cluster_namespace get secret $workload_cluster_name-kubeconfig -o jsonpath='{.data.value}' | base64 -d > $BASE_DIR/workload-cluster-kubeconfig
-        export KUBECONFIG=$BASE_DIR/workload-cluster-kubeconfig
-
-        cluster_info_dump workload
-    fi
+#    workload_cluster_name=$(kubectl get cluster.cluster -A -o jsonpath='{ $.items[?(@.metadata.namespace != "sylva-system")].metadata.name }')
+#    if [[ -z "$workload_cluster_name" ]]; then
+#        echo -e "There's no workload cluster for this deployment. All done"
+#    else
+#        echo -e "We'll check next workload cluster $workload_cluster_name"
+#        workload_cluster_namespace=$(kubectl get cluster.cluster --all-namespaces -o=custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace | grep "$workload_cluster_name" | awk -F ' ' '{print $2}')
+#        kubectl -n $workload_cluster_namespace get secret $workload_cluster_name-kubeconfig -o jsonpath='{.data.value}' | base64 -d > $BASE_DIR/workload-cluster-kubeconfig
+#        export KUBECONFIG=$BASE_DIR/workload-cluster-kubeconfig
+#
+#        cluster_info_dump workload
+#    fi
 fi

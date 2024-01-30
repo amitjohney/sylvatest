@@ -1,7 +1,7 @@
 set -eu
 set -o pipefail
 
-export BASE_DIR="$(realpath $(dirname $0))"
+export BASE_DIR="$(realpath $(dirname $0))/../.."
 export PATH=${BASE_DIR}/bin:${PATH}
 export KIND_CLUSTER_NAME=${KIND_CLUSTER_NAME:-sylva}
 
