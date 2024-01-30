@@ -73,40 +73,46 @@ def image_exists_in_glance(checksum, _image_name):
             logger.warning(f"Image with name '{_image_name}' already exists.")
         return matching_images
     except Exception as e:
-        logger.warning(f"Following exception occured: {e}")
+        logger.warning(f"Following exception occurred: {e}")
         return None
 
 
 def push_image_to_glance(file, manifest, image_name, image_format):
-# Create an image resource without custom properties
+    # Create an image resource without custom properties
     with open(file, 'rb') as image_data:
         try:
             _checksum = manifest['md5']
+            logger.info(f"{image_name}: creating image")
             image = conn.image.create_image(
                 name=image_name,
                 data=image_data,
                 disk_format=image_format,
+                md5=_checksum,
                 allow_duplicates=True
             )
-    # Update the image with custom properties
+            logger.info(f"  Image UUID: {image.id}")
+            # Update the image with custom properties
+            logger.info(f"  Updating image properties on image...")
             image_properties = manifest
             image_properties.update({'owner_specified.openstack.md5': _checksum})
+            logger.info(f"  {image_properties}")
             updated_image = conn.image.update_image(
                 image.id,
                 properties=image_properties,
             )
             tag = f"sylva-md5-{_checksum}"
-            tag_image = conn.image.add_tag(image.id, tag)
+            logger.info(f"  Tagging image with {tag}...")
+            conn.image.add_tag(image.id, tag)
             return updated_image
         except Exception as e:
             logger.error(f"upsie... {e}")
-            return None
+            raise
 
 # Set namspace var
 NAMESPACE = os.environ.get('TARGET_NAMESPACE')
 # Configure logging
-#logging.basicConfig(level=logging.INFO)
-logging.basicConfig(level=logging.INFO, format='%(levelname)s:%(name)s:%(funcName)s: %(message)s')
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s %(levelname)s %(name)s %(funcName)s: %(message)s')
 logger = logging.getLogger(__name__)
 
 # Create empty configmap
@@ -118,7 +124,7 @@ os_images_info_path = '/opt/config/os-images-info.yaml'
 with open(os_images_info_path, 'r') as file:
     os_images = yaml.safe_load(file.read())
 os_images = os_images['osImages']
-print(os_images)
+logger.info(f"os_images: {os_images}")
 
 ##############################
 
@@ -140,11 +146,10 @@ for os_name, os_image_info in os_images.items():
     artifact = os_image_info["uri"]
     md5_checksum = os_image_info['md5']
     image_format = os_image_info['image-format']
-    print(f'Working on image: {os_name} with checksum {md5_checksum}')
-    sys.stdout.flush()
+    logger.info(f"Working on image: {os_name} with MD5 checksum {md5_checksum}")
     is_image_in_glance = image_exists_in_glance(md5_checksum,os_name)
     if not is_image_in_glance:
-        logger.info(f"image not in Glance: {os_name} - {md5_checksum}" )
+        logger.info(f"image not in Glance: {os_name} / md5 {md5_checksum}" )
         logger.info(f"Pulling image: {os_name} from artifact uri: {artifact}")
         oras_pull_path = oras_client.pull_image(artifact)
 
@@ -153,8 +158,8 @@ for os_name, os_image_info in os_images.items():
 
         try:
             logger.info("Pushing image to Glance...")
-            image_id = push_image_to_glance(unzipped_image, os_image_info, os_name, image_format)
-            logger.info(f"Image pushed to glance with image ID {image_id['id']}")
+            image = push_image_to_glance(unzipped_image, os_image_info, os_name, image_format)
+            logger.info(f"Image pushed to glance with image ID {image['id']}")
             logger.info(f"Cleaning up files")
             cleanup_image(oras_pull_path)
         except Exception as e:
@@ -162,14 +167,15 @@ for os_name, os_image_info in os_images.items():
             pass
 
         logger.info("Updating configmap")
-        configmap.update({os_name: image_id['id'] })
+        configmap.update({os_name: image['id'] })
     else:
-        logger.info('\n'.join([f"Image already in glance: Name: {image.name}, ID: {image.id}, OS Name: {os_name}" for image in is_image_in_glance if image.get('checksum') == md5_checksum])) # add image name in manifest without tag and get it from there if needed.
+        logger.info('\n'.join([f"Image already in glance: Name: {image.name}, UUID: {image.id}, OS Name: {os_name}" for image in is_image_in_glance if image.get('checksum') == md5_checksum])) # add image name in manifest without tag and get it from there if needed.
         configmap.update({os_name: {'openstack_glance_uuid': is_image_in_glance[0]['id']}})
-    print('\n')
-    print('-------Next Image-------')
-    print('\n')
-    sys.stdout.flush()
+    logger.info(f"Finished processing image: {os_name}")
+
+logger.info(f"Images UUID map:\n {configmap}")
+
+logger.info(f"Pushing ConfigMap to Kubernetes...")
 
 # Define the metadata for the ConfigMap
 metadata = client.V1ObjectMeta(
@@ -210,5 +216,6 @@ try:
     create_or_update_configmap(api_instance, NAMESPACE, body)
 except Exception as e:
     logger.error(f"upsie.. : {e}")
+    raise
 
-print(configmap)
+logger.info(f"We're done")
