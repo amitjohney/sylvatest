@@ -31,13 +31,13 @@ variables:
   # Management cluster relative variables
   # Timeout configuration
   APPLY_WATCH_TIMEOUT_MIN:
-    value: "20"
+    value: "10"
     description: "apply.sh timeout"
   MGMT_WATCH_TIMEOUT_MIN:
-    value: "30"
+    value: "10"
     description: "bootstrap.sh timeout"
   BOOTSTRAP_WATCH_TIMEOUT_MIN:
-    value: "45"
+    value: "10"
     description: "bootstrap.sh timeout for bootstrap cluster"
   # Customize values files
   MGMT_INITIAL_ADDITIONAL_VALUES:
