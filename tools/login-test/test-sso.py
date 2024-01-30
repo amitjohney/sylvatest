@@ -16,6 +16,8 @@ rancher_url=os.getenv('rancher_url')
 vault_url=os.getenv('vault_url')
 flux_url=os.getenv('flux_url')
 harbor_url=os.getenv('harbor_url')
+neuvector_url=os.getenv('neuvector_url')
+mgmt_only=os.getenv('ONLY_DEPLOY_MGMT')
 workload_name=os.getenv('WORKLOAD_CLUSTER_NAME')
 download_file=os.getenv('PWD')
 
@@ -58,45 +60,55 @@ def rancher_sso(endpoint, username, password, workload_name):
   browser.find_element(By.ID,"kc-login").click()
   print(browser.current_url)
   print("Waiting to be redirect towards rancher UI home page")
-  cluster=workload_name + '-capi'
   try:
     mgmt_present = EC.presence_of_element_located((By.LINK_TEXT, 'local'))
     WebDriverWait(browser, delay).until(mgmt_present)
-    workload_present = EC.presence_of_element_located((By.LINK_TEXT,cluster))
-    WebDriverWait(browser, delay).until(workload_present)
     mgmt_clickable = EC.element_to_be_clickable((By.LINK_TEXT, 'local'))
     WebDriverWait(browser, delay).until(mgmt_clickable)
-    workload_clickable = EC.element_to_be_clickable((By.LINK_TEXT,cluster))
-    WebDriverWait(browser, delay).until(workload_clickable)
   except TimeoutException:
     print ("Cannot access the Rancher UI")
     exit(1)
   print("Redirect to rancher UI home page")
   print(browser.current_url)
-  cluster=workload_name + '-capi'
-  print ("Switch to workload cluster " + workload_name)
-  browser.find_element(By.LINK_TEXT,cluster).click()
-  time.sleep(15)
-  print(browser.current_url)
-  print("Getting kubeconfig for " + workload_name)
-  browser.find_elements(By.XPATH, '//button[@class="btn header-btn role-tertiary has-tooltip"]')[2].click()
-  rancher_config = workload_name  + '-rancher' + '.yaml'
-  file = cluster + '.yaml'
-  while not os.path.exists(file):
-    print ("Waiting until kubeconfig is successfully downloaded")  
-    time.sleep(5)
-  os.rename( file, rancher_config)
-  print("Check if the kubeconfig has been downloaded")
-  path_to_file = rancher_config
-  path = Path(path_to_file)
-  if path.is_file():
-      print(f'The kubeconfig exists')
+  if mgmt_only == "TRUE":
+      print ("No workload cluster present on this configuration")
+      print(Fore.GREEN + "Rancher SSO check done")
+      print(Style.RESET_ALL)
+      browser.delete_all_cookies()
+      browser.quit()
   else:
-    print(f'The kubeconfig does not exist')
-  print(Fore.GREEN + "Rancher SSO check done")
-  print(Style.RESET_ALL)
-  browser.delete_all_cookies()
-  browser.quit()
+    cluster=workload_name + '-capi'
+    try:
+      workload_present = EC.presence_of_element_located((By.LINK_TEXT,cluster))
+      WebDriverWait(browser, delay).until(workload_present)
+      workload_clickable = EC.element_to_be_clickable((By.LINK_TEXT,cluster))
+      WebDriverWait(browser, delay).until(workload_clickable)
+    except TimeoutException:
+      print ("Cannot access workload cluster in Rancher UI")
+      exit(1)
+    print ("Switch to workload cluster " + workload_name)
+    browser.find_element(By.LINK_TEXT,cluster).click()
+    time.sleep(15)
+    print(browser.current_url)
+    print("Getting kubeconfig for " + workload_name)
+    browser.find_elements(By.XPATH, '//button[@class="btn header-btn role-tertiary has-tooltip"]')[2].click()
+    rancher_config = workload_name  + '-rancher' + '.yaml'
+    file = cluster + '.yaml'
+    while not os.path.exists(file):
+      print ("Waiting until kubeconfig is successfully downloaded")  
+      time.sleep(5)
+    os.rename( file, rancher_config)
+    print("Check if the kubeconfig has been downloaded")
+    path_to_file = rancher_config
+    path = Path(path_to_file)
+    if path.is_file():
+       print(f'The kubeconfig exists')
+    else:
+      print(f'The kubeconfig does not exist')
+    print(Fore.GREEN + "Rancher SSO check done")
+    print(Style.RESET_ALL)
+    browser.delete_all_cookies()
+    browser.quit()
 
 def vault_sso(endpoint, username, password):
   print("--------------------------------")
@@ -156,14 +168,23 @@ def flux_sso(endpoint, username, password):
   print(browser.current_url)
   print(browser.title)
   browser.implicitly_wait(10)
-  delay = 30
+  delay = 40
   try:
     element_present = EC.presence_of_element_located((By.XPATH, '//span[@class="MuiButton-label"]'))
     WebDriverWait(browser, delay).until(element_present)
   except TimeoutException:
     print ("Cannot access SSO option")
     exit (1)
-  browser.find_element(By.XPATH, '//span[@class="MuiButton-label"]').click()
+  # force to retry
+  retry = 0
+  while (retry < 15):
+    try:
+      browser.find_element(By.XPATH, '//span[@class="MuiButton-label"]').click()
+      if browser.title == "Sign in to Sylva":
+        break
+      retry += 1
+    except:
+       browser.get(url)
   print("Redirect to SSO")
   try:
     element_present = EC.presence_of_element_located((By.ID,"username"))
@@ -192,53 +213,111 @@ def flux_sso(endpoint, username, password):
   browser.delete_all_cookies()
   browser.quit()
 
+def neuvector_sso(endpoint, username, password):
+   if not endpoint:
+      print ("Neuvector is not defined in this configuration")
+   else:
+      print("--------------------------------")
+      browser = webdriver.Firefox(options=options)
+      url='https://' + endpoint
+      browser.get(url)
+      print(browser.current_url)
+      print(browser.title)
+      time.sleep(40)
+      browser.implicitly_wait(10)
+      delay = 30 # seconds
+      try:
+        print("Agree to the End User License Agreement on first login")
+        element_present = EC.presence_of_element_located((By.XPATH, '//mat-checkbox[@id="mat-checkbox-1"]'))
+        WebDriverWait(browser, delay).until(element_present)
+        browser.find_element(By.XPATH, '//mat-checkbox[@id="mat-checkbox-1"]').click()
+      except TimeoutException:
+         print ("Not first login continue to SSO")
+      try:
+        element_present = EC.presence_of_element_located((By.XPATH, '//button[normalize-space()="Login with OpenID"]'))
+        WebDriverWait(browser, delay).until(element_present)
+      except TimeoutException:
+        print ("Cannot access SSO option")
+        exit (1)
+      browser.find_element(By.XPATH, '//button[normalize-space()="Login with OpenID"]').click()
+      print("Redirect to SSO")
+      try:
+        element_present = EC.presence_of_element_located((By.ID,"username"))
+        WebDriverWait(browser, delay).until(element_present)
+      except TimeoutException:
+        print ("Cannot access SSO Sign In page")
+        exit (1)
+      print(browser.title)
+      print(browser.current_url)
+      browser.find_element(By.ID,"username").send_keys(username)
+      browser.find_element(By.ID,"password").send_keys(password)
+      browser.find_element(By.ID,"kc-login").click()
+      print("Waiting to be redirect toward neuvector UI home page")
+      time.sleep(50)
+      print("Redirected to neuvector home page")
+      delay = 25 # seconds
+      try:
+        element_present = EC.presence_of_element_located((By.XPATH, '//a[@href="#/dashboard"]'))
+        WebDriverWait(browser, delay).until(element_present)
+        print(browser.current_url)
+        print(Fore.GREEN + "Neuvector SSO check done")
+        print(Style.RESET_ALL)
+      except TimeoutException:
+        print ("Cannot access the Neuvector UI")
+        exit(1)
+        browser.delete_all_cookies()
+        browser.quit()
 
 def harbor_sso(endpoint, username, password):
-  print("--------------------------------")
-  print("Checking SSO auth Harbor")
-  browser = webdriver.Firefox(options=options)
-  url='https://' + endpoint
-  browser.get(url)
-  print(browser.current_url)
-  print(browser.title)
-  browser.implicitly_wait(10)
-  delay = 30
-  try:
-    element_present = EC.presence_of_element_located((By.XPATH, '//button[@id="log_oidc"]'))
-    WebDriverWait(browser, delay).until(element_present)
-  except TimeoutException:
-    print ("Cannot access SSO option")
-    exit (1)
-  browser.find_element(By.XPATH, '//button[@id="log_oidc"]').click()
-  print("Redirect to SSO")
-  try:
-    element_present = EC.presence_of_element_located((By.ID,"username"))
-    WebDriverWait(browser, delay).until(element_present)
-  except TimeoutException:
-    print ("Cannot access SSO Sign In page")
-    exit (1)
-  print(browser.title)
-  print(browser.current_url)
-  browser.find_element(By.ID,"username").send_keys(username)
-  browser.find_element(By.ID,"password").send_keys(password)
-  browser.find_element(By.ID,"kc-login").click()
-  print(browser.current_url)
-  print("Waiting to be redirect towards harbor UI home page")
-  time.sleep(25)
-  print("Redirect to harbor UI home page")
-  try:
-    element_present = EC.presence_of_element_located((By.XPATH, '//a[@href="/harbor/registries"]'))
-    WebDriverWait(browser, delay).until(element_present)
-    print(browser.current_url)
-    print(Fore.GREEN + "Harbor SSO check done")
-    print(Style.RESET_ALL)
-  except TimeoutException:
-    print ("Cannot access the Harbor UI")
-    exit(1)
-  browser.delete_all_cookies()
-  browser.quit()
+  if not endpoint:
+      print ("Harbor is not defined in this configuration")
+  else:
+     print("--------------------------------")
+     print("Checking SSO auth Harbor")
+     browser = webdriver.Firefox(options=options)
+     url='https://' + endpoint
+     browser.get(url)
+     print(browser.current_url)
+     print(browser.title)
+     browser.implicitly_wait(10)
+     delay = 30
+     try:
+       element_present = EC.presence_of_element_located((By.XPATH, '//button[@id="log_oidc"]'))
+       WebDriverWait(browser, delay).until(element_present)
+     except TimeoutException:
+       print ("Cannot access SSO option")
+       exit (1)
+     browser.find_element(By.XPATH, '//button[@id="log_oidc"]').click()
+     print("Redirect to SSO")
+     try:
+       element_present = EC.presence_of_element_located((By.ID,"username"))
+       WebDriverWait(browser, delay).until(element_present)
+     except TimeoutException:
+       print ("Cannot access SSO Sign In page")
+       exit (1)
+     print(browser.title)
+     print(browser.current_url)
+     browser.find_element(By.ID,"username").send_keys(username)
+     browser.find_element(By.ID,"password").send_keys(password)
+     browser.find_element(By.ID,"kc-login").click()
+     print(browser.current_url)
+     print("Waiting to be redirect towards harbor UI home page")
+     time.sleep(25)
+     print("Redirect to harbor UI home page")
+     try:
+       element_present = EC.presence_of_element_located((By.XPATH, '//a[@href="/harbor/registries"]'))
+       WebDriverWait(browser, delay).until(element_present)
+       print(browser.current_url)
+       print(Fore.GREEN + "Harbor SSO check done")
+       print(Style.RESET_ALL)
+     except TimeoutException:
+       print ("Cannot access the Harbor UI")
+       exit(1)
+     browser.delete_all_cookies()
+     browser.quit()
 
 rancher_sso( rancher_url, user, password, workload_name )
 vault_sso( vault_url, user, password )
 flux_sso( flux_url, user, password )
 harbor_sso( harbor_url, user, password )
+neuvector_sso( neuvector_url, user, password )
