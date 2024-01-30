@@ -2847,22 +2847,12 @@ units:
       - '{{ or (tuple . "capm3" | include "unit-enabled") (.Values.cluster.capi_providers.infra_provider | eq "capo") }}'
     kustomization_spec:
       path: ./kustomize-units/kube-job
-      wait: true
       force: true
       postBuild:
         substitute:
           JOB_NAME: create-image-info
           JOB_TARGET_NAMESPACE: '{{ .Release.Namespace }}'
-          JOB_CHECKSUM:
-            '{{
-            list
-              .Values._internal.sylva_core_version
-              (mergeOverwrite (deepCopy .Values.os_images) .Values.sylva_diskimagebuilder_images)
-              .Values.sylva_diskimagebuilder_version
-              .Values.sylva_base_oci_registry
-              .Values.proxies
-            | toJson | sha256sum
-            }}'
+          JOB_CHECKSUM: '{{ .Values._internal.os_images_info_input_hash }}'
       _patches:
         - target:
             kind: Job
@@ -2871,20 +2861,25 @@ units:
               path: /spec/template/spec/containers/0/image
               value: registry.gitlab.com/sylva-projects/sylva-elements/container-images/oci-tools:0.0.11
             - op: add
-              path: /spec/template/spec/containers/0/env/0
+              path: /spec/template/spec/containers/0/env/-
               value:
                 name: https_proxy
                 value: '{{ .Values.proxies.https_proxy }}'
             - op: add
-              path: /spec/template/spec/containers/0/env/1
+              path: /spec/template/spec/containers/0/env/-
               value:
                 name: no_proxy
                 value: '{{ include "sylva-units.no_proxy" . }}'
             - op: add
-              path: /spec/template/spec/containers/0/env/2
+              path: /spec/template/spec/containers/0/env/-
               value:
                 name: oci_registry_insecure
                 value: '{{ .Values.oci_registry_insecure }}'
+            - op: add
+              path: /spec/template/spec/containers/0/env/-
+              value:
+                name: OUTPUT_CONFIGMAP
+                value: '{{ .Values._internal.os_images_info_configmap }}'
         - target:
             kind: ConfigMap
           patch: >-
@@ -2902,6 +2897,11 @@ units:
               path: /data/images.yaml
               value: |
             {{ include "generate-os-images" . | indent 4}}
+      healthChecks:
+        - apiVersion: v1
+          kind: ConfigMap
+          name: '{{ .Values._internal.os_images_info_configmap }}'
+          namespace: '{{ .Release.Namespace }}'
 
   os-image-server:
     info:
@@ -2970,7 +2970,7 @@ units:
           storageClass: '{{ .Values._internal.default_storage_class }}'
       valuesFrom:
         - kind: ConfigMap
-          name: os-images-info  # this configmap is a byproduct of the os-images-info unit
+          name: '{{ .Values._internal.os_images_info_configmap }}'  # this configmap is a byproduct of the os-images-info unit
 
   capo-contrail-bgpaas:
     info:
@@ -3414,6 +3414,14 @@ units:
           httpProxy: '{{ .Values.proxies.https_proxy }}'
           httpsProxy: '{{ .Values.proxies.https_proxy }}'
           noProxy: '{{ include "sylva-units.no_proxy" . }}'
+      _patches:
+        - target:
+            kind: Job
+          patch: |
+            - op: replace
+              path: /spec/template/spec/volumes/2/configMap/name
+              value: {{ .Values._internal.os_images_info_configmap }}  # this configmap is a byproduct of the os-images-info unit
+
 
 ##### stuff related to the 'cluster' unit #####
 #
@@ -3831,6 +3839,19 @@ _internal:
     {{- end -}}
     {{ $n | include "preserve-type" }}
     '
+
+  os_images_info_input_hash:
+    '{{
+    list
+      .Values._internal.sylva_core_version
+      (include "generate-os-images" . | indent 4)
+      .Values._internal.os_images_info_configmap
+      .Values.proxies
+      .Values.no_proxy_additional
+      .Values.oci_registry_insecure
+    | toJson | sha256sum | trunc 8
+    }}'
+  os_images_info_configmap: os-images-info-{{ tuple . .Values._internal.os_images_info_input_hash | include "interpret-as-string" }}
 
 shared_workload_clusters_values:
   ntp: '{{ .Values.ntp | include "set-if-defined" }}'

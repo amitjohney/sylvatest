@@ -113,7 +113,7 @@ logger = logging.getLogger(__name__)
 configmap = {}
 
 ##############################
-# Parse the YAML string resulted from loading the contents of the ConfigMap/os-images-info
+# Parse the YAML string resulted from loading the contents of the ConfigMap/os-images-info-xxxx  (produced by the os-images-info unit)
 os_images_info_path = '/opt/config/os-images-info.yaml'
 with open(os_images_info_path, 'r') as file:
     os_images = yaml.safe_load(file.read())
