@@ -27,6 +27,8 @@ units:
     enabled: true
   vault-config-operator:
     enabled: true
+  vault-oidc:
+    enabled: true
   sylva-ca-certs:
     enabled: true
   sylva-ca:
@@ -83,6 +85,10 @@ units:
   synchronize-secrets:
     enabled: true
   rancher:
+    enabled: true
+  rancher-keycloak-oidc-provider:
+    enabled: true
+  first-login-rancher:
     enabled: true
   k8s-gateway:
     enabled: true

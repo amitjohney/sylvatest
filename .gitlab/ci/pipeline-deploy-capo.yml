@@ -14,6 +14,10 @@ include:
       when: never
     - when: on_success
 
+.rules:run-if-only-deploy-mgmt:
+  rules:
+    - if: $ONLY_DEPLOY_MGMT
+
 default:
   tags:
     - $CAPO_PLATFORM_TAG
@@ -47,22 +51,25 @@ update-workload-cluster:
 
 # ----------------------------------------------------------
 
-test-workload-cluster:
+test-sso+workload-kubeconfig:
   extends:
-    - .test-workload-cluster
+    - .test-sso+workload-kubeconfig
     - .rules:skip-if-only-deploy-mgmt
 
-test-workload-cluster-no-sso:
+test-no-sso+workload-kubeconfig:
   extends:
-    - .test-workload-cluster-no-sso
+    - .test-no-sso+workload-kubeconfig
     - .rules:skip-if-only-deploy-mgmt
 
 # ----------------------------------------------------------
+test-sso:
+  extends:
+    - .test-sso
+    - .rules:run-if-only-deploy-mgmt
 
 test-login:
   extends:
     - .test-login
-    - .rules:skip-if-only-deploy-mgmt
 
 # ----------------------------------------------------------
 
