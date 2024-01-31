@@ -5,6 +5,6 @@ namespace: vault
 
 resources:
 - https://raw.githubusercontent.com/banzaicloud/bank-vaults/1.19.0/operator/deploy/rbac.yaml
-- eso-sylva-ca-vault.yaml
 - vault.yaml
 - pdb.yaml
+- vault-internal-certificate.yaml

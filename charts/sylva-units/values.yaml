@@ -367,8 +367,10 @@ units:
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/sylva-ca
-      targetNamespace: cert-manager
       wait: true
+      postBuild:
+        substitute:
+          CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
 
 
   namespace-defs:
@@ -491,6 +493,8 @@ units:
       vault-config-operator: true
       keycloak-add-client-scope: true
     repo: sylva-core
+    kustomization_substitute_secrets:
+      KEY: '{{ .Values.external_certificates.harbor.key | default "" | b64enc }}'
     kustomization_spec:
       path: ./kustomize-units/harbor-init
       wait: true
@@ -498,6 +502,14 @@ units:
         substitute:
           HARBOR_DNS: '{{ .Values.external_hostnames.harbor }}'
           KEYCLOAK_DNS: '{{ .Values.external_hostnames.keycloak }}'
+          SERVICE: harbor
+          SERVICE_DNS: '{{ .Values.external_hostnames.harbor }}'
+          CERTIFICATE_NAMESPACE: harbor
+          CERT: '{{ .Values.external_certificates.harbor.cert | default "" | b64enc }}'
+          CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
+      _components:
+        - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.harbor "cert") }}'
+        - "../tls-components/sylva-ca"
 
   harbor:
     info:
@@ -655,7 +667,6 @@ units:
       maturity: stable
     depends_on:
       namespace-defs: true
-      sylva-ca-certs: true
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
       '{{ .Values._internal.default_storage_class_unit }}': true
       vault-operator: true
@@ -664,6 +675,7 @@ units:
     repo: sylva-core
     kustomization_substitute_secrets:
       ADMIN_PASSWORD: '{{ .Values.admin_password }}'
+      KEY: '{{ .Values.external_certificates.vault.key | default "" | b64enc }}'
     kustomization_spec:
       path: ./kustomize-units/vault
       postBuild:
@@ -672,6 +684,14 @@ units:
           VAULT_REPLICAS: '{{ .Values._internal.vault_replicas }}'
           MAX_POD_UNAVAILABLE: '{{ int .Values._internal.vault_replicas | eq 1 | ternary 0 1 }}'
           AFFINITY: '{{ and (eq (int .Values.cluster.control_plane_replicas) 1) (ne .Values._internal.default_storage_class_unit "local-path") | ternary (.Values._internal.vault_no_affinity | toJson | indent 12 ) (.Values._internal.vault_affinity | toJson| indent 12)  }}'
+          SERVICE: vault
+          SERVICE_DNS: '{{ .Values.external_hostnames.vault }}'
+          CERT: '{{ .Values.external_certificates.vault.cert | default "" | b64enc }}'
+          CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
+      _components:
+        # generate certificate for external communitation
+        - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.vault "cert") }}'
+        - "../tls-components/sylva-ca"
       healthChecks:  # sometimes this kustomization seems correctly applied while vault pod is not running, see https://gitlab.com/sylva-projects/sylva-core/-/issues/250
       # so we replace wait:true by checking for the Vault components health
         - apiVersion: apps/v1
@@ -848,6 +868,8 @@ units:
       keycloak-add-client-scope: true
       keycloak-oidc-external-secrets: true
     repo: sylva-core
+    kustomization_substitute_secrets:
+      KEY: '{{ .Values.external_certificates.neuvector.key | default "" | b64enc }}'
     kustomization_spec:
       path: ./kustomize-units/neuvector-init
       wait: true
@@ -855,6 +877,14 @@ units:
         substitute:
           NEUVECTOR_DNS: '{{ .Values.external_hostnames.neuvector }}'
           KEYCLOAK_DNS: '{{ .Values.external_hostnames.keycloak }}'
+          SERVICE: neuvector
+          SERVICE_DNS: '{{ .Values.external_hostnames.neuvector }}'
+          CERTIFICATE_NAMESPACE: neuvector
+          CERT: '{{ .Values.external_certificates.neuvector.cert | default "" | b64enc }}'
+          CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
+      _components:
+        - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.neuvector "cert") }}'
+        - "../tls-components/sylva-ca"
 
   neuvector:
     info:
@@ -951,19 +981,24 @@ units:
       maturity: stable
     depends_on:
       sylva-ca: true
-      sylva-ca-certs: true
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
       postgres: true
       synchronize-secrets: true # make sure that the secret keycloak-initial-admin is ready to be consummed
     annotations:
       sylvactl/readyMessage: "Keycloak admin console can be reached at https://{{ .Values.external_hostnames.keycloak }}/admin/master/console, user 'admin', password in Vault at secret/keycloak ({{ .Values.external_hostnames.keycloak }} must resolve to {{ .Values.display_external_ip }})"
     repo: sylva-core
+    kustomization_substitute_secrets:
+      KEY: '{{ .Values.external_certificates.keycloak.key | default "" | b64enc }}'
     kustomization_spec:
       path: ./kustomize-units/keycloak
       targetNamespace: keycloak
       postBuild:
         substitute:
           KEYCLOAK_DNS: '{{ .Values.external_hostnames.keycloak }}'
+          SERVICE: keycloak
+          SERVICE_DNS: '{{ .Values.external_hostnames.keycloak }}'
+          CERT: '{{ .Values.external_certificates.keycloak.cert | default "" | b64enc }}'
+          CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
         substituteFrom:
         - kind: ConfigMap
           name: proxy-env-vars
@@ -977,6 +1012,7 @@ units:
           namespace: keycloak
       _components:
         - '{{ tuple "components/keycloak-operator-proxies" (.Values.proxies.https_proxy) | include "set-only-if" }}'
+        - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.keycloak "cert") }}'
       _patches:
         - patch: |
             - op: replace
@@ -1943,29 +1979,6 @@ units:
             ignore-volume-az = true
             {{- end -}}
 
-  sylva-ca-certs:
-    info:
-      description: configures Sylva internal certificate authority
-      internal: true
-    depends_on:
-      namespace-defs: true
-      cert-manager: true
-      sylva-ca: true
-    repo: sylva-core
-    kustomization_spec:
-      path: ./kustomize-units/sylva-ca-certs
-      postBuild:
-        substitute:
-          RANCHER_DNS: '{{ .Values.external_hostnames.rancher }}'
-          VAULT_DNS: '{{ .Values.external_hostnames.vault }}'
-          KEYCLOAK_DNS: '{{ .Values.external_hostnames.keycloak }}'
-          FLUX_WEBUI_DNS: '{{ .Values.external_hostnames.flux }}'
-      wait: true
-      _components:
-        - '{{ tuple "components/keycloak-tls" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
-        - '{{ tuple "components/rancher-tls" (tuple . "rancher" | include "unit-enabled") | include "set-only-if" }}'
-        - '{{ tuple "components/vault-tls" (tuple . "vault" | include "unit-enabled") | include "set-only-if" }}'
-
   synchronize-secrets:
     info:
       description: allows secrets from Vault to be consumed other units, relies on ExternalSecrets
@@ -1983,6 +1996,35 @@ units:
         substitute:
           FLUX_ADMIN_USERNAME: '{{ .Values.flux_webui.admin_user }}'
 
+  rancher-init:
+    info:
+      description: initializes and configures Rancher
+      maturity: beta
+      internal: true
+    depends_on:
+      sylva-ca: true
+      ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
+    repo: sylva-core
+    kustomization_substitute_secrets:
+      KEY: '{{ .Values.external_certificates.rancher.key | default "" | b64enc }}'
+    kustomization_spec:
+      path: ./kustomize-units/rancher-init
+      targetNamespace: cattle-system
+      postBuild:
+        substitute:
+          SERVICE: rancher
+          SERVICE_DNS: '{{ .Values.external_hostnames.rancher }}'
+          CERT: '{{ .Values.external_certificates.rancher.cert | default "" | b64enc }}'
+          CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
+      _components:
+        - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.rancher "cert") }}'
+        - "../tls-components/sylva-ca"
+      healthChecks:
+        - apiVersion: v1
+          kind: Secret
+          name: rancher-tls
+          namespace: cattle-system
+
   rancher:
     info:
       description: installs Rancher
@@ -1991,7 +2033,7 @@ units:
       namespace-defs: true
       cert-manager: true
       k8s-gateway: true
-      sylva-ca-certs: true
+      rancher-init: true
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
       synchronize-secrets: true
     annotations:
@@ -2258,6 +2300,35 @@ units:
           CURRENT_TIME: '{{ now | date "2006-01-02T15:04:05.999Z" }}'
       wait: true
 
+  flux-webui-init:
+    info:
+      description: initializes and configures flux-webui
+      maturity: beta
+      internal: true
+    depends_on:
+      sylva-ca: true
+      ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
+    repo: sylva-core
+    kustomization_substitute_secrets:
+      KEY: '{{ .Values.external_certificates.flux.key | default "" | b64enc }}'
+    kustomization_spec:
+      path: ./kustomize-units/flux-webui-init
+      targetNamespace: flux-system
+      postBuild:
+        substitute:
+          SERVICE: flux-webui
+          SERVICE_DNS: '{{ .Values.external_hostnames.flux }}'
+          CERT: '{{ .Values.external_certificates.flux.cert | default "" | b64enc }}'
+          CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
+      _components:
+        - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.flux "cert") }}'
+        - "../tls-components/sylva-ca"
+      healthChecks:
+        - apiVersion: v1
+          kind: Secret
+          name: flux-webui-tls
+          namespace: flux-system
+
   flux-webui:
     info:
       description: installs Weave GitOps Flux web GUI
@@ -2268,6 +2339,7 @@ units:
       coredns: '{{ tuple . "keycloak" | include "unit-enabled" }}' # see https://gitlab.com/sylva-projects/sylva-core/-/merge_requests/1023#note_1694289969
       keycloak-add-client-scope: '{{ tuple . "keycloak" | include "unit-enabled" }}'
       keycloak-oidc-external-secrets: '{{ tuple . "keycloak" | include "unit-enabled" }}'
+      flux-webui-init: true
     annotations:
       sylvactl/readyMessage: "Flux Web UI can be reached at https://{{ .Values.external_hostnames.flux }} ({{ .Values.external_hostnames.flux }} must resolve to {{ .Values.display_external_ip }})"
     repo: weave-gitops
@@ -3030,11 +3102,12 @@ units:
     - '{{ tuple . "gitea" | include "unit-enabled" }}'
     depends_on:
       namespace-defs: true
-      sylva-ca-certs: true
       eso-secret-stores: true
       gitea-keycloak-resources: true
       gitea-secrets: true
     repo: sylva-core
+    kustomization_substitute_secrets:
+      KEY: '{{ .Values.external_certificates.gitea.key | default "" | b64enc }}'
     kustomization_spec:
       path: ./kustomize-units/gitea/eso
       wait: false
@@ -3059,6 +3132,15 @@ units:
           kind: Secret
           name: sylva-ca.crt
           namespace: gitea
+      postBuild:
+        substitute:
+          SERVICE: gitea
+          SERVICE_DNS: '{{ .Values.external_hostnames.gitea }}'
+          CERT: '{{ .Values.external_certificates.gitea.cert | default "" | b64enc }}'
+          CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
+      _components:
+        - '{{ ternary "../../tls-components/tls-secret" "../../tls-components/tls-certificate" (hasKey .Values.external_certificates.gitea "cert") }}'
+        - "../../tls-components/sylva-ca"
 
   gitea-keycloak-resources:
     info:
@@ -3274,7 +3356,6 @@ units:
           enabled: true
           className: nginx
           annotations:
-            cert-manager.io/cluster-issuer: ca-issuer
             nginx.ingress.kubernetes.io/proxy-body-size: 8m
           tls:
           - hosts:
@@ -3521,6 +3602,16 @@ external_hostnames:
   harbor: 'harbor.{{ .Values.cluster_external_domain }}'
   os_image_server: ''
   gitea: 'gitea.{{ .Values.cluster_external_domain }}'
+
+external_certificates:
+  rancher: {}
+  vault: {}
+  keycloak: {}
+  flux: {}
+  neuvector: {}
+  harbor: {}
+  os_image_server: {}
+  gitea: {}
 
 keycloak: {}
 

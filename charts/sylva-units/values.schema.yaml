@@ -121,6 +121,26 @@ $defs:
       kustomization_path:
         type: string
 
+  certificate:
+    type: string
+    pattern: ^-----BEGIN CERTIFICATE-----
+
+  cert-and-key:
+    type: object
+    additionalProperties: false
+    properties:
+      cert:
+        $ref: "#/$defs/certificate"
+      key:
+        type: string
+        pattern: ^-----BEGIN PRIVATE KEY-----
+    anyOf:  # we can have either both key and cert, or none of those
+    - required: [ cert, key ]
+    - allOf:
+      - not:
+          required: [ cert ]
+      - not:
+          required: [ key ]
 
 # lines with '# -------------------------------' correspond to keys in values.yaml
 # (the rest being the JSONSchema language itself)
@@ -689,6 +709,29 @@ properties:
             format: hostname
           - const: ''
           - $ref: "#/$defs/string-with-gotpl"
+
+  external_certificates:  # -------------------------------
+    type: object
+    additionalProperties: false
+    properties:
+      cacert: # -------------------------------
+        $ref: "#/$defs/certificate"
+      rancher: # -------------------------------
+        $ref: "#/$defs/cert-and-key"
+      vault:  # -------------------------------
+        $ref: "#/$defs/cert-and-key"
+      keycloak:  # -------------------------------
+        $ref: "#/$defs/cert-and-key"
+      neuvector:  # -------------------------------
+        $ref: "#/$defs/cert-and-key"
+      harbor:  # -------------------------------
+        $ref: "#/$defs/cert-and-key"
+      flux:  # -------------------------------
+        $ref: "#/$defs/cert-and-key"
+      os_image_server:  # -------------------------------
+        $ref: "#/$defs/cert-and-key"
+      gitea:  # -------------------------------
+        $ref: "#/$defs/cert-and-key"
 
   keycloak: # -------------------------------
     type: object

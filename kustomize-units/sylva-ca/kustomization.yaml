@@ -7,3 +7,4 @@ resources:
 - sylva-ca.yaml
 - ca-issuer.yaml
 - kubernetes-cert-manager-ns-secretstore.yaml
+- extra-cert.yaml
