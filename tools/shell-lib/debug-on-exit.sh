@@ -1,5 +1,7 @@
 # Grab some info in case of failure, essentially usefull to troubleshoot CI, fell free to add your own commands while troubleshooting
 
+unset KUBECONFIG
+
 # list of kinds to dump
 #
 # for some resources, we add the apiGroup because there are resources
@@ -7,49 +9,57 @@
 # we want the CAPI Cluster ones (e.g. Clusters.*cluster.x-k8s.io) rather than
 # the Rancher one (e.g Clusters.provisioning.cattle.io)
 additional_resources="
-  Namespaces
+  BaremetalHosts
+  Clusters.*cluster.x-k8s.io
+  ConfigMaps
+  CronJobs
+  DockerClusters
+  DockerMachines
+  DockerMachineTemplates
+  GitRepositories
+  HeatStacks
+  HelmCharts
   HelmReleases
   HelmRepositories
-  HelmCharts
-  GitRepositories
-  Kustomizations
-  StatefulSets
-  Jobs
-  CronJobs
-  PersistentVolumes
-  PersistentVolumeClaims
-  ConfigMaps
-  Nodes
-  Services
   Ingresses
-  HeatStacks
-  Clusters.*cluster.x-k8s.io
+  Jobs
+  KubeadmConfigs
+  KubeadmConfigTemplates
+  KubeadmControlPlanes
+  Kustomizations
   MachineDeployments
   Machines
-  KubeadmControlPlanes
-  KubeadmConfigTemplates
-  KubeadmConfigs
-  RKE2ControlPlanes
-  RKE2ConfigTemplates
-  RKE2Configs
-  DockerClusters
-  DockerMachineTemplates
-  DockerMachines
-  VSphereClusters.*infrastructure.cluster.x-k8s.io
-  VSphereMachineTemplates.*infrastructure.cluster.x-k8s.io
-  VSphereMachines.*infrastructure.cluster.x-k8s.io
-  OpenStackClusters
-  OpenStackMachineTemplates
-  OpenStackMachines
   Metal3Clusters
-  Metal3MachineTemplates
-  Metal3Machines
   Metal3DataTemplates
-  BaremetalHosts
+  Metal3Machines
+  Metal3MachineTemplates
+  Namespaces
+  Nodes
+  OpenStackClusters
+  OpenStackMachines
+  OpenStackMachineTemplates
+  PersistentVolumeClaims
+  PersistentVolumes
+  RKE2Configs
+  RKE2ConfigTemplates
+  RKE2ControlPlanes
+  Services
+  StatefulSets
+  VSphereClusters.*infrastructure.cluster.x-k8s.io
+  VSphereMachines.*infrastructure.cluster.x-k8s.io
+  VSphereMachineTemplates.*infrastructure.cluster.x-k8s.io
+"
+
+# For these resources only summary will be generated
+additional_resources_summary_only="
+  Pods
+  Secrets
 "
 
 function dump_additional_resources() {
     local cluster_dir=$1
+    shift
+    local yaml_dump=$1
     shift
     for cr in $@; do
       echo "Dumping resources $cr in the whole cluster"
@@ -64,7 +74,9 @@ function dump_additional_resources() {
             kubectl get $kind -A -o wide > $base_filename.summary.txt
         fi
 
-        kubectl get $kind -A -o yaml --show-managed-fields > $base_filename.yaml
+        if [[ $yaml_dump == "yaml_dump" ]]; then
+            kubectl get $kind -A -o yaml --show-managed-fields > $base_filename.yaml
+        fi
       fi
     done
 }
@@ -106,7 +118,8 @@ function cluster_info_dump() {
   # same in a single file
   kubectl get events -A -o yaml | format_and_sort_events > $dump_dir/events.log
 
-  dump_additional_resources $dump_dir $additional_resources
+  dump_additional_resources $dump_dir yaml_dump $additional_resources
+  dump_additional_resources $dump_dir no_yaml_dump $additional_resources_summary_only
 
   # dump CAPI secrets
   kubectl get secret -A --field-selector=type=cluster.x-k8s.io/secret                                > $dump_dir/Secrets-capi.summary.txt
@@ -121,6 +134,8 @@ echo "Start debug-on-exit at: $(date -Iseconds)"
 
 echo -e "\nDocker containers"
 docker ps
+echo -e "\nDocker containers resources usage"
+docker stats --no-stream --all
 
 echo -e "\nSystem info"
 free -h
@@ -128,8 +143,8 @@ df -h || true
 
 if [[ $(kind get clusters) =~ $KIND_CLUSTER_NAME ]]; then
   cluster_info_dump bootstrap
-  echo -e "\nDump node logs"
-  docker ps -q -f name=management-cluster-control-plane* | xargs -I % -r docker exec % journalctl -e
+  echo -e "\nDump bootstrap node logs"
+  docker ps -q -f name=control-plane* | xargs -I % -r docker exec % journalctl -e > bootstrap-cluster-dump/bootstap_node.log
 fi
 
 if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
