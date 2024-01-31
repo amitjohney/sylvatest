@@ -534,16 +534,19 @@ units:
           persistentVolumeClaim:
             registry:
               storageClass: '{{ .Values._internal.default_storage_class }}'
-              #size: 32Gi
+              #size: 256M
+            chartmuseum:
+              storageClass: '{{ .Values._internal.default_storage_class }}'
+              #size: 256M
             jobservice:
               storageClass: '{{ .Values._internal.default_storage_class }}'
-              size: 256M
+              #size: 256M
             database:
               storageClass: '{{ .Values._internal.default_storage_class }}'
-              size: 256M
+              #size: 256M
             redis:
               storageClass: '{{ .Values._internal.default_storage_class }}'
-              size: 256M
+              #size: 256M
             #trivy:
               #storageClass: '{{ .Values._internal.default_storage_class }}'
               #size: 8Gi

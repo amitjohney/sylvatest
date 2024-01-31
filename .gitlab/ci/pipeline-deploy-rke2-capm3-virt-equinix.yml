@@ -5,7 +5,8 @@ include:
 
 default:
   tags:
-    - $CI_PIPELINE_IID
+    - saas-linux-medium-amd64
+    #- $CI_PIPELINE_IID
     - equinix
 
 #----------------------------------------------------------
