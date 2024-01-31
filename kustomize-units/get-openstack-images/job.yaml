@@ -12,7 +12,7 @@ spec:
       annotations:
         checksum: ${JOB_CHECKSUM}
     spec:
-      restartPolicy: OnFailure
+      restartPolicy: Never
       serviceAccountName: ${JOB_NAME}-${JOB_TARGET_NAMESPACE:-sylva-system}-sa
       containers:
       - name: oci-tools-container
