@@ -22,6 +22,7 @@ import gzip
 import sys
 import yaml
 
+from distutils.util import strtobool
 
 class MyProvider(oras.provider.Registry):
     def pull_image(self, artifact_uri):
@@ -145,7 +146,8 @@ except KeyError:
 conn = openstack.connect(cloud=cloud_name, verify=False)
 
 # Initialize oras class
-oras_client = MyProvider(insecure=os.environ.get('ORAS_INSECURE_CLIENT', 'false') == 'true')
+insecure_tls = strtobool(os.environ.get('ORAS_INSECURE_CLIENT','false'))
+oras_client = MyProvider(tls_verify=not insecure_tls)
 
 for os_name, os_image_info in os_images.items():
     artifact = os_image_info["uri"]
