@@ -1,11 +1,19 @@
 #!/usr/bin/env python
+#
+# This script can be tested with:
+#
+#   OS_IMAGES_INFO_PATH=my-os-images.info.yaml OS_CLOUD=falcon kustomize-units/get-openstack-images/push-images-to-glance.py
+#
+# With my-os-images.info.yaml having content similar as the one produced by the os-images-info unit:
+#
+#   kubectl get configmap os-images-info -o yaml | yq '.data."values.yaml"' > my-os-images.info.yaml
+
+
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 import openstack
-from openstack import exceptions as os_exc
 import oras.client
 import oras.provider
-import json
 import logging
 import os
 import shutil
@@ -14,11 +22,6 @@ import gzip
 import sys
 import yaml
 
-
-def get_cloud_name(file_path):
-    with open(file_path, 'r') as file:
-        data = yaml.safe_load(file)
-        return next(iter(data['clouds'])) if 'clouds' in data else None
 
 class MyProvider(oras.provider.Registry):
     def pull_image(self, artifact_uri):
@@ -126,7 +129,7 @@ configmap = {}
 
 ##############################
 # Parse the YAML string resulted from loading the contents of the ConfigMap/os-images-info-xxxx  (produced by the os-images-info unit)
-os_images_info_path = '/opt/config/os-images-info.yaml'
+os_images_info_path = os.environ.get("OS_IMAGES_INFO_PATH", '/opt/config/os-images-info.yaml')
 with open(os_images_info_path, 'r') as file:
     os_images = yaml.safe_load(file.read())
 os_images = os_images['osImages']
@@ -135,18 +138,14 @@ logger.info(f"os_images: {os_images}")
 ##############################
 
 # Initialize openstack connection
-openstack_client_config = os.environ.get('OS_CLIENT_CONFIG_FILE', '')
-cloud_name = get_cloud_name(openstack_client_config)
+try:
+  cloud_name = os.environ.get("OS_CLOUD","capo_cloud")  # 'capo-cloud' is the cloud name we hardcode for CAPO in Sylva
+except KeyError:
+  raise Exception("no OS_CLOUD environment variable specified")
 conn = openstack.connect(cloud=cloud_name, verify=False)
 
 # Initialize oras class
 oras_client = MyProvider(insecure=os.environ.get('ORAS_INSECURE_CLIENT', 'false') == 'true')
-
-# Initialize Kube config
-# Load Kubernetes configuration
-config.load_incluster_config()
-api_instance = client.CoreV1Api()
-
 
 for os_name, os_image_info in os_images.items():
     artifact = os_image_info["uri"]
@@ -182,6 +181,14 @@ for os_name, os_image_info in os_images.items():
 logger.info(f"Images UUID map:\n {configmap}")
 
 logger.info(f"Pushing ConfigMap to Kubernetes...")
+
+# Initialize Kube config
+# Load Kubernetes configuration
+try:
+    config.load_incluster_config()
+except:  # this is meant to allow testing this script manually out of a pod, assuming that KUBECONFIG points to your kubeconfig
+    config.load_kube_config()
+api_instance = client.CoreV1Api()
 
 # Define the metadata for the ConfigMap
 metadata = client.V1ObjectMeta(
