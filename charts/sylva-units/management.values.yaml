@@ -13,7 +13,7 @@ units:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
 
   capa:
-    enabled: true
+    enabled: false
 
   cloud-formation-operator:
     enabled: false
