@@ -21,3 +21,6 @@
 .idea/
 *.tmproj
 .vscode/
+# our files
+test-values
+values.schema.yaml
