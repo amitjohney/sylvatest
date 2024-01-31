@@ -534,19 +534,16 @@ units:
           persistentVolumeClaim:
             registry:
               storageClass: '{{ .Values._internal.default_storage_class }}'
-              #size: 256M
-            chartmuseum:
-              storageClass: '{{ .Values._internal.default_storage_class }}'
-              #size: 256M
+              #size: 32Gi
             jobservice:
               storageClass: '{{ .Values._internal.default_storage_class }}'
-              #size: 256M
+              #size: 8Gi
             database:
               storageClass: '{{ .Values._internal.default_storage_class }}'
-              #size: 256M
+              #size: 8Gi
             redis:
               storageClass: '{{ .Values._internal.default_storage_class }}'
-              #size: 256M
+              #size: 8Gi
             #trivy:
               #storageClass: '{{ .Values._internal.default_storage_class }}'
               #size: 8Gi
@@ -3448,7 +3445,7 @@ cluster:
   control_plane_replicas: 3
 
   kubelet_extra_args:
-    # increase max-pods for single-node deployments
+    # Increase max-pods for single-node deployments from 111 (default). This may solve issues like https://gitlab.com/sylva-projects/sylva-core/-/issues/865
     max-pods: '{{ tuple "196" (eq (.Values._internal.node_count | int) 1) | include "set-only-if" }}'
 
   capo:
