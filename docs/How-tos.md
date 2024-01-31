@@ -68,7 +68,7 @@ units:
 The following trick can be used to generate a dynamic cluster domain, avoiding to edit the system hosts file manually:
 
 ```yaml
-cluster_external_domain: '{{ .Values.display_external_ip }}.nip.io'
+cluster_domain: '{{ .Values.display_external_ip }}.nip.io'
 ```
 
 As result you got something like:

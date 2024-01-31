@@ -81,8 +81,8 @@ include:
            echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capd[collapsed=true]\r\e[0KApplying specific capd configuration\e[0m"
            export DOCKER_HOST=tcp://$DOCKER_IP:2375
            yq -i '.capd_docker_host = strenv(DOCKER_HOST)' $values_file
-           export CLUSTER_EXTERNAL_IP=$(echo $KIND_PREFIX | awk -F"." '{print $1"."$2"."$3".100"}')
-           yq -i '.cluster_external_ip = strenv(CLUSTER_EXTERNAL_IP)' $values_file
+           export CLUSTER_IP=$(echo $KIND_PREFIX | awk -F"." '{print $1"."$2"."$3".100"}')
+           yq -i '.cluster_virtual_ip = strenv(CLUSTER_IP)' $values_file
            echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capd\r\e[0K"
         ;;
         *capo*)
@@ -251,7 +251,7 @@ include:
 
 .test_scripts:
   edit_hosts_file:
-    - domain=$(kubectl --kubeconfig management-cluster-kubeconfig get secret sylva-units-values -oyaml | yq '.data.values | @base64d' | yq '.cluster_external_domain')
+    - domain=$(kubectl --kubeconfig management-cluster-kubeconfig get secret sylva-units-values -oyaml | yq '.data.values | @base64d' | yq '.cluster_domain')
     - |
       echo $domain
       if [[ $domain == "sylva" ]]; then
@@ -371,4 +371,3 @@ include:
           rm -rf  ./tools/login-test/harbor-admin.hurl
       fi
     - hurl -k ./tools/login-test/*.hurl --test --color --noproxy=".$domain"  --report-junit $HURL_JUNIT_REPORT --report-html .
-

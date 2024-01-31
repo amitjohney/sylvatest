@@ -4,7 +4,7 @@ if [[ $# -ne 1 || $1 == "--help" ]]; then
   echo "Usage: ./generate_csr.sh <domain name>"
   echo
   echo "This script generates keys and csr (Certificate Signing Requests) for all the exposed services of a sylva management cluster"
-  echo "The domain name should be the same as the 'cluster_external_domain' in the deployment values ('sylva' by default)"
+  echo "The domain name should be the same as the 'cluster_domain' in the deployment values ('sylva' by default)"
   echo "The output is a set of files '<service>.<domain name>.key' and '<service>.<domain name>.csr'"
   echo
   echo "The following environment variables can be set to configure the subject of the certificates:"

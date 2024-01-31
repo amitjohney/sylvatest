@@ -9,7 +9,7 @@
 | **capo** | installs OpenStack CAPI infra provider | core-component |  | [Kustomize](https://github.com/kubernetes-sigs/cluster-api-provider-openstack/releases/download/v0.9.0/infrastructure-components.yaml) | v0.9.0 |
 | **capv** | installs vSphere CAPI infra provider | core-component |  | [Kustomize](https://github.com/kubernetes-sigs/cluster-api-provider-vsphere/releases/download/v1.9.0/infrastructure-components.yaml) | v1.9.0 |
 | **cert-manager** | installs cert-manager, an X.509 certificate controller | core-component |  | [Helm](https://charts.jetstack.io) | v1.13.3 |
-| **cluster** | holds the Cluster API definition for the cluster | core-component |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git) | 0.1.37 |
+| **cluster** | holds the Cluster API definition for the cluster | core-component |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git) | 0.1.38 |
 | **flux-system** | contains Flux definitions *to manage the Flux system itself via gitops*<br/><br/>Note that Flux is always installed on the current cluster as a pre-requisite to installing the chart | core-component |  | [Kustomize](https://github.com/fluxcd/flux2/releases/download/v2.2.3/install.yaml) | v2.2.3 |
 | **heat-operator** | installs OpenStack Heat operator | core-component |  | [Kustomize](https://gitlab.com/sylva-projects/sylva-elements/heat-operator.git/config/default?ref=v0.0.6-pre) | v0.0.6-pre |
 | **calico** | install Calico CNI | stable |  | [Helm](https://rke2-charts.rancher.io) | v3.25.001, v3.26.101 |
@@ -26,7 +26,7 @@
 | **keycloak** | initializes and configures Keycloak | stable |  | [Kustomize](https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/23.0.5/kubernetes/keycloaks.k8s.keycloak.org-v1.yml) | 23.0.5 |
 | **keycloak-legacy-operator** | installs Keycloak "legacy" operator | stable |  | [Kustomize](https://raw.githubusercontent.com/keycloak/keycloak-realm-operator/1.0.0/deploy/crds/legacy.k8s.keycloak.org_externalkeycloaks_crd.yaml) | 1.0.0 |
 | **kyverno** | installs Kyverno | stable |  | [Helm](https://kyverno.github.io/kyverno) | 3.1.4 |
-| **libvirt-metal** | installs libvirt for baremetal emulation<br/><br/>this unit is used in bootstrap cluster for baremetal testing | stable |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/container-images/libvirt-metal.git) | 0.1.7 |
+| **libvirt-metal** | installs libvirt for baremetal emulation<br/><br/>this unit is used in bootstrap cluster for baremetal testing | stable |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/container-images/libvirt-metal.git) | 0.1.8 |
 | **local-path-provisioner** | installs local-path CSI | stable |  | [Helm](https://github.com/rancher/local-path-provisioner.git) | v0.0.24 |
 | **longhorn** | installs Longhorn CSI | stable |  | [Helm](https://charts.rancher.io/) | 102.3.1+up1.5.3 |
 | **metal3** | install Metal3 operator | stable |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3.git) | 0.7.3 |

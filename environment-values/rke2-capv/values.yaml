@@ -32,7 +32,7 @@ cluster:
         memoryMiB: 8192
         diskGiB: 40
 
-cluster_external_ip: # replace me
+cluster_virtual_ip: # replace me
 
 proxies:
   # put your own proxy settings here if you need

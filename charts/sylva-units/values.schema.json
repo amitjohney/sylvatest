@@ -2620,7 +2620,7 @@
         "name",
         "k8s_version",
         "capi_providers",
-        "cluster_external_ip",
+        "cluster_virtual_ip",
         "cluster_services_cidrs",
         "cluster_pods_cidrs"
       ],
@@ -3880,7 +3880,7 @@
             }
           ]
         },
-        "cluster_external_ip": {
+        "cluster_virtual_ip": {
           "anyOf": [
             {
               "type": "string",
@@ -3928,7 +3928,7 @@
             }
           ]
         },
-        "cluster_external_ip_interfaces": {
+        "cluster_public_interfaces": {
           "anyOf": [
             {
               "type": "array",
@@ -3988,19 +3988,6 @@
             }
           ]
         },
-        "dns_resolver": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/string-with-gotpl"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
         "enable_longhorn": {
           "anyOf": [
             {
@@ -4014,7 +4001,7 @@
             }
           ]
         },
-        "mgmt_cluster_external_ip": {
+        "mgmt_cluster_ip": {
           "anyOf": [
             {
               "type": "string",
@@ -4028,7 +4015,34 @@
             }
           ]
         },
-        "mgmt_cluster_external_domain": {
+        "use_custom_rancher_dns_resolver": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rancher_dns_resolver": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rancher_domain": {
           "anyOf": [
             {
               "type": "string",
@@ -5438,15 +5452,15 @@
         {
           "if": {
             "properties": {
-              "dns_resolver": {
+              "use_custom_rancher_dns_resolver": {
                 "const": true
               }
             }
           },
           "then": {
             "required": [
-              "mgmt_cluster_external_ip",
-              "mgmt_cluster_external_domain"
+              "mgmt_cluster_ip",
+              "rancher_domain"
             ]
           }
         },
@@ -5752,7 +5766,7 @@
             }
           ]
         },
-        "clusterExternalIP": {
+        "clusterVirtualIp": {
           "anyOf": [
             {
               "type": "string",
@@ -6726,7 +6740,7 @@
       "type": "string",
       "pattern": "^[1-9]+[0-9]*[.]([1-9]+[0-9]|0)*$"
     },
-    "cluster_external_ip": {
+    "cluster_virtual_ip": {
       "type": "string",
       "format": "ipv4"
     },
@@ -6759,7 +6773,7 @@
         }
       }
     },
-    "cluster_external_domain": {
+    "cluster_domain": {
       "anyOf": [
         {
           "type": "string",
@@ -7300,8 +7314,8 @@
       "properties": {
         "cluster": {
           "properties": {
-            "cluster_external_ip": {
-              "const": "{{ .Values.cluster_external_ip }}"
+            "cluster_virtual_ip": {
+              "const": "{{ .Values.cluster_virtual_ip }}"
             }
           }
         }
