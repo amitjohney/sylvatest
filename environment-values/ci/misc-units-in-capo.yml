@@ -29,8 +29,6 @@ units:
     enabled: true
   vault-oidc:
     enabled: true
-  sylva-ca-certs:
-    enabled: true
   sylva-ca:
     enabled: true
   external-secrets-operator:
@@ -74,6 +72,8 @@ units:
     enabled: true
   keycloak-oidc-external-secrets:
     enabled: true
+  flux-webui-init:
+    enabled: true
   flux-webui:
     enabled: true
   flux-system:
@@ -83,6 +83,8 @@ units:
   postgres:
     enabled: true
   synchronize-secrets:
+    enabled: true
+  rancher-init:
     enabled: true
   rancher:
     enabled: true

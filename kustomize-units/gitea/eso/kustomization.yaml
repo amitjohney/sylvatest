@@ -5,7 +5,6 @@ namespace: gitea
 
 resources:
   - eso-gitea-oidc.yaml
-  - eso-sylva-ca.yaml
   - eso-gitea-admin.yaml
   - eso-gitea-redis.yaml
   - eso-gitea-postgres-gitea.yaml

@@ -3,9 +3,7 @@ kind: Kustomization
 
 resources:
   - neuvector-secret.yaml
-  - eso-sylva-ca-neuvector.yaml
   - neuvector-namespace.yaml
-  - neuvector-tls.yaml
   - neuvector-config.yaml
   - neuvector-oidc-config.yaml
   - kyverno-exception.yaml
