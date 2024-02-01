@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
   - job.yaml
 configMapGenerator:
-  - name: oci-images-cm
+  - name: oci-images
     namespace: ${JOB_TARGET_NAMESPACE}
     behavior: create
     files:
