@@ -155,8 +155,12 @@
         "commands": [
           "pip install pyyaml",
           "tools/generate_units_documentation.py"
+         ,"tools/generate_json_schema.py"
         ],
-        "fileFilters": ["charts/sylva-units/units-description.md"],
+        "fileFilters": [
+          "charts/sylva-units/units-description.md"
+         ,"charts/sylva-units/values.schema.json"
+        ],
         "executionMode": "update"
       }
     }
