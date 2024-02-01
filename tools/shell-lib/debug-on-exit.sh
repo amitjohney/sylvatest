@@ -104,7 +104,7 @@ function cluster_info_dump() {
   echo "Checking if $cluster cluster is reachable"
   if ! timeout 10s kubectl get nodes > /dev/null 2>&1 ;then
     echo "$cluster cluster is unreachable - aborting dump"
-    exit 0
+    return 0
   fi
   echo "Dumping resources for $cluster cluster in $dump_dir"
 

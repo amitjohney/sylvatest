@@ -74,15 +74,15 @@ libvirt_metal:
   nodes:
     management-cp-0:
       redfishPort: 8000
-      memGB: 8
+      memGB: 10
       numCPUs: 6
     management-cp-1:
       redfishPort: 8001
-      memGB: 8
+      memGB: 10
       numCPUs: 6
     management-cp-2:
       redfishPort: 8002
-      memGB: 8
+      memGB: 10
       numCPUs: 6
     management-md-0:
       redfishPort: 8003
