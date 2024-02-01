@@ -16,7 +16,7 @@ units:
     enabled: false
 
   cloud-formation-operator:
-    enabled: false
+    enabled: true
 
   capm3:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
