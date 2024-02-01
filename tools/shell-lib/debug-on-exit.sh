@@ -113,6 +113,10 @@ function cluster_info_dump() {
   kubectl get secret -A --field-selector=type=infrastructure.cluster.x-k8s.io/secret                               > $dump_dir/Secrets-capi.summary.txt
   kubectl get secret -A --field-selector=type=cluster.x-k8s.io/secret -o yaml --show-managed-fields &&\
   kubectl get secret -A --field-selector=type=infrastructure.cluster.x-k8s.io/secret -o yaml --show-managed-fields > $dump_dir/Secrets-capi.yaml
+
+  # list secrets
+  kubectl get secret -A > $dump_dir/Secrets.summary.txt
+  echo "note: secrets are purposefully not dumped" > $dump_dir/Secrets-censored.yaml
 }
 
 echo "Start debug-on-exit at: $(date -Iseconds)"
