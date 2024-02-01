@@ -6330,6 +6330,10 @@
         }
       }
     },
+    "os_images_default_download_storage_space": {
+      "type": "string",
+      "pattern": "^[1-9]+[0-9]*Gi$"
+    },
     "libvirt_metal": {
       "$ref": "#/$defs/libvirt-metal-values"
     },
