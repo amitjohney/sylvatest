@@ -87,6 +87,7 @@
         "metallb",
         "metallb/metallb"
       ],
+      "enabled": false,
       "groupName": "metallb"
     },
     {
