@@ -7,3 +7,7 @@ units:
     enabled: true
   kubevirt-test-vms:
     enabled: true
+  harbor:
+    enabled: false
+  harbor-init:
+    enabled: false
