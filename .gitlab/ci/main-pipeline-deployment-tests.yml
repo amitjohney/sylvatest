@@ -60,7 +60,7 @@ variables:
       Git revision used for the management cluster update"
   # Workload cluster relative variables
   APPLY_WC_WATCH_TIMEOUT_MIN:
-    value: "30"
+    value: "45"
     description: "apply-workload-cluster.sh timeout"
   # Customize values files
   WC_INITIAL_ADDITIONAL_VALUES:
