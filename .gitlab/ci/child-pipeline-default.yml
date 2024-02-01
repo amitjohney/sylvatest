@@ -39,3 +39,7 @@ default:
       echo "  WC_INITIAL_ADDITIONAL_VALUES = ${WC_INITIAL_ADDITIONAL_VALUES:-'N/A'}"
       echo "  WC_UPDATE_ADDITIONAL_VALUES = ${WC_UPDATE_ADDITIONAL_VALUES}"
       echo "  APPLY_WC_WATCH_TIMEOUT_MIN = ${APPLY_WC_WATCH_TIMEOUT_MIN}"
+  cache:
+    - key: toolbox  # cache share by all jobs
+      paths:
+        - ./bin/
