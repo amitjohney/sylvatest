@@ -11,8 +11,10 @@ cat <<EOF >> $configmap_file
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: os-images-info
-  namespace: sylva-system
+  name: ${OUTPUT_CONFIGMAP}
+  namespace: ${TARGET_NAMESPACE}
+  labels:
+    sylva.os-images-info: ""
 data:
   values.yaml: |
     osImages:
@@ -40,7 +42,7 @@ yq '.osImages | keys | .[]' /opt/images.yaml | while read os_image_key; do
 done
 
 # Update configmap
-echo "Updating os-images-info configmap"
+echo "Updating ${OUTPUT_CONFIGMAP} configmap"
 # Unset proxy settings, if any were needed for oras tool, before connecting to local bootstrap cluster
 unset https_proxy
 kubectl apply -f $configmap_file

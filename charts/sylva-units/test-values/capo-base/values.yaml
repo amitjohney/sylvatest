@@ -4,7 +4,7 @@ cluster:
     infra_provider: capo
 
   capo:
-    image_name: my image
+    image_key: foo-image
     ssh_key_name: mykey
     network_id: c00lf00l-0000-1111-2222-baaaadc0ffee
     clouds_yaml:

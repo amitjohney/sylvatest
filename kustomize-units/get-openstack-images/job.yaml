@@ -12,7 +12,7 @@ spec:
       annotations:
         checksum: ${JOB_CHECKSUM}
     spec:
-      restartPolicy: OnFailure
+      restartPolicy: Never
       serviceAccountName: ${JOB_NAME}-${JOB_TARGET_NAMESPACE:-sylva-system}-sa
       containers:
       - name: oci-tools-container
@@ -47,7 +47,7 @@ spec:
           mountPath: /opt/scripts/push-images-to-glance.py
           subPath: push-images-to-glance.py
           readOnly: true
-        - name: os-image-info
+        - name: os-images-info
           mountPath: /opt/config
         - name: tmp-storage
           mountPath: /tmp
@@ -62,15 +62,20 @@ spec:
           items:
           - key: script.py
             path: push-images-to-glance.py
-      - name: os-image-info
+      - name: os-images-info
         configMap:
-          name: os-images-info
+          name: os-images-info  # replaced at runtime with a Kustomization patch, by os-images-info-xxxxx
           items:
           - key: values.yaml
-            path: os-image-info.yaml
+            path: os-images-info.yaml
       - name: tmp-storage
-        emptyDir:
-          medium: Memory
+        ephemeral:
+          volumeClaimTemplate:
+            spec:
+              accessModes: ["ReadWriteOnce"]
+              resources:
+                requests:
+                  storage: ${TMP_STORAGE_SIZE:-8Gi}
 ---
 apiVersion: v1
 kind: ServiceAccount
