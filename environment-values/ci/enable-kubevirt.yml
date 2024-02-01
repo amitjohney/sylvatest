@@ -7,7 +7,11 @@ units:
     enabled: true
   kubevirt-test-vms:
     enabled: true
-  harbor:
+  # harbor:
+  #   enabled: false
+  # harbor-init:
+  #   enabled: false
+  monitoring:
     enabled: false
-  harbor-init:
-    enabled: false
+  # monitoring-crd:
+  #   enabled: false
