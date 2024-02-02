@@ -104,7 +104,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/container-images/libvirt-metal.git
       ref:
-        tag: 0.1.7
+        tag: 0.1.8-bb-proxy-ingress-tls
 
   vault-operator:
     kind: GitRepository
@@ -3694,7 +3694,11 @@ registry_mirrors:
 
 # deploy emulated baremetal nodes in bootstrap cluster
 libvirt_metal:
-  image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/libvirt-metal:{{ .Values.source_templates | dig "libvirt-metal" "spec" "ref" "tag" "_undefined_"}}
+  # image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/libvirt-metal:{{ .Values.source_templates | dig "libvirt-metal" "spec" "ref" "tag" "_undefined_"}}
+  image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/libvirt-metal:0.1.7
+  clusterProxyIngressAnnotations:
+    nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+    cert-manager.io/cluster-issuer: ca-issuer
   nodes: {}
   #management-cp:
   #  memGB: 12

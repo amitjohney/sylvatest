@@ -5820,6 +5820,19 @@
             }
           ]
         },
+        "clusterProxyIngressAnnotations": {
+          "anyOf": [
+            {
+              "type": "object"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "image": {
           "anyOf": [
             {
