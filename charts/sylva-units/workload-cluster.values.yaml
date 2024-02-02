@@ -60,6 +60,7 @@ unit_templates:
       namespace-defs: true
       calico: '{{ tuple . "calico" | include "unit-enabled" }}'
 
+
 # here we select which units we want to enable for a workload cluster
 units:
   capo-cluster-resources:
@@ -93,14 +94,14 @@ units:
     kustomization_spec:
       # because this resource lives in the mgmt cluster:
       kubeConfig: null
-      targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
+      targetNamespace: ~
 
   get-openstack-images:
     enabled: true
     kustomization_spec:
       # because this resource lives in the mgmt cluster:
       kubeConfig: null
-      targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
+      targetNamespace: ~
 
   cluster:
     enabled: true
