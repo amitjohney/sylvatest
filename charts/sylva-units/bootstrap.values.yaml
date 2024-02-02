@@ -483,6 +483,7 @@ units_override_enabled:
   - os-image-server
   - cluster
   - cluster-reachable
+  - cluster-ready
   - namespace-defs
   - calico-crd
   - calico
