@@ -2281,6 +2281,7 @@ units:
             use-forwarded-headers: true
           kind: DaemonSet
           service:
+            enabled: true
             externalIPs:
             - '{{ .Values.cluster_external_ip }}'
             annotations:
