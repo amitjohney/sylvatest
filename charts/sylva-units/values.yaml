@@ -3756,6 +3756,10 @@ sylva_diskimagebuilder_images:
   opensuse-15.5-plain-rke2-1.26.9: {}
   opensuse-15.5-plain-rke2-1.25.14: {}
 
+# this dict can be enriched at deployment time to feed additional information
+# into the sylva-units-status ConfigMap
+additional_sylva_units_status_info: {}
+
 _internal:
   ha_cluster:
 
