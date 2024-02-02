@@ -431,6 +431,45 @@ units:
     depends_on:
       calico: false
 
+  sylva-ca:
+    depends_on:
+      external-secrets-operator: false
+    kustomization_spec:
+      wait: true
+      _patches:
+        - target:
+            kind: ClusterSecretStore
+          patch: |
+            $patch: delete
+            apiVersion: external-secrets.io/v1beta1
+            kind: ClusterSecretStore
+            metadata:
+              name: not-used
+        - target:
+            kind: RoleBinding
+          patch: |
+            $patch: delete
+            apiVersion: rbac.authorization.k8s.io/v1
+            kind: RoleBinding
+            metadata:
+              name: not-used
+        - target:
+            kind: Role
+          patch: |
+            $patch: delete
+            apiVersion: rbac.authorization.k8s.io/v1
+            kind: Role
+            metadata:
+              name: not-used
+        - target:
+            kind: ServiceAccount
+          patch: |
+            $patch: delete
+            apiVersion: apps/v1
+            kind: ServiceAccount
+            metadata:
+              name: not-used
+
   libvirt-metal:
     info:
       description: installs libvirt for baremetal emulation
@@ -440,6 +479,8 @@ units:
     - '{{ not (.Values.libvirt_metal.nodes | empty) }}'
     depends_on:
       multus-ready: true
+      cert-manager: true
+      sylva-ca: true
     repo: libvirt-metal
     helmrelease_spec:
       chart:
@@ -495,6 +536,7 @@ units_override_enabled:
   - capo-cluster-resources
   - multus
   - multus-ready
+  - sylva-ca
   - libvirt-metal
   - vsphere-cpi
   - get-openstack-images
