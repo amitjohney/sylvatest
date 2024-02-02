@@ -4,3 +4,4 @@ kind: Kustomization
 namespace: cloudformation-operator-system
 resources:
 - https://github.com/JagratiS/cloudformation-operator.git/config/operator
+- https://github.com/JagratiS/cloudformation-operator.git/config/crd
