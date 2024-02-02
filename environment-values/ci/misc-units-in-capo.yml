@@ -110,6 +110,10 @@ units:
     enabled: true
   gitea-postgresql-ha:
     enabled: true
+  get-openstack-images:
+    enabled: true
+  os-images-info:
+    enabled: true
 
 cluster:
   control_plane_replicas: 3
