@@ -3471,7 +3471,7 @@ units:
       details: Loki and Thanos will use this MinIO S3 storage
       maturity: beta
     enabled_conditions:
-      - '{{ tuple . "monitoring" | include "unit-enabled" }}'
+      - '{{ or (tuple . "thanos" | include "unit-enabled") ( tuple . "loki" | include "unit-enabled") }}'
     depends_on:
       namespace-defs: true
       minio-operator: true
