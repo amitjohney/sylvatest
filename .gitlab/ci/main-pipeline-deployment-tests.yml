@@ -255,6 +255,7 @@ capo-rke2-oci-suse-os:
     ENV_NAME: rke2-capm3-virt
     METAL3_PROVIDER: sylva
     DOCKER_HOST: ""
+    APPLY_WC_WATCH_TIMEOUT_MIN: 30
   trigger:
     include: .gitlab/ci/pipeline-deploy-rke2-capm3-virt-equinix.yml
     strategy: depend
