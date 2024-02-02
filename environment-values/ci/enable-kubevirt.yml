@@ -9,5 +9,3 @@ units:
     enabled: true
   # monitoring:
   #   enabled: false
-  sylva-dashboards:
-    enabled: false
