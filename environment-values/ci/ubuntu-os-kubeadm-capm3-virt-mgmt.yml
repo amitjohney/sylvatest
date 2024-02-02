@@ -1,0 +1,14 @@
+---
+sylva_diskimagebuilder_images:
+  ubuntu-jammy-plain-rke2-1.26.9:
+    default_enabled: false
+  ubuntu-jammy-plain-kubeadm-1.26.9:
+    default_enabled: true
+
+cluster:
+  capi_providers:
+    bootstrap_provider: cabpk
+  capm3:
+    machine_image_url: http://os-image-server-ubuntu-jammy-plain-kubeadm-1-26-9.os-images.svc.cluster.local:8080/ubuntu-jammy-plain-kubeadm-1.26.9.raw
+    machine_image_format: raw
+    machine_image_checksum: http://os-image-server-ubuntu-jammy-plain-kubeadm-1-26-9.os-images.svc.cluster.local:8080/ubuntu-jammy-plain-kubeadm-1.26.9.raw.sha256sum

@@ -79,11 +79,8 @@ cluster:
   baremetal_hosts:
     management-cp:
       bmh_metadata:
-        labels:
-          longhorn: "true"
         annotations:
-          disk: /dev/vdb
-          sylvaproject.org/longhorn-disks: disk/by-path/pci-0000:00:0b.0
+          sylvaproject.org/default-longhorn-disks-config: '[{"path":"/var/longhorn/disks/disk_by-path_pci-0000:00:0b.0", "storageReserved":0, "allowScheduling":true, "tags":[ "vhdd", "fast"] }]'
       bmh_spec:
         bmc:
           address: redfish-virtualmedia://{{ .Values._internal.bootstrap_node_ip }}:8000/redfish/v1/Systems/c0014001-b10b-f001-c0de-feeb1e54ee15

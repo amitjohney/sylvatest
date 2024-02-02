@@ -945,11 +945,55 @@
         {
           "type": "object",
           "properties": {
-            "machine_image_url": {
+            "use_os_image_server_service_urls": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "image_provisioning_host": {
               "anyOf": [
                 {
                   "type": "string",
+                  "format": "ipv4"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "image_key": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-z0-9][a-z0-9.-]*[a-z0-9]$"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "machine_image_url": {
+              "type": "string",
+              "anyOf": [
+                {
                   "pattern": "^https?://.*$"
+                },
+                {
+                  "pattern": ""
                 },
                 {
                   "$ref": "#/$defs/string-with-gotpl"
@@ -1156,11 +1200,55 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "machine_image_url": {
+            "use_os_image_server_service_urls": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "image_provisioning_host": {
               "anyOf": [
                 {
                   "type": "string",
+                  "format": "ipv4"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "image_key": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-z0-9][a-z0-9.-]*[a-z0-9]$"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "machine_image_url": {
+              "type": "string",
+              "anyOf": [
+                {
                   "pattern": "^https?://.*$"
+                },
+                {
+                  "pattern": ""
                 },
                 {
                   "$ref": "#/$defs/string-with-gotpl"
@@ -1479,6 +1567,7 @@
                         "not": {
                           "required": [
                             "bond_mode",
+                            "bondXmitHashPolicy",
                             "interfaces",
                             "type"
                           ]
@@ -1502,6 +1591,7 @@
                         "not": {
                           "required": [
                             "bond_mode",
+                            "bondXmitHashPolicy",
                             "interfaces"
                           ]
                         }
@@ -1534,6 +1624,20 @@
                             "balance-tlb",
                             "balance-alb",
                             "802.3ad"
+                          ]
+                        },
+                        {
+                          "$ref": "#/$defs/string-with-gotpl"
+                        }
+                      ]
+                    },
+                    "bondXmitHashPolicy": {
+                      "anyOf": [
+                        {
+                          "enum": [
+                            "layer2",
+                            "layer2+3",
+                            "layer3+4"
                           ]
                         },
                         {
@@ -1985,6 +2089,49 @@
                               ]
                             }
                           }
+                        },
+                        {
+                          "$ref": "#/$defs/string-with-gotpl"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "ip_preallocations": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "public": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "ipv4"
+                        },
+                        {
+                          "$ref": "#/$defs/string-with-gotpl"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "provisioning": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "ipv4"
                         },
                         {
                           "$ref": "#/$defs/string-with-gotpl"
@@ -2606,6 +2753,38 @@
             }
           ]
         },
+        "etcd": {
+          "anyOf": [
+            {
+              "type": "object"
+            },
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "additionalProperties": true,
+          "properties": {
+            "quota-backend-bytes": {
+              "type": "string"
+            },
+            "auto-compaction-retention": {
+              "type": "string"
+            },
+            "auto-compaction-mode": {
+              "type": "string",
+              "enum": [
+                "periodic",
+                "revision"
+              ]
+            }
+          }
+        },
         "control_plane_replicas": {
           "anyOf": [
             {
@@ -2648,6 +2827,19 @@
               "items": {
                 "$ref": "#/$defs/ipv4-cidr"
               }
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "calico_wireguard_enabled": {
+          "anyOf": [
+            {
+              "type": "boolean"
             },
             {
               "$ref": "#/$defs/string-with-gotpl"
@@ -3227,11 +3419,55 @@
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "machine_image_url": {
+                "use_os_image_server_service_urls": {
+                  "anyOf": [
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "image_provisioning_host": {
                   "anyOf": [
                     {
                       "type": "string",
+                      "format": "ipv4"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "image_key": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^[a-z0-9][a-z0-9.-]*[a-z0-9]$"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "machine_image_url": {
+                  "type": "string",
+                  "anyOf": [
+                    {
                       "pattern": "^https?://.*$"
+                    },
+                    {
+                      "pattern": ""
                     },
                     {
                       "$ref": "#/$defs/string-with-gotpl"
@@ -3591,6 +3827,40 @@
                     {
                       "type": "string",
                       "format": "ipv4"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "network_interfaces": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "bondXmitHashPolicy": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "layer2",
+                                "layer2+3",
+                                "layer3+4"
+                              ]
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
                     },
                     {
                       "$ref": "#/$defs/string-with-gotpl"
@@ -4748,6 +5018,170 @@
             }
           ]
         },
+        "audit_policies": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "rules"
+              ],
+              "properties": {
+                "omitStages": {
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "rules": {
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "level"
+                        ],
+                        "properties": {
+                          "level": {
+                            "type": "string"
+                          },
+                          "users": {
+                            "type": "array",
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                }
+                              ]
+                            }
+                          },
+                          "userGroups": {
+                            "type": "array",
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                }
+                              ]
+                            }
+                          },
+                          "namespaces": {
+                            "type": "array",
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                }
+                              ]
+                            }
+                          },
+                          "omitStages": {
+                            "type": "array",
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                }
+                              ]
+                            }
+                          },
+                          "nonResourceURLs": {
+                            "type": "array",
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                }
+                              ]
+                            }
+                          },
+                          "verbs": {
+                            "type": "array",
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "enum": [
+                                    "get",
+                                    "list",
+                                    "delete",
+                                    "watch",
+                                    "create",
+                                    "patch",
+                                    "update"
+                                  ]
+                                }
+                              ]
+                            }
+                          },
+                          "omitManagedFields": {
+                            "type": "boolean"
+                          },
+                          "resources": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "group": {
+                                  "type": "string"
+                                },
+                                "resources": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string"
+                                      }
+                                    ]
+                                  }
+                                },
+                                "resources_name": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string"
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "additional_files": {
           "anyOf": [
             {
@@ -4780,7 +5214,7 @@
               "type": "object",
               "additionalProperties": false,
               "patternProperties": {
-                ".*": {
+                "^[a-z0-9][a-z0-9.-]*[a-z0-9]$": {
                   "anyOf": [
                     {
                       "type": "object",
@@ -4790,6 +5224,186 @@
                           "anyOf": [
                             {
                               "$ref": "#/$defs/openstack-uuid"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "archive-size": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "pattern": "^[1-9][0-9]+$"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "compression": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "pattern": "gz"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "filename": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "pattern": "^[a-z0-9][a-z0-9.-]*[a-z0-9]$"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "flavor": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "pattern": "[plain|hardened]"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "image-format": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "pattern": "[raw|qcow2]"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "k8s-flavor": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "pattern": "[rke2|kubeadm]"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "k8s-version": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "md5": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "pattern": "[a-f0-9]*"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "os": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "pattern": "[ubuntu|opensuse]"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "os-release": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "pattern": "[jammy|15.5]"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "sha256": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "pattern": "[a-f0-9]*"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "size": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "pattern": "^[1-9][0-9]+$"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "uri": {
+                          "anyOf": [
+                            {
+                              "type": "string"
                             },
                             {
                               "$ref": "#/$defs/string-with-gotpl"
@@ -5025,6 +5639,19 @@
                       "provisioning_pool_start",
                       "provisioning_pool_prefix",
                       "dns_server"
+                    ],
+                    "oneOf": [
+                      {
+                        "required": [
+                          "image_provisioning_host",
+                          "image_key"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "machine_image_url"
+                        ]
+                      }
                     ]
                   },
                   {
