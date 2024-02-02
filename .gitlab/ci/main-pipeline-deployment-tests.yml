@@ -108,6 +108,10 @@ variables:
   variables:
     # Used to pass parent JOB_NAME to the child pipelines
     WORKFLOW_NAME: $CI_JOB_NAME
+    BOOTSTRAP_WATCH_TIMEOUT_MIN: 40
+    MGMT_WATCH_TIMEOUT_MIN: 30
+    APPLY_WATCH_TIMEOUT_MIN: 30
+    APPLY_WC_WATCH_TIMEOUT_MIN: 30
   needs: []
 
 .needs-publish-jobs:
