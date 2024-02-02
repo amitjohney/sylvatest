@@ -7,5 +7,7 @@ units:
     enabled: true
   kubevirt-test-vms:
     enabled: true
-  monitoring:
+  # monitoring:
+  #   enabled: false
+  sylva-dashboards:
     enabled: false
