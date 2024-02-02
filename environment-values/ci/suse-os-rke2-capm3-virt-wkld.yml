@@ -19,5 +19,5 @@ units:
     enabled: true
   kubevirt-test-vms:
     enabled: true
-  monitoring:
-    enabled: false
+  # monitoring:
+  #   enabled: false
