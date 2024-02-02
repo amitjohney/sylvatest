@@ -10,4 +10,4 @@ resources:
 - keycloak-postgresql-secret.yaml
 - keycloak-server.yaml
 - keycloak-ingress.yaml
-- keycloak-internal-certificate.yaml
+- keycloak-certificate.yaml

@@ -12,7 +12,7 @@ Sylva management cluster is shipped with its own Root authority, implemented by 
 
 It is recommended to import this CA certificate in your browser in order to verify the server certificates sent by the exposed applications like `rancher` and `keycloak`. The way to import a CA certificate depends on the OS and the browser and, thus, are not detailed in this document.
 
-Then, the X509 certificate for your additional services in the management cluster can be issued from `cert-manager` by using the `ClusterIssuer` named `ca-issuer`, as illustrated below:
+Then, the X509 certificate for your additional services in the management cluster can be issued from `cert-manager` by using the `ClusterIssuer` named `certificate-issuer`, as illustrated below:
 
 ```yaml
 ---
@@ -23,11 +23,8 @@ metadata:
   namespace: cattle-system
 spec:
   secretName: rancher-tls
-  # Currently the certificate is trusted by the Sylva CA by referring to the ca-issuer.
-  # It is possible to leverage an external authority by referring a vault-issuer or an acme-issuer.
-  # In this case, configure the issuer according to the spec of the external authority and update issuerRef below
   issuerRef:
-    name: ca-issuer
+    name: certificate-issuer
     kind: ClusterIssuer
   commonName: ${RANCHER_DNS}
   duration: 2160h # 90d

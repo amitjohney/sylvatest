@@ -17,7 +17,7 @@ spec:
   hostname:
     hostname: ${KEYCLOAK_DNS}
   http:
-    tlsSecret: keycloak-internal-tls
+    tlsSecret: keycloak-tls
   ingress:
     enabled: false
   instances: 1
