@@ -5,9 +5,9 @@ metadata:
 spec:
   vault:
     path: ${VAULT_PKI_PATH}
-    server: ${VAULT_PKI_SERVER} # e.g. https://vaultserver:8200
-    caBundle: ${VAULT_PKI_CA_CHAIN}
+    server: ${ISS_SERVER} # e.g. https://vaultserver:8200
+    caBundle: ${CACERT}
     auth:
       tokenSecretRef:
-          name: external-vault-token
-          key: token
+        name: external-vault-token
+        key: token

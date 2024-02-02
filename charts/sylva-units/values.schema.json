@@ -6976,6 +6976,26 @@
         }
       }
     },
+    "external_x509_issuer": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "iss_type": {
+          "type": "string",
+          "pattern": "^(acme|vault)$"
+        },
+        "shared_secret": {
+          "type": "string"
+        },
+        "server": {
+          "type": "string",
+          "pattern": "^(https?://.*|)$"
+        },
+        "vault_path": {
+          "type": "string"
+        }
+      }
+    },
     "keycloak": {
       "type": "object",
       "additionalProperties": false,
