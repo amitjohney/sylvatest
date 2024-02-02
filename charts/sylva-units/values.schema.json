@@ -1530,7 +1530,7 @@
                         }
                       ]
                     },
-                    "bond_xmit_hash_policy": {
+                    "bondXmitHashPolicy": {
                       "anyOf": [
                         {
                           "enum": [
