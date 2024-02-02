@@ -2974,7 +2974,7 @@ units:
             - host: '{{ .Values.external_hostnames.os_image_server }}'
         osImagePersistenceDefaults:
           enabled: true
-          size: 8Gi
+          size: '{{ .Values.os_images_default_download_storage_space }}'
           storageClass: '{{ .Values._internal.default_storage_class }}'
       valuesFrom:
         - kind: ConfigMap
@@ -3422,6 +3422,7 @@ units:
           httpProxy: '{{ .Values.proxies.https_proxy }}'
           httpsProxy: '{{ .Values.proxies.https_proxy }}'
           noProxy: '{{ include "sylva-units.no_proxy" . }}'
+          TMP_STORAGE_SPACE: '{{ .Values.os_images_default_download_storage_space }}'
       _patches:
         - target:
             kind: Job
@@ -3760,6 +3761,16 @@ sylva_diskimagebuilder_images:
 # this dict can be enriched at deployment time to feed additional information
 # into the sylva-units-status ConfigMap
 additional_sylva_units_status_info: {}
+
+# os_images_default_download_storage_space defines the default size of volumes
+# used by os-image-server and get-openstack-images to download each OS image OCI artifacts
+# and uncompress the image stored inside
+#
+# it needs to cover the size of the OCI artifact *plus* the size of the uncompressed image
+#
+# this needs to be set to ~25Gi for hardened images
+#    (until https://gitlab.com/sylva-projects/sylva-elements/diskimage-builder/-/issues/57 is addressed)
+os_images_default_download_storage_space: 8Gi
 
 _internal:
   ha_cluster:
