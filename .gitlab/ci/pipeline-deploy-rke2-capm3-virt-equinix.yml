@@ -3,6 +3,14 @@ include:
   - local: .gitlab/ci/child-pipeline-default.yml
   - local: .gitlab/ci/templates-deployments.yml
 
+# ----------------------------------------------------------
+# Specific rules to run only for rke2 envs
+.rules:skip-if-kubeadm:
+  rules:
+    - if: $ENV_NAME =~ /^kubeadm/
+      when: never
+    - when: on_success
+
 default:
   tags:
     - $CI_PIPELINE_IID
@@ -102,6 +110,13 @@ test-login:
       HURL_VERSION=4.1.0
       curl -SsL https://github.com/Orange-OpenSource/hurl/releases/download/${HURL_VERSION}/hurl-${HURL_VERSION}-x86_64-unknown-linux-gnu.tar.gz | tar xvz -C /tmp
       mv /tmp/hurl-${HURL_VERSION}-x86_64-unknown-linux-gnu/hurl ./bin/hurl
+
+test-rke2-node-annotations:
+  extends:
+    - .test-rke2-node-annotations
+    - .rules:skip-if-kubeadm
+  before_script:
+    - !reference [.ensure_sylva_toolbox]
 
 #----------------------------------------------------------
 

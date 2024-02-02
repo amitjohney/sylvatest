@@ -18,6 +18,12 @@ include:
   rules:
     - if: $ONLY_DEPLOY_MGMT
 
+.rules:skip-if-kubeadm:
+  rules:
+    - if: $ENV_NAME =~ /^kubeadm/
+      when: never
+    - when: on_success
+
 default:
   tags:
     - $CAPO_PLATFORM_TAG
@@ -60,6 +66,11 @@ test-no-sso+workload-kubeconfig:
   extends:
     - .test-no-sso+workload-kubeconfig
     - .rules:skip-if-only-deploy-mgmt
+
+test-rke2-node-annotations:
+  extends:
+    - .test-rke2-node-annotations
+    - .rules:skip-if-kubeadm
 
 # ----------------------------------------------------------
 test-sso:

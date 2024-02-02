@@ -14,6 +14,8 @@ cluster:
     - '{{ .Values._internal.bootstrap_node_ip }}'
 
   rke2:
+    nodeAnnotations:
+      sylva.org/test-annotation-scope: 'ci'
     additionalUserData:
       config:
         #cloud-config
