@@ -218,10 +218,6 @@ units:
     enabled: true
     unit_template: base-deps
 
-  kyverno:
-    enabled: true
-    unit_template: base-deps
-
   cluster-import:
     enabled: false  # overriden depending on whether Rancher is enabled or not (eg. via shared-workload-clusters-settings)
     info:
@@ -264,13 +260,51 @@ units:
           name: "{{ .Values.cluster.name }}-capi"
           namespace: '{{ .Release.Namespace }}'
 
+  cluster-user-management:
+    enabled: true  # overriden depending on whether Rancher is enabled or not (eg. via shared-workload-clusters-settings)
+    info:
+      description: Create user workload admin to Rancher 
+      internal: true
+    unit_template: base-deps
+    depends_on:
+      sylva-system/rancher: true  # depends on rancher unit in sylva-system ns
+      sylva-system/capi-rancher-import: true  # depends on capi-rancher-import unit in sylva-system ns
+#      sylva-system/cluster-admin-login: true
+#      sylva-system/cluster-admin-policy: true
+    repo: sylva-core
+    kustomization_spec:
+      # because this resource lives in the mgmt cluster:
+      kubeConfig:
+        secretRef:
+          name: cluster-admin-kubeconfig   # (kubeconfig for mgmt cluster)
+          key: kubeconfig
+      targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
+      wait: false
+      path: ./kustomize-units/cluster-import
+#      postBuild:
+#        substitute:
+#          CLUSTER_FLAVOR: '{{ upper .Values.cluster.capi_providers.bootstrap_provider }} {{ upper .Values.cluster.capi_providers.infra_provider }}'
+#          CLUSTER_NAME: '{{ .Values.cluster.name }}'
+        substituteFrom:
+          - kind: Secret
+            name: cluster-admin-kubeconfig
+      healthChecks:
+        # this resource is created by capi-rancher-import based on the existence of
+        # the Cluster.provisioning.cattle.io produced by the kustomization
+        - apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+          kind: Kustomization
+          name: "cattle-agent-{{ .Values.cluster.name }}"
+          namespace: '{{ .Release.Namespace }}'
+        # this resource would be checked by "wait: true" but we have
+        # to check it explicitly because we use `healthChecks` which implies `wait: false`
+        - apiVersion: provisioning.cattle.io/v1
+          kind: Cluster
+          name: "{{ .Values.cluster.name }}-capi"
+          namespace: '{{ .Release.Namespace }}'
+
+
   vsphere-cpi:
     enabled: true
-    # setting the same dependencies of the capv cluster unit in order to run in parallel
-    depends_on:
-      sylva-system/capi: true
-      sylva-system/capv: true
-      'sylva-system/{{ .Values.cluster.capi_providers.bootstrap_provider }}': true
 
   vsphere-csi-driver:
     enabled: true
