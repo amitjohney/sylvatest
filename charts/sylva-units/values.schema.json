@@ -1466,6 +1466,7 @@
                         "not": {
                           "required": [
                             "bond_mode",
+                            "bond_xmit_hash_policy",
                             "interfaces",
                             "type"
                           ]
@@ -1489,6 +1490,7 @@
                         "not": {
                           "required": [
                             "bond_mode",
+                            "bond_xmit_hash_policy",
                             "interfaces"
                           ]
                         }
@@ -1521,6 +1523,19 @@
                             "balance-tlb",
                             "balance-alb",
                             "802.3ad"
+                          ]
+                        },
+                        {
+                          "$ref": "#/$defs/string-with-gotpl"
+                        }
+                      ]
+                    },
+                    "bond_xmit_hash_policy": {
+                      "anyOf": [
+                        {
+                          "enum": [
+                            "layer2",
+                            "layer3+4"
                           ]
                         },
                         {
