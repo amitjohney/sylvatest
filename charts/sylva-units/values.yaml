@@ -3398,18 +3398,48 @@ units:
             readOnly: true
             subPath: ca.crt
 
+  minio-operator-init:
+    info:
+      description: sets up MinIO certificate for minio-operator
+      details: it generate certificate
+      internal: true
+    enabled_conditions:
+      - '{{ tuple . "minio-operator" | include "unit-enabled" }}'
+    depends_on:
+      namespace-defs: true
+      sylva-ca: true
+    repo: sylva-core
+    kustomization_substitute_secrets:
+      KEY: '{{ .Values.external_certificates.minio_operator.key | default "" | b64enc }}'
+    kustomization_spec:
+      path: ./kustomize-units/minio-operator-init
+      wait: true
+      postBuild:
+        substitute:
+          SERVICE: minio-operator-console
+          SERVICE_DNS: '{{ .Values.external_hostnames.minio_operator_console }}'
+          CERTIFICATE_NAMESPACE: minio-operator
+          CERT: '{{ .Values.external_certificates.minio_operator.cert | default "" | b64enc }}'
+          CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
+      _components:
+        - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.minio_operator "cert") }}'
+        - "../tls-components/sylva-ca"
+
   minio-operator:
     info:
       description: install MinIO operator
       details: MinIO operator is used to manage multiple S3 tenants
       maturity: beta
+    enabled_conditions:
+      - '{{ tuple . "minio-monitoring-tenant" | include "unit-enabled" }}'
     depends_on:
       namespace-defs: true
-      sylva-ca-certs: true
+      minio-operator-init: true
     annotations:
       sylvactl/readyMessage: "minio operator console can be reached at https://{{ .Values.external_hostnames.minio_operator_console }} ({{ .Values.external_hostnames.minio_operator_console }} must resolve to {{ .Values.display_external_ip }})"
     repo: minio-operator
     helmrelease_spec:
+      targetNamespace: minio-operator
       chart:
         spec:
           chart: helm/operator
@@ -3465,6 +3495,34 @@ units:
                   - '{{ .Values.external_hostnames.minio_operator_console }}'
                 secretName: minio-operator-console-tls
 
+  minio-monitoring-tenant-init:
+    info:
+      description: sets up MinIO certificate for minio-monitoring-tenant
+      details: it generate certificate
+      internal: true
+    enabled_conditions:
+      - '{{ tuple . "minio-monitoring-tenant" | include "unit-enabled" }}'
+    depends_on:
+      namespace-defs: true
+      sylva-ca: true
+    repo: sylva-core
+    kustomization_substitute_secrets:
+      KEY: '{{ .Values.external_certificates.minio_monitoring_tenant.key | default "" | b64enc }}'
+    kustomization_spec:
+      path: ./kustomize-units/minio-monitoring-tenant-init
+      wait: true
+      postBuild:
+        substitute:
+          SERVICE: minio-monitoring-tenant
+          SERVICE_DNS: '{{ .Values.external_hostnames.minio_monitoring_tenant }}'
+          CERTIFICATE_NAMESPACE: minio-monitoring-tenant
+          CERT: '{{ .Values.external_certificates.minio_monitoring_tenant.cert | default "" | b64enc }}'
+          CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
+      _components:
+        - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.minio_monitoring_tenant "cert") }}'
+        - "../tls-components/sylva-ca"
+
+
   minio-monitoring-tenant:
     info:
       description: creates a MinIO tenant for the monitoring stack
@@ -3475,7 +3533,7 @@ units:
     depends_on:
       namespace-defs: true
       minio-operator: true
-      sylva-ca-certs: true
+      minio-monitoring-tenant-init: true
     annotations:
       sylvactl/readyMessage: MinIO monitoring tenant console can be reached at https://{{ .Values.external_hostnames.minio_monitoring_tenant_console }} ({{ .Values.external_hostnames.minio_monitoring_tenant_console }} must resolve to {{ .Values.display_external_ip }})
     repo: minio-operator
@@ -3550,7 +3608,7 @@ units:
             quiet: true
         ingress:
           api:
-            enabled: false
+            enabled: true
             ingressClassName: nginx
             annotations:
               nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
@@ -3562,7 +3620,7 @@ units:
                   - '{{ .Values.external_hostnames.minio_monitoring_tenant }}'
                 secretName: minio-monitoring-tenant-tls
           console:
-            enabled: false
+            enabled: true
             ingressClassName: nginx
             annotations:
               nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
@@ -3584,7 +3642,7 @@ units:
             stringData:
               config.env: |-
                 export MINIO_ROOT_USER="minio"
-                export MINIO_ROOT_PASSWORD='{{ .Values.admin_password }}'
+                export MINIO_ROOT_PASSWORD='{{ .Values._internal.minio_monitoring_tenant_bucket_password }}'
                 export MINIO_STORAGE_CLASS_STANDARD="EC:2"
                 export MINIO_BROWSER="on"
           - |
@@ -3596,7 +3654,7 @@ units:
               namespace: minio-monitoring-tenant
             stringData:
               CONSOLE_ACCESS_KEY: console
-              CONSOLE_SECRET_KEY: '{{ .Values.admin_password }}'
+              CONSOLE_SECRET_KEY: '{{ .Values._internal.minio_monitoring_tenant_console_password }}'
 
 # Not yet ready, need to get os_images into the script
   get-openstack-images:
@@ -3846,6 +3904,8 @@ external_certificates:
   harbor: {}
   os_image_server: {}
   gitea: {}
+  minio_operator: {}
+  minio_monitoring_tenant: {}
 
 keycloak: {}
 
@@ -4005,7 +4065,7 @@ _internal:
 
   # default replica number computed from the ha_cluster.mode value
   default_replicas: '{{ tuple . .Values._internal.ha_cluster.mode | include "interpret-as-string" | eq "ha" | ternary 3 1 | include "preserve-type" }}'
-  
+
   # minio bucket write password
   minio_monitoring_tenant_bucket_password: '{{ derivePassword 1 "maximum" .Values._internal.default_password "minio-monitoring-tenant" "bucket" }}'
 

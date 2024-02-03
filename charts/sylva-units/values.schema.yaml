@@ -750,6 +750,10 @@ properties:
         $ref: "#/$defs/cert-and-key"
       gitea:  # -------------------------------
         $ref: "#/$defs/cert-and-key"
+      minio_operator:  # -------------------------------
+        $ref: "#/$defs/cert-and-key"
+      minio_monitoring_tenant:  # -------------------------------
+        $ref: "#/$defs/cert-and-key"
 
   keycloak: # -------------------------------
     type: object

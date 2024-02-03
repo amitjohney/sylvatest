@@ -83,6 +83,8 @@
 | **management-sylva-units** | installs sylva-units in management cluster during bootstrap |  | True | Helm | N/A |
 | **metal3-init** | generates Metal3 random credentials |  | True | Kustomize | N/A |
 | **metal3-sync-secrets** | configures secrets for Metal3 components |  | True | Kustomize | N/A |
+| **minio-monitoring-tenant-init** | sets up MinIO certificate for minio-monitoring-tenant<br/><br/>it generate certificate |  | True | Kustomize | N/A |
+| **minio-operator-init** | sets up MinIO certificate for minio-operator<br/><br/>it generate certificate |  | True | Kustomize | N/A |
 | **multus-ready** | checks that Multus is ready<br/><br/>This unit only has dependencies, it does not create resources. It performs healthchecks outside of the multus unit, in order to properly target workload cluster when we deploy multus in it. |  | True | Kustomize | N/A |
 | **namespace-defs** | creates sylva-system namespace and other namespaces to be used by various units |  | True | Kustomize | N/A |
 | **neuvector-init** | sets up Neuvector prerequisites<br/><br/>it generates namespace, certificate, admin password, policy exception for using latest tag images (required for the pod managing the database of vulnerabilities since this DB is updated often) |  | True | Kustomize | N/A |
