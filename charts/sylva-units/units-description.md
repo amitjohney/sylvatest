@@ -77,6 +77,7 @@
 | **keycloak-resources** | configures keycloak resources |  | True | Kustomize | N/A |
 | **kubevirt-test-vms** | deploys kubevirt VMs for testing |  | True | Kustomize | N/A |
 | **kyverno-policies** | configures Kyverno policies |  | True | Kustomize | N/A |
+| **loki-scalable-init** | sets up loki-scalable certificate<br/><br/>it generate certificate |  | True | Kustomize | N/A |
 | **management-cluster-configs** | copies configuration object in management cluster during bootstrap |  | True | Kustomize | N/A |
 | **management-cluster-flux** | installs flux in management cluster during bootstrap |  | True | Kustomize | N/A |
 | **management-sylva-units** | installs sylva-units in management cluster during bootstrap |  | True | Helm | N/A |

@@ -738,6 +738,8 @@ properties:
         $ref: "#/$defs/cert-and-key"
       gitea:  # -------------------------------
         $ref: "#/$defs/cert-and-key"
+      loki_scalable:  # -------------------------------
+        $ref: "#/$defs/cert-and-key"
 
   keycloak: # -------------------------------
     type: object

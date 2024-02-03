@@ -6914,6 +6914,9 @@
         },
         "gitea": {
           "$ref": "#/$defs/cert-and-key"
+        },
+        "loki_scalable": {
+          "$ref": "#/$defs/cert-and-key"
         }
       }
     },
