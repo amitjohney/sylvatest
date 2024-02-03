@@ -764,9 +764,13 @@ properties:
         $ref: "#/$defs/cert-and-key"
       gitea:  # -------------------------------
         $ref: "#/$defs/cert-and-key"
+<<<<<<< HEAD
       minio_operator:  # -------------------------------
         $ref: "#/$defs/cert-and-key"
       minio_monitoring_tenant:  # -------------------------------
+=======
+      loki_scalable:  # -------------------------------
+>>>>>>> a4ec3e69 (ading new way to handle certificates, password)
         $ref: "#/$defs/cert-and-key"
 
   keycloak: # -------------------------------
