@@ -19,7 +19,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum: ${JOB_CHECKSUM}
+        checksum: s${JOB_CHECKSUM}  # s prefix to avoid this turning into a number if we're unlucky
     spec:
       containers:
       - name: run-script
