@@ -363,7 +363,7 @@ rke2-cis-hardened   rke2-cis-1.6-profile-hardened   122     82     4      0     
 
 #### Fetch Scan Reports with kubectl
 
-You can get the scan report with `kubectl`:
+Scan summaries are obtained with the command `kubectl get clusterscans -o yaml`. You can also get more detailed scan reports with few `kubectl` commands:
 
 ```shell
 $ kubectl get clusterscanreports
@@ -371,7 +371,7 @@ NAME                                  LASTRUNTIMESTAMP                          
 scan-report-rke2-cis-hardened-drnh8   2022-10-28 14:45:40.019124438 +0000 UTC m=+2336.836186254   rke2-cis-1.6-hardened   
 ```
 
-The report is in JSON:
+The report is in JSON format:
 
 ```shell
 $ kubectl get clusterscanreport scan-report-rke2-cis-hardened-drnh8 -o jsonpath="{.spec.reportJSON}" | jq
@@ -386,32 +386,12 @@ $ kubectl get clusterscanreport scan-report-rke2-cis-hardened-drnh8 -o jsonpath=
 ....
 ```
 
-You can parse the JSON report and dump the output into more readable format with the Python script available here: https://dischord.org/2020/10/22/rancher-cis-operator-on-any-kubernetes-cluster/:
+You can parse this JSON file and issue an human readable report with the Python script `display-scan-report.py` available [here](../tools/display-scan-report.py), which can be used as follows:
 
 ```shell
-$ kubectl get clusterscanreport scan-report-rke2-cis-hardened-drnh8 \
+$ kubectl get $(kubectl get clusterscanreports -o name) \
 -o jsonpath="{.spec.reportJSON}" \
-| ./scanreport.py  
-```
-
-Finally, it should issue a report like this:
-
-```
-+--------+----------------------------------------+-----------------------------------------+---------------+
-| ID     | Area                                   | Description                             | Result        |
-+--------+----------------------------------------+-----------------------------------------+---------------+
-| 1.1.1  | Control Plane Node Configuration Files | Ensure that the API server bla bla....  | pass          |
-| 1.1.10 | Control Plane Node Configuration Files | Ensure that the Container bla bla....   | pass          | 
-| 1.1.11 | Control Plane Node Configuration Files | Ensure that the etcd data bla bla....   | pass          |
-...
-| 4.2.11 | Kubelet                                | Ensure that the --rotate-cer bla bla... | pass          |
-....
-+--------+----------------------------------------+-----------------------------------------+---------------+
-+-------+------+------+------+-----+-----+
-| Total | Pass | Fail | Skip | N/A | app |
-+-------+------+------+------+-----+-----+
-|   124 |   93 |    6 |    0 |   8 |  18 |
-+-------+------+------+------+-----+-----+
+| ./display-scan-report.py
 ```
 
 #### Getting Scan Reports from Rancher
