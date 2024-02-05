@@ -290,3 +290,15 @@ units:
   vsphere-csi-driver:
     enabled: true
     unit_template: base-deps
+
+  rancher-logging-crd:
+    enabled: true
+    unit_template: base-deps
+
+  rancher-logging:
+    enabled: true
+    unit_template: base-deps
+
+  rancher-logging-config:
+    enabled: true
+    unit_template: base-deps

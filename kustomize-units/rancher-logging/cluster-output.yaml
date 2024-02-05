@@ -1,0 +1,25 @@
+---
+apiVersion: logging.banzaicloud.io/v1beta1
+kind: ClusterOutput
+metadata:
+  name: loki
+  namespace: cattle-logging-system
+spec:
+  loki:
+    configure_kubernetes_labels: true
+    extra_labels:
+      job: ${JOB_NAME}
+    #password:
+    #  valueFrom:
+    #    secretKeyRef:
+    #      key: Pass
+    #      name: grafana
+    tenant: monitoring
+    url: ${LOKI_URL}
+    insecure_tls: true
+    #username:
+    #  valueFrom:
+    #    secretKeyRef:
+    #      key: User
+    #      name: grafana
+
