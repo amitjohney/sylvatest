@@ -10,7 +10,7 @@ spec:
     metadata:
       name: oci-tools-pod
       annotations:
-        checksum: ${JOB_CHECKSUM}
+        checksum: s${JOB_CHECKSUM}  # s prefix to avoid this turning into a number if we're unlucky
     spec:
       restartPolicy: Never
       serviceAccountName: ${JOB_NAME}-${JOB_TARGET_NAMESPACE:-sylva-system}-sa
