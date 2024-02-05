@@ -1,0 +1,20 @@
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: '{{ .Release.Namespace }}-admin'
+spec:
+  user:
+    username: '{{ .Release.Namespace }}-admin'
+    firstName: '{{ .Release.Namespace }}-admin'
+    lastName: "User'{{ .Release.Namespace }}-admin'"
+    email: "'{{ .Release.Namespace }}-admin'.@sylva"
+    enabled: True
+    emailVerified: False
+    credentials:
+      - type: "password"
+        value: "12345"
+    realmRoles:
+      - "offline_access"
+    clientRoles:
+      account:
+        - "manage-account" #able to create other users

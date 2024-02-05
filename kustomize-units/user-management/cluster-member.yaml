@@ -1,0 +1,8 @@
+apiVersion: management.cattle.io/v3
+clusterName: '{{ .Release }}'
+groupPrincipalName: keycloakoidc_group://'{{ .Release }}'
+kind: ClusterRoleTemplateBinding
+metadata:
+  name: '{{ .Release }}'-admin
+  namespace: '{{ .Release.Namespace }}'
+roleTemplateName: '{{ .Release }}'-admin
