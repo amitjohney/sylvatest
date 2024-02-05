@@ -6366,7 +6366,984 @@
                 },
                 "_patches": {
                   "type": "array",
-                  "items": null
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "object"
+                      },
+                      {
+                        "$ref": "#/$defs/gotpl"
+                      }
+                    ]
+                  }
+                },
+                "_components": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "allOf": [
+                {
+                  "not": {
+                    "required": [
+                      "dependsOn"
+                    ]
+                  }
+                },
+                {
+                  "not": {
+                    "required": [
+                      "wait",
+                      "healthChecks"
+                    ],
+                    "properties": {
+                      "wait": {
+                        "const": true
+                      }
+                    }
+                  }
+                },
+                {
+                  "not": {
+                    "required": [
+                      "sourceRef"
+                    ]
+                  }
+                }
+              ]
+            },
+            "helmrelease_spec": {
+              "type": "object",
+              "required": [
+                "chart"
+              ],
+              "properties": {
+                "chart": {
+                  "type": "object",
+                  "required": [
+                    "spec"
+                  ],
+                  "properties": {
+                    "spec": {
+                      "type": "object",
+                      "required": [
+                        "chart"
+                      ],
+                      "properties": {
+                        "chart": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "_postRenderers": {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "object"
+                      },
+                      {
+                        "$ref": "#/$defs/gotpl"
+                      }
+                    ]
+                  }
+                }
+              },
+              "not": {
+                "required": [
+                  "dependsOn"
+                ]
+              }
+            },
+            "helm_repo_url": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "(https?|oci)://.*"
+                },
+                {
+                  "$ref": "#/$defs/gotpl"
+                }
+              ]
+            },
+            "helm_chart_versions": {
+              "type": "object",
+              "items": {
+                "type": "string"
+              }
+            },
+            "helm_chart_artifact_name": {
+              "type": "string"
+            },
+            "helm_secret_values": {
+              "anyOf": [
+                {
+                  "type": "object"
+                },
+                {
+                  "$ref": "#/$defs/gotpl"
+                }
+              ]
+            },
+            "kustomization_substitute_secrets": {
+              "type": "object",
+              "additionalProperties": false,
+              "patternProperties": {
+                "^.*$": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "dependentRequired": {
+            "kustomization_substitute_secrets": [
+              "kustomization_spec"
+            ],
+            "helm_secret_values": [
+              "helmrelease_spec"
+            ],
+            "helm_repo_url": [
+              "helmrelease_spec"
+            ],
+            "helm_chart_artifact_name": [
+              "helmrelease_spec"
+            ]
+          },
+          "required": [
+            "info"
+          ],
+          "allOf": [
+            {
+              "anyOf": [
+                {
+                  "required": [
+                    "helmrelease_spec"
+                  ]
+                },
+                {
+                  "required": [
+                    "kustomization_spec"
+                  ]
+                },
+                {
+                  "required": [
+                    "unit_template"
+                  ]
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "properties": {
+                    "enabled": {
+                      "const": false
+                    }
+                  }
+                },
+                {
+                  "allOf": [
+                    {
+                      "not": {
+                        "required": [
+                          "repo",
+                          "helm_repo_url"
+                        ],
+                        "properties": {
+                          "repo": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "if": {
+                        "allOf": [
+                          {
+                            "not": {
+                              "required": [
+                                "helmrelease_spec"
+                              ]
+                            }
+                          },
+                          {
+                            "not": {
+                              "required": [
+                                "unit_template"
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "then": {
+                        "properties": {
+                          "kustomization_spec": {
+                            "allOf": [
+                              {
+                                "required": [
+                                  "path"
+                                ]
+                              },
+                              {
+                                "anyOf": [
+                                  {
+                                    "required": [
+                                      "wait"
+                                    ]
+                                  },
+                                  {
+                                    "required": [
+                                      "healthChecks"
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "if": {
+                        "required": [
+                          "helmrelease_spec"
+                        ]
+                      },
+                      "then": {
+                        "anyOf": [
+                          {
+                            "not": {
+                              "required": [
+                                "kustomization_spec"
+                              ]
+                            }
+                          },
+                          {
+                            "not": {
+                              "properties": {
+                                "kustomization_spec": {
+                                  "required": [
+                                    "path"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "cluster": {
+      "$ref": "#/$defs/sylva-capi-cluster-values"
+    },
+    "openstack": {
+      "type": "object"
+    },
+    "metal3": {
+      "type": "object"
+    },
+    "vsphere": {
+      "type": "object"
+    },
+    "capd_docker_host": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^(unix|tcp)://.*"
+    },
+    "sriov": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "node_policies": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "resourceName",
+              "numVfs",
+              "nicSelector",
+              "deviceType"
+            ],
+            "properties": {
+              "nodeSelector": {
+                "type": "object"
+              },
+              "resourceName": {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9_.]*[a-z0-9]$"
+              },
+              "numVfs": {
+                "type": "integer"
+              },
+              "deviceType": {
+                "type": "string",
+                "pattern": "^(netdevice|vfio-pci)$"
+              },
+              "nicSelector": {
+                "type": "object",
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "deviceID": {
+                    "type": "string"
+                  },
+                  "vendor": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{4}$"
+                  },
+                  "pfNames": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "rootDevices": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "k8s_version_short": {
+      "type": "string",
+      "pattern": "^[1-9]+[0-9]*[.]([1-9]+[0-9]|0)*$"
+    },
+    "cluster_external_ip": {
+      "type": "string",
+      "format": "ipv4"
+    },
+    "admin_password": {
+      "type": "string"
+    },
+    "cis_benchmark_scan_profile": {
+      "type": "string"
+    },
+    "flux_webui": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "admin_user": {
+          "type": "string"
+        }
+      }
+    },
+    "display_external_ip": {
+      "type": "string"
+    },
+    "cluster_external_domain": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "hostname"
+        },
+        {
+          "$ref": "#/$defs/string-with-gotpl"
+        }
+      ]
+    },
+    "cluster_public_endpoint": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^(https?://.*|)$"
+        },
+        {
+          "$ref": "#/$defs/gotpl"
+        }
+      ]
+    },
+    "external_hostnames": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "rancher": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
+        },
+        "vault": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
+        },
+        "keycloak": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
+        },
+        "neuvector": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
+        },
+        "harbor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
+        },
+        "flux": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
+        },
+        "os_image_server": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "const": ""
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
+        },
+        "gitea": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "const": ""
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
+        },
+        "minio_operator_console": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "const": ""
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
+        },
+        "minio_monitoring_tenant": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "const": ""
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
+        },
+        "minio_monitoring_tenant_console": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "const": ""
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
+        },
+        "loki": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "const": ""
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
+        },
+        "thanos": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "const": ""
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
+        },
+        "thanos_storegateway": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "const": ""
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
+        },
+        "thanos_receive": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "const": ""
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
+        },
+        "thanos_query": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "const": ""
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
+        }
+      }
+    },
+    "external_certificates": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cacert": {
+          "$ref": "#/$defs/certificate"
+        },
+        "rancher": {
+          "$ref": "#/$defs/cert-and-key"
+        },
+        "vault": {
+          "$ref": "#/$defs/cert-and-key"
+        },
+        "keycloak": {
+          "$ref": "#/$defs/cert-and-key"
+        },
+        "neuvector": {
+          "$ref": "#/$defs/cert-and-key"
+        },
+        "harbor": {
+          "$ref": "#/$defs/cert-and-key"
+        },
+        "flux": {
+          "$ref": "#/$defs/cert-and-key"
+        },
+        "os_image_server": {
+          "$ref": "#/$defs/cert-and-key"
+        },
+        "gitea": {
+          "$ref": "#/$defs/cert-and-key"
+        },
+        "minio_operator": {
+          "$ref": "#/$defs/cert-and-key"
+        },
+        "minio_monitoring_tenant": {
+          "$ref": "#/$defs/cert-and-key"
+        },
+        "loki_scalable": {
+          "$ref": "#/$defs/cert-and-key"
+        },
+        "thanos": {
+          "$ref": "#/$defs/cert-and-key"
+        }
+      }
+    },
+    "keycloak": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "keycloak_expire_password_days": {
+          "type": "integer"
+        }
+      }
+    },
+    "os_images": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-z0-9][a-z0-9-]{1,50}[a-z0-9]$": {
+          "type": "object",
+          "properties": {
+            "uri": {
+              "type": "string",
+              "anyOf": [
+                {
+                  "pattern": "^(https?://.*|)$"
+                },
+                {
+                  "pattern": "^(oci://.*)$"
+                },
+                {
+                  "pattern": "^{{ .Values.sylva_base_oci_registry }}/.*$"
+                }
+              ]
+            },
+            "filename": {
+              "type": "string"
+            },
+            "checksum": {
+              "type": "string"
+            },
+            "os": {
+              "type": "string"
+            },
+            "k8s-version": {
+              "type": "string"
+            },
+            "k8s-flavor": {
+              "type": "string",
+              "pattern": "^(rke2|kubeadm)$"
+            }
+          },
+          "required": [
+            "uri",
+            "filename"
+          ]
+        }
+      }
+    },
+    "os_images_default_download_storage_space": {
+      "type": "string",
+      "pattern": "^[1-9]+[0-9]*Gi$"
+    },
+    "libvirt_metal": {
+      "$ref": "#/$defs/libvirt-metal-values"
+    },
+    "proxies": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "https?_proxy": {
+          "type": "string",
+          "pattern": "^(https?://.*|)$"
+        },
+        "no_proxy": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "http_proxy",
+        "https_proxy",
+        "no_proxy"
+      ]
+    },
+    "no_proxy_additional": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        ".*": {
+          "type": "boolean"
+        }
+      }
+    },
+    "sylva_base_oci_registry": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^oci://.*$"
+        },
+        {
+          "$ref": "#/$defs/string-with-gotpl"
+        }
+      ]
+    },
+    "sylva_core_oci_registry": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^oci://.*$"
+        },
+        {
+          "$ref": "#/$defs/string-with-gotpl"
+        }
+      ]
+    },
+    "oci_registry_extra_ca_certs": {
+      "type": "string"
+    },
+    "oci_registry_insecure": {
+      "type": "boolean"
+    },
+    "registry_mirrors": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "default_settings": {
+          "type": "object"
+        },
+        "hosts_config": {
+          "type": "object",
+          "additionalProperties": false,
+          "patternProperties": {
+            "^[a-z0-9][a-z0-9.-]*[a-z0-9]$": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "registry_settings": {
+                    "type": "object"
+                  },
+                  "mirror_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "pattern": "^(https?://.*|)$"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "units_enabled_default": {
+      "type": "boolean"
+    },
+    "units_override_enabled": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "env_type": {
+      "type": "string",
+      "pattern": "^(dev|ci|prod)$"
+    },
+    "ntp": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "servers": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "ipv4"
+              },
+              {
+                "type": "string",
+                "format": "hostname"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "sylva_diskimagebuilder_version": {
+      "type": "string"
+    },
+    "sylva_diskimagebuilder_images": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-z0-9][a-z0-9._-]{1,50}[a-z0-9]$": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "default_enabled": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "additional_sylva_units_status_info": {
+      "type": "object"
+    },
+    "_internal": {
+      "type": "object"
+    },
+    "third_party": {
+      "type": "object"
+    },
+    "shared_workload_clusters_values": {
+      "type": "object"
+    },
+    "shared_workload_clusters_secret_values": {
+      "type": "object"
+    },
+    "snmp": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "devices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string",
+                "format": "hostname"
+              },
+              "ip": {
+                "type": "string",
+                "format": "ipv4"
+              },
+              "group": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "groups": {
+          "type": "object",
+          "additionalProperties": false,
+          "patternProperties": {
+            ".+": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "version": {
+                  "type": "integer",
+                  "minimum": 2,
+                  "maximum": 3
+                },
+                "auth": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "community": {
+                      "type": "string"
+                    },
+                    "security_level": {
+                      "type": "string",
+                      "pattern": "^(noAuthNoPriv|authNoPriv|authPriv)$"
+                    },
+                    "username": {
+                      "type": "string"
+                    },
+                    "password": {
+                      "type": "string"
+                    },
+                    "auth_protocol": {
+                      "type": "string",
+                      "pattern": "^(MD5|SHA|SHA224|SHA256|SHA384|SHA512)$"
+                    },
+                    "priv_protocol": {
+                      "type": "string",
+                      "pattern": "^(DES|AES|AES192|AES256)$"
+                    },
+                    "priv_password": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "community"
+                  ]
+                },
+                "hw_type": {
+                  "type": "string",
+                  "pattern": "^(dell|hp)$"
+                }
+              },
+              "if": {
+                "properties": {
+                  "version": {
+                    "const": 3
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "auth": {
+                      "required": [
+                        "security_level",
+                        "username",
+                        "password",
+                        "auth_protocol",
+                        "priv_protocol",
+                        "priv_password"
+                      ]
+                    }
+                  }
                 }
               }
             }
@@ -6374,5 +7351,217 @@
         }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "properties": {
+        "cluster": {
+          "properties": {
+            "cluster_external_ip": {
+              "const": "{{ .Values.cluster_external_ip }}"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "units": {
+            "properties": {
+              "cluster": {
+                "properties": {
+                  "enabled": {
+                    "const": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "units": {
+            "properties": {
+              "cluster": {
+                "properties": {
+                  "helmrelease_spec": {
+                    "properties": {
+                      "values": {
+                        "not": {
+                          "required": [
+                            "helmrelease_spec"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "cluster": {
+            "properties": {
+              "capi_providers": {
+                "properties": {
+                  "infra_provider": {
+                    "const": "capo"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "openstack": {
+            "additionalProperties": false,
+            "properties": {
+              "floating_ip": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "ipv4"
+                  },
+                  {
+                    "type": "string",
+                    "maxLength": 0
+                  }
+                ]
+              },
+              "storageClass": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type"
+                ]
+              },
+              "control_plane_affinity_policy": {
+                "type": "string",
+                "enum": [
+                  "anti-affinity",
+                  "soft-anti-affinity"
+                ]
+              },
+              "worker_affinity_policy": {
+                "type": "string",
+                "enum": [
+                  "anti-affinity",
+                  "soft-anti-affinity"
+                ]
+              },
+              "external_network_id": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "cluster": {
+            "properties": {
+              "capi_providers": {
+                "properties": {
+                  "infra_provider": {
+                    "const": "capm3"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "metal3": {
+            "additionalProperties": false,
+            "properties": {
+              "provider": {
+                "type": "string",
+                "pattern": "^(sylva|suse)$"
+              },
+              "bootstrap_ip": {
+                "type": "string",
+                "format": "ipv4"
+              },
+              "external_bootstrap_ip": {
+                "type": "string",
+                "format": "ipv4"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "cluster": {
+            "properties": {
+              "capi_providers": {
+                "properties": {
+                  "infra_provider": {
+                    "const": "capv"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "vsphere": {
+            "additionalProperties": false,
+            "properties": {
+              "vsphere-cpi": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "vsphere_conf": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "env_type": {
+            "const": "prod"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "admin_password": {
+            "const": "{{ .Values._internal.default_password }}"
+          }
+        }
+      }
+    }
+  ]
 }

@@ -141,6 +141,13 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: v2.9.3
 
+  sylva-prometheus-rules:
+    kind: GitRepository
+    spec:
+      url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-prometheus-rules.git
+      ref:
+        tag: 0.0.4
+
 helm_repo_spec_default:
   interval: 60m0s
 
@@ -411,6 +418,8 @@ units:
         - '{{ tuple "components/minio-operator" (tuple . "minio-operator" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/minio-monitoring-tenant" (tuple . "minio-monitoring-tenant" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/loki-scalable" (tuple . "loki-scalable" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/cattle-logging" (tuple . "rancher-logging" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/thanos" (tuple . "thanos" | include "unit-enabled") | include "set-only-if" }}'
 
 # Postgresql deployment for keycloak
   postgres-init:
@@ -488,7 +497,7 @@ units:
       internal: true
     depends_on:
       kubevirt: true
-      multus: true
+      #multus: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kubevirt-test-vms
@@ -1371,7 +1380,7 @@ units:
     repo: sylva-core
     depends_on:
       cert-manager: true
-      '{{ .Values._internal.metal3_unit }}': true
+      #'{{ .Values._internal.metal3_unit }}': true
     kustomization_spec:
       path: ./kustomize-units/capm3
       postBuild:
@@ -2503,6 +2512,9 @@ units:
       install:
         createNamespace: true
       values:
+        global:
+          cattle:
+            clusterId: '{{ .Values.cluster.name }}'
         grafana:
           sidecar:
             dashboards:
@@ -2511,6 +2523,47 @@ units:
               multicluster:
                 global:
                   enabled: true
+                etcd:
+                  enabled: true
+            # only at installation time??
+            datasources:
+              enabled: true
+              defaultDatasourceEnabled: true
+              isDefaultDatasource: true
+              # todo: change to thanos
+              #uid: prometheus
+              #url: http://prometheus-stack-prometheus:9090/
+          # todo: add loki and thanos datasources
+          ## Configure additional grafana datasources (passed through tpl)
+          ## ref: http://docs.grafana.org/administration/provisioning/#datasources
+          additionalDataSources: []
+          # - name: prometheus-sample
+          #   access: proxy
+          #   basicAuth: true
+          #   basicAuthPassword: pass
+          #   basicAuthUser: daco
+          #   editable: false
+          #   jsonData:
+          #       tlsSkipVerify: true
+          #   orgId: 1
+          #   type: prometheus
+          #   url: https://{{ printf "%s-prometheus.svc" .Release.Name }}:9090
+          #   version: 1
+        prometheus:
+          # only at installation time??
+          prometheusSpec:
+            externalLabels:
+              clusterid: '{{ .Values.cluster.name }}'
+            # https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#remotewritespec
+            remoteWrite:
+              - url: "https://{{ .Values.external_hostnames.thanos_receive }}:443/api/v1/receive"
+                name: '{{ .Values.cluster.name }}'
+                insecureSkipVerify: true
+                queue_config:
+                  batch_send_deadline: 5s
+                  min_backoff: 1s
+                  max_backoff: 30s
+            remoteWriteDashboards: true
       # Disable drift detection for rancher-monitoring webhooks
       _postRenderers:
         - kustomize:
@@ -3406,6 +3459,583 @@ units:
             readOnly: true
             subPath: ca.crt
 
+  minio-operator-init:
+    info:
+      description: sets up MinIO certificate for minio-operator
+      details: it generate certificate
+      internal: true
+    enabled_conditions:
+      - '{{ tuple . "minio-operator" | include "unit-enabled" }}'
+    depends_on:
+      namespace-defs: true
+      sylva-ca: true
+    repo: sylva-core
+    kustomization_substitute_secrets:
+      KEY: '{{ .Values.external_certificates.minio_operator.key | default "" | b64enc }}'
+    kustomization_spec:
+      path: ./kustomize-units/minio-operator-init
+      wait: true
+      postBuild:
+        substitute:
+          SERVICE: minio-operator-console
+          SERVICE_DNS: '{{ .Values.external_hostnames.minio_operator_console }}'
+          CERTIFICATE_NAMESPACE: minio-operator
+          CERT: '{{ .Values.external_certificates.minio_operator.cert | default "" | b64enc }}'
+          CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
+      _components:
+        - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.minio_operator "cert") }}'
+        - "../tls-components/sylva-ca"
+
+  minio-operator:
+    info:
+      description: install MinIO operator
+      details: MinIO operator is used to manage multiple S3 tenants
+      maturity: beta
+    enabled_conditions:
+      - '{{ tuple . "minio-monitoring-tenant" | include "unit-enabled" }}'
+    depends_on:
+      namespace-defs: true
+      minio-operator-init: true
+    annotations:
+      sylvactl/readyMessage: "minio operator console can be reached at https://{{ .Values.external_hostnames.minio_operator_console }} ({{ .Values.external_hostnames.minio_operator_console }} must resolve to {{ .Values.display_external_ip }})"
+    repo: minio-operator
+    helmrelease_spec:
+      targetNamespace: minio-operator
+      chart:
+        spec:
+          chart: helm/operator
+          version: v5.0.11
+      install:
+        createNamespace: false
+      values:
+        operator:
+          containerSecurityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+              ephemeral-storage: 500Mi
+        console:
+          enabled: true
+          containerSecurityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          ingress:
+            enabled: true
+            ingressClassName: nginx
+            host: '{{ .Values.external_hostnames.minio_operator_console }}'
+            path: /
+            pathType: Prefix
+            tls:
+              - hosts:
+                  - '{{ .Values.external_hostnames.minio_operator_console }}'
+                secretName: minio-operator-console-tls
+
+  minio-monitoring-tenant-init:
+    info:
+      description: sets up MinIO certificate for minio-monitoring-tenant
+      details: it generate certificate
+      internal: true
+    enabled_conditions:
+      - '{{ tuple . "minio-monitoring-tenant" | include "unit-enabled" }}'
+    depends_on:
+      namespace-defs: true
+      sylva-ca: true
+    repo: sylva-core
+    kustomization_substitute_secrets:
+      KEY: '{{ .Values.external_certificates.minio_monitoring_tenant.key | default "" | b64enc }}'
+    kustomization_spec:
+      path: ./kustomize-units/minio-monitoring-tenant-init
+      wait: true
+      postBuild:
+        substitute:
+          SERVICE: minio-monitoring-tenant
+          SERVICE_DNS: '{{ .Values.external_hostnames.minio_monitoring_tenant }}'
+          SERVICE_DNS1: '{{ .Values.external_hostnames.minio_monitoring_tenant_console }}'
+          CERTIFICATE_NAMESPACE: minio-monitoring-tenant
+          CERT: '{{ .Values.external_certificates.minio_monitoring_tenant.cert | default "" | b64enc }}'
+          CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
+      _components:
+        - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.minio_monitoring_tenant "cert") }}'
+        - "../tls-components/sylva-ca"
+
+  minio-monitoring-tenant:
+    info:
+      description: creates a MinIO tenant for the monitoring stack
+      details: Loki and Thanos will use this MinIO S3 storage
+      maturity: beta
+    enabled_conditions:
+      - '{{ or (tuple . "thanos" | include "unit-enabled") ( tuple . "loki" | include "unit-enabled") }}'
+    depends_on:
+      namespace-defs: true
+      minio-operator: true
+      minio-monitoring-tenant-init: true
+    annotations:
+      sylvactl/readyMessage: MinIO monitoring tenant console can be reached at https://{{ .Values.external_hostnames.minio_monitoring_tenant_console }} ({{ .Values.external_hostnames.minio_monitoring_tenant_console }} must resolve to {{ .Values.display_external_ip }})
+    repo: minio-operator
+    helmrelease_spec:
+      targetNamespace: minio-monitoring-tenant
+      chart:
+        spec:
+          chart: helm/tenant
+          version: v5.0.11
+      install:
+        createNamespace: false
+      values:
+        #secrets:
+        #  existingSecret: storage-user
+        tenant:
+          name: monitoring
+          configuration:
+            name: storage-configuration
+          pools:
+            - servers: 2
+              name: pool-0
+              volumesPerserver: 4
+              size: 3Gi
+              storageClassName: '{{ .Values._internal.default_storage_class }}'
+              containerSecurityContext:
+                runAsUser: 1000
+                runAsGroup: 1000
+                runAsNonRoot: true
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                seccompProfile:
+                  type: RuntimeDefault
+              securityContext:
+                runAsUser: 1000
+                runAsGroup: 1000
+                fsGroup: 1000
+                fsGroupChangePolicy: "OnRootMismatch"
+                runAsNonRoot: true
+                seccompProfile:
+                  type: RuntimeDefault
+          metrics:
+            enabled: disable
+          features:
+            bucketDNS: false
+            enableSFTP: false
+          users:
+            - name: storage-user
+          buckets:
+            - name: "thanos"
+              region: "monitoring-cluster"
+              objectLock: false
+            - name: "loki"
+              region: "monitoring-cluster"
+              objectLock: false
+            - name: "loki-chunks"
+              region: "monitoring-cluster"
+              objectLock: false
+            - name: "loki-ruler"
+              region: "monitoring-cluster"
+              objectLock: false
+            - name: "loki-admin"
+              region: "monitoring-cluster"
+              objectLock: false
+            - name: "testbucket"
+              region: "monitoring-cluster"
+              objectLock: false
+          ## Prometheus Operator's Service Monitor for MinIO Tenant Pods.
+          prometheusOperator: false
+          logging:
+            anonymous: true
+            json: true
+            quiet: true
+        ingress:
+          api:
+            enabled: true
+            ingressClassName: nginx
+            annotations:
+              nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+            host: '{{ .Values.external_hostnames.minio_monitoring_tenant }}'
+            path: /
+            pathType: Prefix
+            tls:
+              - hosts:
+                  - '{{ .Values.external_hostnames.minio_monitoring_tenant }}'
+                secretName: minio-monitoring-tenant-tls
+          console:
+            enabled: true
+            ingressClassName: nginx
+            annotations:
+              nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+            host: '{{ .Values.external_hostnames.minio_monitoring_tenant_console }}'
+            path: /
+            pathType: Prefix
+            tls:
+              - hosts:
+                  - '{{ .Values.external_hostnames.minio_monitoring_tenant_console }}'
+                secretName: minio-monitoring-tenant-tls
+    helm_secret_values:
+      storage-configuration:
+        enabled: "true"
+        create: "true"
+        name: storage-configuration
+        data:
+          config.env: |-
+            export MINIO_ROOT_USER="minio"
+            export MINIO_ROOT_PASSWORD='{{ .Values._internal.minio_monitoring_tenant_bucket_password }}'
+            export MINIO_STORAGE_CLASS_STANDARD="EC:2"
+            export MINIO_BROWSER="on"
+      console:
+        enabled: true
+        create: "true"
+        name: storage-user
+        data:
+          CONSOLE_ACCESS_KEY: console
+          CONSOLE_SECRET_KEY: '{{ .Values._internal.minio_monitoring_tenant_console_password }}'
+
+  loki-scalable-init:
+    info:
+      description: sets up loki-scalable certificate
+      details: it generate certificate
+      internal: true
+    enabled_conditions:
+      - '{{ tuple . "loki-scalable" | include "unit-enabled" }}'
+    depends_on:
+      namespace-defs: true
+      sylva-ca: true
+    repo: sylva-core
+    kustomization_substitute_secrets:
+      KEY: '{{ .Values.external_certificates.loki_scalable.key | default "" | b64enc }}'
+    kustomization_spec:
+      path: ./kustomize-units/loki-scalable-init
+      wait: true
+      postBuild:
+        substitute:
+          SERVICE: loki-scalable
+          SERVICE_DNS: '{{ .Values.external_hostnames.loki }}'
+          CERTIFICATE_NAMESPACE: loki-scalable
+          CERT: '{{ .Values.external_certificates.loki_scalable.cert | default "" | b64enc }}'
+          CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
+      _components:
+        - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.loki_scalable "cert") }}'
+        - "../tls-components/sylva-ca"
+
+  loki-scalable:
+    info:
+      description: installs Loki log storage in simple scalable mode
+      maturity: beta
+    depends_on:
+      namespace-defs: true
+      loki-scalable-init: true
+      minio-monitoring-tenant: true
+    enabled_conditions:
+      - '{{ tuple . "minio-monitoring-tenant" | include "unit-enabled" }}'
+    annotations:
+      sylvactl/readyMessage: Loki can be reached at https://{{ .Values.external_hostnames.loki }} ({{ .Values.external_hostnames.loki }} must resolve to {{ .Values.display_external_ip }})
+    repo: loki-scalable
+    helmrelease_spec:
+      releaseName: loki
+      targetNamespace: loki-scalable
+      chart:
+        spec:
+          chart: production/helm/loki
+          version: v2.9.2
+      install:
+        createNamespace: false
+      values:
+        global:
+          dnsService: "rke2-coredns-rke2-coredns"
+        sidecar:
+          rules:
+            enabled: false
+        loki:
+          auth_enabled: false
+          containerSecurityContext:
+            seccompProfile:
+              type: RuntimeDefault
+          analytics:
+            reporting_enabled: false
+          server:
+            http_listen_port: 3100
+            grpc_listen_port: 9095
+            http_server_idle_timeout: 600s
+            http_server_read_timeout: 600s
+            http_server_write_timeout: 600s
+            grpc_server_max_recv_msg_size: 52428800
+            grpc_server_max_send_msg_size: 52428800
+          # -- Limits config
+          limits_config:
+            enforce_metric_name: false
+            reject_old_samples: false
+            reject_old_samples_max_age: 168h
+            max_cache_freshness_per_query: 10m
+            split_queries_by_interval: 15m
+            query_timeout: 10m
+            ingestion_rate_strategy: local
+            ingestion_rate_mb: 15
+            ingestion_burst_size_mb: 20
+            unordered_writes: true
+          # todo
+          ingester:
+            chunk_block_size: 262144
+            chunk_idle_period: 3m
+            chunk_retain_period: 1m
+            max_transfer_retries: 0
+            wal:
+              enabled: true
+              dir: /data/wal
+          commonConfig:
+            replication_factor: 1
+          storage:
+            bucketNames:
+              chunks: "loki-chunks"
+              ruler: "loki-ruler"
+              admin: "loki-admin"
+            type: s3
+            s3:
+              s3: null
+              endpoint: "minio.minio-monitoring-tenant.svc.cluster.local:443"
+              region: null
+              accessKeyId: "minio"
+              secretAccessKey: '{{ .Values._internal.minio_monitoring_tenant_bucket_password }}'
+              signatureVersion: null
+              s3ForcePathStyle: true
+              insecure: false
+              http_config:
+                idle_conn_timeout: 90s
+                insecure_skip_verify: true
+        test:
+          enabled: false
+        monitoring:
+          dashboards:
+            enabled: true
+            labels:
+              grafana_dashboard: "1"
+          rules:
+            enabled: true
+            alerting: true
+            additionalGroups:
+              - name: additional-loki-rules
+                rules:
+                  - record: job:loki_request_duration_seconds_bucket:sum_rate
+                    expr: sum(rate(loki_request_duration_seconds_bucket[1m])) by (le, job)
+                  - record: job_route:loki_request_duration_seconds_bucket:sum_rate
+                    expr: sum(rate(loki_request_duration_seconds_bucket[1m])) by (le, job, route)
+                  - record: node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate
+                    expr: sum(rate(container_cpu_usage_seconds_total[1m])) by (node, namespace, pod, container)
+            podsecurityContext:
+              seccompProfile:
+                type: RuntimeDefault
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
+          serviceMonitor:
+            enabled: true
+            metricsInstance:
+              enabled: true
+          # todo: need GrafanaAgent
+          selfMonitoring:
+            enabled: false
+            tenant:
+              name: "self-monitoring"
+            grafanaAgent:
+              installOperator: false
+          lokiCanary:
+            enabled: false
+            labelname: pod
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
+        write:
+          replicas: '{{ int .Values._internal.node_count | gt 2 | ternary 1 2 }}'
+          autoscaling:
+            enable: true
+            minReplicas: 2
+            maxReplicas: 6
+            targetCPUUtilizationPercentage: 40
+          podSecurityContext:
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          extraVolumes:
+            - name: data
+              emptyDir: {}
+            - name: loki
+              emptyDir: {}
+          extraVolumeMounts:
+            - name: data
+              mountPath: /data
+            - name: loki
+              mountPath: /loki
+        tablemanager:
+          enabled: false
+        read:
+          replicas: '{{ int .Values._internal.node_count | gt 2 | ternary 1 2 }}'
+          podSecurityContext:
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+        backend:
+          replicas: '{{ int .Values._internal.node_count | gt 2 | ternary 1 2 }}'
+          podSecurityContext:
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+        memberlist:
+          service:
+            publishNotReadyAddresses: true
+          join_members:
+            - loki-memberlist
+        gateway:
+          enabled: false
+          verboseLogging: true
+          replicas: '{{ int .Values._internal.node_count | gt 2 | ternary 1 2 }}'
+          nginxConfig:
+            httpSnippet: |-
+              client_max_body_size 50M;
+            serverSnippet: |-
+              client_max_body_size 50M;
+          containerSecurityContext:
+            runAsGroup: 1000
+            runAsUser: 1000
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+        ingress:
+          enabled: true
+          ingressClassName: "nginx"
+          annotations:
+            nginx.ingress.kubernetes.io/proxy-body-size: "0"
+          hosts:
+            - '{{ .Values.external_hostnames.loki }}'
+          tls:
+            - hosts:
+                - '{{ .Values.external_hostnames.loki }}'
+              secretName: loki-scalable-tls
+
+  rancher-logging-crd:
+    info:
+      description: install rancher-logging CRD
+      maturity: beta
+      hidden: true
+    enabled_conditions:
+      - '{{ tuple . "rancher-logging" | include "unit-enabled" }}'
+    depends_on:
+      namespace-defs: true
+    helm_repo_url: https://charts.rancher.io/
+    helmrelease_spec:
+      releaseName: rancher-logging-crd
+      targetNamespace: cattle-logging-system
+      chart:
+        spec:
+          chart: rancher-logging-crd
+          version: 102.0.1+up3.17.10
+      install:
+        createNamespace: false
+
+  rancher-logging:
+    info:
+      description: installs Rancher Fluentbit/Fluentd logging stack, for log collecting and shipping
+      maturity: beta
+    depends_on:
+      rancher-logging-crd: true
+    helm_repo_url: https://charts.rancher.io/
+    helmrelease_spec:
+      releaseName: rancher-logging
+      targetNamespace: cattle-logging-system
+      chart:
+        spec:
+          chart: rancher-logging
+          version: 102.0.1+up3.17.10
+      install:
+        createNamespace: false
+      values:
+        additionalLoggingSources:
+          rke2:
+            enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | include "as-bool" }}'
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
+          seccompProfile:
+            type: RuntimeDefault
+
+  rancher-logging-config:
+    info:
+      description: Configures rancher-logging to ship logs to Loki
+      internal: true
+    enabled_conditions:
+    - '{{ tuple . "rancher-logging" | include "unit-enabled" }}'
+    depends_on:
+      rancher-logging: true
+      #loki: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/rancher-logging
+      postBuild:
+        substitute:
+          # we must use external name in order to work also for workload clusters
+          LOKI_URL: "https://{{ .Values.external_hostnames.loki }}:443"
+          JOB_NAME: "{{ .Values.cluster.name }}-job"
+      wait: true
+
   thanos-init:
     info:
       description: sets up thanos certificate
@@ -3425,6 +4055,9 @@ units:
         substitute:
           SERVICE: thanos
           SERVICE_DNS: '{{ .Values.external_hostnames.thanos }}'
+          SERVICE_DNS1: '{{ .Values.external_hostnames.thanos_receive }}'
+          SERVICE_DNS2: '{{ .Values.external_hostnames.thanos_storegateway }}'
+          SERVICE_DNS3: '{{ .Values.external_hostnames.thanos_query }}'
           CERTIFICATE_NAMESPACE: thanos
           CERT: '{{ .Values.external_certificates.thanos.cert | default "" | b64enc }}'
           CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
@@ -3441,7 +4074,7 @@ units:
     depends_on:
       namespace-defs: true
       thanos-init: true
-      # minio-tenant-monitoring: true
+      minio-monitoring-tenant: true
     annotations:
       sylvactl/readyMessage: "Thanos UI can be reached at https://{{ .Values.external_hostnames.thanos }} ({{ .Values.external_hostnames.thanos }} must resolve to {{ .Values.display_external_ip }})"
     helm_repo_url: https://charts.bitnami.com/bitnami
@@ -3465,7 +4098,7 @@ units:
             bucket: "thanos"
             endpoint: minio.minio-monitoring-tenant.svc.cluster.local:443
             access_key: "minio"
-            secret_key: '{{ .Values._internal.minio_monitoring_tenant_console_password }}'
+            secret_key: '{{ .Values._internal.minio_monitoring_tenant_bucket_password }}'
             insecure: false
             http_config:
               tls_config:
@@ -3538,7 +4171,7 @@ units:
           persistence:
             enabled: false
             storageClass: '{{ .Values._internal.default_storage_class }}'
-            size: 8Gi
+            size: 1Gi
           containerSecurityContext:
             capabilities:
               drop:
@@ -3650,6 +4283,29 @@ units:
                   - '{{ .Values.external_hostnames.thanos_receive }}'
                 secretName: thanos-tls
 
+  sylva-prometheus-rules:
+    info:
+      description: install prometheus rules from remote git repo
+      maturity: beta
+    depends_on:
+      monitoring: true
+    enabled_conditions:
+      - '{{ tuple . "monitoring" | include "unit-enabled" }}'
+    annotations:
+      sylvactl/readyMessage: "prometheus rules deployed"
+    repo: sylva-prometheus-rules
+    helmrelease_spec:
+      releaseName: sylva-prometheus-rules
+      targetNamespace: sylva-prometheus-rules
+      chart:
+        spec:
+          chart: prometheus-rules
+      install:
+        createNamespace: true
+      values:
+        createRules:
+          allclusters: true
+          '{{ .Values.cluster.name }}': true
 
 # Not yet ready, need to get os_images into the script
   get-openstack-images:
@@ -3889,6 +4545,10 @@ external_hostnames:
   minio_monitoring_tenant: 'minio-monitoring-tenant.{{ .Values.cluster_external_domain }}'
   minio_monitoring_tenant_console: 'minio-monitoring-tenant-console.{{ .Values.cluster_external_domain }}'
   loki: 'loki.{{ .Values.cluster_external_domain }}'
+  thanos: 'thanos.{{ .Values.cluster_external_domain }}'
+  thanos_storegateway: 'thanos-storegateway.{{ .Values.cluster_external_domain }}'
+  thanos_receive: 'thanos-receive.{{ .Values.cluster_external_domain }}'
+  thanos_query: 'thanos-query.{{ .Values.cluster_external_domain }}'
 
 external_certificates:
   rancher: {}
@@ -3901,7 +4561,8 @@ external_certificates:
   gitea: {}
   minio_operator: {}
   minio_monitoring_tenant: {}
-  loki: {}
+  loki_scalable: {}
+  thanos: {}
 
 keycloak: {}
 
@@ -4064,6 +4725,9 @@ _internal:
 
   # minio bucket write password
   minio_monitoring_tenant_bucket_password: '{{ derivePassword 1 "maximum" .Values._internal.default_password "minio-monitoring-tenant" "bucket" }}'
+
+  # minio console password
+  minio_monitoring_tenant_console_password: '{{ derivePassword 1 "maximum" .Values._internal.default_password "minio-monitoring-tenant" "console" }}'
 
   # unless the default password has already been generated by a previous run, we generate a new one randomly
   default_password: '{{ lookup "v1" "Secret" "sylva-system" "sylva-units-values" | dig "data" "values" "" | b64dec | fromYaml | dig "_internal" "default_password" (randAlphaNum 64) }}'
