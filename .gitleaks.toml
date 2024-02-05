@@ -16,7 +16,6 @@ useDefault = true
 
 paths = [
     '''environment-values/base/secrets.yaml''',
-    '''sops-howto.md'''
 ]
 
 # Skip known harmless commits
@@ -35,4 +34,5 @@ regexes = [
             '''"SylvaCIpass"''',
             '''"minio1234"''',
             '''"harbor-init"''',
+            '''MIIJQQIBADANBgkqhkiG9w0BAQEFAASCCSswggknAgEAAoICAQCw6jGQ0rmsmd2s''',
           ]

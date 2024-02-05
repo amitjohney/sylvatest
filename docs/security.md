@@ -2,6 +2,8 @@
 
 ## X509 Certificate Management
 
+### Internal PKI
+
 Sylva management cluster is shipped with its own Root authority, implemented by a cert-manager `ClusterIssuer` (see below), for which the certificate can be retrieved as follows:
 
 ```shell
@@ -46,7 +48,80 @@ spec:
   - 127.0.0.1
 ```
 
-> **_Note_**: Enaling the PKI engine in Vault might allow the workload clusters requesting certifificate to be trusted by this root authority, typically by relying on a cert-manager Vault issuer. This feature is not yet supported but be likely included in one of the next releases.
+> **_Note_**: Enabling the PKI engine in Vault might allow the workload clusters requesting certifificate to be trusted by this root authority, typically by relying on a cert-manager Vault issuer. This feature is not yet supported but be likely included in one of the next releases.
+
+### External PKI
+
+Rather than using the internal PKI to sign the certificates of the exposed services, it is possible to import certificates signed by a trusted PKI. It improves the level of confidence in the received server certificates and avoids importing CA certificates in the browser (assuming that the CA certificate of the trusted CA is already part of the system bundle).
+
+The steps to follow are:  
+
+1. Create pairs of private key and certificate for every exposed service
+
+   The way to obtain certificates depends on the authority delivering them, on the organisation of the project, ...  
+   The script `./tools/generate_csr.sh` automates the generation of a key and of a CSR for each exposed service and can serve as an example. It expects one argument which is the domain of the platform being deployed. Environment values can be used to configure the subject of the certificates. Run `./tools/generate_csr.sh --help` for additional details. The CSRs can then be sent to the PKI which provides a certificate in return.
+
+2. Add to `secrets.yaml` the dictionary `external_certificates`, with a `cacert` attribute to store external CA certificates (there can be several of them), and for each exposed service a `cert` and `key` attribute that can be set with the corresponding values.
+
+   ```
+   external_certificates:
+     cacert: |
+       -----BEGIN CERTIFICATE-----
+       MIIGPTCCBCWgAwIBAgIBAjANBgkqhkiG9w0BAQsFADBdMQswCQYDVQQGEwJGUjEP
+       MA0GA1UECgwGT3JhbmdlMRgwFgYDVQQLDA9GUiA4OSAzODAxMjk4NjYxIzAhBgNV
+       BAMMGk9yYW5nZSBJbnRlcm5hbCBHMiBSb290IENBMB4XDTE2MDUwMzEzMjA0NFoX
+       DTM2MDUwMzEzMjA0NFowXzELMAkGA1UEBhMCRlIxDzANBgNVBAoMBk9yYW5nZTEY
+       MBYGA1UECwwPRlIgODkgMzgwMTI5ODY2MSUwIwYDVQQDDBxPcmFuZ2UgSW50ZXJu
+   ...
+       rnrCMsDkBfI/ZN+ITBcWi6cAyOcsIOk4up9aUvNJTMKUlEybDNN8cDp9+vLonN2h
+       YMg1IfJ+IZs6x3rDr5MXuWTks34hEJidpmOTmOyy/QPHCK0BGRmUoYJr4CHS4FL2
+       BtsnCPyUUO4gppjywfYrotQ2gTQ=
+       -----END CERTIFICATE-----
+     rancher:
+       cert: |
+         -----BEGIN CERTIFICATE-----
+         MIIHGjCCBQKgAwIBAgIUQZbwTFCAIrOTzYhoONlRWCnUlcMwDQYJKoZIhvcNAQEL
+         BQAwXzELMAkGA1UEBhMCRlIxDzANBgNVBAoMBk9yYW5nZTEYMBYGA1UECwwPRlIg
+         ODkgMzgwMTI5ODY2MSUwIwYDVQQDDBxPcmFuZ2UgSW50ZXJuYWwgRzIgU2VydmVy
+         IENBMB4XDTI0MDExNzA5MDgxN1oXDTI2MDExNzA5MDgxN1owgY0xNTAzBgNVBAMM
+   ...
+         TDOSuKCXFr9WUStNQNcqvezcyyuAMC58SqxP8uW/BtlkY9h4/9KXc45a8A1NtEYE
+         BnrES9kJPCiCST87a8txsf0Gs9EweVY5ksoU+Dc3vDT2sYe5WqkgnwZg+lXRcBsB
+         JBHNq501JPZOh+/bguj7VXLc396s+nGqRXw5rkduGchq+Vadrqp0H/uaa/v3jA==
+         -----END CERTIFICATE-----
+       key: |
+         -----BEGIN PRIVATE KEY-----
+         MIIJQQIBADANBgkqhkiG9w0BAQEFAASCCSswggknAgEAAoICAQCw6jGQ0rmsmd2s
+         9inIMOVzbMrcNrWZeZNf6h4b83URqi9u16AzZuDHYjBLfOEzbpj/mHbSUrgVbO70
+         JHxajLuF0RLEIolciGPIkPDdOqDAENy9fzXRqEQNwhXE/D9jFG5Ty2TU8Geiua+D
+   ...
+         mwoC8Kr8cHvKTd1F0cS63OUjkuLnZLlrUsudaXr9AidPDMpLjyyT9adUxICChTN8
+         a3acBFjeI4kUczcbaM7vhcbveaE+4M2yjHRNMdgcCkVKL0BoBWitUAMeWXfP1lbh
+         NZ4r8lYxJ5+srb0cUG3rERxqF+Bo
+         -----END PRIVATE KEY-----
+     keycloak:
+       cert: |
+         -----BEGIN CERTIFICATE-----
+         MIIHHTCCBQWgAwIBAgIUZug0UtvZduX80eGW86GdlCYLfkowDQYJKoZIhvcNAQEL
+         BQAwXzELMAkGA1UEBhMCRlIxDzANBgNVBAoMBk9yYW5nZTEYMBYGA1UECwwPRlIg
+         ODkgMzgwMTI5ODY2MSUwIwYDVQQDDBxPcmFuZ2UgSW50ZXJuYWwgRzIgU2VydmVy
+   ...
+     flux:
+   ...
+     vault:
+   ...
+     neuvector:
+     harbor:
+   ...
+     gitea:
+   ...
+   ```
+
+3. Deploy or update the management cluster
+
+Note 1: The services not defined in the `external_certificate` dictionary will be delivered a certificate signed by the internal PKI described in the previous section. So although it is not mandatory to provide an external certificate for all the exposed services (currently `rancher`, `keycloak`, `flux`, `vault`, `neuvector`, `harbor` and `gitea` at the time of this writing), it is advised to provide a certificate signed by the external PKI for all the services as soon as we do it for one.
+
+Note 2: X509 certificate automation can leverage an external authority by updating the issuerRef in the manifest of the TLS certificates, for example by referring a vault-issuer or an acme-issuer, as stated [here](https://gitlab.com/sylva-projects/sylva-core/-/blame/main/kustomize-units/tls-components/tls-certificate/certificate.yaml?ref_type=heads#L13). However, this modifification is not supported in `sylva-core` Helm chart release 1.0 and must be done manually so far.
 
 ## Password Management
 
