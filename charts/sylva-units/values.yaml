@@ -3488,7 +3488,6 @@ cluster:
   control_plane:
     capo:
       security_group_names:
-      - default
       - capo-{{ .Values.cluster.name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}
       - capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}
 
@@ -3501,7 +3500,6 @@ cluster:
           maxSurge: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" | ternary 0 1 | include "preserve-type" }}'
     capo:
       security_group_names:
-      - default
       - capo-{{ .Values.cluster.name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}
       - capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}
 
