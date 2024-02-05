@@ -350,7 +350,7 @@ units:
         trivy:
           httpProxy: '{{ .Values.proxies.https_proxy }}'
           httpsProxy: '{{ .Values.proxies.https_proxy }}'
-          noProxy: '{{ include "sylva-units.no_proxy" . }}'
+          noProxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
           severity: UNKNOWN,HIGH,CRITICAL
         trivyOperator:
           scanJobPodTemplatePodSecurityContext:
@@ -566,7 +566,7 @@ units:
         proxy:
           httpProxy: '{{ get .Values.proxies "http_proxy" }}'
           httpsProxy: '{{ get .Values.proxies "https_proxy" }}'
-          noProxy: '{{ include "sylva-units.no_proxy" . }}'
+          noProxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:
@@ -950,7 +950,7 @@ units:
                 - name: https_proxy
                   value: '{{ .Values.proxies.https_proxy }}'
                 - name: no_proxy
-                  value: '{{ include "sylva-units.no_proxy" . }}'
+                  value: '{{ include "sylva-units.no_proxy" (tuple .) }}'
         containerd:
           enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "as-bool" }}'
           path: /var/run/containerd/containerd.sock
@@ -1531,7 +1531,7 @@ units:
         global:
           storageClass: '{{ .Values._internal.default_storage_class }}'
         # ironicIPADownloaderBaseURI:
-        noProxy: '{{ include "sylva-units.no_proxy" . }}'
+        noProxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
         images:
           baremetalOperator:
             repository: quay.io/metal3-io/baremetal-operator
@@ -2076,7 +2076,7 @@ units:
         features: embedded-cluster-api=false,provisioningv2=true
         debug: true
         proxy: '{{ get .Values.proxies "https_proxy" }}'
-        noProxy: '{{ include "sylva-units.no_proxy" . }}'
+        noProxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
         postDelete:
           namespaceList:
             - cattle-fleet-system
@@ -2877,7 +2877,7 @@ units:
               path: /spec/template/spec/containers/0/env/-
               value:
                 name: no_proxy
-                value: '{{ include "sylva-units.no_proxy" . }}'
+                value: '{{ include "sylva-units.no_proxy" (tuple .) }}'
             - op: add
               path: /spec/template/spec/containers/0/env/-
               value:
@@ -2945,7 +2945,7 @@ units:
       values:
         downloader:
           proxy: '{{ get .Values.proxies "https_proxy" }}'
-          no_proxy: '{{ include "sylva-units.no_proxy" . }}'
+          no_proxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
           extra_ca_certs: '{{ .Values.oci_registry_extra_ca_certs | include "set-if-defined" }}'
           securityContext:
             capabilities:
@@ -3531,7 +3531,7 @@ cluster:
   proxies:
     http_proxy: '{{ .Values.proxies.http_proxy }}'
     https_proxy: '{{ .Values.proxies.https_proxy }}'
-    no_proxy: '{{ include "sylva-units.no_proxy" . }}'
+    no_proxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
 
   registry_mirrors: '{{ .Values.registry_mirrors | include "preserve-type" }}'
 
