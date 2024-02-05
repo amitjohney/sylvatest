@@ -97,7 +97,7 @@ units:
       # contrarily to what we have in default values, we don't
       # depend on CAPI-related units deployed by _this_ sylva-units Helm release
       # (because this release only deploys manifests for a given workload cluster)
-      capi: false
+      capi: true
       '{{ .Values.cluster.capi_providers.infra_provider }}': false
       '{{ .Values.cluster.capi_providers.bootstrap_provider }}': false
       '{{ .Values._internal.metal3_unit }}': false
