@@ -1314,7 +1314,7 @@ units:
     kustomization_spec:
       path: ./kustomize-units/capa
       wait: true
-    postBuild:
+      postBuild:
         substitute:
           httpProxy: '{{ .Values.proxies.https_proxy }}'
           httpsProxy: '{{ .Values.proxies.https_proxy }}'
