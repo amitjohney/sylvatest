@@ -127,6 +127,20 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: 0.0.1
 
+  minio-operator:
+    kind: GitRepository
+    spec:
+      url: https://github.com/minio/operator.git
+      ref:
+        tag: v5.0.11
+
+  loki-scalable:
+    kind: GitRepository
+    spec:
+      url: https://github.com/grafana/loki.git
+      ref:
+        tag: v2.9.3
+
 helm_repo_spec_default:
   interval: 60m0s
 
@@ -394,6 +408,9 @@ units:
         - '{{ tuple "components/sriov" (tuple . "sriov" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/cattle-monitoring" (tuple . "monitoring" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/gitea" (tuple . "gitea" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/minio-operator" (tuple . "minio-operator" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/minio-monitoring-tenant" (tuple . "minio-monitoring-tenant" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/loki-scalable" (tuple . "loki-scalable" | include "unit-enabled") | include "set-only-if" }}'
 
 # Postgresql deployment for keycloak
   postgres-init:
@@ -3389,6 +3406,250 @@ units:
             readOnly: true
             subPath: ca.crt
 
+  thanos-init:
+    info:
+      description: sets up thanos certificate
+      details: it generate certificate
+      internal: true
+    enabled_conditions:
+      - '{{ tuple . "thanos" | include "unit-enabled" }}'
+    depends_on:
+      sylva-ca: true
+    repo: sylva-core
+    kustomization_substitute_secrets:
+      KEY: '{{ .Values.external_certificates.thanos.key | default "" | b64enc }}'
+    kustomization_spec:
+      path: ./kustomize-units/thanos-init
+      wait: true
+      postBuild:
+        substitute:
+          SERVICE: thanos
+          SERVICE_DNS: '{{ .Values.external_hostnames.thanos }}'
+          CERTIFICATE_NAMESPACE: thanos
+          CERT: '{{ .Values.external_certificates.thanos.cert | default "" | b64enc }}'
+          CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
+      _components:
+        - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.thanos "cert") }}'
+        - "../tls-components/sylva-ca"
+
+  thanos:
+    info:
+      description: installs Thanos
+      maturity: beta
+    enabled_conditions:
+      - '{{ tuple . "monitoring" | include "unit-enabled" }}'
+    depends_on:
+      namespace-defs: true
+      thanos-init: true
+      # minio-tenant-monitoring: true
+    annotations:
+      sylvactl/readyMessage: "Thanos UI can be reached at https://{{ .Values.external_hostnames.thanos }} ({{ .Values.external_hostnames.thanos }} must resolve to {{ .Values.display_external_ip }})"
+    helm_repo_url: https://charts.bitnami.com/bitnami
+    helmrelease_spec:
+      targetNamespace: thanos
+      install:
+        createNamespace: false
+      chart:
+        spec:
+          chart: thanos
+          version: 12.16.1
+      values:
+        fullnameOverride: "thanos"
+        metrics:
+          enabled: true
+          serviceMonitor:
+            enabled: true
+        objstoreConfig: |-
+          type: "S3"
+          config:
+            bucket: "thanos"
+            endpoint: minio.minio-monitoring-tenant.svc.cluster.local:443
+            access_key: "minio"
+            secret_key: '{{ .Values._internal.minio_monitoring_tenant_console_password }}'
+            insecure: false
+            http_config:
+              tls_config:
+              insecure_skip_verify: true
+        query:
+          enabled: true
+          logLevel: debug
+          dnsDiscovery:
+            enabled: true
+          extraFlags:
+            - --query.auto-downsampling
+            - --query.replica-label=prometheus_replica
+            - --query.replica-label=prometheus
+          ingress:
+            enabled: true
+            ingressClassName: "nginx"
+            hostname: '{{ .Values.external_hostnames.thanos_query }}'
+            extraTls:
+              - hosts:
+                  - 'thanos-query.{{ .Values.external_hostnames.thanos_query }}'
+                secretName: thanos-tls
+          containerSecurityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+        queryFrontend:
+          enabled: true
+          loglevel: debug
+          config: |-
+            type: IN-MEMORY
+            config:
+              max_size: 1GB
+              max_size_items: 0
+              validity: 0s
+          ingress:
+            enabled: true
+            ingressClassName: "nginx"
+            hostname: '{{ .Values.external_hostnames.thanos }}'
+            extraTls:
+              - hosts:
+                  - '{{ .Values.external_hostnames.thanos }}'
+                secretName: thanos-tls
+          containerSecurityContext:
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+        storegateway:
+          enabled: true
+          logLevel: debug
+          persistence:
+            enabled: false
+            storageClass: '{{ .Values._internal.default_storage_class }}'
+            size: 8Gi
+          containerSecurityContext:
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          podSecurityContext:
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          ingress:
+            enabled: true
+            hostname: '{{ .Values.external_hostnames.thanos_storegateway }}'
+            ingressClassName: "nginx"
+            extraTls:
+              - hosts:
+                  - '{{ .Values.external_hostnames.thanos_storegateway }}'
+                secretName: thanos-tls
+        compactor:
+          enabled: true
+          logLevel: debug
+          retentionResolutionRaw: 2d
+          retentionResolution5m: 30d
+          retentionResolution1h: 1y
+          containerSecurityContext:
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          podSecurityContext:
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+        bucketweb:
+          enabled: false
+        ruler:
+          enabled: false
+          logLevel: debug
+          dnsDiscovery:
+            enabled: true
+          containerSecurityContext:
+            runAsUser: 1001
+            runAsNonRoot: true
+            privileged: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          podSecurityContext:
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+        receive:
+          enabled: true
+          mode: standalone
+          logLevel: debug
+          persistence:
+            enabled: false
+          containerSecurityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          ingress:
+            enabled: true
+            ingressClassName: "nginx"
+            hostname: '{{ .Values.external_hostnames.thanos_receive }}'
+            extraTls:
+              - hosts:
+                  - '{{ .Values.external_hostnames.thanos_receive }}'
+                secretName: thanos-tls
+
 
 # Not yet ready, need to get os_images into the script
   get-openstack-images:
@@ -3503,6 +3764,7 @@ cluster:
   control_plane:
     capo:
       security_group_names:
+      - default
       - capo-{{ .Values.cluster.name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}
       - capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}
 
@@ -3515,6 +3777,7 @@ cluster:
           maxSurge: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" | ternary 0 1 | include "preserve-type" }}'
     capo:
       security_group_names:
+      - default
       - capo-{{ .Values.cluster.name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}
       - capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}
 
@@ -3622,6 +3885,10 @@ external_hostnames:
   harbor: 'harbor.{{ .Values.cluster_external_domain }}'
   os_image_server: ''
   gitea: 'gitea.{{ .Values.cluster_external_domain }}'
+  minio_operator_console: 'minio-operator-console.{{ .Values.cluster_external_domain }}'
+  minio_monitoring_tenant: 'minio-monitoring-tenant.{{ .Values.cluster_external_domain }}'
+  minio_monitoring_tenant_console: 'minio-monitoring-tenant-console.{{ .Values.cluster_external_domain }}'
+  loki: 'loki.{{ .Values.cluster_external_domain }}'
 
 external_certificates:
   rancher: {}
@@ -3632,6 +3899,9 @@ external_certificates:
   harbor: {}
   os_image_server: {}
   gitea: {}
+  minio_operator: {}
+  minio_monitoring_tenant: {}
+  loki: {}
 
 keycloak: {}
 
@@ -3791,6 +4061,9 @@ _internal:
 
   # default replica number computed from the ha_cluster.mode value
   default_replicas: '{{ tuple . .Values._internal.ha_cluster.mode | include "interpret-as-string" | eq "ha" | ternary 3 1 | include "preserve-type" }}'
+
+  # minio bucket write password
+  minio_monitoring_tenant_bucket_password: '{{ derivePassword 1 "maximum" .Values._internal.default_password "minio-monitoring-tenant" "bucket" }}'
 
   # unless the default password has already been generated by a previous run, we generate a new one randomly
   default_password: '{{ lookup "v1" "Secret" "sylva-system" "sylva-units-values" | dig "data" "values" "" | b64dec | fromYaml | dig "_internal" "default_password" (randAlphaNum 64) }}'
