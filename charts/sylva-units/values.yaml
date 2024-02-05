@@ -1314,6 +1314,11 @@ units:
     kustomization_spec:
       path: ./kustomize-units/capa
       wait: true
+    postBuild:
+        substitute:
+          httpProxy: '{{ .Values.proxies.https_proxy }}'
+          httpsProxy: '{{ .Values.proxies.https_proxy }}'
+          noProxy: '{{ include "sylva-units.no_proxy" . }}'
 
   cloud-formation-operator:
     info:
