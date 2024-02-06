@@ -31,9 +31,9 @@ cluster:
             passwd: $1$pdWEicWs$9ZWQf5.CWyXccmP8Chuu01 # sylva
 
   capm3:
-    machine_image_url: http://os-image-server-ubuntu-jammy-plain-rke2-1-26-9.os-images.svc.cluster.local:8080/ubuntu-jammy-plain-rke2-1.26.9.raw
+    machine_image_url: http://os-image-server-ubuntu-jammy-plain-rke2-1-27-6.os-images.svc.cluster.local:8080/ubuntu-jammy-plain-rke2-1-27-6.raw
     machine_image_format: raw
-    machine_image_checksum: http://os-image-server-ubuntu-jammy-plain-rke2-1-26-9.os-images.svc.cluster.local:8080/ubuntu-jammy-plain-rke2-1.26.9.raw.sha256sum
+    machine_image_checksum: http://os-image-server-ubuntu-jammy-plain-rke2-1-27-6.os-images.svc.cluster.local:8080/ubuntu-jammy-plain-rke2-1-27-6.raw.sha256sum
     public_pool_network: 192.168.100.0
     public_pool_gateway: 192.168.100.1
     public_pool_start: 192.168.100.20

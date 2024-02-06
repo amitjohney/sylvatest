@@ -19,18 +19,8 @@ units:
   harbor:
     enabled: false
 
-  # workaround until we move to > 1.26.6
-  calico:
-    helmrelease_spec:
-      values:
-        felixConfiguration:
-          failsafeInboundHostPorts: "[ {'protocol': 'TCP', 'port': 22}, {'protocol': 'UDP', 'port': 68}, {'protocol': 'TCP', 'port': 179}, {'protocol': 'TCP', 'port': 2379}, {'protocol': 'TCP', 'port': 2380}, {'protocol': 'TCP', 'port': 5473}, {'protocol': 'TCP', 'port': 6443}, {'protocol': 'TCP', 'port': 6666}, {'protocol': 'TCP', 'port': 6667} ]"
-          failsafeOutboundHostPorts: "[ {'protocol': 'UDP', 'port': 53}, {'protocol': 'UDP', 'port': 67}, {'protocol': 'TCP', 'port': 179}, {'protocol': 'TCP', 'port': 2379}, {'protocol': 'TCP', 'port': 2380}, {'protocol': 'TCP', 'port': 5473}, {'protocol': 'TCP', 'port': 6443}, {'protocol': 'TCP', 'port': 6666}, {'protocol': 'TCP', 'port': 6667} ]"
-          iptablesBackend: "Auto"
-          iptablesRefreshInterval: "10s"
-
 cluster:
-  k8s_version: v1.26.6
+  k8s_version: v1.27.3
   capi_providers:
     infra_provider: capd
     bootstrap_provider: cabpk

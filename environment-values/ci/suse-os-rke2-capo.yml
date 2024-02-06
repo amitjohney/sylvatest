@@ -1,8 +1,8 @@
 ---
 cluster:
   capo:
-    image_key: opensuse-15-5-plain-rke2-1-26-9
+    image_key: opensuse-15-5-plain-rke2-1-27-6
 
 sylva_diskimagebuilder_images:
-  opensuse-15.5-plain-rke2-1.26.9:
+  opensuse-15-5-plain-rke2-1-27-6:
     enabled: true

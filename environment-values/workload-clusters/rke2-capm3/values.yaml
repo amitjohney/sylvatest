@@ -20,12 +20,12 @@ cluster:
               - ssh-rsa AAAA...... YOUR KEY HERE ....UqnQ==
 
   capm3:
-    machine_image_url: http://{{ .Values.cluster.mgmt_cluster_external_ip }}/ubuntu-jammy-plain-rke2-1.26.9.raw    # URL of an image on the management cluster
+    machine_image_url: http://{{ .Values.cluster.mgmt_cluster_external_ip }}/ubuntu-jammy-plain-rke2-1-27-6.raw    # URL of an image on the management cluster
                                                                                                                    # The images served by the management cluster are defined
                                                                                                                    # in the sylva_diskimagebuilder_images value
                                                                                                                    # This URL could also point to another web server serving other images
     machine_image_format: raw
-    machine_image_checksum: http://{{ .Values.cluster.mgmt_cluster_external_ip }}/ubuntu-jammy-plain-rke2-1.26.9.raw.sha256sum
+    machine_image_checksum: http://{{ .Values.cluster.mgmt_cluster_external_ip }}/ubuntu-jammy-plain-rke2-1-27-6.raw.sha256sum
     public_pool_network: 10.188.36.128
     public_pool_gateway: 10.188.36.129
     public_pool_start: 10.188.36.148

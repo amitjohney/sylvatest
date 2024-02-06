@@ -25,7 +25,7 @@ echo "Looping over OS images..."
 yq '.osImages | keys | .[]' /opt/images.yaml | while read os_image_key; do
   echo "-- processing image $os_image_key"
   export os_image_key
-  echo "      $os_image_key:" | sed 's/[._]/-/g' >> $configmap_file
+  echo "      $os_image_key:" >> $configmap_file
   # Check if the artifact is a Sylva diskimage-builder artifact
   uri=$(yq '.osImages.[env(os_image_key)].uri' /opt/images.yaml)
   if [[ "$uri" == *"sylva-elements/diskimage-builder"* ]]; then
