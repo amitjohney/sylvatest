@@ -2022,6 +2022,7 @@ units:
       maturity: beta
       internal: true
     depends_on:
+      namespace-defs: true
       sylva-ca: true
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
     repo: sylva-core
