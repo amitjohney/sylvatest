@@ -27,3 +27,11 @@ pre-requisites:
 * helm
 * yamllint
 * yq
+
+## Pre commit hook
+
+To ensure that all needed scripts are run before committing, a pre-commit script is available. Just run it once to make it installed in your dev environment:
+
+```shell
+./tools/dev/pre-commit-hook.sh
+```
