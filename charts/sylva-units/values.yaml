@@ -462,6 +462,15 @@ units:
       targetNamespace: kubevirt
       install:
         createNamespace: true
+      values:
+        kubevirt:
+          configuration:
+            developerConfiguration:
+              featureGates:
+                - NUMA
+                - CPUManager
+                - Snapshot
+
 
   kubevirt-test-vms:
     info:
