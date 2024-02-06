@@ -50,6 +50,14 @@ variables:
     description: |
       Path to a file for customizing the values used
       during the management cluster update stage
+  MGMT_INITIAL_REVISION:
+    value: ""
+    description: |
+      Git revision used for the management cluster deployment
+  MGMT_UPDATE_REVISION:
+    value: ""
+    description: |
+      Git revision used for the management cluster update"
   # Workload cluster relative variables
   APPLY_WC_WATCH_TIMEOUT_MIN:
     value: "30"
@@ -65,6 +73,14 @@ variables:
     description: |
       Path to a file for customizing the values used
       during the workload cluster update stage
+  WC_INITIAL_REVISION:
+    value: ""
+    description: |
+      Git revision used for the workload cluster deployment
+  WC_UPDATE_REVISION:
+    value: ""
+    description: |
+      Git revision used for the workload cluster update"
   DEPLOYMENT_FLAVOR:
     value: ""
     description: |
