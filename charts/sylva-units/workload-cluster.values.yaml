@@ -64,6 +64,8 @@ unit_templates:
 units:
   cabpe:  # EKS
     enabled: true
+  capa:
+    enabled: true
   capo-cluster-resources:
     enabled: on
     depends_on:
