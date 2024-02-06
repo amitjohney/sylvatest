@@ -16,6 +16,7 @@ useDefault = true
 
 paths = [
     '''environment-values/base/secrets.yaml''',
+    '''sops-howto.md'''
 ]
 
 # Skip known harmless commits
