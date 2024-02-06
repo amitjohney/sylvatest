@@ -3421,7 +3421,7 @@ units:
             }}'
           httpProxy: '{{ .Values.proxies.https_proxy }}'
           httpsProxy: '{{ .Values.proxies.https_proxy }}'
-          noProxy: '{{ include "sylva-units.no_proxy" . }}'
+          noProxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
           TMP_STORAGE_SPACE: '{{ .Values.os_images_default_download_storage_space }}'
       _patches:
         - target:
