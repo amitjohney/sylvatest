@@ -10,8 +10,8 @@ include:
   setup_ci_values:
     - |
       function update_values_file() {
-        echo -e "Applying values from \\e[1;94m$1\\e[0m to \\e[1;92m$values_file\\e[0m"
-        yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file $1
+        echo -e "Applying values from \\e[1;94m$@\\e[0m to \\e[1;92m$values_file\\e[0m"
+        yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file $@
         echo "Content of $values_file:"
         cat $values_file
       }

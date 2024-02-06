@@ -3,7 +3,7 @@ This directory contains GitLab-ci templates, scripts used to generate jobs and l
 `scripts`: scripts used in CI
 `configuration`: configuration files used in CI
 
-Some `*_ADDITIONAL_VALUES` variables are available for specifying a file which defines some additional [**sylva-units**](../../charts/sylva-units) values that are merged on top of what we have in the environment-values directory used for a CI job (be it all in a local `values.yaml` or partly coming from a kustomization remote resource).
+Some `*_ADDITIONAL_VALUES` variables are available for specifying a file or a list of files (separate by space char) which defines some additional [**sylva-units**](../../charts/sylva-units) values that are merged on top of what we have in the environment-values directory used for a CI job (be it all in a local `values.yaml` or partly coming from a kustomization remote resource). In case of a list of file they are merged in order.
 
 For context, since the job filesystem is cleaned between jobs (that's a GitLab CI principle), the contents of `$values_file` is not passed from one job to the next job in the same pipeline (for example the `update-workload-cluster` won't have the additional values passed by *yq merge* to `deploy-workload-cluster`).
 
