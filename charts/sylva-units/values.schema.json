@@ -6984,7 +6984,7 @@
           "type": "string",
           "pattern": "^(acme|vault)$"
         },
-        "shared_secret": {
+        "vault_token": {
           "type": "string"
         },
         "server": {

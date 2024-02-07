@@ -4,5 +4,4 @@ kind: Component
 namespace: cert-manager
 
 resources:
-  - sylva-ca.yaml
   - ca-issuer.yaml

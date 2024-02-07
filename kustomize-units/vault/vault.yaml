@@ -275,7 +275,7 @@ spec:
   # Marks presence of Istio, which influences things like port namings
   istioEnabled: false
 
-  existingTlsSecretName: vault-tls
+  existingTlsSecretName: vault-internal-tls
 
 # Distribute the CA in namespaces - This directive shall copy the CA in a secret named vault-tls, which is confusing.
 # Sylva relies on external secret operator to distribute a secret named sylva-ca.crt

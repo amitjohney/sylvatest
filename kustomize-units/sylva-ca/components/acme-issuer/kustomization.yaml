@@ -4,5 +4,4 @@ kind: Component
 namespace: cert-manager
 
 resources:
-  - acme-secret.yaml
   - acme-issuer.yaml

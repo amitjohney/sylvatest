@@ -4,5 +4,4 @@ kind: Component
 namespace: cert-manager
 
 resources:
-  - external-vault-token.yaml
   - vault-issuer.yaml

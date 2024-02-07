@@ -4,7 +4,9 @@
 
 ### Internal PKI
 
-Sylva management cluster is shipped with its own Root authority, implemented by a cert-manager `ClusterIssuer` (see below), for which the certificate can be retrieved as follows:
+Sylva management cluster can be shipped with its own Root authority to serve the internal services. This internal PKI can be used to manage certificates of the exposed services for testing purpose.
+
+The internal PKI is implemented by a cert-manager `ClusterIssuer` (see below), for which the certificate can be retrieved as follows:
 
 ```shell
  kubectl -n cert-manager get secret ca-key-pair -o jsonpath='{.data.ca\.crt}' | base64 -d
@@ -49,18 +51,22 @@ spec:
 
 ### External PKI
 
-Rather than using the internal PKI to sign the certificates of the exposed services, it is possible to import certificates signed by a trusted PKI. It improves the level of confidence in the received server certificates and avoids importing CA certificates in the browser (assuming that the CA certificate of the trusted CA is already part of the system bundle).
+The internal PKI is meant to serve internal services but, for testing purpose, this PKI can also issue certificates for external services. However, on production, the certificates of the exposed services, should be signed by an external and trusted PKI, e.g. the PKI of your company. It improves the level of confidence in the received server certificates and avoids importing CA certificates in the browser (assuming that the CA certificate of the trusted CA is already part of the system bundle).
 
-The steps to follow are:  
+Benefit from the external PKI trustiness can be achieved by injecting certificates signed by the later, or by leveraging the certificate management automation APIs (Vault API or ACME) if supported.
+
+#### Manual Certificate Injection
+
+It is also possible to import certificates signed by an external trusted PKI, i.e. certificates not managed by cert-manager.
+
+The steps to follow are:
 
 1. Create pairs of private key and certificate for every exposed service
 
-   The way to obtain certificates depends on the authority delivering them, on the organisation of the project, ...  
-   The script `./tools/generate_csr.sh` automates the generation of a key and of a CSR for each exposed service and can serve as an example. It expects one argument which is the domain of the platform being deployed. Environment values can be used to configure the subject of the certificates. Run `./tools/generate_csr.sh --help` for additional details. The CSRs can then be sent to the PKI which provides a certificate in return.
-
+   The way to obtain certificates depends on the authority delivering them, on the organisation of the project, ...The script `./tools/generate_csr.sh` automates the generation of a key and of a CSR for each exposed service and can serve as an example. It expects one argument which is the domain of the platform being deployed. Environment values can be used to configure the subject of the certificates. Run `./tools/generate_csr.sh --help` for additional details. The CSRs can then be sent to the PKI which provides a certificate in return.
 2. Add to `secrets.yaml` the dictionary `external_certificates`, with a `cacert` attribute to store external CA certificates (there can be several of them), and for each exposed service a `cert` and `key` attribute that can be set with the corresponding values.
 
-   ```
+   ```yaml
    external_certificates:
      cacert: |
        -----BEGIN CERTIFICATE-----
@@ -114,11 +120,122 @@ The steps to follow are:
    ...
    ```
 
-3. Deploy or update the management cluster
+**_Note:_** The services not defined in the `external_certificate` dictionary will be delivered a certificate signed by the internal PKI described in the previous section. So although it is not mandatory to provide an external certificate for all the exposed services (currently `rancher`, `keycloak`, `flux`, `vault`, `neuvector`, `harbor` and `gitea` at the time of this writing), it is advised to provide a certificate signed by the external PKI for all the services as soon as we do it for one.
 
-Note 1: The services not defined in the `external_certificate` dictionary will be delivered a certificate signed by the internal PKI described in the previous section. So although it is not mandatory to provide an external certificate for all the exposed services (currently `rancher`, `keycloak`, `flux`, `vault`, `neuvector`, `harbor` and `gitea` at the time of this writing), it is advised to provide a certificate signed by the external PKI for all the services as soon as we do it for one.
+#### Vault Issuer
 
-Note 2: X509 certificate automation can leverage an external authority by updating the issuerRef in the manifest of the TLS certificates, for example by referring a vault-issuer or an acme-issuer, as stated [here](https://gitlab.com/sylva-projects/sylva-core/-/blame/main/kustomize-units/tls-components/tls-certificate/certificate.yaml?ref_type=heads#L13). However, this modifification is not supported in `sylva-core` Helm chart release 1.0 and must be done manually so far.
+The `sylva-core` values includes the `external_x509_issuer` object that configures the Vault PKI issuer as follows:
+
+```shell
+external_x509_issuer:
+  iss_type: vault
+  server: https://vault.example.domain:8200
+  vault_token: < vault token >
+  vault_path: sylva-subca/sign/cert-issuer
+```
+
+* `vault_token` is a Vault token with access privileges on the PKI vaukt path.
+* `server` is the URL whereby Vault is reachable.
+* `vault_path` is the Vault sign endpoint of the PKI engine concatenates with the the role allowed to sign  (i.e.  `<pki engine>`/sign/`<role>`). e.g. `sylva-subca/sign/cert-issuer`.
+
+If the Vault PKI endpoint enables TLS, the Certificate Authority must be added in the `external_certificates` object:
+
+```shell
+external_certificates:
+  cacert: |   
+    -----BEGIN CERTIFICATE-----   
+    MIIFfjCCA2agAwIBAgIUH0L/n+E6u3L72+dRcMzJs318bZAwDQYJKoZIhvcNAQEL   
+    ....
+    WKR40HtXyYTJPHy8954otMdA   
+    -----END CERTIFICATE-----
+```
+
+The status of the certificate issuer can be verified as follows. Note that the internal certificate issuer is still enabled to serve internal services, i.e. vault and keycloak:
+
+```shell
+$$ kubectl get clusterissuer -o wide
+NAME                          READY   STATUS                AGE
+certificate-issuer            True    Vault verified        2m
+internal-certificate-issuer   True    Signing CA verified   2m
+selfsigned-issuer             True                          2m
+```
+
+#### ACME Issuer
+
+Alternatively to the Vault issuer, Sylva supports also the ACME issuer.
+
+For example, if enabling [ACME on the PKI engine](https://developer.hashicorp.com/vault/tutorials/secrets-management/pki-acme-caddy) of the Vault server used in the previous section, the definition of the object `.Values.external_x509_issue` shall be:
+
+```yaml
+external_x509_issuer:
+  iss_type: acme
+  server:  http://vault.example.domain:8200/v1/sylva-subca/acme/directory
+```
+
+This second example leverages the **Let's Encrypt** staging issuer:
+
+```yaml
+external_x509_issuer:
+  iss_type: acme
+  server: https://acme-staging-v02.api.letsencrypt.org/directory
+```
+
+The status of the ACME cluster issuer can be verified like this:
+
+```shell
+$ kubectl get clusterissuer -o wide
+NAME                          READY   STATUS                                                 AGE
+certificate-issuer            True    The ACME account was registered with the ACME server   3m19s
+internal-certificate-issuer   True    Signing CA verified                                    10h
+selfsigned-issuer             True                                                           10h
+
+```
+
+##### Troubleshooting
+
+Verifying the domain ownership is the tricky part of the ACME protocol, hence you might want to check that the challenge can be solved. To do this, retrieve the solver's ingress:
+
+```shell
+$ kubectl get -A ingress -l acme.cert-manager.io/http01-solver
+NAMESPACE   NAME                        CLASS    HOSTS            ADDRESS          PORTS   AGE
+example       cm-acme-http-solver-c7kfj   <none>   sylva.example.com   xx.xx.xx.203   80      59m
+```
+
+Then, get the challenge query from the description of the solver ingress, i.e. the ingress path:
+
+```shell
+$ kubectl -n example describe ingress cm-acme-http-solver-c7kfj
+Name:             cm-acme-http-solver-c7kfj
+Labels:           acme.cert-manager.io/http-domain=717096336
+                  acme.cert-manager.io/http-token=961154409
+                  acme.cert-manager.io/http01-solver=true
+Namespace:        example
+Address:          xx.xx.xx.203
+Ingress Class:    <none>
+Default backend:  <default>
+Rules:
+  Host            Path  Backends
+  ----            ----  --------
+  sylva.example.com 
+                  /.well-known/acme-challenge/FZHwkeNRjcev0dpiX2EV007SEBCzKZJ-lR99d6R34b0   cm-acme-http-solver-b84g4:8089 (100.72.121.188:8089)
+Annotations:      field.cattle.io/publicEndpoints:
+                    [{"addresses":["xx.xx.xx.203"],"port":80,"protocol":"HTTP","serviceName":"example:cm-acme-http-solver-b84g4","ingressName":"example:cm-acme-...
+                  kubernetes.io/ingress.class: nginx
+                  nginx.ingress.kubernetes.io/whitelist-source-range: 0.0.0.0/0,::/0
+Events:
+  Type    Reason  Age                From                      Message
+  ----    ------  ----               ----                      -------
+  Normal  Sync    16m (x3 over 16m)  nginx-ingress-controller  Scheduled for sync
+  Normal  Sync    16m (x3 over 16m)  nginx-ingress-controller  Scheduled for sync
+  Normal  Sync    16m (x3 over 16m)  nginx-ingress-controller  Scheduled for sync
+```
+
+Finally, you can check that the ACME challenge can be solved by requesting the challenge URI:
+
+```shell
+curl http://sylva.example.com/.well-known/acme-challenge/FZHwkeNRjcev0dpiX2EV007SEBCzKZJ-lR99d6R34b0
+hLzB851b4fAxM.....
+```
 
 ## Password Management
 
@@ -148,7 +265,7 @@ If you don't set a password here, helm shall pick a random one. You can retrieve
 
 ## Vault
 
-The passwords for `Keycloak`, `Rancher`, `flux-webui` and `Neuvector` can be retrieved from `Vault`. You can authenticate against `Vault` through the OIDC authentication method or by using the `Vault` root token. <br/>
+The passwords for `Keycloak`, `Rancher`, `flux-webui` and `Neuvector` can be retrieved from `Vault`. You can authenticate against `Vault` through the OIDC authentication method or by using the `Vault` root token. `<br/>`
 
 > **_NOTE:_** If you don't provide `.admin_password` in the environment file `secrets.yaml`, connect to Vault by using the `Vault` root token and retrieve the randomly generated password for the SSO account in the vault path `/secret/sso-account`.
 
@@ -340,9 +457,9 @@ Summarizing, `Rancher` acts as an authentication proxy, allowing a fine-grained 
 
 High Security Grade clusters SHOULD rely on RKE2. RKE2 is hardened by default and pass the majority of the Kubernetes CIS controls without modification. RKE2 claims to focus on security and compliance within the U.S. Federal Government sector by:
 
-- Providing defaults and configuration options that allow clusters to pass the CIS Kubernetes Benchmark v1.6 with minimal operator intervention.
-- Enabling FIPS 140-2 compliance.
-- Regularly scanning components for CVEs in Rancher build pipeline.
+* Providing defaults and configuration options that allow clusters to pass the CIS Kubernetes Benchmark v1.6 with minimal operator intervention.
+* Enabling FIPS 140-2 compliance.
+* Regularly scanning components for CVEs in Rancher build pipeline.
 
 For a complete list of security controls, please refer to https://docs.rke2.io/security/cis_self_assessment16/.
 
@@ -609,20 +726,20 @@ Connection with this account should be reserved to emergency cases, when OIDC au
 
 From the Neuvector dashboard you can:
 
-- visualize the network activity
-- manage the assets
-- manage the policy
-- manage the security risks
-- manage the Notifications
-- manage Neuvector settings
+* visualize the network activity
+* manage the assets
+* manage the policy
+* manage the security risks
+* manage the Notifications
+* manage Neuvector settings
 
 ### Neuvector modes
 
 Neuvector defines 3 modes for the resources scanned.
 
-- Discover. In this mode Neuvector discovers the infrastructure, the running services and applications and automatically builds white list of network rules
-- Monitor. In this mode Neuvector monitors run-time violations of security events and raises security events
-- Protect. In this mode Neuvector blocks any network violation and attacks detected
+* Discover. In this mode Neuvector discovers the infrastructure, the running services and applications and automatically builds white list of network rules
+* Monitor. In this mode Neuvector monitors run-time violations of security events and raises security events
+* Protect. In this mode Neuvector blocks any network violation and attacks detected
 
 Neuvector default settings keep resources in discover mode. Manual action is needed to switch them to Monitor mode.
 
@@ -639,33 +756,33 @@ This view highlights unexpected network flows that correspond potentially to mal
 
 From the assets management menu you can:
 
-- visualize the platforms registered on Neuvector and launch security scans
-- visualize the namespaces and their resources (workloads, pods, services)
-- visualize the nodes and access to the result of their compliance check and their vulnerabilities
-- visualize the containers and their state
+* visualize the platforms registered on Neuvector and launch security scans
+* visualize the namespaces and their resources (workloads, pods, services)
+* visualize the nodes and access to the result of their compliance check and their vulnerabilities
+* visualize the containers and their state
 
 ### Policies management
 
 From the Policy management menu you can:
 
-- add, update or remove admission control policies
-- add, update or remove group policies
-- add, update or remove network policies
+* add, update or remove admission control policies
+* add, update or remove group policies
+* add, update or remove network policies
 
 ### security risks management
 
 From the Policy management menu you can manage:
 
-- Vulnerabilies and vulnerabilities profile
-- Compliance and compliance profile
+* Vulnerabilies and vulnerabilities profile
+* Compliance and compliance profile
 
 ### notification management
 
 From the Notification management menu you can display:
 
-- security events, which include three sub-types: violation, threats, and incidents
-- risk reports
-- events
+* security events, which include three sub-types: violation, threats, and incidents
+* risk reports
+* events
 
 Note that Notification are stored in memory with a rolling limit of 4K per type and sub-type.
 
