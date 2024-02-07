@@ -63,15 +63,9 @@ unit_templates:
 # here we select which units we want to enable for a workload cluster
 units:
   cabpe:  # EKS
-    enabled: true
-    kustomization_spec:
-      # because this resource lives in the mgmt cluster:
-      kubeConfig: null
+    enabled: false
   capa:
-    enabled: true
-    kustomization_spec:
-      # because this resource lives in the mgmt cluster:
-      kubeConfig: null
+    enabled: false
   capo-cluster-resources:
     enabled: false
     depends_on:
