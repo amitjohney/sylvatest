@@ -2073,6 +2073,8 @@ units:
         remediation:
           retries: 3
       values:
+        auditLog:
+          level: '{{ .Values.audit_log.level }}'
         privateCA: true
         useBundledSystemChart: true
         hostname: '{{ .Values.external_hostnames.rancher }}'
@@ -3645,6 +3647,9 @@ external_certificates:
   harbor: {}
   os_image_server: {}
   gitea: {}
+
+audit_log:
+  level: 0
 
 keycloak: {}
 
