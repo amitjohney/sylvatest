@@ -8,6 +8,8 @@ The results are summarized by the following table:
 
 | Date                      | Management Cluster CAPI Providers | Sylva-Core main commit ID        | Management cluster result                    | Workload cluster result              | Test logs (only for failed tests) |
 |---------------------------|-----------------------------------|----------------------------------|----------------------------------------------|--------------------------------------|-----------------------------------|
+|2024-02-07 01:30|rke2-capv|557e4e5fe5e8bed5f8e5c3a1f9f1e340132a9719|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/fd74787d4296c0c88a93f398411bc714/capv-logs.gz)|
+|2024-02-07 01:22|kubeadm-capv|557e4e5fe5e8bed5f8e5c3a1f9f1e340132a9719|:white_check_mark:|:x:|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/fd74787d4296c0c88a93f398411bc714/capv-logs.gz)|
 |2024-02-06 00:57|rke2-capv|4561510f13e9331fab637d36639a6c49e086f505|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/5dcdfa9d00ab9ccfa53997a1e800baf5/capv-logs.gz)|
 |2024-02-06 00:57|kubeadm-capv|4561510f13e9331fab637d36639a6c49e086f505|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/5dcdfa9d00ab9ccfa53997a1e800baf5/capv-logs.gz)|
 |2024-02-03 01:23|kubeadm-capv|dce3d8bdeb80b431410a41a8183f146a0fd4ae24|:white_check_mark:|:white_check_mark:||
@@ -27,8 +29,6 @@ The results are summarized by the following table:
 |2024-01-27 01:29|rke2-capv|8dbcf32a7fd29db2eba5fc8fb1e139a1070144b0|:white_check_mark:|:white_check_mark:||
 |2024-01-27 01:29|rke2-capv|8dbcf32a7fd29db2eba5fc8fb1e139a1070144b0|:white_check_mark:|:white_check_mark:||
 |2024-01-27 01:26|kubeadm-capv|8dbcf32a7fd29db2eba5fc8fb1e139a1070144b0|:white_check_mark:|:white_check_mark:||
-|2024-01-26 01:26|rke2-capv|8fde65e219510515e306544b7cdf8059833dad5f|:white_check_mark:|:white_check_mark:||
-|2024-01-26 01:23|kubeadm-capv|8fde65e219510515e306544b7cdf8059833dad5f|:white_check_mark:|:white_check_mark:||
 
 Old layout table:
 
