@@ -7114,6 +7114,9 @@
     "additional_sylva_units_status_info": {
       "type": "object"
     },
+    "calico_wireguard_enabled": {
+      "type": "boolean"
+    },
     "_internal": {
       "type": "object"
     },
