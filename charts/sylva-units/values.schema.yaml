@@ -650,6 +650,16 @@ properties:
   display_external_ip:  # ------------------------------
     type: string
 
+  audit_log:  # -------------------------------
+    type: object
+    additionalProperties: false
+    properties:
+
+      level:  # -------------------------------
+        type: integer
+        minimum: 0
+        maximum: 3
+
   cluster_external_domain:  # -------------------------------
     anyOf:
       - type: string
