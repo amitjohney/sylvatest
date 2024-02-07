@@ -1309,8 +1309,8 @@ units:
       description: installs capa CAPI infra provider, for aws
       maturity: core-component
     repo: sylva-core
-    depends_on:
-      cert-manager: true
+    #depends_on:
+    #  cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/capa
       wait: true
