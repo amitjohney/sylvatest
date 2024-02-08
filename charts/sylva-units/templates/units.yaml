@@ -295,7 +295,7 @@ stringData:
     {{- if and (hasKey $kustomization_spec "healthChecks")
                (hasKey $unit_def "helmrelease_spec") -}}
       {{- $_ := set $kustomization_spec "healthChecks"
-                (append $kustomization_spec.healthChecks
+                (append ($kustomization_spec.healthChecks|default list)
                   (dict
                     "namespace" ($unit_def.kustomization_spec.targetNamespace | default $envAll.Release.Namespace)
                     "apiVersion" "helm.toolkit.fluxcd.io/v2beta2"

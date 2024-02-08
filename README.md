@@ -422,7 +422,7 @@ sub-directory used under `environment-values/workload-clusters`, i.e. the `my-wo
 You can retrieve the workload cluster admin-rights `kubeconfig` with:
 
 ```shell
-kubectl -n name-of-your-workload-cluster get secret cluster-kubeconfig -o jsonpath='{.data.value}' | base64 -d > workload-cluster-kubeconfig
+kubectl -n name-of-your-workload-cluster get secret name-of-your-workload-cluster-kubeconfig -o jsonpath='{.data.value}' | base64 -d > workload-cluster-kubeconfig
 ```
 
 If Rancher is enabled you can use Rancher UI to retrieve a per-user `kubeconfig` making use of Rancher authentication/RBAC proxy.
