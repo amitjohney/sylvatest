@@ -168,7 +168,7 @@ include:
     CLUSTER_TYPE: management
   timeout: 60min
   artifacts:
-    expire_in: 12 hour
+    expire_in: 48 hour
     when: always
     paths:
       - debug-on-exit.log
@@ -208,7 +208,7 @@ include:
     CLUSTER_TYPE: workload
   timeout: 60min
   artifacts:
-    expire_in: 12 hour
+    expire_in: 48 hour
     when: always
     paths:
       - debug-on-exit.log
@@ -340,7 +340,7 @@ include:
   variables:
     HURL_JUNIT_REPORT: login_junit_report.xml
   artifacts:
-    expire_in: 6 hour
+    expire_in: 48 hour
     when: always
     paths:
       - $HURL_JUNIT_REPORT
