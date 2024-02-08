@@ -5,6 +5,7 @@
 
 .lint-base:
   stage: test
+  image: $CI_YAMLLINT_IMAGE
   needs: []
   interruptible: true
   rules:
@@ -17,6 +18,7 @@
 
 .helm-lint:
   extends: .lint-base
+  image: $CI_CHART_JOBS_IMAGE
   before_script:
     - chart_dir=charts/${HELM_NAME}
     # we replace 'helm' by a wrapper ignoring the warnings about symlinks
@@ -77,6 +79,7 @@ sylva-units:helm-schema-validation:
 
 kustomize-lint:
   extends: .lint-base
+  image: $CI_CHART_JOBS_IMAGE
   script:
     - |
       count=0
@@ -154,6 +157,7 @@ check-docs-markdown:
 
 
 check-sylva-toolbox-binaries-versions:
+  image: $CI_IMAGE
   extends: [.lint-base, .docker-service]
   script:
     - eval $(grep '^SYLVA_' tools/shell-lib/common.sh)
@@ -179,6 +183,7 @@ check-sylva-toolbox-binaries-versions:
     - exit ${exit_code:-0}
 
 clusterctl-check-versions:
+  image: $CI_IMAGE
    # this job checks that the versions of clusterctl and capi that we use are aligned:
    # - capi kustomization (kustomize-units/capi)
    # - clusterctl version in kube-job image
