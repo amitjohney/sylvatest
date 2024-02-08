@@ -114,6 +114,24 @@ units:
     enabled: true
   os-images-info:
     enabled: true
+  minio-operator-init:
+    enabled: true
+  minio-operator:
+    enabled: true
+  minio-monitoring-tenant-init:
+    enabled: true
+  minio-monitoring-tenant:
+    enabled: true
+  loki-scalable:
+    enabled: true
+  rancher-logging-init:
+    enable: true
+  rancher-logging:
+    enable: true
+  thanos-init:
+    enable: true
+  thanos:
+    enable: true
 
 cluster:
   control_plane_replicas: 3

@@ -28,6 +28,10 @@ spec:
     - DEV
   dnsNames:
   - ${SERVICE_DNS}
+  - ${SERVICE_DNS1:=localhost}
+  - ${SERVICE_DNS2:=localhost}
+  - ${SERVICE_DNS3:=localhost}
+  - ${SERVICE_DNS4:=localhost}
   - localhost
   ipAddresses:
   - 127.0.0.1
