@@ -21,7 +21,7 @@
 # needed for any unit listed below, will have to be specified
 
 cluster:
-  name: cluster
+  name: '{{ .Release.Namespace }}'
 
 # ensure that our unit Kustomizations are deployed
 # in the workload cluster
