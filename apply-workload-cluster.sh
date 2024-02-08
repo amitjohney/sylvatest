@@ -53,4 +53,4 @@ sylvactl watch \
   ${SYLVACTL_SAVE:+--save apply-workload-cluster-timeline.html} \
   -n $(basename ${ENV_PATH})
 
-echo_b "\U0001F389 All done"
+display_final_messages
