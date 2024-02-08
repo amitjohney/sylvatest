@@ -6736,15 +6736,6 @@
     "cis_benchmark_scan_profile": {
       "type": "string"
     },
-    "flux_webui": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "admin_user": {
-          "type": "string"
-        }
-      }
-    },
     "display_external_ip": {
       "type": "string"
     },

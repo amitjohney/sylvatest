@@ -2014,9 +2014,6 @@ units:
       wait: true
       _components:
         - '{{ tuple "components/keycloak" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
-      postBuild:
-        substitute:
-          FLUX_ADMIN_USERNAME: '{{ .Values.flux_webui.admin_user }}'
 
   rancher-init:
     info:
@@ -2389,10 +2386,6 @@ units:
         - name: WEAVE_GITOPS_FEATURE_OIDC_BUTTON_LABEL
           value: "Log in with Keycloak"
         installCRDs: true
-        adminUser:
-          create: true
-          username: '{{ .Values.flux_webui.admin_user }}'
-          createSecret: false
         rbac:
           impersonationResourceNames: ["admin", "sylva-admin@example.com"] # the Keycloak username set in unit keycloak-resources; cannot use "infra-admins" group here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/427
           additionalRules:
@@ -2427,17 +2420,6 @@ units:
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:
-              - kind: ClusterRoleBinding
-                apiVersion: rbac.authorization.k8s.io/v1
-                metadata:
-                  name: '{{ .Values.flux_webui.admin_user }}-user-read-resources-cr'
-                subjects:
-                  - apiGroup: rbac.authorization.k8s.io
-                    kind: User
-                    name: '{{ .Values.flux_webui.admin_user }}'
-                  - apiGroup: rbac.authorization.k8s.io
-                    kind: User
-                    name: sylva-admin@example.com  # add same RBAC for the SSO user, so that when flux-webui SA impersonates it has privileges; cannot use "infra-admins" group here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/427
               - kind: Deployment
                 apiVersion: apps/v1
                 metadata:
@@ -3620,9 +3602,6 @@ cluster_external_ip: 55.55.55.55
 # Admin password that will be configured by default on various units  # FIXME, only used for SSO today see https://gitlab.com/sylva-projects/sylva-core/-/issues/503
 # [WARNING] This value cannot be overwritten on production environment (env_type: prod)
 admin_password: '{{ .Values._internal.default_password }}'
-
-flux_webui:
-  admin_user: admin
 
 display_external_ip: '{{ .Values.openstack.floating_ip | eq "" | ternary .Values.cluster_external_ip .Values.openstack.floating_ip }}'
 
