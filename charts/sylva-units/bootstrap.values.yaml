@@ -467,6 +467,10 @@ units:
         secretRef:
           name: '{{ .Values.cluster.name }}-kubeconfig'
 
+cluster:
+  capm3:
+    use_os_image_server_service_urls: '{{ not (.Values.libvirt_metal.nodes | empty) | include "preserve-type" }}'
+
 display_external_ip: '{{ .Values.metal3 | dig "external_bootstrap_ip" (.Values.metal3 | dig "bootstrap_ip" "127.0.0.1") }}'
 
 no_proxy_additional:

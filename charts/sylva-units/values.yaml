@@ -1287,6 +1287,9 @@ units:
       path: ./kustomize-units/shared-workload-clusters-settings
       wait: true
       targetNamespace: sylva-system
+      postBuild:
+        substitute:
+          OS_IMAGES_INFO_CM: '{{ .Values._internal.os_images_info_configmap }}'
       _patches:
         - target:
             kind: ConfigMap
@@ -1701,6 +1704,9 @@ units:
         - kind: ConfigMap
           name: openstack-images-uuids  ## this ConfigMap is a byproduct of the get-openstack-images job
           optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
+        - kind: ConfigMap
+          name: '{{ .Values._internal.os_images_info_configmap }}'  # this configmap is a byproduct of the os-images-info unit
+          valuesKey: values-s-c-c.yaml
     # we pass everything that is under `cluster` to this unit that uses sylva-capi-cluster chart
     # (we do it via a secret because some of the values are credentials in many scenarios)
     helm_secret_values: '{{ .Values.cluster | include "preserve-type" }}'
@@ -3445,7 +3451,6 @@ units:
               path: /spec/template/spec/volumes/2/configMap/name
               value: {{ .Values._internal.os_images_info_configmap }}  # this configmap is a byproduct of the os-images-info unit
 
-
 ##### stuff related to the 'cluster' unit #####
 #
 # all these values under 'cluster' are passed as values to sylva-capi-cluster chart
@@ -3573,6 +3578,7 @@ cluster:
 
   capm3:
     machine_image_checksum_type: sha256
+    image_provisioning_host: '{{ .Values.display_external_ip }}'
 
   enable_longhorn: '{{ or (tuple . "longhorn" | include "unit-enabled") (tuple . .Values.units.longhorn.enabled | include "interpret-for-test") | include "as-bool" }}'
 
@@ -3919,6 +3925,8 @@ shared_workload_clusters_values:
     mgmt_cluster_external_ip: '{{ .Values.display_external_ip }}'
     mgmt_cluster_external_domain: '{{ .Values.cluster_external_domain }}'
     dns_resolver: true
+    capm3:
+      image_provisioning_host: '{{ .Values.display_external_ip }}'
     capo:
       image_name: '{{ .Values.cluster.capo.image_name | include "set-if-defined" }}'
       image_key: '{{ .Values.cluster.capo.image_key | include "set-if-defined" }}'
@@ -3931,6 +3939,8 @@ shared_workload_clusters_values:
   sylva_diskimagebuilder_version: '{{ .Values.sylva_diskimagebuilder_version }}'
   sylva_diskimagebuilder_images: '{{ .Values.sylva_diskimagebuilder_images | include "preserve-type" }}'
   os_images: '{{ .Values.os_images | include "preserve-type" }}'
+  _internal:
+    os_images_info_configmap: '{{ tuple (printf "kyverno-cloned-%s" .Values._internal.os_images_info_configmap) (not (.Values.cluster.capi_providers.infra_provider | eq "capo")) | include "set-only-if"  }}'
 
 shared_workload_clusters_secret_values:
   cluster:

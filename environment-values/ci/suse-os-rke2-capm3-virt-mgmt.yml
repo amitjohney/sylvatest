@@ -8,6 +8,4 @@ sylva_diskimagebuilder_images:
 cluster:
   capm3:
     # following are needed to override the Ubuntu based image (in environment-values/rke2-capm3-virt/values.yaml) for capm3-rke2-virt CIs
-    machine_image_url: http://os-image-server-opensuse-15-5-plain-rke2-1-27-6.os-images.svc.cluster.local:8080/opensuse-15-5-plain-rke2-1-27-6.raw
-    machine_image_format: raw
-    machine_image_checksum: http://os-image-server-opensuse-15-5-plain-rke2-1-27-6.os-images.svc.cluster.local:8080/opensuse-15-5-plain-rke2-1-27-6.raw.sha256sum
+    image_key: opensuse-15-5-plain-rke2-1-27-6
