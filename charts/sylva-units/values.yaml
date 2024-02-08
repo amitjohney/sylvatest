@@ -3443,6 +3443,8 @@ units:
           httpsProxy: '{{ .Values.proxies.https_proxy }}'
           noProxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
           TMP_STORAGE_SPACE: '{{ .Values.os_images_default_download_storage_space }}'
+          # compute total timeout based on per-image timeout and number of images
+          ACTIVE_DEADLINE_SECONDS: '{{ mul .Values.get_openstack_images_per_image_timeout_minutes 60 (include "generate-os-images" . | fromYaml | dig "osImages" dict | len) }}'
       _patches:
         - target:
             kind: Job
@@ -3799,6 +3801,8 @@ additional_sylva_units_status_info: {}
 # this needs to be set to ~25Gi for hardened images
 #    (until https://gitlab.com/sylva-projects/sylva-elements/diskimage-builder/-/issues/57 is addressed)
 os_images_default_download_storage_space: 8Gi
+
+get_openstack_images_per_image_timeout_minutes: 20
 
 # disable wireguard by default
 calico_wireguard_enabled: false

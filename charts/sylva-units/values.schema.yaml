@@ -783,6 +783,9 @@ properties:
     type: string
     pattern: '^[1-9]+[0-9]*Gi$'
 
+  get_openstack_images_per_image_timeout_minutes:
+    type: number
+
   libvirt_metal:  # -------------------------------
     # the values are values of the libvirt-metal chart
     $ref: "#/$defs/libvirt-metal-values"

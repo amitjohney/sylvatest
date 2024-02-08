@@ -5,7 +5,7 @@ metadata:
   namespace: ${JOB_TARGET_NAMESPACE}
 spec:
   backoffLimit: 5
-  activeDeadlineSeconds: 1800
+  activeDeadlineSeconds: ${ACTIVE_DEADLINE_SECONDS:-1800}
   template:
     metadata:
       name: oci-tools-pod
