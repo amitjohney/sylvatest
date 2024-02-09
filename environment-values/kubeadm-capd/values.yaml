@@ -18,6 +18,8 @@ units:
     enabled: false
   harbor:
     enabled: false
+  minio-monitoring-tenant:
+    enabled: false
 
 cluster:
   k8s_version: v1.27.3

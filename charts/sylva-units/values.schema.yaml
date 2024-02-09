@@ -719,6 +719,24 @@ properties:
             format: hostname
           - const: ''
           - $ref: "#/$defs/string-with-gotpl"
+      minio_operator_console:  # -------------------------------
+        anyOf:
+          - type: string
+            format: hostname
+          - const: ''
+          - $ref: "#/$defs/string-with-gotpl"
+      minio_monitoring_tenant:  # -------------------------------
+        anyOf:
+          - type: string
+            format: hostname
+          - const: ''
+          - $ref: "#/$defs/string-with-gotpl"
+      minio_monitoring_tenant_console:  # -------------------------------
+        anyOf:
+          - type: string
+            format: hostname
+          - const: ''
+          - $ref: "#/$defs/string-with-gotpl"
 
   external_certificates:  # -------------------------------
     type: object
@@ -741,6 +759,10 @@ properties:
       os_image_server:  # -------------------------------
         $ref: "#/$defs/cert-and-key"
       gitea:  # -------------------------------
+        $ref: "#/$defs/cert-and-key"
+      minio_operator:  # -------------------------------
+        $ref: "#/$defs/cert-and-key"
+      minio_monitoring_tenant:  # -------------------------------
         $ref: "#/$defs/cert-and-key"
 
   keycloak: # -------------------------------

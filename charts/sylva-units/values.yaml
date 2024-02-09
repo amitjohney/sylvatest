@@ -127,6 +127,13 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: 0.0.1
 
+  minio-operator:
+    kind: GitRepository
+    spec:
+      url: https://github.com/minio/operator.git
+      ref:
+        tag: v5.0.11
+
 helm_repo_spec_default:
   interval: 60m0s
 
@@ -394,6 +401,8 @@ units:
         - '{{ tuple "components/sriov" (tuple . "sriov" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/cattle-monitoring" (tuple . "monitoring" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/gitea" (tuple . "gitea" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/minio-operator" (tuple . "minio-operator" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/minio-monitoring-tenant" (tuple . "minio-monitoring-tenant" | include "unit-enabled") | include "set-only-if" }}'
 
 # Postgresql deployment for keycloak
   postgres-init:
@@ -3410,6 +3419,270 @@ units:
             readOnly: true
             subPath: ca.crt
 
+  minio-operator-init:
+    info:
+      description: sets up MinIO certificate for minio-operator
+      details: it generate certificate
+      internal: true
+    enabled_conditions:
+      - '{{ tuple . "minio-operator" | include "unit-enabled" }}'
+    depends_on:
+      namespace-defs: true
+      sylva-ca: true
+    repo: sylva-core
+    kustomization_substitute_secrets:
+      KEY: '{{ .Values.external_certificates.minio_operator.key | default "" | b64enc }}'
+    kustomization_spec:
+      path: ./kustomize-units/minio-operator-init
+      wait: true
+      postBuild:
+        substitute:
+          SERVICE: minio-operator-console
+          SERVICE_DNS: '{{ .Values.external_hostnames.minio_operator_console }}'
+          CERTIFICATE_NAMESPACE: minio-operator
+          CERT: '{{ .Values.external_certificates.minio_operator.cert | default "" | b64enc }}'
+          CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
+      _components:
+        - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.minio_operator "cert") }}'
+        - "../tls-components/sylva-ca"
+
+  minio-operator:
+    info:
+      description: install MinIO operator
+      details: MinIO operator is used to manage multiple S3 tenants
+      maturity: beta
+    enabled_conditions:
+      - '{{ tuple . "minio-monitoring-tenant" | include "unit-enabled" }}'
+    depends_on:
+      namespace-defs: true
+      minio-operator-init: true
+    annotations:
+      sylvactl/readyMessage: "minio operator console can be reached at https://{{ .Values.external_hostnames.minio_operator_console }} ({{ .Values.external_hostnames.minio_operator_console }} must resolve to {{ .Values.display_external_ip }})"
+    repo: minio-operator
+    helmrelease_spec:
+      targetNamespace: minio-operator
+      chart:
+        spec:
+          chart: helm/operator
+          version: v5.0.11
+      install:
+        createNamespace: false
+      values:
+        operator:
+          containerSecurityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+              ephemeral-storage: 500Mi
+        console:
+          enabled: true
+          containerSecurityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          ingress:
+            enabled: true
+            ingressClassName: nginx
+            host: '{{ .Values.external_hostnames.minio_operator_console }}'
+            path: /
+            pathType: Prefix
+            tls:
+              - hosts:
+                  - '{{ .Values.external_hostnames.minio_operator_console }}'
+                secretName: minio-operator-console-tls
+
+  minio-monitoring-tenant-init:
+    info:
+      description: sets up MinIO certificate for minio-monitoring-tenant
+      details: it generate certificate
+      internal: true
+    enabled_conditions:
+      - '{{ tuple . "minio-monitoring-tenant" | include "unit-enabled" }}'
+    depends_on:
+      namespace-defs: true
+      sylva-ca: true
+    repo: sylva-core
+    kustomization_substitute_secrets:
+      KEY: '{{ .Values.external_certificates.minio_monitoring_tenant.key | default "" | b64enc }}'
+    kustomization_spec:
+      path: ./kustomize-units/minio-monitoring-tenant-init
+      wait: true
+      postBuild:
+        substitute:
+          SERVICE: minio-monitoring-tenant
+          SERVICE_DNS: '{{ .Values.external_hostnames.minio_monitoring_tenant }}'
+          CERTIFICATE_NAMESPACE: minio-monitoring-tenant
+          CERT: '{{ .Values.external_certificates.minio_monitoring_tenant.cert | default "" | b64enc }}'
+          CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
+      _components:
+        - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.minio_monitoring_tenant "cert") }}'
+        - "../tls-components/sylva-ca"
+
+  minio-monitoring-tenant:
+    info:
+      description: creates a MinIO tenant for the monitoring stack
+      details: Loki and Thanos will use this MinIO S3 storage
+      maturity: beta
+    enabled_conditions: []
+    #  - '{{ or (tuple . "thanos" | include "unit-enabled") ( tuple . "loki" | include "unit-enabled") }}'
+    depends_on:
+      namespace-defs: true
+      minio-operator: true
+      minio-monitoring-tenant-init: true
+    annotations:
+      sylvactl/readyMessage: MinIO monitoring tenant console can be reached at https://{{ .Values.external_hostnames.minio_monitoring_tenant_console }} ({{ .Values.external_hostnames.minio_monitoring_tenant_console }} must resolve to {{ .Values.display_external_ip }})
+    repo: minio-operator
+    helmrelease_spec:
+      targetNamespace: minio-monitoring-tenant
+      chart:
+        spec:
+          chart: helm/tenant
+          version: v5.0.11
+      install:
+        createNamespace: false
+      values:
+        secrets:
+          # we need existingSecret to be empty in order to have unit create Secret/minio-root-account out of .accessKey & .secretKey
+          existingSecret: {}
+          name: minio-root-account  # other environment variables than the root account ones are supported but not used for now, https://min.io/docs/minio/linux/reference/minio-server/settings.html#minio-environment-variables
+        tenant:
+          name: monitoring
+          configuration:
+            name: minio-root-account
+          exposeServices:
+            minio: true      # expose the MinIO S3 API
+            console: true    # expose the Console
+          pools:
+            - servers: 2
+              name: pool-0
+              volumesPerserver: 4
+              size: 3Gi
+              storageClassName: '{{ .Values._internal.default_storage_class }}'
+              containerSecurityContext:
+                runAsUser: 1000
+                runAsGroup: 1000
+                runAsNonRoot: true
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                seccompProfile:
+                  type: RuntimeDefault
+              securityContext:
+                runAsUser: 1000
+                runAsGroup: 1000
+                fsGroup: 1000
+                fsGroupChangePolicy: "OnRootMismatch"
+                runAsNonRoot: true
+                seccompProfile:
+                  type: RuntimeDefault
+          metrics:
+            enabled: disable
+          features:
+            bucketDNS: false
+            enableSFTP: false
+          users:
+            # Secrets having as contents
+            # - CONSOLE_ACCESS_KEY - The "Username" for the MinIO user
+            # - CONSOLE_SECRET_KEY - The "Password" for the MinIO user
+            - name: storage-user
+          buckets:
+            - name: "thanos"
+              region: "monitoring-cluster"
+              objectLock: false
+            - name: "loki"
+              region: "monitoring-cluster"
+              objectLock: false
+            - name: "loki-chunks"
+              region: "monitoring-cluster"
+              objectLock: false
+            - name: "loki-ruler"
+              region: "monitoring-cluster"
+              objectLock: false
+            - name: "loki-admin"
+              region: "monitoring-cluster"
+              objectLock: false
+            - name: "testbucket"
+              region: "monitoring-cluster"
+              objectLock: false
+          prometheusOperator: false    # Prometheus Operator's Service Monitor for MinIO Tenant Pods
+          logging:
+            anonymous: true
+            json: true
+            quiet: true
+        ingress:
+          api:
+            enabled: true
+            ingressClassName: nginx
+            annotations:
+              nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+            host: '{{ .Values.external_hostnames.minio_monitoring_tenant }}'
+            path: /
+            pathType: Prefix
+            tls:
+              - hosts:
+                  - '{{ .Values.external_hostnames.minio_monitoring_tenant }}'
+                secretName: minio-monitoring-tenant-tls
+          console:
+            enabled: true
+            ingressClassName: nginx
+            annotations:
+              nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+            host: '{{ .Values.external_hostnames.minio_monitoring_tenant_console }}'
+            path: /
+            pathType: Prefix
+            tls:
+              - hosts:
+                  - '{{ .Values.external_hostnames.minio_monitoring_tenant_console }}'
+                secretName: minio-monitoring-tenant-tls
+    helm_secret_values:
+      secrets:
+        accessKey: minio
+        secretKey: '{{ .Values._internal.minio_monitoring_tenant_bucket_password }}'
+      # Secret for console login; should be later replaced by an ExternalSecret read by ESO from Vault
+      extraResources:
+        - |
+          apiVersion: v1
+          kind: Secret
+          type: Opaque
+          metadata:
+            name: storage-user
+          stringData:
+            CONSOLE_ACCESS_KEY: console
+            CONSOLE_SECRET_KEY: '{{ .Values._internal.minio_monitoring_tenant_console_password }}'
+    kustomization_spec:
+      # these healthChecks are added so that MinIO backend setup
+      # for tenant.minio.min.io/monitoring created by this unit is ready
+      healthChecks:
+        - apiVersion: apps/v1
+          kind: StatefulSet
+          name: monitoring-pool-0  # concatenation from .tenant chart values .name & .pools[*].name
+          namespace: minio-monitoring-tenant
 
 # Not yet ready, need to get os_images into the script
   get-openstack-images:
@@ -3646,6 +3919,9 @@ external_hostnames:
   harbor: 'harbor.{{ .Values.cluster_external_domain }}'
   os_image_server: ''
   gitea: 'gitea.{{ .Values.cluster_external_domain }}'
+  minio_operator_console: 'minio-operator-console.{{ .Values.cluster_external_domain }}'
+  minio_monitoring_tenant: 'minio-monitoring-tenant.{{ .Values.cluster_external_domain }}'
+  minio_monitoring_tenant_console: 'minio-monitoring-tenant-console.{{ .Values.cluster_external_domain }}'
 
 external_certificates:
   rancher: {}
@@ -3656,6 +3932,8 @@ external_certificates:
   harbor: {}
   os_image_server: {}
   gitea: {}
+  minio_operator: {}
+  minio_monitoring_tenant: {}
 
 audit_log:
   level: 0
@@ -3829,6 +4107,12 @@ _internal:
 
   # default replica number computed from the ha_cluster.mode value
   default_replicas: '{{ tuple . .Values._internal.ha_cluster.mode | include "interpret-as-string" | eq "ha" | ternary 3 1 | include "preserve-type" }}'
+
+  # minio bucket write password
+  minio_monitoring_tenant_bucket_password: '{{ derivePassword 1 "maximum" .Values._internal.default_password "minio-monitoring-tenant" "bucket" }}'
+
+  # minio console password
+  minio_monitoring_tenant_console_password: '{{ derivePassword 1 "maximum" .Values._internal.default_password "minio-monitoring-tenant" "console" }}'
 
   # unless the default password has already been generated by a previous run, we generate a new one randomly
   default_password: '{{ lookup "v1" "Secret" "sylva-system" "sylva-units-values" | dig "data" "values" "" | b64dec | fromYaml | dig "_internal" "default_password" (randAlphaNum 64) }}'
