@@ -8,6 +8,8 @@ The results are summarized by the following table:
 
 | Date                      | Management Cluster CAPI Providers | Sylva-Core main commit ID        | Management cluster result                    | Workload cluster result              | Test logs (only for failed tests) |
 |---------------------------|-----------------------------------|----------------------------------|----------------------------------------------|--------------------------------------|-----------------------------------|
+|2024-02-09 01:57|rke2-capv|92d5c2a514c4603b1924f71c6d7435886a9b6170|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/2d4b6fa8c2803afabe5aeb81f850feda/capv-logs.gz)|
+|2024-02-09 01:57|kubeadm-capv|92d5c2a514c4603b1924f71c6d7435886a9b6170|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/2d4b6fa8c2803afabe5aeb81f850feda/capv-logs.gz)|
 |2024-02-08 01:30|rke2-capv|f8ed5e856f87a35481d397c948cfeb8612e6e8a2|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/7614ed7daaff4447c5cc6e03a858ad0e/capv-logs.gz)|
 |2024-02-08 01:30|kubeadm-capv|f8ed5e856f87a35481d397c948cfeb8612e6e8a2|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/7614ed7daaff4447c5cc6e03a858ad0e/capv-logs.gz)|
 |2024-02-07 01:30|rke2-capv|557e4e5fe5e8bed5f8e5c3a1f9f1e340132a9719|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/fd74787d4296c0c88a93f398411bc714/capv-logs.gz)|
@@ -27,8 +29,6 @@ The results are summarized by the following table:
 |2024-01-30 01:01|rke2-capv|e40ced3771e49894543a4de980b1793917ce7b77|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/a2da3533608850cfd8d4eb7477c05830/capv-logs.gz)|
 |2024-01-30 01:01|kubeadm-capv|e40ced3771e49894543a4de980b1793917ce7b77|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/a2da3533608850cfd8d4eb7477c05830/capv-logs.gz)|
 |2024-01-29 01:25|rke2-capv|5711a6887f0a4a9232bc2d522f03e89478f17535|:white_check_mark:|:white_check_mark:||
-|2024-01-29 01:23|kubeadm-capv|5711a6887f0a4a9232bc2d522f03e89478f17535|:white_check_mark:|:white_check_mark:||
-|2024-01-27 01:29|rke2-capv|8dbcf32a7fd29db2eba5fc8fb1e139a1070144b0|:white_check_mark:|:white_check_mark:||
 
 Old layout table:
 
