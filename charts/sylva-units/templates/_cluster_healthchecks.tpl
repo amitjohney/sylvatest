@@ -129,7 +129,7 @@ Waiting for the cluster kubeconfig Secret is a workaround
     - apiVersion: batch/v1
       kind: Job
       name: dummy-deps-cluster-ready-sleep
-      namespace: sylva-system
+      namespace: {{ $ns }}
 {{ end }}
 
 {{ end -}}
