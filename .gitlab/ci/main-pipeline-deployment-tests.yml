@@ -158,6 +158,7 @@ capd-kubeadm-deploy:
   variables:
     E2E_JOB_MR_PARITY: even
     ENV_NAME: kubeadm-capd
+    MGMT_ADDITIONAL_VALUES: environment-values/ci/lightweight-disable-some-units.yml
   trigger:
     include: .gitlab/ci/pipeline-deploy-kubeadm-capd.yml
     strategy: depend
@@ -167,6 +168,7 @@ capd-kubeadm-oci-deploy:
   variables:
     E2E_JOB_MR_PARITY: odd
     ENV_NAME: kubeadm-capd
+    MGMT_ADDITIONAL_VALUES: environment-values/ci/lightweight-disable-some-units.yml
   trigger:
     include: .gitlab/ci/pipeline-deploy-kubeadm-capd.yml
     strategy: depend
