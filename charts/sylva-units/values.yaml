@@ -881,7 +881,15 @@ units:
       KEY: '{{ .Values.external_certificates.neuvector.key | default "" | b64enc }}'
     kustomization_spec:
       path: ./kustomize-units/neuvector-init
-      wait: true
+      healthChecks:
+        - apiVersion: v1
+          kind: Secret
+          name: neuvector-init
+          namespace: neuvector
+        - apiVersion: v1
+          kind: Secret
+          name: neuvector-oidc-init
+          namespace: neuvector
       postBuild:
         substitute:
           NEUVECTOR_DNS: '{{ .Values.external_hostnames.neuvector }}'
@@ -983,6 +991,16 @@ units:
                   namespace: neuvector
                 spec:
                   startingDeadlineSeconds: 21600
+    kustomization_spec:
+      healthChecks:
+        - apiVersion: apps/v1
+          kind: Deployment
+          name: neuvector-manager-pod
+          namespace: neuvector
+        - apiVersion: apps/v1
+          kind: Deployment
+          name: neuvector-controller-pod
+          namespace: neuvector
 
   keycloak:
     info:
