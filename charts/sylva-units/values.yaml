@@ -4230,7 +4230,7 @@ shared_workload_clusters_values:
     air_gapped: '{{ .Values.air_gapped | include "set-if-defined" }}'
     capi_providers: '{{ .Values.cluster.capi_providers | include "preserve-type" }}'
     mgmt_cluster_ip: '{{ .Values.display_external_ip }}'
-    rancher_domain: '{{ .Values.cluster_external_domain }}'
+    rancher_domain: '{{ .Values.cluster_domain }}'
     use_custom_rancher_dns_resolver: true
     capm3:
       image_provisioning_host: '{{ .Values.display_external_ip }}'
