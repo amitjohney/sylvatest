@@ -7263,7 +7263,7 @@
                     },
                     "auth_protocol": {
                       "type": "string",
-                      "pattern": "^(SHA|SHA224|SHA256|SHA384|SHA512)$"
+                      "pattern": "^(MD5|SHA|SHA224|SHA256|SHA384|SHA512)$"
                     },
                     "priv_protocol": {
                       "type": "string",
