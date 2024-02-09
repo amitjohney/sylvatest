@@ -38,10 +38,11 @@ yq '.osImages | keys | .[]' /opt/images.yaml | while read os_image_key; do
   fi
   echo "Adding user provided details"
   yq '.osImages.[env(os_image_key)]' /opt/images.yaml | sed 's/^/        /' >> $configmap_file
-  # Duplicate values to support both os_images and osImages
-  yq -i '(.data."values.yaml" | fromyaml) as $values | .data."values-s-c-c.yaml" = ({"os_images":$values.osImages} | toyaml)' $configmap_file
   echo ---
 done
+
+# Duplicate values to support both os_images and osImages
+yq -i '(.data."values.yaml" | fromyaml) as $values | .data."values-s-c-c.yaml" = ({"os_images":$values.osImages} | toyaml)' $configmap_file
 
 # Update configmap
 echo "Updating ${OUTPUT_CONFIGMAP} configmap"
