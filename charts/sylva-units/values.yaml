@@ -69,7 +69,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.1.37
+        tag: 0.1.38
 
   local-path-provisioner:
     kind: GitRepository
@@ -104,7 +104,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/container-images/libvirt-metal.git
       ref:
-        tag: 0.1.7
+        tag: 0.1.8
 
   vault-operator:
     kind: GitRepository
@@ -1476,13 +1476,13 @@ units:
       targetNamespace: metal3-system
       values:
         global:
-          ironicIP: '{{ .Values.cluster_external_ip }}'
+          ironicIP: '{{ .Values.cluster_virtual_ip }}'
           provisioningInterface: eth0
         metal3-ironic:
           service:
             type: LoadBalancer
             externalIPs:
-            - '{{ .Values.cluster_external_ip }}'
+            - '{{ .Values.cluster_virtual_ip }}'
             annotations:
               metallb.universe.tf/allow-shared-ip: cluster-external-ip
           baremetaloperator:
@@ -1693,7 +1693,7 @@ units:
         - kind: ConfigMap
           name: capo-cluster-resources
           valuesKey: allocated_ip
-          targetPath: cluster_external_ip
+          targetPath: cluster_virtual_ip
           optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
         - kind: ConfigMap
           name: capo-cluster-resources
@@ -2199,10 +2199,10 @@ units:
       install:
         createNamespace: true
       values:
-        domain: '{{ .Values.cluster_external_domain }}'
+        domain: '{{ .Values.cluster_domain }}'
         replicaCount: 3
         service:
-          loadBalancerIP: '{{ .Values.cluster_external_ip }}'
+          loadBalancerIP: '{{ .Values.cluster_virtual_ip }}'
           annotations:
             metallb.universe.tf/allow-shared-ip: cluster-external-ip
       _postRenderers:
@@ -2243,7 +2243,7 @@ units:
       wait: true
       postBuild:
         substitute:
-          CLUSTER_EXTERNAL_IP: '{{ .Values.cluster_external_ip }}'
+          CLUSTER_VIRTUAL_IP: '{{ .Values.cluster_virtual_ip }}'
 
   capi-rancher-import:
     info:
@@ -2313,7 +2313,7 @@ units:
           service:
             enabled: true
             externalIPs:
-            - '{{ .Values.cluster_external_ip }}'
+            - '{{ .Values.cluster_virtual_ip }}'
             annotations:
               metallb.universe.tf/allow-shared-ip: cluster-external-ip
           publishService:
@@ -2780,8 +2780,8 @@ units:
               value: '{{ (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | ternary "coredns" "rke2-coredns-rke2-coredns" }}'
       postBuild:
         substitute:
-          CLUSTER_EXTERNAL_IP: '{{ .Values.cluster_external_ip }}'
-          CLUSTER_EXTERNAL_DOMAIN: '{{ .Values.cluster_external_domain }}'
+          CLUSTER_VIRTUAL_IP: '{{ .Values.cluster_virtual_ip }}'
+          CLUSTER_DOMAIN: '{{ .Values.cluster_domain }}'
 
   longhorn-crd:
     info:
@@ -3813,7 +3813,7 @@ cluster:
       - capo-{{ .Values.cluster.name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}
       - capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}
 
-  cluster_external_ip: '{{ .Values.cluster_external_ip }}'
+  cluster_virtual_ip: '{{ .Values.cluster_virtual_ip }}'
 
   cluster_public_ip: '{{ tuple (.Values.openstack.floating_ip) (not (eq .Values.openstack.floating_ip "")) | include "set-only-if" }}'
   cluster_services_cidrs:
@@ -3822,7 +3822,7 @@ cluster:
     - 100.72.0.0/16
   calico_wireguard_enabled: '{{ .Values.calico_wireguard_enabled | include "preserve-type" }}'
 
-  dns_resolver: false
+  use_custom_rancher_dns_resolver: false
   ntp: '{{ .Values.ntp | include "preserve-type" }}'
   proxies:
     http_proxy: '{{ .Values.proxies.http_proxy }}'
@@ -3897,7 +3897,7 @@ vsphere:
           datacenters:
             - '{{ .Values.cluster.capv.dataCenter }}'
 
-cluster_external_ip: 55.55.55.55
+cluster_virtual_ip: 55.55.55.55
 
 # Admin password that will be configured by default on various units  # FIXME, only used for SSO today see https://gitlab.com/sylva-projects/sylva-core/-/issues/503
 # [WARNING] This value cannot be overwritten on production environment (env_type: prod)
@@ -3906,22 +3906,22 @@ admin_password: '{{ .Values._internal.default_password }}'
 flux_webui:
   admin_user: admin
 
-display_external_ip: '{{ .Values.openstack.floating_ip | eq "" | ternary .Values.cluster_external_ip .Values.openstack.floating_ip }}'
+display_external_ip: '{{ .Values.openstack.floating_ip | eq "" | ternary .Values.cluster_virtual_ip .Values.openstack.floating_ip }}'
 
-cluster_external_domain: sylva
+cluster_domain: sylva
 
 external_hostnames:
-  rancher: 'rancher.{{ .Values.cluster_external_domain }}'
-  vault: 'vault.{{ .Values.cluster_external_domain }}'
-  keycloak: 'keycloak.{{ .Values.cluster_external_domain }}'
-  flux: 'flux.{{ .Values.cluster_external_domain }}'
-  neuvector: 'neuvector.{{ .Values.cluster_external_domain }}'
-  harbor: 'harbor.{{ .Values.cluster_external_domain }}'
+  rancher: 'rancher.{{ .Values.cluster_domain }}'
+  vault: 'vault.{{ .Values.cluster_domain }}'
+  keycloak: 'keycloak.{{ .Values.cluster_domain }}'
+  flux: 'flux.{{ .Values.cluster_domain }}'
+  neuvector: 'neuvector.{{ .Values.cluster_domain }}'
+  harbor: 'harbor.{{ .Values.cluster_domain }}'
   os_image_server: ''
-  gitea: 'gitea.{{ .Values.cluster_external_domain }}'
-  minio_operator_console: 'minio-operator-console.{{ .Values.cluster_external_domain }}'
-  minio_monitoring_tenant: 'minio-monitoring-tenant.{{ .Values.cluster_external_domain }}'
-  minio_monitoring_tenant_console: 'minio-monitoring-tenant-console.{{ .Values.cluster_external_domain }}'
+  gitea: 'gitea.{{ .Values.cluster_domain }}'
+  minio_operator_console: 'minio-operator-console.{{ .Values.cluster_domain }}'
+  minio_monitoring_tenant: 'minio-monitoring-tenant.{{ .Values.cluster_domain }}'
+  minio_monitoring_tenant_console: 'minio-monitoring-tenant-console.{{ .Values.cluster_domain }}'
 
 external_certificates:
   rancher: {}
@@ -3976,7 +3976,7 @@ no_proxy_additional:
   localhost: true
   127.0.0.1: true
   .svc: true
-  '{{ printf ".%s" .Values.cluster_external_domain }}': true
+  '{{ printf ".%s" .Values.cluster_domain }}': true
   .cluster.local.: true
   .cluster.local: true
 
@@ -4211,9 +4211,9 @@ shared_workload_clusters_values:
   cluster:
     air_gapped: '{{ .Values.air_gapped | include "set-if-defined" }}'
     capi_providers: '{{ .Values.cluster.capi_providers | include "preserve-type" }}'
-    mgmt_cluster_external_ip: '{{ .Values.display_external_ip }}'
-    mgmt_cluster_external_domain: '{{ .Values.cluster_external_domain }}'
-    dns_resolver: true
+    mgmt_cluster_ip: '{{ .Values.display_external_ip }}'
+    rancher_domain: '{{ .Values.cluster_external_domain }}'
+    use_custom_rancher_dns_resolver: true
     capm3:
       image_provisioning_host: '{{ .Values.display_external_ip }}'
     capo:

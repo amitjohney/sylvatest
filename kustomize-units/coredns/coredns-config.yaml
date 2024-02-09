@@ -5,9 +5,9 @@ metadata:
   namespace: kube-system
 data:
   Corefile: |
-    ${CLUSTER_EXTERNAL_DOMAIN}:53 {
+    ${CLUSTER_DOMAIN}:53 {
         errors
-        forward ${CLUSTER_EXTERNAL_DOMAIN} ${CLUSTER_EXTERNAL_IP}
+        forward ${CLUSTER_DOMAIN} ${CLUSTER_VIRTUAL_IP}
     }
     .:53 {
         errors

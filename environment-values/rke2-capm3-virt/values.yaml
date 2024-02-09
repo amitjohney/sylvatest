@@ -1,9 +1,9 @@
 # This example environment values files will let you build
 # a Sylva two-node (1 control-plane + 1 worker) mgmt baremetal cluster
 
-cluster_external_domain: '{{ .Values.cluster.cluster_api_cert_extra_SANs | first }}.nip.io'
+cluster_domain: '{{ .Values.cluster.cluster_api_cert_extra_SANs | first }}.nip.io'
 
-cluster_external_ip: 192.168.100.2
+cluster_virtual_ip: 192.168.100.2
 
 cluster:
   capi_providers:

@@ -1,4 +1,4 @@
-cluster_external_ip: 10.188.36.149
+cluster_virtual_ip: 10.188.36.149
 
 cluster:
   capi_providers:

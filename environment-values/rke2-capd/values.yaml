@@ -31,7 +31,7 @@ cluster:
 
 capd_docker_host: unix:///var/run/docker.sock  # dynamically replaced in CI
 
-cluster_external_ip: # use the .100 (or any other that wouldn't be assigned by Docker) IP from the local kind subnet, returned by: docker network inspect -f '{{json .}}' kind | jq -r .IPAM.Config[0].Subnet
+cluster_virtual_ip: # use the .100 (or any other that wouldn't be assigned by Docker) IP from the local kind subnet, returned by: docker network inspect -f '{{json .}}' kind | jq -r .IPAM.Config[0].Subnet
 
 proxies:
   # put your own proxy settings here if you need

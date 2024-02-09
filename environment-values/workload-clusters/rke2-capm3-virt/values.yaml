@@ -1,4 +1,4 @@
-cluster_external_ip: 192.168.100.3
+cluster_virtual_ip: 192.168.100.3
 
 cluster:
   capi_providers:

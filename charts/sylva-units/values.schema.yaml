@@ -630,7 +630,7 @@ properties:
     # short Kubernetes version, e.g. 1.26
     pattern: '^[1-9]+[0-9]*[.]([1-9]+[0-9]|0)*$'
 
-  cluster_external_ip:  # -------------------------------
+  cluster_virtual_ip:  # -------------------------------
     type: string
     format: ipv4
 
@@ -660,7 +660,7 @@ properties:
         minimum: 0
         maximum: 3
 
-  cluster_external_domain:  # -------------------------------
+  cluster_domain:  # -------------------------------
     anyOf:
       - type: string
         format: hostname
@@ -1013,13 +1013,13 @@ properties:
 
 allOf:
 
-  - # users cluster_external_ip must be set via .cluster_external_ip,
-    # not via .cluster.cluster_external_ip
+  - # users cluster_virtual_ip must be set via .cluster_virtual_ip,
+    # not via .cluster.cluster_virtual_ip
     properties:
       cluster:  # -------------------------------
         properties:
-          cluster_external_ip:  # -------------------------------
-            const: '{{ .Values.cluster_external_ip }}'  # only the value defined in values.yaml can be used
+          cluster_virtual_ip:  # -------------------------------
+            const: '{{ .Values.cluster_virtual_ip }}'  # only the value defined in values.yaml can be used
 
   - if:
       properties:

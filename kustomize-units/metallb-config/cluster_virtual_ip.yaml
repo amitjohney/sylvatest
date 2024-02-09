@@ -6,7 +6,7 @@ metadata:
   namespace: metallb-system
 spec:
   addresses:
-  - "${CLUSTER_EXTERNAL_IP}-${CLUSTER_EXTERNAL_IP}"
+  - "${CLUSTER_VIRTUAL_IP}-${CLUSTER_VIRTUAL_IP}"
 ---
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement

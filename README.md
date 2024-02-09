@@ -162,7 +162,7 @@ proxies:
   no_proxy: 127.0.0.1,localhost,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8
 ```
 
-- modify existing parameter `cluster_external_ip: xx.xx.xx.xx` in file [`environment-values/kubeadm-capd/values.yaml`](environment-values/kubeadm-capd/values.yaml) or [`environment-values/rke2-capd/values.yaml`](environment-values/rke2-capd/values.yaml) accordingly
+- modify existing parameter `cluster_virtual_ip: xx.xx.xx.xx` in file [`environment-values/kubeadm-capd/values.yaml`](environment-values/kubeadm-capd/values.yaml) or [`environment-values/rke2-capd/values.yaml`](environment-values/rke2-capd/values.yaml) accordingly
 
 Then you can bootstrap the management cluster creation with kubeadm:
 
@@ -311,7 +311,7 @@ Before trigerring bootstrap.sh, some prerequisites need to be satisfied.
           # -- VSphere storage policy name
           storagePolicyName: # replace me
 
-        cluster_external_ip: # replace me
+        cluster_virtual_ip: # replace me
 
       proxies:
         http_proxy: http://your.company.proxy.url  #replace me

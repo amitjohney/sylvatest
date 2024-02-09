@@ -29,7 +29,7 @@ cluster:
         memoryMiB: 8192
         diskGiB: 40
 
-cluster_external_ip: # replace me
+cluster_virtual_ip: # replace me
 
 
 # what is below is inherited via shared-workload-cluster-settings
