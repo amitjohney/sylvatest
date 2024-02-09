@@ -10,5 +10,5 @@ generate-report:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_REPORT'
   script:
-    - python3 ./.gitlab/ci/scripts/pipelines_schedules_report.py 5
+    - python3 ./.gitlab/ci/scripts/pipelines_schedules_report.py 10
 
