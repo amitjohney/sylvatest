@@ -25,6 +25,9 @@ cluster:
 
 # ensure that our unit Kustomizations are deployed
 # in the workload cluster
+# (some units are deployed on mgmt cluster and will use
+#  "kustomization-deployed-on-mgmt-cluster" or "helmrelease-deployed-on-mgmt-cluster"
+#  unit templates)
 unit_kustomization_spec_default:
   kubeConfig:
     secretRef:
@@ -60,19 +63,34 @@ unit_templates:
       namespace-defs: true
       calico: '{{ tuple . "calico" | include "unit-enabled" }}'
 
+  # used for units which are deployed on mgmt cluster itself
+  kustomization-deployed-on-mgmt-cluster:
+    # the resources produced by this Kustomization will live in the mgmt cluster
+    # so we override what is defined in unit_kustomization_spec_default
+    kustomization_spec:
+      kubeConfig: null
+      targetNamespace: null
+
+  helmrelease-deployed-on-mgmt-cluster:
+    helmrelease_spec:
+      # the resources produced by this HelmRelease will live in the mgmt cluster:
+      # so we override what is defined in unit_helmrelease_spec_default
+      kubeConfig: null
+      targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
+      storageNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
+
 
 # here we select which units we want to enable for a workload cluster
 units:
   capo-cluster-resources:
     enabled: on
+    unit_templates:
+    - kustomization-deployed-on-mgmt-cluster
     depends_on:
       # the heat-operator that we depend on is not in the per-cluster namespace
       heat-operator: false
       sylva-system/heat-operator: true
     kustomization_spec:
-      # because this resource lives in the mgmt cluster:
-      kubeConfig: null
-      targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
       # heatstack parameters specific to workload clusters:
       _patches:
         - target:
@@ -91,20 +109,18 @@ units:
 
   os-images-info:
     enabled: true
-    kustomization_spec:
-      # because this resource lives in the mgmt cluster:
-      kubeConfig: null
-      targetNamespace: ~
+    unit_templates:
+    - kustomization-deployed-on-mgmt-cluster
 
   get-openstack-images:
     enabled: true
-    kustomization_spec:
-      # because this resource lives in the mgmt cluster:
-      kubeConfig: null
-      targetNamespace: ~
+    unit_templates:
+    - kustomization-deployed-on-mgmt-cluster
 
   cluster:
     enabled: true
+    unit_templates:
+    - helmrelease-deployed-on-mgmt-cluster
     depends_on:
 
       # contrarily to what we have in default values, we don't
@@ -121,55 +137,51 @@ units:
       sylva-system/{{ .Values.cluster.capi_providers.bootstrap_provider }}: true
       sylva-system/{{ .Values._internal.metal3_unit }}: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
 
-    helmrelease_spec:
-      # because this resource lives in the mgmt cluster:
-      kubeConfig: null  # cancel what is inherited from unit_kustomization_spec_default
-      targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
-      storageNamespace: '{{ .Release.Namespace }}' # (in mgmt cluster)
 
   cluster-reachable:
     enabled: true
+    unit_templates:
+    - kustomization-deployed-on-mgmt-cluster
+    - dummy
 
   namespace-defs:
     enabled: true
     depends_on:
-      cluster-reachable: true
+      # some dependencies of base-deps are inherited, but don't apply here:
+      namespace-defs: false
+      calico: false
     kustomization_spec:
       targetNamespace: null  # if we don't do this, there are errors because namespaces are a non-namespaced resource
 
   calico-crd:
     enabled: true
     depends_on:
-      cluster-reachable: true
-      namespace-defs: true
+      calico: false  # cancel the dependency on calico inherited from base-deps
 
   tigera-clusterrole:
     enabled: true
     depends_on:
-      cluster-reachable: true
-      namespace-defs: true
+      calico: false  # cancel the dependency on calico inherited from base-deps
 
   calico:
     enabled: true
     depends_on:
-      cluster-reachable: true
-      namespace-defs: true
+      # some dependencies of base-deps are inherited, but don't apply here:
+      namespace-defs: false
+      calico: false
 
   harbor-init:
     enabled: false
 
   harbor:
-    # can be enabled at runtime if desired:
-    #enabled: true
-    unit_template: base-deps
+    # can be enabled at runtime if desired
+    enabled: false
 
   metallb:
     enabled: true
-    unit_template: base-deps
 
   ingress-nginx:
     enabled: true
-    unit_template: base-deps
     depends_on:
       capo-cluster-resources: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     helmrelease_spec:
@@ -186,70 +198,64 @@ units:
 
   monitoring-crd:
     enabled: true
-    unit_template: base-deps
 
   monitoring:
     enabled: true
     depends_on:
       sylva-system/rancher-monitoring-clusterid-inject: '{{ tuple . "sylva-system/rancher-monitoring-clusterid-inject" | include "unit-enabled" }}'
       cluster-import: '{{ tuple . "cluster-import" | include "unit-enabled" }}'
-    unit_template: base-deps
 
   kubevirt:
+    # can be enabled at runtime if desired
     enabled: false
-    unit_template: base-deps
 
   kubevirt-test-vms:
     enabled: false
-    unit_template: base-deps
 
   longhorn-crd:
     enabled: true
-    unit_template: base-deps
 
   longhorn:
-    unit_template: base-deps
+    # can be enabled at runtime if desired
+    enabled: false
 
   multus:
-    # can be enabled at runtime if desired:
-    #enabled: true
-    unit_template: base-deps
+    # can be enabled at runtime if desired
+    enabled: false
 
   multus-ready:
     enabled: true
 
   sriov:
-    # can be enabled at runtime if desired:
-    #enabled: true
-    unit_template: base-deps
+    # can be enabled at runtime if desired
+    enabled: false
 
   sriov-crd:
     enabled: yes
-    unit_template: base-deps
 
   sriov-resources:
-    # can be enabled at runtime if desired:
-    #enabled: true
-    unit_template: base-deps
+    # can be enabled at runtime if desired
+    enabled: false
 
   cinder-csi:
     enabled: true
-    unit_template: base-deps
 
   ceph-csi-cephfs:
     enabled: false
-    unit_template: base-deps
 
   kyverno:
     enabled: true
-    unit_template: base-deps
+    # in mgmt cluster, kyverno is part of base-deps, so cannot depend on itself, but here in workload-cluster we need it
+    unit_templates:
+    - base-deps
 
   cluster-import:
     enabled: false  # overriden depending on whether Rancher is enabled or not (eg. via shared-workload-clusters-settings)
     info:
       description: imports workload cluster into Rancher
       internal: true
-    unit_template: base-deps
+    unit_templates:
+    - kustomization-deployed-on-mgmt-cluster
     depends_on:
       sylva-system/rancher: true  # depends on rancher unit in sylva-system ns
       sylva-system/capi-rancher-import: true  # depends on capi-rancher-import unit in sylva-system ns
@@ -257,10 +263,11 @@ units:
       sylva-system/cluster-creator-policy: true
     repo: sylva-core
     kustomization_spec:
-      # because this resource lives in the mgmt cluster:
+      # this Kustomization lives in the mgmt cluster
+      # **and it needs a specific kubeconfig to make a clean Rancher import**
       kubeConfig:
         secretRef:
-          name: cluster-creator-kubeconfig   # (kubeconfig for mgmt cluster)
+          name: cluster-creator-kubeconfig
           key: kubeconfig
       targetNamespace: '{{ .Release.Namespace }}'  # (in mgmt cluster)
       wait: false
@@ -296,19 +303,15 @@ units:
 
   vsphere-csi-driver:
     enabled: true
-    unit_template: base-deps
 
   logging-crd:
     enabled: true
-    unit_template: base-deps
 
   logging:
     enabled: false
-    unit_template: base-deps
 
   logging-config:
     enabled: true
-    unit_template: base-deps
     depends_on:
       sylva-system/loki: true
     kustomization_spec:
@@ -316,7 +319,6 @@ units:
 
   sylva-prometheus-rules:
     enabled: true
-    unit_template: base-deps
 
 _internal:
   # for capm3 the os-image-info configmap is copied by kyverno from main sylva-units release, corresponding to what os-image-server will serve
