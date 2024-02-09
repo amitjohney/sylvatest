@@ -44,7 +44,7 @@
 | **flux-webui-init** | initializes and configures flux-webui | beta | True | Kustomize | N/A |
 | **harbor** | installs Harbor | beta |  | [Helm](https://helm.goharbor.io) | 1.14.0 |
 | **kubevirt** | installs kubevirt | beta |  | [Helm](https://suse-edge.github.io/charts) | 0.2.1 |
-| **metal3-suse** | installs SUSE-maintained Metal3 operator | beta |  | [Helm](https://suse-edge.github.io/charts) | 0.5.0 |
+| **metal3-suse** | installs SUSE-maintained Metal3 operator | beta |  | [Helm](https://suse-edge.github.io/charts) | 0.6.0 |
 | **minio-monitoring-tenant** | creates a MinIO tenant for the monitoring stack<br/><br/>Loki and Thanos will use this MinIO S3 storage | beta |  | Helm | v5.0.11 |
 | **minio-operator** | install MinIO operator<br/><br/>MinIO operator is used to manage multiple S3 tenants | beta |  | Helm | v5.0.11 |
 | **neuvector** | installs Neuvector | beta |  | [Helm](https://neuvector.github.io/neuvector-helm) | 2.6.6 |
