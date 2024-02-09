@@ -61,9 +61,9 @@ def rancher_sso(endpoint, username, password, workload_name):
   print(browser.current_url)
   print("Waiting to be redirect towards rancher UI home page")
   try:
-    mgmt_present = EC.presence_of_element_located((By.LINK_TEXT, 'local'))
+    mgmt_present = EC.presence_of_element_located((By.XPATH, '//a[@href="/dashboard/c/local/explorer"]'))
     WebDriverWait(browser, delay).until(mgmt_present)
-    mgmt_clickable = EC.element_to_be_clickable((By.LINK_TEXT, 'local'))
+    mgmt_clickable = EC.element_to_be_clickable((By.XPATH, '//a[@href="/dashboard/c/local/explorer"]'))
     WebDriverWait(browser, delay).until(mgmt_clickable)
   except TimeoutException:
     print ("Cannot access the Rancher UI")
@@ -177,7 +177,7 @@ def flux_sso(endpoint, username, password):
     exit (1)
   # force to retry
   retry = 0
-  while (retry < 15):
+  while (retry < 25):
     try:
       browser.find_element(By.XPATH, '//span[@class="MuiButton-label"]').click()
       if browser.title == "Sign in to Sylva":

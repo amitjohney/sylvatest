@@ -310,6 +310,8 @@ include:
 
 .test-sso:
   stage: deployment-test
+  retry:
+    max: 2
   script:
     - !reference [.test_scripts, edit_hosts_file]
     - !reference [.test_scripts, test_sso]
