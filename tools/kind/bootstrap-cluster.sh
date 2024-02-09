@@ -65,15 +65,15 @@ else
     VALUES_FILE=${ENV_PATH}/values.yaml
 fi
 
-# Try to retrieve registry config in values.yaml and prepare KIND_CONFIG consequently
-if yq -e '.registry_mirrors.hosts_config | length > 0' ${VALUES_FILE} &>/dev/null; then
+# Try to retrieve registry config in values passed (in local values.yaml or through Kustomize) and prepare KIND_CONFIG consequently
+if _kustomize ${ENV_PATH} | python3 ${BASE_DIR}/tools/extractHelmReleaseValues.py --values-path .spec.valuesFrom | yq -e '.registry_mirrors.hosts_config | length > 0' &>/dev/null; then
     function helm() { $(which helm) $@ 2> >(grep -v 'found symbolic link' >&2); }
     export KIND_CONFIG_DIRECTORY=${BASE_DIR}/tools/kind/registry.d/
     mkdir -p $KIND_CONFIG_DIRECTORY
     rm -Rf $KIND_CONFIG_DIRECTORY/*
     KIND_CONFIG=$(echo -e "$KIND_CONFIG\n$KIND_CONFIG_REGISTRY" | yq)
     KIND_CONFIG=$(echo "$KIND_CONFIG" | yq '.nodes[0].extraMounts += [{"hostPath": env(KIND_CONFIG_DIRECTORY), "containerPath": "/etc/containerd/registry.d"}]')
-    yq 'with_entries(select(.key == "registry_mirrors"))' ${VALUES_FILE} |\
+    _kustomize ${ENV_PATH} | python3 ${BASE_DIR}/tools/extractHelmReleaseValues.py --values-path .spec.valuesFrom | yq 'with_entries(select(.key == "registry_mirrors"))' |\
         helm template kind-registry-config ${BASE_DIR}/charts/sylva-units --show-only templates/extras/kind.yaml --values - | yq .script | bash
 fi
 
