@@ -36,7 +36,7 @@
 #   To test the combination of the default values.yaml combined with other values files:
 #
 #      tools/generate_json_schema.py && \
-#        tools/yaml-merge.py -o json charts/sylva-units/values.yaml foo.yaml | python -m jsonschema -o pretty charts/sylva-units/values.schema.json -i /dev/stdin
+#        tools/yamlMerge.py -o json charts/sylva-units/values.yaml foo.yaml | python -m jsonschema -o pretty charts/sylva-units/values.schema.json -i /dev/stdin
 #
 
 

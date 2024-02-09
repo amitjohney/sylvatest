@@ -131,11 +131,11 @@ function ensure_flux {
     if ! kubectl get namespace flux-system &>/dev/null; then
         echo_b "\U0001F503 Install flux"
         flux install --components "source-controller,kustomize-controller,helm-controller" --namespace=flux-system --export > ${BASE_DIR}/kustomize-units/flux-system/offline/manifests.yaml
-        if yq -e '.oci_registry_extra_ca_certs' ${ENV_PATH}/values.yaml &>/dev/null; then
+        if _kustomize ${ENV_PATH} | python3 ${BASE_DIR}/tools/extractHelmReleaseValues.py --values-path .spec.valuesFrom | yq -e '.oci_registry_extra_ca_certs' &>/dev/null; then
             if ! yq -e '.components[] | select(. == "../components/extra-ca")' ${BASE_DIR}/kustomize-units/flux-system/offline/kustomization.yaml &> /dev/null; then
                 yq -i '.components += ["../components/extra-ca"]' ${BASE_DIR}/kustomize-units/flux-system/offline/kustomization.yaml
             fi
-            B64_CERTS=$(yq '.oci_registry_extra_ca_certs | @base64' ${ENV_PATH}/values.yaml)
+            B64_CERTS=$(_kustomize ${ENV_PATH} | python3 ${BASE_DIR}/tools/extractHelmReleaseValues.py --values-path .spec.valuesFrom | yq '.oci_registry_extra_ca_certs | @base64')
             yq -i ".data[\"extra-ca-certs.pem\"]=\"$B64_CERTS\"" ${BASE_DIR}/kustomize-units/flux-system/components/extra-ca/certs.yaml
         fi
         _kustomize ${BASE_DIR}/kustomize-units/flux-system/offline | envsubst | kubectl apply -f -
