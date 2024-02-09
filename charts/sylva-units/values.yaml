@@ -3923,6 +3923,8 @@ shared_workload_clusters_values:
   registry_mirrors: '{{ .Values.registry_mirrors | include "set-if-defined" }}'
 
   sylva_base_oci_registry: '{{ .Values.sylva_base_oci_registry }}'
+  oci_registry_extra_ca_certs: '{{ .Values.oci_registry_extra_ca_certs | include "set-if-defined" }}'
+  oci_registry_insecure: '{{ .Values.oci_registry_insecure | include "set-if-defined" }}'
 
   cluster:
     air_gapped: '{{ .Values.air_gapped | include "set-if-defined" }}'
