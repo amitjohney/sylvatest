@@ -295,6 +295,9 @@ EOF
     | kubectl apply -f -
   rm -Rf ${PREVIEW_DIR}
 
+  # this is just to force-refresh in a dev environment with  refreshed parameters
+  force_reconcile helmrelease sylva-units sylva-units-preview
+
   echo "Wait for Helm release to be ready"
   if ! sylvactl watch --reconcile --timeout 120s --ignore-suspended -n sylva-units-preview HelmRelease/sylva-units-preview/sylva-units; then
     echo "the preview Helm release of sylva-units used for validation did not become ready in time"
