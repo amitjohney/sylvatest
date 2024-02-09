@@ -32,7 +32,7 @@ report_fd = open('report_output.md', 'w')
 
 status_icon = {
     "failed": "❌",
-    "success": ":white_check_mark:", # ✅
+    "success": ":heavy_check_mark:", # ✅
     "canceled": "🛇",
     "skipped": "⏩",
 }
@@ -67,8 +67,10 @@ def pipeline_summary(pipeline):
     pipeline = project.pipelines.get(pipeline["id"])
 
     stage_statuses = defaultdict(set)
+    stage_jobs = defaultdict(list)
     for job in pipeline.jobs.list():
         stage_statuses[job.stage].add(job.status)
+        stage_jobs[job.stage].append(job)
 
     summary = ""
     for stage in order_stages(stage_statuses.keys()):
@@ -84,9 +86,15 @@ def pipeline_summary(pipeline):
         if len(statuses) == 1 and stage == "delete" and list(statuses)[0] == "success":
             continue
 
-        combined_statuses = " ".join([get_status_icon(s) for s in statuses])
+        combined_statuses = " ".join([get_status_icon(s) for s in statuses])
 
-        summary += f" {stage}: {combined_statuses}"
+        stage_text = f"{stage.replace('-','‑')}: {combined_statuses}"
+        if len(stage_jobs[stage]) == 1:
+            stage_md = f" [{stage_text}]({stage_jobs[stage][0].web_url})"
+        else:
+            stage_md = f" {stage_text}"
+
+        summary += stage_md
 
     return summary
 
@@ -114,7 +122,7 @@ def create_report():
         for pipeline in newest_pipelines:
             print(f"  processing pipeline {pipeline.id}")
             pipeline_item = {
-                "time / status": f"[{pipeline.created_at[:16]} {get_status_icon(pipeline.status)}]({pipeline.web_url})",
+                "time / status": f"[{pipeline.created_at[:16]} {get_status_icon(pipeline.status)}]({pipeline.web_url})",
             }
             child_pipelines = project.pipelines.get(pipeline.id).bridges.list()
             for child in child_pipelines:
@@ -124,7 +132,7 @@ def create_report():
 
                 ds_pipeline_summary = pipeline_summary(child.downstream_pipeline)
 
-                child_pipeline_md = f"[{duration:.0f}min {get_status_icon(child.status)}]({child.web_url})<br/>{ds_pipeline_summary}"
+                child_pipeline_md = f"- [{duration:.0f}min {get_status_icon(child.status)}]({child.web_url}) -<br/>{ds_pipeline_summary}"
                 pipeline_item[child.name] = child_pipeline_md
 
                 #commit_md = f"[{child.commit['short_id']} / { child.commit['committed_date'][:16]}]({child.commit['web_url']})"
@@ -150,8 +158,6 @@ def create_report():
         print_report(" ")
 
 def publish_report():
-
-    import pdb; pdb.set_trace()
 
     main_report = project.wikis.get("Scheduled-pipelines-report")
     main_report.content = open('report_output.md').read()
