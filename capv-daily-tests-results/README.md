@@ -28,7 +28,6 @@ The results are summarized by the following table:
 |2024-02-01 01:21|kubeadm-capv|f99f11fff0ff74831ee60cc6fb146e7a43fef885|:white_check_mark:|:x:||
 |2024-01-31 01:02|rke2-capv|9f4761d8c869ddecf478645792f220a7417fca65|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/d06a59e9cbbd767b6097c9e6ef47d89a/capv-logs.gz)|
 |2024-01-31 01:02|kubeadm-capv|9f4761d8c869ddecf478645792f220a7417fca65|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/d06a59e9cbbd767b6097c9e6ef47d89a/capv-logs.gz)|
-|2024-01-30 01:01|rke2-capv|e40ced3771e49894543a4de980b1793917ce7b77|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/a2da3533608850cfd8d4eb7477c05830/capv-logs.gz)|
 
 Old layout table:
 
