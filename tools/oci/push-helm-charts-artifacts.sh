@@ -109,12 +109,17 @@ function process_chart_in_git {
   local chart_path=$2
   local revision=$3
   local chart_name=$4
+
   local tgz_file="$chart_name-$revision.tgz"
 
   TMPD=$(mktemp -d)
   if (git clone -q --depth 1 --branch $revision $git_repo $TMPD > /dev/null 2>&1); then
     # Build locally Helm chart
     helm dep update $TMPD/$chart_path
+
+    # override chart name in Chart.yaml
+    yq -i ".name = \"$chart_name\"" $TMPD/$chart_path/Chart.yaml
+
     helm package --version $revision $TMPD/$chart_path
     if [[ -e $tgz_file ]]; then
       # Push Helm chart to OCI

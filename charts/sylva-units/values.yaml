@@ -1484,6 +1484,7 @@ units:
       cert-manager: true
       '{{ .Values._internal.default_storage_class_unit }}': true
     helm_repo_url: https://suse-edge.github.io/charts
+    helm_chart_artifact_name: metal3-suse
     helmrelease_spec:
       chart:
         spec:
@@ -1557,7 +1558,7 @@ units:
           # See https://gitlab.com/sylva-projects/sylva-core/-/issues/659
           var_substitution_enabled: "true"
     repo: metal3
-    helm_chart_artifact_name: metal3
+    helm_chart_artifact_name: metal3-sylva
     helmrelease_spec:
       timeout: 10m
       chart:
