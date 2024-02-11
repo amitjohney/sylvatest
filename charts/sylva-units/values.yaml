@@ -191,6 +191,31 @@ unit_templates:
         substitute:
           UNIT_NAME: '{{ .Values._unit_name_ }}'
 
+  # the kube-job unit template
+  # shares settings common to all units relying on ./kustomize-units/kube-job
+  kube-job:
+    repo: sylva-core
+    depends_on:
+      namespace-defs: true
+    kustomization_spec:
+      path: ./kustomize-units/kube-job
+      targetNamespace: kube-job  # this is in particular important when used from workload-cluster.values.yaml,
+                                 # where the "targetNamespace: '{{ .Release.Namespace }}'" that we have
+                                 # would otherwise result in having the kustomization redefine the workload-cluster
+                                 # namespace
+      force: true
+      postBuild:
+        substitute:
+          JOB_NAME: "{{ .Release.Namespace }}-{{ .Values._unit_name_ }}"
+      _patches:
+      - target:
+          kind: ConfigMap
+        patch: |
+          - op: replace
+            path: /metadata/name
+            value: "{{ .Release.Namespace }}-{{ .Values._unit_name_ }}-kube-job"
+
+
 # this defines Flux HelmRelease objects, and for each  # FIXME
 # a corresponding GitRepository or OCIRepository (and Secret, TODO: the Secret don't need to be generated for each unit)
 units:
@@ -1162,16 +1187,15 @@ units:
     - '{{ tuple . "flux-webui" | include "unit-enabled" }}'
     - '{{ tuple . "keycloak" | include "unit-enabled" }}'
     repo: sylva-core
+    unit_template: kube-job
     depends_on:
       keycloak-resources: true
       keycloak: true  # defines the keycloak-initial-admin Secret used by the script
     kustomization_spec:
-      path: ./kustomize-units/kube-job
       wait: true
       force: true
       postBuild:
         substitute:
-          JOB_NAME: keycloak-add-client-scope-job
           JOB_TARGET_NAMESPACE: keycloak
           RUNASUSER: '10000'
           RUNASGROUP: '10000'
@@ -1185,9 +1209,6 @@ units:
       - target:
           kind: ConfigMap
         patch: |
-          - op: replace
-            path: /metadata/name
-            value: keycloak-add-client-scope-job-keycloak-cm
           - op: replace
             path: /data/kube-job.sh
             value: |
@@ -2898,15 +2919,12 @@ units:
         This unit creates a configmap containing the os images (and their details in the case of Sylva diskimage-builder ones)
         to be further served by os-image-server
       internal: true
-    repo: sylva-core
+    unit_template: kube-job
     enabled_conditions:
       - '{{ or (tuple . "capm3" | include "unit-enabled") (.Values.cluster.capi_providers.infra_provider | eq "capo") }}'
     kustomization_spec:
-      path: ./kustomize-units/kube-job
-      force: true
       postBuild:
         substitute:
-          JOB_NAME: create-image-info
           JOB_TARGET_NAMESPACE: '{{ .Release.Namespace }}'
           JOB_CHECKSUM: '{{ .Values._internal.os_images_info_input_hash }}'
       _patches:
@@ -2939,9 +2957,6 @@ units:
         - target:
             kind: ConfigMap
           patch: >-
-            - op: replace
-              path: /metadata/name
-              value: create-image-info-{{ .Release.Namespace }}-cm
             - op: replace
               path: /data/kube-job.sh
               value: |

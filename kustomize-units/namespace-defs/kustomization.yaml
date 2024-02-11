@@ -3,3 +3,4 @@ kind: Kustomization
 
 resources:
   - sylva-namespace.yaml
+  - kube-job-namespace.yaml

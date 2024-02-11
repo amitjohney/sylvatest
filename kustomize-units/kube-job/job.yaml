@@ -1,17 +1,7 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: kube-job
-  annotations:
-    kustomize.toolkit.fluxcd.io/prune: disabled
-  labels:
-    pod-security.kubernetes.io/enforce: baseline
-    pod-security.kubernetes.io/enforce-version: latest
----
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: ${JOB_NAME}-${JOB_TARGET_NAMESPACE:-sylva-system}
+  name: ${JOB_NAME}-kube-job
   namespace: kube-job
 spec:
   backoffLimit: 5
@@ -53,13 +43,13 @@ spec:
       volumes:
       - name: script-volume
         configMap:
-          name: ${JOB_NAME}-${JOB_TARGET_NAMESPACE:-sylva-system}-cm
+          name: ${JOB_NAME}-${JOB_TARGET_NAMESPACE:-sylva-system}
           defaultMode: 0755
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: ${JOB_NAME}-${JOB_TARGET_NAMESPACE:-sylva-system}-sa
+  name: ${JOB_NAME}
   namespace: kube-job
 ---
 apiVersion: rbac.authorization.k8s.io/v1
