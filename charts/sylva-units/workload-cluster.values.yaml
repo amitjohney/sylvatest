@@ -227,7 +227,7 @@ units:
     unit_template: base-deps
 
   cluster-import:
-    enabled: false  # overriden depending on whether Rancher is enabled or not (eg. via shared-workload-clusters-settings)
+    enabled: false  # overriden depending on whether Rancher is enabled or not (eg. via shared-workload-clusters-setting s)
     info:
       description: imports workload cluster into Rancher
       internal: true
