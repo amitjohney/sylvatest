@@ -36,6 +36,7 @@ function check_args() {
 function _kustomize {
   kustomize build --load-restrictor LoadRestrictionsNone $1
 }
+export -f _kustomize
 
 function set_wc_namespace() {
   local WORKLOAD_CLUSTER_NAMESPACE=$(basename ${ENV_PATH})
