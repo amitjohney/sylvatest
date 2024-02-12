@@ -302,3 +302,5 @@ units:
   rancher-logging-config:
     enabled: true
     unit_template: base-deps
+    kustomization_spec:
+      targetNamespace: cattle-logging-system

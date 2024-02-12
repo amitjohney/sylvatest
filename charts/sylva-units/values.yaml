@@ -2525,6 +2525,10 @@ units:
                   enabled: true
                 etcd:
                   enabled: true
+            datasources:
+              defaultDatasourceEnabled: true
+            enabled: true
+            isDefaultDatasource: false
           # todo: add loki and thanos datasources
           ## Configure additional grafana datasources (passed through tpl)
           ## ref: http://docs.grafana.org/administration/provisioning/#datasources
@@ -2538,7 +2542,7 @@ units:
               # basicAuthUser: "internal"
               # editable: false
               # do not activate without dezactivate the default prometheus
-              # isDefault: true
+              isDefault: true
               jsonData:
                 #tlsSkipVerify: true
               orgId: 1
@@ -4055,6 +4059,7 @@ units:
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/rancher-logging
+      wait: true
       postBuild:
         substitute:
           # we must use external name in order to work also for workload clusters
@@ -4079,16 +4084,17 @@ units:
       postBuild:
         substitute:
           SERVICE: thanos
-          SERVICE_DNS: '{{ .Values.external_hostnames.thanos }}'
-          SERVICE_DNS1: '{{ .Values.external_hostnames.thanos_receive }}'
-          SERVICE_DNS2: '{{ .Values.external_hostnames.thanos_storegateway }}'
-          SERVICE_DNS3: '{{ .Values.external_hostnames.thanos_query }}'
+          THANOS_DNS: '{{ .Values.external_hostnames.thanos }}'
+          THANOS_RECEIVE_DNS: '{{ .Values.external_hostnames.thanos_receive }}'
+          THANOS_STOREGATEWAY_DNS: '{{ .Values.external_hostnames.thanos_storegateway }}'
+          THANOS_QUERY_DNS: '{{ .Values.external_hostnames.thanos_query }}'
           CERTIFICATE_NAMESPACE: thanos
           CERT: '{{ .Values.external_certificates.thanos.cert | default "" | b64enc }}'
           CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
       _components:
         - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.thanos "cert") }}'
-        - "../tls-components/sylva-ca"
+        # we no longer use this template as is insufficient
+        # - "../tls-components/sylva-ca"
 
   thanos:
     info:
