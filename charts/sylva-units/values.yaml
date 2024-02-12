@@ -3474,6 +3474,7 @@ units:
     depends_on:
       namespace-defs: true
       minio-operator-init: true
+      ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
     annotations:
       sylvactl/readyMessage: "minio operator console can be reached at https://{{ .Values.external_hostnames.minio_operator_console }} ({{ .Values.external_hostnames.minio_operator_console }} must resolve to {{ .Values.display_external_ip }})"
     repo: minio-operator
@@ -3572,6 +3573,7 @@ units:
       namespace-defs: true
       minio-operator: true
       minio-monitoring-tenant-init: true
+      ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
     annotations:
       sylvactl/readyMessage: MinIO monitoring tenant console can be reached at https://{{ .Values.external_hostnames.minio_monitoring_tenant_console }} ({{ .Values.external_hostnames.minio_monitoring_tenant_console }} must resolve to {{ .Values.display_external_ip }})
     repo: minio-operator
