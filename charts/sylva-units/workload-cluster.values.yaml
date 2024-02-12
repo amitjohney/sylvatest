@@ -171,11 +171,11 @@ units:
           optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
 
   monitoring-crd:
-    enabled: true
+    enabled: false
     unit_template: base-deps
 
   monitoring:
-    enabled: true
+    enabled: false
     depends_on:
       sylva-system/rancher-monitoring-clusterid-inject: '{{ tuple . "sylva-system/rancher-monitoring-clusterid-inject" | include "unit-enabled" }}'
       cluster-import: '{{ tuple . "cluster-import" | include "unit-enabled" }}'
@@ -232,11 +232,11 @@ units:
       description: imports workload cluster into Rancher
       internal: true
     unit_template: base-deps
-    depends_on:
-      sylva-system/rancher: true  # depends on rancher unit in sylva-system ns
-      sylva-system/capi-rancher-import: true  # depends on capi-rancher-import unit in sylva-system ns
-      sylva-system/cluster-creator-login: true
-      sylva-system/cluster-creator-policy: true
+    #depends_on:
+      #sylva-system/rancher: true  # depends on rancher unit in sylva-system ns
+      #sylva-system/capi-rancher-import: true  # depends on capi-rancher-import unit in sylva-system ns
+      #sylva-system/cluster-creator-login: true
+      #sylva-system/cluster-creator-policy: true
     repo: sylva-core
     kustomization_spec:
       # because this resource lives in the mgmt cluster:
