@@ -34,7 +34,7 @@ spec:
     generate:
       kind: ConfigMap
       apiVersion: v1
-      name: kyverno-cloned-${OS_IMAGES_INFO_CM}
+      name: kyverno-cloned-os-images-info-capm3
       namespace: "{{request.object.metadata.name}}"
       synchronize: true
       clone:
