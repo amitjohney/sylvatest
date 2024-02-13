@@ -1,43 +1,7 @@
-
+---
 # ==========================================
 # Test stage
 # ==========================================
-
-.generator-base:
-  stage: test
-  interruptible: true
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      changes:
-        - charts/**/*
-        - kustomize-units/**/*
-        - environment-values/**/*
-        - .gitlab/ci/scripts/generate-pipeline.sh
-        - .gitlab/ci/configuration/*
-        - .gitlab/ci/main-pipeline-checks.yml
-        - .gitlab/ci/chart-jobs.yml
-        - tools/generate_json_schema.py
-
-chart-generator:
-  extends: .generator-base
-  script:
-    - echo "Generate CI jobs for each modified charts/units/environment-values"
-    - ./.gitlab/ci/scripts/generate-pipeline.sh > generated-pipeline.yml
-  artifacts:
-    expire_in: 1 hour
-    paths:
-      - generated-pipeline.yml
-
-chart-jobs:
-  extends: .generator-base
-  needs:
-    - chart-generator
-  trigger:
-    include:
-      - artifact: generated-pipeline.yml
-        job: chart-generator
-    strategy: depend
-
 
 .lint-base:
   stage: test
@@ -46,6 +10,106 @@ chart-jobs:
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
     - if: '$CI_PIPELINE_SOURCE == "pipeline"'
+
+# ==========================================
+# sylva-units chart lint
+# ==========================================
+
+.helm-lint:
+  extends: .lint-base
+  before_script:
+    - chart_dir=charts/${HELM_NAME}
+    # we replace 'helm' by a wrapper ignoring the warnings about symlinks
+    - |
+      function helm() { $(which helm) $@ 2> >(grep -v 'found symbolic link' >&2); }
+  rules:
+    - changes:
+        - charts/sylva-units/**/*
+        - .gitlab/ci/**/*
+  needs:
+    - job: 'sylva-units:helm-schema-validation'
+      optional: true
+
+sylva-units:helm-lint:
+  stage: test
+  extends: .helm-lint
+  script:
+    - helm lint charts/sylva-units
+
+sylva-units:helm-yamllint:
+  stage: test
+  extends: .helm-lint
+  script:
+    - yamllint charts/sylva-units -d "$(cat < .gitlab/ci/configuration/yamllint.yaml) $(cat < .gitlab/ci/configuration/yamllint-helm-exclude-chart-templates.yaml)"
+
+sylva-units:helm-template-yamllint:
+  stage: test
+  extends: .helm-lint
+  script:
+    - ./tools/validation/helm-template-yamllint.sh
+  variables:
+    HELM_NAME: sylva-units
+
+sylva-units:helm-schema-validation:
+  stage: test
+  extends: .helm-lint
+  script:
+    - ./tools/validation/helm-schema-validation.sh
+  needs: []
+  rules:
+    - exists:
+        - charts/sylva-units/values.schema.yaml
+        - charts/sylva-units/values.schema.json
+      changes:
+        - .gitlab/ci/**/*
+        - charts/sylva-units/values.schema.json
+        - charts/sylva-units/values.schema.yaml
+        - charts/sylva-units/values.yaml
+        - tools/generate_json_schema.py
+  variables:
+    HELM_NAME: sylva-units
+
+# ==========================================
+# kustomize-units & environment-values lint
+# ==========================================
+
+kustomize-lint:
+  extends: .lint-base
+  script:
+    - |
+      count=0
+      for kustomization in $(find environment-values kustomize-units -type f -name 'kustomization.yaml' | grep -v '/ci/private/' | sed -r 's|/[^/]+$||'); do
+        echo -e "\e[1m\e[0Ksection_start:`date +%s`:$count[collapsed=true]\r\e[0KRun kubectl kustomize for $kustomization\e[0m"
+        if kubectl kustomize $kustomization 2>stderr 1>/dev/null; then
+          echo "kubectl kustomize suceed for $kustomization"
+        else
+          echo "kubectl kustomize failed for $kustomization with the following error:" >> error_log
+          cat stderr >> error_log
+          echo >> error_log
+        fi
+        echo -e "\e[0Ksection_end:`date +%s`:$count\r\e[0K"
+        count=$(( count +1 ))
+      done
+
+      if [[ -f error_log ]]; then
+        printf '\n\e[31m\e[1m%-80s\e[0m\n' ""
+        printf '\e[31m\e[1m%0.1s\e[0m' "-"{1..80}
+        printf '\n\e[31m\e[1m|%-78s|\e[0m\n' "Some kustomizations failed to process"
+        printf '\e[31m\e[1m%0.1s\e[0m' "-"{1..80}
+        printf '\n\e[31m\e[1m%-80s\e[0m\n' ""
+        cat error_log
+        exit 1
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event' ||  $CI_PIPELINE_SOURCE == 'pipeline'
+      changes:
+        - .gitlab/ci/**/*
+        - environment-values/**/*
+        - kustomize-units/**/*
+
+# ==========================================
+# Generic lint
+# ==========================================
 
 yamllint:
   extends: .lint-base
