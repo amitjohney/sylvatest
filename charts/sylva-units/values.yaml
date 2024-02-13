@@ -132,7 +132,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://github.com/minio/operator.git
       ref:
-        tag: v5.0.11
+        tag: v5.0.12
 
 helm_repo_spec_default:
   interval: 60m0s
