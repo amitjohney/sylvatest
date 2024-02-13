@@ -3550,8 +3550,9 @@ units:
       description: creates a MinIO tenant for the monitoring stack
       details: Loki and Thanos will use this MinIO S3 storage
       maturity: beta
-    enabled_conditions: []
+    enabled_conditions:
     #  - '{{ or (tuple . "thanos" | include "unit-enabled") ( tuple . "loki" | include "unit-enabled") }}'
+      - false  # Until the above units are available
     depends_on:
       namespace-defs: true
       minio-operator: true
