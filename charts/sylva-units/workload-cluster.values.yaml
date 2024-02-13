@@ -236,6 +236,10 @@ units:
     enabled: true
     unit_template: base-deps
 
+  ceph-csi-cephfs:
+    enabled: false
+    unit_template: base-deps
+
   kyverno:
     enabled: true
     unit_template: base-deps

@@ -826,6 +826,31 @@ properties:
       - https_proxy
       - no_proxy
 
+  ceph:
+    cephfs_csi:  # -------------------------------
+      type: object
+      additionalProperties: false
+      patternProperties:
+        clusterID:  # -------------------------------
+          type: string
+        fs_name:  # -------------------------------
+          type: string
+        adminID:  # -------------------------------
+          type: string
+        adminKey:  # -------------------------------
+          type: string
+        monitors_ips:
+          type: array
+          items:
+            type: string
+            format: ipv4
+      required:
+        - clusterID
+        - fs_name
+        - adminID
+        - adminKey
+        - monitors_ips
+
   no_proxy_additional:  # -------------------------------
     type: object
     additionalProperties: false
