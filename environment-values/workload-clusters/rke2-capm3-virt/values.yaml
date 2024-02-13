@@ -58,11 +58,13 @@ cluster:
 
   baremetal_host_default:
     bmh_metadata:
-      labels:
-        cluster-role: control-plane
+      annotations:
+        sylvaproject.org/default-longhorn-disks-config: >-
+          [{"path":"/var/longhorn/disks/disk_by-path_pci-0000:00:0a.0", "storageReserved":0, "allowScheduling":true, "tags":[ "vhdd", "fast"] },
+           {"path":"/var/longhorn/disks/disk_by-path_pci-0000:00:0b.0", "storageReserved":0, "allowScheduling":true, "tags":[ "vhdd", "fast"] }]
     bmh_spec:
       online: true
-      description: control plane node
+      description: workload cluster node
       bmc:
         disableCertificateVerification: true
       bootMode: legacy
@@ -71,13 +73,11 @@ cluster:
         deviceName: /dev/vda
 
   baremetal_hosts:  # corresponding credentials need to be set in secrets.yaml
-    workload-cp:
+    workload-cp-0:
       bmh_metadata:
-        annotations:
-          sylvaproject.org/default-longhorn-disks-config: >-
-             [{"path":"/var/longhorn/disks/disk_by-path_pci-0000:00:0a.0", "storageReserved":0, "allowScheduling":true, "tags":[ "vhdd", "fast"] },
-              {"path":"/var/longhorn/disks/disk_by-path_pci-0000:00:0b.0", "storageReserved":0, "allowScheduling":true, "tags":[ "vhdd", "fast"] }]
+        labels:
+          cluster-role: control-plane
       bmh_spec:
         bmc:
-          address: redfish-virtualmedia://{{ .Values._internal.bootstrap_node_ip }}:8001/redfish/v1/Systems/c0014001-b10b-f001-c0de-feeb1e54ee15
-        bootMACAddress: 48:df:37:e7:82:95
+          address: redfish-virtualmedia://{{ .Values._internal.bootstrap_node_ip }}:8010/redfish/v1/Systems/c0014001-b10b-f001-c0de-feeb1e54ee15
+        bootMACAddress: 52:54:00:44:44:10

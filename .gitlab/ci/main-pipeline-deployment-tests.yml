@@ -239,26 +239,6 @@ capo-fip-deploy:
     include: .gitlab/ci/pipeline-deploy-capo.yml
     strategy: depend
 
-capm3-rke2-virt-equinix-deploy:
-  extends: .default-trigger
-  variables:
-    ENV_NAME: rke2-capm3-virt
-    METAL3_PROVIDER: sylva
-    DOCKER_HOST: ""
-  trigger:
-    include: .gitlab/ci/pipeline-deploy-rke2-capm3-virt-equinix.yml
-    strategy: depend
-
-capm3-rke2-virt-equinix-deploy-suse:
-  extends: .default-trigger
-  variables:
-    ENV_NAME: rke2-capm3-virt
-    METAL3_PROVIDER: suse
-    DOCKER_HOST: ""
-  trigger:
-    include: .gitlab/ci/pipeline-deploy-rke2-capm3-virt-equinix.yml
-    strategy: depend
-
 capo-rke2-suse-os:
   extends: capo-rke2-deploy
   variables:
@@ -271,21 +251,44 @@ capo-rke2-oci-suse-os:
     MGMT_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2-capo.yml
     WC_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2-capo.yml
 
-capm3-rke2-virt-equinix-suse-os:
-  extends: capm3-rke2-virt-equinix-deploy
+.capm3-virt-equinix-deploy:
+  extends: .default-trigger
+  variables:
+    ENV_NAME: rke2-capm3-virt
+    METAL3_PROVIDER: sylva
+    DOCKER_HOST: ""
+  trigger:
+    include: .gitlab/ci/pipeline-deploy-rke2-capm3-virt-equinix.yml
+    strategy: depend
+
+capm3-HA-ubuntu-rke2-virt-equinix-deploy:
+  extends: .capm3-virt-equinix-deploy
+  variables:
+    MGMT_ADDITIONAL_VALUES: environment-values/rke2-capm3-virt/ha.yaml
+    WC_ADDITIONAL_VALUES: environment-values/workload-clusters/rke2-capm3-virt/ha.yaml
+    RUNNER_PLAN: s3.xlarge.x86
+
+capm3-ubuntu-m3suse-rke2-virt-equinix-deploy:
+  extends: .capm3-virt-equinix-deploy
+  variables:
+    METAL3_PROVIDER: suse
+
+capm3-suseOS-rke2-virt-equinix-deploy:
+  extends: .capm3-virt-equinix-deploy
+  variables:
+    MGMT_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2-capo.yml
+    WC_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2-capo.yml
+
+capm3-suseOS-m3suse-rke2-virt-equinix-deploy:
+  extends: .capm3-virt-equinix-deploy
   variables:
     MGMT_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2-capm3-virt-mgmt.yml
     WC_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2-capm3-virt-wkld.yml
 
-capm3-rke2-virt-equinix-suse-metal3-suse-os:
-  extends: capm3-rke2-virt-equinix-deploy-suse
-  variables:
-    MGMT_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2-capm3-virt-mgmt.yml
-    WC_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2-capm3-virt-wkld.yml
-
-capm3-kubeadm-virt-equinix-deploy-suse:
-  extends: capm3-rke2-virt-equinix-deploy-suse
+capm3-ubuntu-kubeadm-m3suse-virt-equinix-deploy:
+  extends: .capm3-virt-equinix-deploy
   variables:
     ENV_TAG: "${CI_PIPELINE_ID}-capm3-kubeadm-virt"
     MGMT_ADDITIONAL_VALUES: environment-values/ci/ubuntu-os-kubeadm-capm3-virt-mgmt.yml
     WC_ADDITIONAL_VALUES: environment-values/ci/ubuntu-os-kubeadm-capm3-virt-wkld.yml
+    METAL3_PROVIDER: suse

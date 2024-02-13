@@ -1,5 +1,7 @@
 # Grab some info in case of failure, essentially usefull to troubleshoot CI, fell free to add your own commands while troubleshooting
 
+unset KUBECONFIG
+
 # list of kinds to dump
 #
 # for some resources, we add the apiGroup because there are resources
@@ -92,7 +94,7 @@ function cluster_info_dump() {
   echo "Checking if $cluster cluster is reachable"
   if ! timeout 10s kubectl get nodes > /dev/null 2>&1 ;then
     echo "$cluster cluster is unreachable - aborting dump"
-    exit 0
+    return 0
   fi
   echo "Dumping resources for $cluster cluster in $dump_dir"
 
@@ -117,30 +119,36 @@ function cluster_info_dump() {
   # list secrets
   kubectl get secret -A > $dump_dir/Secrets.summary.txt
   echo "note: secrets are purposefully not dumped" > $dump_dir/Secrets-censored.yaml
+
+  echo -e "\nDisplay cluster resources usage per node"
+  # From https://github.com/kubernetes/kubernetes/issues/17512
+  kubectl get nodes --no-headers | awk '{print $1}' | xargs -I {} sh -c 'echo {} ; kubectl describe node {} | grep Allocated -A 5 | grep -ve Event -ve Allocated -ve percent -ve -- ; echo '
 }
 
 echo "Start debug-on-exit at: $(date -Iseconds)"
 
-echo "Docker containers"
+echo -e "\nDocker containers"
 docker ps
+echo -e "\nDocker containers resources usage"
+docker stats --no-stream --all
 
-echo "System info"
+echo -e "\nSystem info"
 free -h
 df -h || true
 
 if [[ $(kind get clusters) =~ $KIND_CLUSTER_NAME ]]; then
   cluster_info_dump bootstrap
-  echo "Dump node logs"
-  docker ps -q -f name=management-cluster-control-plane* | xargs -I % -r docker exec % journalctl -e
+  echo -e "\nDump bootstrap node logs"
+  docker ps -q -f name=control-plane* | xargs -I % -r docker exec % journalctl -e > bootstrap-cluster-dump/bootstap_node.log
 fi
 
 if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
     export KUBECONFIG=${KUBECONFIG:-$BASE_DIR/management-cluster-kubeconfig}
 
-    echo "Get nodes in management cluster"
+    echo -e "\nGet nodes in management cluster"
     kubectl --request-timeout=3s get nodes
 
-    echo "Get pods in management cluster"
+    echo -e "\nGet pods in management cluster"
     kubectl --request-timeout=3s get pods -A
 
     cluster_info_dump management
@@ -152,7 +160,17 @@ if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
         echo -e "We'll check next workload cluster $workload_cluster_name"
         workload_cluster_namespace=$(kubectl get cluster.cluster --all-namespaces -o=custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace | grep "$workload_cluster_name" | awk -F ' ' '{print $2}')
         kubectl -n $workload_cluster_namespace get secret $workload_cluster_name-kubeconfig -o jsonpath='{.data.value}' | base64 -d > $BASE_DIR/workload-cluster-kubeconfig
-        export KUBECONFIG=$BASE_DIR/workload-cluster-kubeconfig
+
+        if timeout 10s kubectl --kubeconfig=$BASE_DIR/workload-cluster-kubeconfig get nodes > /dev/null 2>&1; then
+          export KUBECONFIG=$BASE_DIR/workload-cluster-kubeconfig
+        else
+          # in case of baremetal emulation workload cluster is only accessible from Rancher
+          # and rancher API certificates does not match expected (so kubectl must be used with insecure-skip-tls-verify)
+          ./tools/shell-lib/get-wc-kubeconfig-from-rancher.sh $workload_cluster_name > $BASE_DIR/workload-cluster-kubeconfig-rancher
+          yq -i e '.clusters[].cluster.insecure-skip-tls-verify = true' $BASE_DIR/workload-cluster-kubeconfig-rancher
+          yq -i e 'del(.clusters[].cluster.certificate-authority-data)' $BASE_DIR/workload-cluster-kubeconfig-rancher
+          export KUBECONFIG=$BASE_DIR/workload-cluster-kubeconfig-rancher
+        fi
 
         cluster_info_dump workload
     fi

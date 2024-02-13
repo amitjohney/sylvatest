@@ -21,6 +21,8 @@ create-runner:
     RUNNER_HOSTNAME: syla-core-$CI_PIPELINE_ID
     RUNNER_TAG: $CI_PIPELINE_IID
     RUNNER_PROJECT_ID: $CI_PROJECT_ID
+    RUNNER_PLAN: c3.small.x86
+    RUNNER_AAS_TARGET_REF: main
   tags: []
   image:
     name: registry.gitlab.com/gitlab-org/cli:v1.36.0
@@ -31,8 +33,10 @@ create-runner:
       curl -Ss -X POST --fail
       --form "token=$RUNNER_AAS_TOKEN"
       --form ref=main
+      --form "variables[TARGET_REF]=$RUNNER_AAS_TARGET_REF"
       --form "variables[REQUEST]=$REQUEST"
       --form "variables[SOURCE_JWT_TOKEN]=$JOB_ID_TOKEN"
+      --form "variables[RUNNER_PLAN]=$RUNNER_PLAN"
       "$CI_API_V4_URL/projects/51177405/trigger/pipeline" > pipeline.json
     - PIPELINE_ID=$(cat pipeline.json | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')
     - echo "Pipeline triggered = $(cat pipeline.json | python3 -c 'import json,sys;print(json.load(sys.stdin)["web_url"])')"
