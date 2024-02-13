@@ -155,6 +155,9 @@ units:
       cluster-reachable: true
       namespace-defs: true
 
+  harbor-init:
+    enabled: false
+
   harbor:
     # can be enabled at runtime if desired:
     #enabled: true

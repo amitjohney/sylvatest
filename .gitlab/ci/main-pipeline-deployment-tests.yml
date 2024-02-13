@@ -220,8 +220,8 @@ capo-misc-units-deploy:
     ENV_NAME: rke2-capo
     CAPO_TAG: "${ENV_TAG_OCI}-misc"
     MGMT_ADDITIONAL_VALUES: environment-values/ci/misc-units-in-capo.yml
+    WC_ADDITIONAL_VALUES: environment-values/ci/misc-units-in-capo-wkld.yml
     MGMT_WATCH_TIMEOUT_MIN: 45
-    ONLY_DEPLOY_MGMT: "TRUE"
   trigger:
     include: .gitlab/ci/pipeline-deploy-capo.yml
     strategy: depend
