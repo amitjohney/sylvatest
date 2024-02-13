@@ -7,16 +7,12 @@ units:
     enabled: true
   kubevirt-test-vms:
     enabled: true
-  harbor:
-    enabled: false
-  harbor-init:
-    enabled: false
-  sriov-crd:
-    enabled: true
-  sriov:
-    enabled: true
-  sriov-resources:
-    enabled: true
+  # sriov-crd:
+  #   enabled: true
+  # sriov:
+  #   enabled: true
+  # sriov-resources:
+  #   enabled: true
 cluster:
   kubelet_extra_args:
     max-pods: "228"
@@ -39,21 +35,21 @@ cluster:
             lock_passwd: false
             passwd: $1$pdWEicWs$9ZWQf5.CWyXccmP8Chuu01 # sylva
 
-        # bootcmd:
-        #   - if [ ! -f "/var/lib/grub-init" ]; then
-        #   - touch "/var/lib/grub-init"
-        #   - current_grub=$(grep '^GRUB_CMDLINE_LINUX_DEFAULT=' /etc/default/grub | tail -1 | sed -e "s/^[^=]*=[\"']\\?//" -e "s/['\"]$//")
-        #   - next_grub="$current_grub iommu=pt intel_iommu=on transparent_hugepage=never hugepagesz=2M hugepages=12000 hugepagesz=1G hugepages=16 default_hugepagesz=2M"
-        #   # No need for a timeout. Nobody attends
-        #   - sed -i -e '/GRUB_TIMEOUT=5/ d' /etc/default/grub
-        #   # Delete the old command-line
-        #   - sed -i -e '/^GRUB_CMDLINE_LINUX_DEFAULT=/ d' /etc/default/grub
-        #   # No wait on reboot (first considered as failed)
-        #   - echo "GRUB_RECORDFAIL_TIMEOUT=1" >> /etc/default/grub
-        #   - echo "GRUB_CMDLINE_LINUX_DEFAULT=\"$next_grub\"" >> /etc/default/grub
-        #   - update-grub
-        #   - cloud-init clean --reboot
-        #   - fi
+        bootcmd:
+          - if [ ! -f "/var/lib/grub-init" ]; then
+          - touch "/var/lib/grub-init"
+          - current_grub=$(grep '^GRUB_CMDLINE_LINUX_DEFAULT=' /etc/default/grub | tail -1 | sed -e "s/^[^=]*=[\"']\\?//" -e "s/['\"]$//")
+          - next_grub="$current_grub iommu=pt intel_iommu=on transparent_hugepage=never hugepagesz=2M hugepages=12000 hugepagesz=1G hugepages=16 default_hugepagesz=2M"
+          # No need for a timeout. Nobody attends
+          - sed -i -e '/GRUB_TIMEOUT=5/ d' /etc/default/grub
+          # Delete the old command-line
+          - sed -i -e '/^GRUB_CMDLINE_LINUX_DEFAULT=/ d' /etc/default/grub
+          # No wait on reboot (first considered as failed)
+          - echo "GRUB_RECORDFAIL_TIMEOUT=1" >> /etc/default/grub
+          - echo "GRUB_CMDLINE_LINUX_DEFAULT=\"$next_grub\"" >> /etc/default/grub
+          - update-grub
+          - cloud-init clean --reboot
+          - fi
 
 sriov:
   node_policies:
