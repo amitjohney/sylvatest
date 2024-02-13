@@ -965,7 +965,7 @@ units:
                                        "value" .Values.proxies.https_proxy) }}
               {{- $l = append $l (dict "name" "no_proxy"
                                        "value" .Values.proxies.no_proxy) }}
-              {{- end}}
+              {{- end }}
               {{- $l | include "preserve-type" }}
             image:
               repository: neuvector/scanner
