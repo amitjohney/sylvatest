@@ -958,13 +958,17 @@ units:
             image:
               repository: neuvector/updater
           scanner:
+            env: >-
+              {{- $l := list }}
+              {{- if .Values.proxies.https_proxy }}
+              {{- $l = append $l (dict "name" "https_proxy"
+                                       "value" .Values.proxies.https_proxy) }}
+              {{- $l = append $l (dict "name" "no_proxy"
+                                       "value" .Values.proxies.no_proxy) }}
+              {{- end}}
+              {{- $l | include "preserve-type" }}
             image:
               repository: neuvector/scanner
-              env:
-                - name: https_proxy
-                  value: '{{ .Values.proxies.https_proxy }}'
-                - name: no_proxy
-                  value: '{{ include "sylva-units.no_proxy" (tuple .) }}'
         containerd:
           enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "as-bool" }}'
           path: /var/run/containerd/containerd.sock
