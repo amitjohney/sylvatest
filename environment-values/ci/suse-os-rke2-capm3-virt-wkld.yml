@@ -9,3 +9,21 @@ cluster:
   capm3:
     # following are needed to override the Ubuntu based image (in environment-values/workload-clusters/rke2-capm3-virt/values.yaml) for capm3-rke2-virt CIs
     image_key: opensuse-15-5-plain-rke2-1-27-6
+    kubelet_extra_args:
+      max-pods: "228"
+      #node-labels: "feature.node.kubernetes.io/network-sriov.capable=true" ##should be set automatically by rancher-nfd
+      feature-gates: "TopologyManager=true,CPUManager=true"
+      topology-manager-policy: "best-effort"
+      cpu-manager-policy: "static"
+      system-reserved: "cpu=100m,memory=200Mi"
+      kube-reserved: "cpu=100m,memory=200Mi"
+
+units:
+  multus:
+    enabled: true
+  multus-ready:
+    enabled: true
+  kubevirt:
+    enabled: true
+  kubevirt-test-vms:
+    enabled: true

@@ -105,6 +105,8 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       url: https://gitlab.com/sylva-projects/sylva-elements/container-images/libvirt-metal.git
       ref:
         tag: 0.1.8
+        #tag: manik-0.1
+
 
   vault-operator:
     kind: GitRepository
@@ -483,7 +485,6 @@ units:
                 - CPUManager
                 - Snapshot
 
-
   kubevirt-test-vms:
     info:
       description: deploys kubevirt VMs for testing
@@ -491,6 +492,7 @@ units:
     depends_on:
       kubevirt: true
       multus: true
+#      sriov: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kubevirt-test-vms
