@@ -302,8 +302,6 @@ include:
       done
     - echo "-- Wait for test-sso pod to be created"
     - kubectl wait --for=condition=Ready pod/test-sso --kubeconfig $WORKLOAD_CLUSTER_NAME-rancher.yaml --timeout=60s
-    - echo "-- Get the sample workload cluster nodes annotations for keys node.longhorn.io/default-node-tags & node.longhorn.io/default-disks-config"
-    - kubectl --kubeconfig $WORKLOAD_CLUSTER_NAME-rancher.yaml get nodes -o yaml | yq '.items[] | (.metadata.name,.metadata.annotations."node.longhorn.io/default-node-tags",.metadata.annotations."node.longhorn.io/default-disks-config")'
     - echo "-- All done"
   tags:
     - $CAPO_PLATFORM_TAG
@@ -333,8 +331,6 @@ include:
       done
     - echo "-- Wait for test-no-sso pod to be created"
     - kubectl wait --for=condition=Ready pod/test-no-sso --kubeconfig $WORKLOAD_CLUSTER_NAME-rancher.yaml --timeout=60s
-    - echo "-- Get the sample workload cluster nodes annotations for keys node.longhorn.io/default-node-tags & node.longhorn.io/default-disks-config"
-    - kubectl --kubeconfig $WORKLOAD_CLUSTER_NAME-rancher.yaml get nodes -o yaml | yq '.items[] | (.metadata.name,.metadata.annotations."node.longhorn.io/default-node-tags",.metadata.annotations."node.longhorn.io/default-disks-config")'
     - echo "-- All done"
 
 .test-login:
