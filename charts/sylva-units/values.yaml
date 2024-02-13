@@ -408,6 +408,7 @@ units:
         - '{{ tuple "components/rancher" (tuple . "rancher" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/sriov" (tuple . "sriov" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/cattle-monitoring" (tuple . "monitoring" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/ceph-csi-cephfs" (tuple . "ceph-csi-cephfs" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/gitea" (tuple . "gitea" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/minio-operator" (tuple . "minio-operator" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/minio-monitoring-tenant" (tuple . "minio-monitoring-tenant" | include "unit-enabled") | include "set-only-if" }}'
@@ -2816,6 +2817,36 @@ units:
           CLUSTER_VIRTUAL_IP: '{{ .Values.cluster_virtual_ip }}'
           CLUSTER_DOMAIN: '{{ .Values.cluster_domain }}'
 
+  ceph-csi-cephfs:
+    info:
+      description: Installs Ceph-CSI
+      maturity: beta
+    enabled: false
+    depends_on:
+      namespace-defs: true
+    helm_repo_url: https://ceph.github.io/csi-charts
+    helmrelease_spec:
+      targetNamespace: ceph-csi-cephfs
+      chart:
+        spec:
+          chart: ceph-csi-cephfs
+          version: 3.9.0
+      values:
+        provisioner:
+          replicaCount: '{{ .Values.cluster.control_plane_replicas }}'
+        storageClass:
+          create: true
+          clusterID: '{{ .Values.ceph.cephfs_csi.clusterID }}'
+          fsName: '{{ .Values.ceph.cephfs_csi.fs_name }}'
+        csiConfig:
+          - clusterID: '{{ .Values.ceph.cephfs_csi.clusterID }}'
+            monitors: '{{ .Values.ceph.cephfs_csi.monitors_ips | include "preserve-type" }}'
+    helm_secret_values:
+      secret:
+        create: true
+        adminID: '{{ .Values.ceph.cephfs_csi.adminID }}'
+        adminKey: '{{ .Values.ceph.cephfs_csi.adminKey }}'
+
   longhorn-crd:
     info:
       description: installs Longhorn CRDs
@@ -3996,6 +4027,15 @@ sriov:
 #       vendor: ""
 #       pfNames: []
 #       rootDevices: []
+
+# add ceph cluster details
+ceph:
+  cephfs_csi:
+    clusterID: ""
+    fs_name: ""
+    adminID: ""
+    adminKey: ""
+    monitors_ips: []
 
 # add your proxy settings if required
 proxies:

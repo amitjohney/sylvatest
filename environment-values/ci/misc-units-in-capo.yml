@@ -122,6 +122,8 @@ units:
     enabled: true
   minio-monitoring-tenant:
     enabled: true
+  ceph-csi-cephfs:
+    enabled: true
   harbor-init:
     enabled: true
   harbor:
