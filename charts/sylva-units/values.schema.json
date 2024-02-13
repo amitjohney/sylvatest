@@ -4089,6 +4089,21 @@
                               "type": "null"
                             }
                           ]
+                        },
+                        "mtu": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "min": 1500,
+                              "max": 9000
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
                         }
                       }
                     },

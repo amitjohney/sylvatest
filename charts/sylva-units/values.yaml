@@ -69,7 +69,8 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.1.47
+        # tag: 0.1.38
+        branch: mtu
 
   local-path-provisioner:
     kind: GitRepository
@@ -1844,6 +1845,33 @@ units:
           name: '{{ .Values._internal.os_images_info_configmap }}'  # this configmap is a byproduct of the os-images-info unit
           valuesKey: values-s-c-c.yaml
           optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capm3") | include "as-bool" }}'
+
+      # _postRenderers: 
+      #   - kustomize:
+      #       patches:
+      #         - target:
+      #             kind: RKE2ControlPlane
+      #           patch: |-
+      #             - op: add
+      #               path: /spec/files/-
+      #               value:
+      #                 content: |
+      #                   ---
+      #                   apiVersion: helm.cattle.io/v1
+      #                   kind: HelmChartConfig
+      #                   metadata:
+      #                     name: rke2-calico
+      #                     namespace: kube-system
+      #                   spec:
+      #                     valuesContent: |-
+      #                       installation:
+      #                         calicoNetwork:
+      #                           mtu: {{ .Values.cluster.capm3.mtu }}
+      #                 owner: root:root
+      #                 path: /var/lib/rancher/rke2/server/manifests/rke2-calico-config.yaml
+      #                 permissions: "0644"
+
+
     # we pass everything that is under `cluster` to this unit that uses sylva-capi-cluster chart
     # (we do it via a secret because some of the values are credentials in many scenarios)
     helm_secret_values: '{{ .Values.cluster | include "preserve-type" }}'
