@@ -8,6 +8,13 @@ secretGenerator:
   files:
   - falcon-base-secrets=secrets.yaml
 
+configMapGenerator:
+- name: falcon-base-values
+  options:
+    disableNameSuffixHash: true
+  files:
+  - falcon-base-values=values.yaml
+
 patches:
 - target:
     kind: HelmRelease
@@ -19,3 +26,9 @@ patches:
         kind: Secret
         name: falcon-base-secrets
         valuesKey: falcon-base-secrets
+    - op: add
+      path: /spec/valuesFrom/-
+      value:
+        kind: ConfigMap
+        name: falcon-base-values
+        valuesKey: falcon-base-values

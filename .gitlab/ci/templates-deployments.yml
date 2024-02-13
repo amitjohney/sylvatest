@@ -125,20 +125,13 @@ include:
           PRIVATE_RUNNER_CONTEXT=falcon   # Temporary: to be set at runner level
           echo "Applying private $PRIVATE_RUNNER_CONTEXT values"
           PRIVATE_RUNNER_VALUES_PATH=${CI_PROJECT_DIR}/environment-values/ci/private/${PRIVATE_RUNNER_CONTEXT}-base
-          PRIVATE_RUNNER_VALUES=${PRIVATE_RUNNER_VALUES_PATH}/values.yaml
-          echo ">> PRIVATE_RUNNER_VALUES=$PRIVATE_RUNNER_VALUES"
-          update_values_file ${PRIVATE_RUNNER_VALUES}
 
-          # decypher falcon secret and apply them into extra kustomize component
+          # decypher falcon secret and apply them with values into extra kustomize component
           sops -d ${PRIVATE_RUNNER_VALUES_PATH}/secrets.enc.yaml > ${PRIVATE_RUNNER_VALUES_PATH}/secrets.yaml
           export EXTRA_COMPONENT="$(realpath ${PRIVATE_RUNNER_VALUES_PATH} --relative-to $ENV_PATH)"
           echo EXTRA_COMPONENT=$EXTRA_COMPONENT
           if [ $(yq '.components | length' $ENV_PATH/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' $ENV_PATH/kustomization.yaml; fi
           yq -i '.components += strenv(EXTRA_COMPONENT)' $ENV_PATH/kustomization.yaml
-
-          # bootstrap.sh needs registry_mirrors in values.yaml to take them in account
-          yq -e '.registry_mirrors' ${PRIVATE_RUNNER_VALUES_PATH}/secrets.yaml > registry_mirrors.yml
-          yq -i eval-all 'select(fileIndex==0).registry_mirrors = select(fileIndex==1) | select(fileIndex==0)' $values_file registry_mirrors.yml
 
           if [[ ${CLUSTER_TYPE} == 'workload' ]]; then
             yq -i '.namespace = "WORKLOAD_CLUSTER_NAMESPACE"' $ENV_PATH/kustomization.yaml
