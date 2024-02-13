@@ -396,6 +396,7 @@ units:
         - '{{ tuple "components/metal3" (tuple . "metal3" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/longhorn" (tuple . "longhorn" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/keycloak" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/harbor" (tuple . "harbor" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/vault" (tuple . "vault" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/rancher" (tuple . "rancher" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/sriov" (tuple . "sriov" | include "unit-enabled") | include "set-only-if" }}'
@@ -501,15 +502,10 @@ units:
       description: sets up Harbor prerequisites
       details: it generates namespace, certificate, admin password, OIDC configuration
       internal: true
+    depends_on:
+      namespace-defs: true
     enabled_conditions:
       - '{{ tuple . "harbor" | include "unit-enabled" }}'
-    depends_on:
-      sylva-ca: true
-      keycloak-resources: true
-      kyverno: true
-      vault: true
-      vault-config-operator: true
-      keycloak-add-client-scope: true
     repo: sylva-core
     kustomization_substitute_secrets:
       KEY: '{{ .Values.external_certificates.harbor.key | default "" | b64enc }}'
@@ -534,8 +530,9 @@ units:
       description: installs Harbor
       maturity: beta
     depends_on:
+      namespace-defs: true
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
-      harbor-init: true
+      harbor-init: '{{ tuple . "harbor-init" | include "unit-enabled" }}'
     annotations:
       sylvactl/readyMessage: "Harbor UI can be reached at https://{{ .Values.external_hostnames.harbor }} ({{ .Values.external_hostnames.harbor }} must resolve to {{ .Values.display_external_ip }})"
     helm_repo_url: https://helm.goharbor.io
@@ -566,7 +563,7 @@ units:
               #storageClass: '{{ .Values._internal.default_storage_class }}'
               #size: 8Gi
         externalURL: 'https://{{ .Values.external_hostnames.harbor }}'
-        existingSecretAdminPassword: "harbor-init"
+        existingSecretAdminPassword: '{{ tuple "harbor-init" (tuple . "harbor-init" | include "unit-enabled") | include "set-only-if" }}'
         expose:
           ingress:
             enabled: true
@@ -587,22 +584,6 @@ units:
           noProxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
       _postRenderers:
         - kustomize:
-            patchesStrategicMerge:
-              - kind: Deployment
-                apiVersion: apps/v1
-                metadata:
-                  name: harbor-core
-                spec:
-                  template:
-                    spec:
-                      containers:
-                        - name: core
-                          env:
-                            - name: CONFIG_OVERWRITE_JSON
-                              valueFrom:
-                                secretKeyRef:
-                                  key: CONFIG_OVERWRITE_JSON
-                                  name: "harbor-oidc"
             patches:
               - target:
                   kind: Deployment|StatefulSet
@@ -1123,6 +1104,7 @@ units:
       targetNamespace: keycloak
       _components:
         - '{{ tuple "components/neuvector" (tuple . "neuvector" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/harbor" (tuple . "harbor" | include "unit-enabled") | include "set-only-if" }}'
       postBuild:
         substitute:
           RANCHER_DNS: '{{ .Values.external_hostnames.rancher }}'

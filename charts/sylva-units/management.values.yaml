@@ -49,6 +49,35 @@ units:
   snmp-exporter:
     enabled: '{{ tuple . "capm3" | include "unit-enabled" }}'
 
+  harbor-init:
+    depends_on:
+      sylva-ca: true
+      keycloak-resources: true
+      kyverno: true
+      vault: true
+      vault-config-operator: true
+      keycloak-add-client-scope: true
+
+  harbor:
+    helmrelease_spec:
+      _postRenderers:
+        - kustomize:
+            patchesStrategicMerge:
+              - kind: Deployment
+                apiVersion: apps/v1
+                metadata:
+                  name: harbor-core
+                spec:
+                  template:
+                    spec:
+                      containers:
+                        - name: core
+                          env:
+                            - name: CONFIG_OVERWRITE_JSON
+                              valueFrom:
+                                secretKeyRef:
+                                  key: CONFIG_OVERWRITE_JSON
+                                  name: "harbor-oidc"
 
 keycloak:
   keycloak_expire_password_days: 30
