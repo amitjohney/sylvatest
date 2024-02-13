@@ -256,7 +256,10 @@ include:
       echo $domain
       if [[ $domain == "sylva" ]]; then
         echo "-- Get ingress saved into /etc/hosts"
-        kubectl --kubeconfig management-cluster-kubeconfig get ingress -A -o custom-columns=:.status.loadBalancer.ingress[].ip,:.spec.tls[].hosts[] | grep -v '<none>' >> /etc/hosts
+        access_ip=$(kubectl --kubeconfig management-cluster-kubeconfig -n sylva-system get secrets/sylva-units-values -o jsonpath='{.data.values}' | base64 -d | yq -r .display_external_ip)
+        for i in $(kubectl --kubeconfig management-cluster-kubeconfig get ingress -A -o custom-columns=:.spec.tls[].hosts[] | grep -v "<none>"); do
+          echo $access_ip $i >> /etc/hosts
+        done
       fi
   test_no_sso:
     - |
@@ -269,7 +272,6 @@ include:
       curl --insecure -s -X POST $KUBECONFIG -H "Authorization: Bearer $TOKEN" | jq -r .config > $WORKLOAD_CLUSTER_NAME-rancher.yaml
   test_sso:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_test_loging[collapsed=true]\r\e[0KGet ingress saved into /etc/hosts and set variables\e[0m"
-    - kubectl --kubeconfig management-cluster-kubeconfig get ingress -A -o custom-columns=:.status.loadBalancer.ingress[].ip,:.spec.tls[].hosts[] | grep -v '<none>' >> /etc/hosts
     - export flux_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n flux-system flux-webui-weave-gitops -o jsonpath='{ .spec.tls[].hosts[] }')
     - export vault_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n vault vault -o jsonpath='{ .spec.tls[].hosts[] }')
     - export rancher_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n cattle-system rancher -o jsonpath='{ .spec.tls[].hosts[] }')
