@@ -123,6 +123,9 @@ snmp:
     - name: bar
       ip: 192.168.100.2
       group: foo
+    - name: abc
+      ip: 192.168.100.2
+      group: def
   groups:
     foo:
       version: 3
@@ -135,6 +138,17 @@ snmp:
         priv_protocol: AES
         priv_password: xxxxxx
       hw_type: dell
+    def:
+      version: 3
+      auth:
+        community: public
+        security_level: authPriv
+        username: user
+        password: xxxxxx
+        auth_protocol: SHA256
+        priv_protocol: AES
+        priv_password: xxxxxx
+      hw_type: hp
 
 
 #proxies:
