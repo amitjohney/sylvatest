@@ -9,3 +9,13 @@ cluster:
   capm3:
     # following are needed to override the Ubuntu based image (in environment-values/workload-clusters/rke2-capm3-virt/values.yaml) for capm3-rke2-virt CIs
     image_key: opensuse-15-5-plain-rke2-1-27-6
+
+units:
+  multus:
+    enabled: true
+  multus-ready:
+    enabled: true
+  kubevirt:
+    enabled: true
+  kubevirt-test-vms:
+    enabled: true
