@@ -23,7 +23,8 @@
     - |
       function helm() { $(which helm) $@ 2> >(grep -v 'found symbolic link' >&2); }
   rules:
-    - changes:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event' ||  $CI_PIPELINE_SOURCE == 'pipeline'
+      changes:
         - charts/sylva-units/**/*
         - .gitlab/ci/**/*
   needs:
@@ -57,7 +58,8 @@ sylva-units:helm-schema-validation:
     - ./tools/validation/helm-schema-validation.sh
   needs: []
   rules:
-    - exists:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event' ||  $CI_PIPELINE_SOURCE == 'pipeline'
+      exists:
         - charts/sylva-units/values.schema.yaml
         - charts/sylva-units/values.schema.json
       changes:
