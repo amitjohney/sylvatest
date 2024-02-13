@@ -192,16 +192,16 @@ function exit_trap() {
     # Call debug script if needed
     if [[ $EXIT_CODE -ne 0 && ${DEBUG_ON_EXIT:-"0"} -eq 1 ]] || [[ $IN_CI -eq 1 ]]; then
         echo_b "gathering debugging logs in debug-on-exit.log file"
-        ${BASE_DIR}/tools/shell-lib/debug-on-exit.sh > debug-on-exit.log
+        ${BASE_DIR}/tools/shell-lib/debug-on-exit.sh 2>&1 | tee debug-on-exit.log
         if [[ $IN_CI -eq 1 ]]; then
-          .gitlab/ci/scripts/units-reports.py --env-type=${CI_JOB_NAME_SLUG}:bootstrap --input ${CI_PROJECT_DIR}/bootstrap-cluster-dump/Kustomizations.yaml --output bootstrap-cluster-units-report.xml
-          .gitlab/ci/scripts/units-reports.py --env-type=${CI_JOB_NAME_SLUG}:management --input ${CI_PROJECT_DIR}/management-cluster-dump/Kustomizations.yaml --output management-cluster-units-report.xml
-          .gitlab/ci/scripts/units-reports.py --env-type=${CI_JOB_NAME_SLUG}:management --input ${CI_PROJECT_DIR}/workload-cluster-dump/Kustomizations.yaml --output management-cluster-units-report.xml
+          .gitlab/ci/scripts/units-reports.py --env-type=${CI_JOB_NAME_SLUG}:bootstrap --input ${CI_PROJECT_DIR}/bootstrap-cluster-dump/Kustomizations.yaml --output bootstrap-cluster-units-report.xml &> /dev/null
+          .gitlab/ci/scripts/units-reports.py --env-type=${CI_JOB_NAME_SLUG}:management --input ${CI_PROJECT_DIR}/management-cluster-dump/Kustomizations.yaml --output management-cluster-units-report.xml &> /dev/null
+          .gitlab/ci/scripts/units-reports.py --env-type=${CI_JOB_NAME_SLUG}:management --input ${CI_PROJECT_DIR}/workload-cluster-dump/Kustomizations.yaml --output management-cluster-units-report.xml &> /dev/null
         fi
         end_section
     fi
 
-    # call cleanup only when script exists successfully 
+    # call cleanup only when script exists successfully
     if [[ $EXIT_CODE -eq 0 ]]; then
       cleanup_bootstrap_cluster
     fi
