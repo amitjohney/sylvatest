@@ -2,3 +2,12 @@
 units:
   harbor:
     enabled: true
+  rancher-logging-crd:
+    enabled: true
+  rancher-logging:
+    enabled: true
+  rancher-logging-config:
+    enabled: true
+  sylva-prometheus-rules:
+    enabled: true
+

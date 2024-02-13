@@ -136,6 +136,22 @@ units:
     enabled: true
   cluster-creator-policy:
     enabled: true
+  thanos-init:
+    enabled: true
+  thanos:
+    enabled: true
+  loki-scalable-init:
+    enabled: true
+  loki-scalable:
+    enabled: true
+  rancher-logging-crd:
+    enabled: true
+  rancher-logging:
+    enabled: true
+  rancher-logging-config:
+    enabled: true
+  sylva-prometheus-rules:
+    enabled: true
 cluster:
   control_plane_replicas: 3
   capo:

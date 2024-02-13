@@ -7214,6 +7214,76 @@
               "$ref": "#/$defs/string-with-gotpl"
             }
           ]
+        },
+        "loki": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "const": ""
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
+        },
+        "thanos": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "const": ""
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
+        },
+        "thanos_storegateway": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "const": ""
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
+        },
+        "thanos_receive": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "const": ""
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
+        },
+        "thanos_query": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "const": ""
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
         }
       }
     },
@@ -7252,6 +7322,12 @@
           "$ref": "#/$defs/cert-and-key"
         },
         "minio_monitoring_tenant": {
+          "$ref": "#/$defs/cert-and-key"
+        },
+        "loki_scalable": {
+          "$ref": "#/$defs/cert-and-key"
+        },
+        "thanos": {
           "$ref": "#/$defs/cert-and-key"
         }
       }

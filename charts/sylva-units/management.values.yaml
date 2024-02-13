@@ -84,3 +84,32 @@ keycloak:
 
 cluster:
   prevent_deletion: true
+
+  monitoring:
+    helmrelease_spec:
+      values:
+        global:
+          cattle:
+            clusterId: local
+    helm_secret_values:
+      grafana:
+        additionalDataSources:
+          - name: Thanos
+            type: "prometheus"
+            access: "proxy"
+            url: http://thanos-query.thanos.svc:9090
+            basicAuth: true
+            basicAuthPassword: '{{ .Values._internal.thanos_password }}'
+            basicAuthUser: "thanos-user"
+            isDefault: true
+            orgId: 1
+            version: 1
+          - name: Loki
+            type: "loki"
+            access: "proxy"
+            url: http://loki-read.loki-scalable.svc:3100
+            basicAuth: true
+            basicAuthPassword: '{{ .Values._internal.loki_password }}'
+            basicAuthUser: "loki-user"
+            orgId: 1
+            version: 1
