@@ -3822,6 +3822,8 @@ units:
       namespace-defs: true
       thanos-init: true
       minio-monitoring-tenant: true
+      '{{ .Values._internal.default_storage_class_unit }}': true
+      ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
     annotations:
       sylvactl/readyMessage: Thanos UI can be reached at https://{{ .Values.external_hostnames.thanos }} ({{ .Values.external_hostnames.thanos }} must resolve to {{ .Values.display_external_ip }})
     helm_repo_url: https://charts.bitnami.com/bitnami
