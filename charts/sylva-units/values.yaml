@@ -1798,6 +1798,11 @@ units:
     kustomization_spec:
       path: ./kustomize-units/heat-operator
       wait: true
+      images:
+        - name: controller
+          newName: registry.gitlab.com/sylva-projects/sylva-elements/heat-operator
+          newTag: 0.0.7
+
 
   sylva-units-operator:
     info:
