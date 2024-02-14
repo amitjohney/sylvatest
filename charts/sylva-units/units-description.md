@@ -11,7 +11,7 @@
 | **cert-manager** | installs cert-manager, an X.509 certificate controller | core-component |  | [Helm](https://charts.jetstack.io) | v1.13.3 |
 | **cluster** | holds the Cluster API definition for the cluster | core-component |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git) | 0.1.41 |
 | **flux-system** | contains Flux definitions *to manage the Flux system itself via gitops*<br/><br/>Note that Flux is always installed on the current cluster as a pre-requisite to installing the chart | core-component |  | [Kustomize](https://github.com/fluxcd/flux2/releases/download/v2.2.3/install.yaml) | v2.2.3 |
-| **heat-operator** | installs OpenStack Heat operator | core-component |  | [Kustomize](https://gitlab.com/sylva-projects/sylva-elements/heat-operator.git/config/default?ref=v0.0.6-pre) | v0.0.6-pre |
+| **heat-operator** | installs OpenStack Heat operator | core-component |  | [Kustomize](https://gitlab.com/sylva-projects/sylva-elements/heat-operator.git/config/default?ref=0.0.7) | 0.0.7 |
 | **calico** | install Calico CNI | stable |  | [Helm](https://rke2-charts.rancher.io) | v3.25.001, v3.26.101 |
 | **capo-contrail-bgpaas** | installs CAPO Contrail BGPaaS controller | stable |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/capo-contrail-bgpaas.git) | 1.0.3 |
 | **cinder-csi** | installs OpenStack Cinder CSI | stable |  | [Helm](https://kubernetes.github.io/cloud-provider-openstack) | 2.28.1 |
