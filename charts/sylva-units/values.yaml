@@ -69,7 +69,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.1.38
+        tag: 0.1.41
 
   local-path-provisioner:
     kind: GitRepository
@@ -3925,6 +3925,25 @@ cluster:
 
   enable_longhorn: '{{ or (tuple . "longhorn" | include "unit-enabled") (tuple . .Values.units.longhorn.enabled | include "interpret-for-test") | include "as-bool" }}'
 
+  default_node_class: generic
+  node_classes: {}
+    # generic:
+    #   kernel_cmdline:
+    #     hugepages:
+    #       enabled: false
+    #       2M_percentage_total: ""
+    #       1G_percentage_total: ""
+    #       default_size: 2M
+    #     extra_options: ""
+    #   kubelet_extra_args: {}
+    #   kubelet_config_file_options: {}
+    #   nodeTaints: {}
+    #   nodeLabels: {}
+    #   nodeAnnotations: {}
+    #   additional_commands:
+    #     pre_bootstrap_commands: []
+    #     post_bootstrap_commands: []
+
 capd_docker_host: unix:///var/run/docker.sock
 
 openstack:
@@ -4299,6 +4318,9 @@ shared_workload_clusters_values:
       image_name: '{{ .Values.cluster.capo.image_name | include "set-if-defined" }}'
       image_key: '{{ .Values.cluster.capo.image_key | include "set-if-defined" }}'
       network_id: '{{ .Values.cluster.capo.network_id | include "set-if-defined" }}'
+    default_node_class: '{{ .Values.cluster.default_node_class }}'
+    node_classes: '{{ .Values.cluster.node_classes | include "preserve-type" }}'
+
   units:
     cluster-import:
       enabled: '{{ tuple . "rancher" | include "unit-enabled" }}'

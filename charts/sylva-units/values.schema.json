@@ -1528,6 +1528,46 @@
         }
       ]
     },
+    "capm3-network-interfaces-bondMode": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "balance-rr",
+            "active-backup",
+            "balance-xor",
+            "broadcast",
+            "balance-tlb",
+            "balance-alb",
+            "802.3ad"
+          ]
+        },
+        {
+          "$ref": "#/$defs/string-with-gotpl"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "capm3-network-interfaces-bondXmitHashPolicy": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "layer2",
+            "layer2+3",
+            "layer3+4"
+          ]
+        },
+        {
+          "$ref": "#/$defs/string-with-gotpl"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "capm3-network-interfaces": {
       "anyOf": [
         {
@@ -1541,39 +1581,10 @@
               "anyOf": [
                 {
                   "additionalProperties": false,
+                  "required": [
+                    "type"
+                  ],
                   "allOf": [
-                    {
-                      "if": {
-                        "required": [
-                          "interfaces"
-                        ]
-                      },
-                      "then": {
-                        "not": {
-                          "required": [
-                            "vlans",
-                            "type"
-                          ]
-                        }
-                      }
-                    },
-                    {
-                      "if": {
-                        "required": [
-                          "vlans"
-                        ]
-                      },
-                      "then": {
-                        "not": {
-                          "required": [
-                            "bond_mode",
-                            "bondXmitHashPolicy",
-                            "interfaces",
-                            "type"
-                          ]
-                        }
-                      }
-                    },
                     {
                       "if": {
                         "required": [
@@ -1616,15 +1627,7 @@
                     "bond_mode": {
                       "anyOf": [
                         {
-                          "enum": [
-                            "balance-rr",
-                            "active-backup",
-                            "balance-xor",
-                            "broadcast",
-                            "balance-tlb",
-                            "balance-alb",
-                            "802.3ad"
-                          ]
+                          "$ref": "#/$defs/capm3-network-interfaces-bondMode"
                         },
                         {
                           "$ref": "#/$defs/string-with-gotpl"
@@ -1634,11 +1637,7 @@
                     "bondXmitHashPolicy": {
                       "anyOf": [
                         {
-                          "enum": [
-                            "layer2",
-                            "layer2+3",
-                            "layer3+4"
-                          ]
+                          "$ref": "#/$defs/capm3-network-interfaces-bondXmitHashPolicy"
                         },
                         {
                           "$ref": "#/$defs/string-with-gotpl"
@@ -1681,7 +1680,8 @@
                             "tap",
                             "vhostuser",
                             "vif",
-                            "phy"
+                            "phy",
+                            "bond"
                           ]
                         },
                         {
@@ -2180,6 +2180,19 @@
                 }
               ]
             },
+            "node_class": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "infra_provider": {
               "anyOf": [
                 {
@@ -2543,6 +2556,210 @@
                 },
                 {
                   "$ref": "#/$defs/capo-network-interfaces"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/string-with-gotpl"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "node_class": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kernel_cmdline",
+            "kubelet_extra_args",
+            "kubelet_config_file_options",
+            "nodeTaints",
+            "nodeLabels",
+            "nodeAnnotations",
+            "additional_commands"
+          ],
+          "properties": {
+            "kernel_cmdline": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "hugepages": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "enabled": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean"
+                                },
+                                {
+                                  "$ref": "#/$defs/string-with-gotpl"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "2M_percentage_total": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "$ref": "#/$defs/string-with-gotpl"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "1G_percentage_total": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "$ref": "#/$defs/string-with-gotpl"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "default_size": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "enum": [
+                                    "2M",
+                                    "1G"
+                                  ]
+                                },
+                                {
+                                  "$ref": "#/$defs/string-with-gotpl"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "$ref": "#/$defs/string-with-gotpl"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "extra_options": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "$ref": "#/$defs/string-with-gotpl"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "kubelet_extra_args": {
+              "anyOf": [
+                {
+                  "type": "object"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "kubelet_config_file_options": {
+              "anyOf": [
+                {
+                  "type": "object"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "nodeTaints": {
+              "anyOf": [
+                {
+                  "type": "object"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "nodeLabels": {
+              "anyOf": [
+                {
+                  "type": "object"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "nodeAnnotations": {
+              "anyOf": [
+                {
+                  "type": "object"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "additional_commands": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/bootstrap-additional-commands"
                 },
                 {
                   "$ref": "#/$defs/string-with-gotpl"
@@ -3082,32 +3299,30 @@
                           "anyOf": [
                             {
                               "type": "array",
-                              "items": [
-                                {
-                                  "type": "object",
-                                  "additionalProperties": false,
-                                  "required": [
-                                    "ip"
-                                  ],
-                                  "properties": {
-                                    "ip": {
-                                      "anyOf": [
-                                        {
-                                          "type": "string",
-                                          "format": "ipv4"
-                                        },
-                                        {
-                                          "$ref": "#/$defs/ipv4-cidr-full"
-                                        }
-                                      ]
-                                    },
-                                    "mac": {
-                                      "type": "string",
-                                      "format": "mac"
-                                    }
+                              "items": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                  "ip"
+                                ],
+                                "properties": {
+                                  "ip": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "format": "ipv4"
+                                      },
+                                      {
+                                        "$ref": "#/$defs/ipv4-cidr-full"
+                                      }
+                                    ]
+                                  },
+                                  "mac": {
+                                    "type": "string",
+                                    "format": "mac"
                                   }
                                 }
-                              ]
+                              }
                             },
                             {
                               "$ref": "#/$defs/string-with-gotpl"
@@ -3845,12 +4060,20 @@
                         "bondXmitHashPolicy": {
                           "anyOf": [
                             {
-                              "type": "string",
-                              "enum": [
-                                "layer2",
-                                "layer2+3",
-                                "layer3+4"
-                              ]
+                              "$ref": "#/$defs/capm3-network-interfaces-bondXmitHashPolicy"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "bond_mode": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/$defs/capm3-network-interfaces-bondMode"
                             },
                             {
                               "$ref": "#/$defs/string-with-gotpl"
@@ -4661,6 +4884,19 @@
                     }
                   ]
                 },
+                "node_class": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
                 "rke2": {
                   "anyOf": [
                     {
@@ -5446,6 +5682,51 @@
               "type": "null"
             }
           ]
+        },
+        "default_node_class": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "node_classes": {
+          "anyOf": [
+            {
+              "type": "object",
+              "patternProperties": {
+                "^[a-z0-9][a-z0-9-]*[a-z0-9]$": {
+                  "anyOf": [
+                    {
+                      "allOf": [
+                        {
+                          "$ref": "#/$defs/node_class"
+                        }
+                      ]
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "allOf": [
@@ -5657,7 +5938,6 @@
                     "oneOf": [
                       {
                         "required": [
-                          "image_provisioning_host",
                           "image_key"
                         ]
                       },
