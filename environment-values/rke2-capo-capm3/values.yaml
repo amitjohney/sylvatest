@@ -34,13 +34,6 @@ units:
   capm3:
     enabled: true
 
-# Add external ceph cluster details
-ceph:
-  cephfs_csi:
-    clusterID: "" # ceph cluster fsid
-    fs_name: "" # ceph fs name
-    monitors_ips: [] # ceph cluster monitors IP
-
 proxies:
   # put your own proxy settings here if you need
   http_proxy: ""
