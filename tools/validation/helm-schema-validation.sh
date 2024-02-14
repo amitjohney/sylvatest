@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 HELM_NAME=${HELM_NAME:-$1}
 
