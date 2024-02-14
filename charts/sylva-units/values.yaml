@@ -2624,7 +2624,7 @@ units:
           args:
             - -c
             - >-
-              echo -e '{{ .Values.snmp.groups | toJson }}' > /config/groups.json &&
+              echo -e '{{ ( dict "groups" .Values.snmp.groups ) | toJson }}' > /config/groups.json &&
               sylva_snmp_resources_source='{{ .Values.sylva_core_oci_registry }}/sylva-snmp-resources' &&
               sylva_snmp_resources_version='{{ .Values.source_templates | dig "sylva-snmp-resources" "spec" "ref" "tag" true }}' &&
               flux pull artifact $sylva_snmp_resources_source:$sylva_snmp_resources_version -o /config &&
