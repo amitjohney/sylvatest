@@ -51,9 +51,7 @@ cluster:
     network_interfaces:
       # for CAPM3 folowing are used and mapped to Metal3Data.spec.template.spec.networkData.links
       bond0:
-        # bond_mode can be one of balance-rr, active-backup, balance-xor, broadcast, balance-tlb, balance-alb, 802.3ad
-        # https://github.com/metal3-io/cluster-api-provider-metal3/blob/main/api/v1alpha5/metal3datatemplate_types.go#L201-L202
-        bond_mode: 802.3ad
+        type: bond
         interfaces:
           - ens1f0
           - ens1f1
@@ -79,7 +77,7 @@ cluster:
       replicas: 1
       network_interfaces:
         bond0:
-          bond_mode: 802.3ad
+          type: bond
           interfaces:
             - ens2f0
             - ens2f1
