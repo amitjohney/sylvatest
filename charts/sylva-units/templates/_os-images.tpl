@@ -1,4 +1,11 @@
 {{- define "generate-os-images" -}}
+{{- $cluster := "boostrap" -}}
+{{- $cp_image := "" -}}
+{{- if (.Values.cluster.capi_providers.infra_provider | eq "capm3") -}}
+  {{- $cp_image = get .Values.cluster.capm3 "image_key" | default "none" -}}
+{{- else if (.Values.cluster.capi_providers.infra_provider | eq "capo") -}}
+  {{- $cp_image = get .Values.cluster.capo "image_key" | default "none" -}}
+{{- end -}}
 osImages:
 {{- $sylva_dib_images := .Values.sylva_diskimagebuilder_images }}
 {{- $sylva_dib_version := .Values.sylva_diskimagebuilder_version }}
@@ -19,8 +26,10 @@ osImages:
 {{- else }}
   {{- range $os_image_name, $os_image_props := $sylva_dib_images }}
     {{- if (or ($os_image_props.enabled) ($os_image_props.default_enabled)) }}
+      {{- if (eq $cp_image $os_image_name) }}
   {{ $os_image_name }}:
     uri: {{ $sylva_base_oci_registry }}/sylva-elements/diskimage-builder/{{ $os_image_name }}:{{ $sylva_dib_version }}
+      {{- end }}
     {{- end }}
   {{- end }}
 {{- end }}
