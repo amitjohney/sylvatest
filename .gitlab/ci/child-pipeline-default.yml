@@ -6,8 +6,8 @@ workflow:
 
 stages:
   - deploy
-  - update
   - deploy-wc
+  - update
   - update-wc
   - deployment-test
   - delete
