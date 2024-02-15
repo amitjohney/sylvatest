@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ "$#" -ne 2 ] && [ "$#" -ne 3 ]; then
+if [ "$#" -ne 1 ] && [ "$#" -ne 2 ]; then
     echo "Usage: ./wc-cleanup.sh <Workload-cluster-name> <(optionally)cluster_object_name>"
     exit 1
 fi
