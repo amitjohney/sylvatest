@@ -964,7 +964,7 @@ units:
               {{- $l = append $l (dict "name" "https_proxy"
                                        "value" .Values.proxies.https_proxy) }}
               {{- $l = append $l (dict "name" "no_proxy"
-                                       "value" .Values.proxies.no_proxy) }}
+                                       "value" (include "sylva-units.no_proxy" (tuple .))) }}
               {{- end }}
               {{- $l | include "preserve-type" }}
             image:
