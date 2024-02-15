@@ -3784,7 +3784,7 @@ units:
           kind: StatefulSet
           name: monitoring-pool-0  # concatenation from .tenant chart values .name & .pools[*].name
           namespace: minio-monitoring-tenant
-  
+
   thanos-init:
     info:
       description: sets up thanos certificate
@@ -3795,8 +3795,6 @@ units:
     depends_on:
       sylva-ca: true
     repo: sylva-core
-    kustomization_substitute_secrets:
-      KEY: '{{ .Values.external_certificates.thanos.key | default "" | b64enc }}'
     kustomization_spec:
       path: ./kustomize-units/thanos-init
       wait: true
@@ -3807,9 +3805,6 @@ units:
           THANOS_RECEIVE_DNS: '{{ .Values.external_hostnames.thanos_receive }}'
           THANOS_STOREGATEWAY_DNS: '{{ .Values.external_hostnames.thanos_storegateway }}'
           THANOS_QUERY_DNS: '{{ .Values.external_hostnames.thanos_query }}'
-          CERTIFICATE_NAMESPACE: thanos
-          CERT: '{{ .Values.external_certificates.thanos.cert | default "" | b64enc }}'
-          CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
 
   thanos:
     info:
@@ -4467,6 +4462,9 @@ get_openstack_images_per_image_timeout_minutes: 20
 # disable wireguard by default
 calico_wireguard_enabled: false
 
+monitoring:
+  thanos_receive_url: https://{{ .Values.external_hostnames.thanos_receive }}:443/api/v1/receive  # for workload clusters, this is overridden via shared_workload_clusters_values to point to the mgmt cluster Thanos
+
 _internal:
   ha_cluster:
 
@@ -4615,6 +4613,8 @@ shared_workload_clusters_values:
   sylva_diskimagebuilder_version: '{{ .Values.sylva_diskimagebuilder_version }}'
   sylva_diskimagebuilder_images: '{{ .Values.sylva_diskimagebuilder_images | include "preserve-type" }}'
   os_images: '{{ .Values.os_images | include "preserve-type" }}'
+  monitoring:
+    thanos_receive_url: '{{ .Values.monitoring.thanos_receive_url }}'
 
 shared_workload_clusters_secret_values:
   cluster:
