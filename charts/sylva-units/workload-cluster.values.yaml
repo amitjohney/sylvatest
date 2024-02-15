@@ -136,19 +136,12 @@ units:
     unit_templates:
     - helmrelease-deployed-on-mgmt-cluster
     depends_on:
-
-      # contrarily to what we have in default values, we don't
-      # depend on CAPI-related units deployed by _this_ sylva-units Helm release
-      # (because this release only deploys manifests for a given workload cluster)
-      capi: false
-      '{{ .Values.cluster.capi_providers.infra_provider }}': false
-      '{{ .Values.cluster.capi_providers.bootstrap_provider }}': false
-
-      # we need to wait for the CAPI-related units from the main sylva-units release
+      # we need to wait for the CAPI-related units **from the main sylva-units release**
       sylva-system/capi: true
       sylva-system/{{ .Values.cluster.capi_providers.infra_provider }}: true
       sylva-system/{{ .Values.cluster.capi_providers.bootstrap_provider }}: true
       sylva-system/kyverno-policies: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+      sylva-system/os-image-server: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
 
   cluster-reachable:
     enabled: true

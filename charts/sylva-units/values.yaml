@@ -1894,13 +1894,11 @@ units:
     - base-deps
     helm_chart_artifact_name: sylva-capi-cluster
     depends_on:
-      capi: true
-      '{{ .Values.cluster.capi_providers.infra_provider }}': true
-      '{{ .Values.cluster.capi_providers.bootstrap_provider }}': true
+      # see management.values.yaml and workload-cluster.values.yaml to see how
+      # we handle the fact that this unit depends on the CAPI-related components being ready
       capo-cluster-resources: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
       get-openstack-images: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
       cluster-bmh: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
-      sylva-system/os-image-server: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
     labels:
       suspend-on-pivot: "yes"  # must be suspended before pivot
     kustomization_spec:
