@@ -3632,8 +3632,7 @@ units:
       details: Loki and Thanos will use this MinIO S3 storage
       maturity: beta
     enabled_conditions:
-    #  - '{{ or (tuple . "thanos" | include "unit-enabled") ( tuple . "loki" | include "unit-enabled") }}'
-      - false  # Until the above units are available
+      - '{{ or (tuple . "thanos" | include "unit-enabled") ( tuple . "loki" | include "unit-enabled") }}'
     depends_on:
       namespace-defs: true
       minio-operator: true
@@ -3780,7 +3779,7 @@ units:
       namespace-defs: true
       sylva-ca: true
     repo: sylva-core
-    kustomization_subtitute_secrets:
+    kustomization_substitute_secrets:
       KEY: '{{ .Values.external_certificates.loki.key | default "" | b64enc }}'
     kustomization_spec:
       path: ./kustomize-units/loki-init
@@ -3805,7 +3804,7 @@ units:
       loki-init: true
       minio-monitoring-tenant: true
     enabled_conditions:
-      - '{{ tuple . "minio-monitoring-tenant" | include "unit-enabled" }}'
+      - '{{ tuple . "rancher-logging" | include "unit-enabled" }}'
     annotations:
       sylvactl/readyMessage: "Loki can be reached at https://{{ .Values.external_hostnames.loki }} ({{ .Values.external_hostnames.loki }} must resolve to {{ .Values.display_external_ip }})"
     repo: loki
@@ -4299,7 +4298,6 @@ external_certificates:
 
 audit_log:
   level: 0
-  loki: {}
 
 keycloak: {}
 
@@ -4458,6 +4456,9 @@ get_openstack_images_per_image_timeout_minutes: 20
 # disable wireguard by default
 calico_wireguard_enabled: false
 
+logging:
+  loki_url: "https://{{ .Values.external_hostnames.loki }}:443"  # for workload clusters, this is overridden via shared_workload_clusters_values to point to the mgmt cluster Loki
+
 _internal:
   ha_cluster:
 
@@ -4482,7 +4483,7 @@ _internal:
 
   # minio bucket write password
   minio_monitoring_tenant_bucket_password: '{{ derivePassword 1 "maximum" (tuple . .Values._internal.default_password | include "interpret-as-string") "minio-monitoring-tenant" "bucket" | sha1sum }}'
-  
+
   # minio console password
   minio_monitoring_tenant_console_password: '{{ derivePassword 1 "maximum" (tuple . .Values._internal.default_password | include "interpret-as-string") "minio-monitoring-tenant" "console" | sha1sum }}'
 
@@ -4609,6 +4610,8 @@ shared_workload_clusters_values:
   sylva_diskimagebuilder_version: '{{ .Values.sylva_diskimagebuilder_version }}'
   sylva_diskimagebuilder_images: '{{ .Values.sylva_diskimagebuilder_images | include "preserve-type" }}'
   os_images: '{{ .Values.os_images | include "preserve-type" }}'
+  logging:
+    loki_url: '{{ .Values.logging.loki_url }}'
 
 shared_workload_clusters_secret_values:
   cluster:

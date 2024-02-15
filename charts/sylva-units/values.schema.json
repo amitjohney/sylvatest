@@ -7526,6 +7526,9 @@
     "calico_wireguard_enabled": {
       "type": "boolean"
     },
+    "logging": {
+      "type": "object"
+    },
     "_internal": {
       "type": "object"
     },
