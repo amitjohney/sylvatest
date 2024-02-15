@@ -57,16 +57,16 @@ deploy-management-cluster:
 
 #----------------------------------------------------------
 
-update-management-cluster:
+deploy-workload-cluster:
   extends:
-    - .update-management
+    - .deploy-workload
   timeout: 2h
 
 #----------------------------------------------------------
 
-deploy-workload-cluster:
+update-management-cluster:
   extends:
-    - .deploy-workload
+    - .update-management
   timeout: 2h
 
 #----------------------------------------------------------

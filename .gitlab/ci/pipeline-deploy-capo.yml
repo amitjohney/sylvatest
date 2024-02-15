@@ -30,16 +30,16 @@ deploy-management-cluster:
 
 # ----------------------------------------------------------
 
-update-management-cluster:
+deploy-workload-cluster:
   extends:
-    - .update-management
+    - .deploy-workload
     - .rules:skip-if-only-deploy-mgmt
 
 # ----------------------------------------------------------
 
-deploy-workload-cluster:
+update-management-cluster:
   extends:
-    - .deploy-workload
+    - .update-management
     - .rules:skip-if-only-deploy-mgmt
 
 # ----------------------------------------------------------
