@@ -3784,11 +3784,11 @@ units:
           kind: StatefulSet
           name: monitoring-pool-0  # concatenation from .tenant chart values .name & .pools[*].name
           namespace: minio-monitoring-tenant
-
+  
   thanos-init:
     info:
-      description: Thanos certificate
-      details: generates Thanos ingress TLS certificate
+      description: sets up thanos certificate
+      details: it generate certificate
       internal: true
     enabled_conditions:
       - '{{ tuple . "thanos" | include "unit-enabled" }}'
@@ -3803,13 +3803,13 @@ units:
       postBuild:
         substitute:
           SERVICE: thanos
-          SERVICE_DNS: '{{ .Values.external_hostnames.thanos }}'
+          THANOS_DNS: '{{ .Values.external_hostnames.thanos }}'
+          THANOS_RECEIVE_DNS: '{{ .Values.external_hostnames.thanos_receive }}'
+          THANOS_STOREGATEWAY_DNS: '{{ .Values.external_hostnames.thanos_storegateway }}'
+          THANOS_QUERY_DNS: '{{ .Values.external_hostnames.thanos_query }}'
           CERTIFICATE_NAMESPACE: thanos
           CERT: '{{ .Values.external_certificates.thanos.cert | default "" | b64enc }}'
           CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
-      _components:
-        - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.thanos "cert") }}'
-        - "../tls-components/sylva-ca"
 
   thanos:
     info:
