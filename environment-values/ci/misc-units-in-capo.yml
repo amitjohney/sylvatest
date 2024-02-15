@@ -140,15 +140,15 @@ units:
     enabled: true
   thanos:
     enabled: true
-  loki-scalable-init:
+  loki-init:
     enabled: true
-  loki-scalable:
+  loki:
     enabled: true
-  rancher-logging-crd:
+  logging-crd:
     enabled: true
-  rancher-logging:
+  logging:
     enabled: true
-  rancher-logging-config:
+  logging-config:
     enabled: true
   sylva-prometheus-rules:
     enabled: true

@@ -3,7 +3,6 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: ${SERVICE}-tls
-  namespace: ${CERTIFICATE_NAMESPACE:=default}
 spec:
   secretName: ${SERVICE}-tls
   # Currently the certificate is trusted by the Sylva CA by referring to the ca-issuer.

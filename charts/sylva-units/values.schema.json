@@ -7324,7 +7324,7 @@
         "minio_monitoring_tenant": {
           "$ref": "#/$defs/cert-and-key"
         },
-        "loki_scalable": {
+        "loki": {
           "$ref": "#/$defs/cert-and-key"
         },
         "thanos": {
@@ -7584,6 +7584,12 @@
     },
     "calico_wireguard_enabled": {
       "type": "boolean"
+    },
+    "monitoring": {
+      "type": "object"
+    },
+    "logging": {
+      "type": "object"
     },
     "_internal": {
       "type": "object"

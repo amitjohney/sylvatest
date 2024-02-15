@@ -141,7 +141,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: 0.0.3
 
-  loki-scalable:
+  loki:
     kind: GitRepository
     spec:
       url: https://github.com/grafana/loki.git
@@ -426,8 +426,8 @@ units:
         - '{{ tuple "components/gitea" (tuple . "gitea" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/minio-operator" (tuple . "minio-operator" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/minio-monitoring-tenant" (tuple . "minio-monitoring-tenant" | include "unit-enabled") | include "set-only-if" }}'
-        - '{{ tuple "components/loki-scalable" (tuple . "loki-scalable" | include "unit-enabled") | include "set-only-if" }}'
-        - '{{ tuple "components/cattle-logging" (tuple . "rancher-logging" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/loki" (tuple . "loki" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/cattle-logging" (tuple . "logging" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/thanos" (tuple . "thanos" | include "unit-enabled") | include "set-only-if" }}'
 
 # Postgresql deployment for keycloak
@@ -2558,51 +2558,8 @@ units:
                   enabled: true
                 etcd:
                   enabled: true
-            datasources:
-              defaultDatasourceEnabled: true
-              enabled: true
-              isDefaultDatasource: false
-          additionalDataSources:
-            - name: Thanos
-              type: "prometheus"
-              access: "proxy"
-              url: http://thanos-query.thanos.svc:9090
-              basicAuth: "thanos-user"
-              basicAuthUser: '{{ .Values._internal.thanos_password }}'
-              isDefault: true
-              orgId: 1
-              version: 1
-            - name: Loki
-              type: loki
-              access: proxy
-              url: http://loki-read.loki-scalable.svc:3100
-              basicAuth: "loki-user"
-              basicAuthUser: '{{ .Values._internal.loki_password }}'
-              orgId: 1
-              version: 1
-        prometheus:
-          prometheusSpec:
-            externalLabels:
-              # required for multicluster dashboards
-              cluster: '{{ .Values.cluster.name }}'
-            # https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#remotewritespec
-            remoteWrite:
-              - url: "https://{{ .Values.external_hostnames.thanos_receive }}:443/api/v1/receive"
-                name: '{{ .Values.cluster.name }}'
-                basicAuth:
-                  username:
-                    name: thanos-basic-auth
-                    key: username
-                  password:
-                    name: thanos-basic-auth
-                    key: password
-                tlsConfig:
-                  insecureSkipVerify: true
-                queue_config:
-                  batch_send_deadline: 5s
-                  min_backoff: 1s
-                  max_backoff: 30s
-            remoteWriteDashboards: true
+            #datasources:
+              #isDefaultDatasource: false
       # Disable drift detection for rancher-monitoring webhooks
       _postRenderers:
         - kustomize:
@@ -2613,17 +2570,6 @@ units:
                 - op: add
                   path: /metadata/annotations/helm.toolkit.fluxcd.io~1driftDetection
                   value: disabled
-    helm_secret_values:
-      thanos-basic-auth:
-        - |
-          apiVersion: v1
-          kind: Secret
-          type: Opaque
-          metadata:
-            name: thanos-basic-auth
-          stringData:
-            username: thanos-user
-            password: '{{ .Values._internal.thanos_password }}'
 
   snmp-exporter:
     info:
@@ -3903,49 +3849,50 @@ units:
               path: /spec/template/spec/volumes/2/configMap/name
               value: {{ .Values._internal.os_images_info_configmap }}  # this configmap is a byproduct of the os-images-info unit
 
-  loki-scalable-init:
+  loki-init:
     info:
-      description: sets up loki-scalable certificate
+      description: sets up Loki certificate
       details: it generate certificate
       internal: true
     enabled_conditions:
-      - '{{ tuple . "loki-scalable" | include "unit-enabled" }}'
+      - '{{ tuple . "loki" | include "unit-enabled" }}'
     depends_on:
       namespace-defs: true
       sylva-ca: true
     repo: sylva-core
     kustomization_substitute_secrets:
-      KEY: '{{ .Values.external_certificates.loki_scalable.key | default "" | b64enc }}'
+      KEY: '{{ .Values.external_certificates.loki.key | default "" | b64enc }}'
     kustomization_spec:
-      path: ./kustomize-units/loki-scalable-init
+      path: ./kustomize-units/loki-init
       wait: true
       postBuild:
         substitute:
-          SERVICE: loki-scalable
+          SERVICE: loki
           SERVICE_DNS: '{{ .Values.external_hostnames.loki }}'
-          CERTIFICATE_NAMESPACE: loki-scalable
-          CERT: '{{ .Values.external_certificates.loki_scalable.cert | default "" | b64enc }}'
+          CERTIFICATE_NAMESPACE: loki
+          CERT: '{{ .Values.external_certificates.loki.cert | default "" | b64enc }}'
           CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
       _components:
-        - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.loki_scalable "cert") }}'
+        - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.loki "cert") }}'
         - "../tls-components/sylva-ca"
 
-  loki-scalable:
+  loki:
     info:
-      description: installs Loki log storage in simple scalable mode
+      description: installs Loki log storage
+      details: installs Loki log storage in simple scalable mode
       maturity: beta
     depends_on:
       namespace-defs: true
-      loki-scalable-init: true
+      loki-init: true
       minio-monitoring-tenant: true
     enabled_conditions:
-      - '{{ tuple . "minio-monitoring-tenant" | include "unit-enabled" }}'
+      - '{{ tuple . "logging" | include "unit-enabled" }}'
     annotations:
-      sylvactl/readyMessage: Loki can be reached at https://{{ .Values.external_hostnames.loki }} ({{ .Values.external_hostnames.loki }} must resolve to {{ .Values.display_external_ip }})
-    repo: loki-scalable
+      sylvactl/readyMessage: "Loki can be reached at https://{{ .Values.external_hostnames.loki }} ({{ .Values.external_hostnames.loki }} must resolve to {{ .Values.display_external_ip }})"
+    repo: loki
     helmrelease_spec:
       releaseName: loki
-      targetNamespace: loki-scalable
+      targetNamespace: loki
       chart:
         spec:
           chart: production/helm/loki
@@ -3959,7 +3906,7 @@ units:
           rules:
             enabled: false
         loki:
-          auth_enabled: true
+          auth_enabled: false
           containerSecurityContext:
             seccompProfile:
               type: RuntimeDefault
@@ -4004,10 +3951,10 @@ units:
             type: s3
             s3:
               s3: null
-              endpoint: "minio.minio-monitoring-tenant.svc.cluster.local:443"
+              endpoint: "minio.minio-monitoring.svc.cluster.local:443"
               region: null
               accessKeyId: "minio"
-              secretAccessKey: '{{ .Values._internal.minio_monitoring_tenant_bucket_password }}'
+              # secretAccessKey: # is passed via helm_secret_values, see below
               signatureVersion: null
               s3ForcePathStyle: true
               insecure: false
@@ -4157,29 +4104,25 @@ units:
           tls:
             - hosts:
                 - '{{ .Values.external_hostnames.loki }}'
-              secretName: loki-scalable-tls
-        basicAuth:
-          enabled: true
-          username: loki-user
-          password: '{{ .Values._internal.loki_password }}'
+              secretName: loki-tls
     helm_secret_values:
-      secrets:
-        accessKey: minio
-        secretKey: '{{ .Values._internal.minio_monitoring_tenant_bucket_password }}'
+      loki:
+        storage:
+          s3:
+            secretAccessKey: '{{ .Values._internal.minio_monitoring_tenant_console_password }}'
 
-
-  rancher-logging-crd:
+  logging-crd:
     info:
       description: install rancher-logging CRD
       maturity: beta
       hidden: true
     enabled_conditions:
-      - '{{ tuple . "rancher-logging" | include "unit-enabled" }}'
+      - '{{ tuple . "logging" | include "unit-enabled" }}'
     depends_on:
       namespace-defs: true
     helm_repo_url: https://charts.rancher.io/
     helmrelease_spec:
-      releaseName: rancher-logging-crd
+      releaseName: logging-crd
       targetNamespace: cattle-logging-system
       chart:
         spec:
@@ -4188,15 +4131,15 @@ units:
       install:
         createNamespace: false
 
-  rancher-logging:
+  logging:
     info:
       description: installs Rancher Fluentbit/Fluentd logging stack, for log collecting and shipping
       maturity: beta
     depends_on:
-      rancher-logging-crd: true
+      logging-crd: true
     helm_repo_url: https://charts.rancher.io/
     helmrelease_spec:
-      releaseName: rancher-logging
+      releaseName: logging
       targetNamespace: cattle-logging-system
       chart:
         spec:
@@ -4216,18 +4159,18 @@ units:
           seccompProfile:
             type: RuntimeDefault
 
-  rancher-logging-config:
+  logging-config:
     info:
       description: Configures rancher-logging to ship logs to Loki
       internal: true
     enabled_conditions:
-    - '{{ tuple . "rancher-logging" | include "unit-enabled" }}'
+    - '{{ tuple . "logging" | include "unit-enabled" }}'
     depends_on:
-      rancher-logging: true
+      logging: true
       #loki: true
     repo: sylva-core
     kustomization_spec:
-      path: ./kustomize-units/rancher-logging
+      path: ./kustomize-units/logging
       wait: true
       postBuild:
         substitute:
@@ -4247,8 +4190,6 @@ units:
     depends_on:
       sylva-ca: true
     repo: sylva-core
-    kustomization_substitute_secrets:
-      KEY: '{{ .Values.external_certificates.thanos.key | default "" | b64enc }}'
     kustomization_spec:
       path: ./kustomize-units/thanos-init
       wait: true
@@ -4736,7 +4677,7 @@ external_certificates:
   gitea: {}
   minio_operator: {}
   minio_monitoring_tenant: {}
-  loki_scalable: {}
+  loki: {}
   thanos: {}
 
 audit_log:
@@ -4898,6 +4839,12 @@ get_openstack_images_per_image_timeout_minutes: 20
 
 # disable wireguard by default
 calico_wireguard_enabled: false
+
+logging:
+  loki_url: "https://{{ .Values.external_hostnames.loki }}:443"  # for workload clusters, this is overridden via shared_workload_clusters_values to point to the mgmt cluster Loki
+
+monitoring:
+  thanos_receive_url: https://{{ .Values.external_hostnames.thanos_receive }}:443/api/v1/receive  # for workload clusters, this is overridden via shared_workload_clusters_values to point to the mgmt cluster Thanos
 
 _internal:
   ha_cluster:

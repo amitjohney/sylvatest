@@ -2,11 +2,11 @@
 units:
   harbor:
     enabled: true
-  rancher-logging-crd:
+  logging-crd:
     enabled: true
-  rancher-logging:
+  logging:
     enabled: true
-  rancher-logging-config:
+  logging-config:
     enabled: true
   sylva-prometheus-rules:
     enabled: true
