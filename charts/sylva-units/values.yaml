@@ -1480,6 +1480,7 @@ units:
         spec:
           chart: metal3
           version: 0.6.0
+      timeout: 30m
       install:
         createNamespace: true
       targetNamespace: metal3-system
@@ -1550,7 +1551,7 @@ units:
     repo: metal3
     helm_chart_artifact_name: metal3-sylva
     helmrelease_spec:
-      timeout: 10m
+      timeout: 30m
       chart:
         spec:
           chart: .
