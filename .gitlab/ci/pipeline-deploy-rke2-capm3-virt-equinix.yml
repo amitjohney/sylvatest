@@ -5,51 +5,61 @@ include:
 
 default:
   tags:
-    - $CI_PIPELINE_IID
-    - equinix
+    - equinix-dev-loic
+
+
+.rules:skip-if-only-deploy-mgmt:
+  rules:
+    - if: $ONLY_DEPLOY_MGMT
+      when: never
+    - when: on_success
+
+.rules:run-if-only-deploy-mgmt:
+  rules:
+    - if: $ONLY_DEPLOY_MGMT
 
 #----------------------------------------------------------
 
-create-runner:
-  stage: .pre
-  timeout: 15min
-  id_tokens:
-    JOB_ID_TOKEN:
-      aud: runner-aas
-  variables:
-    REQUEST: create
-    RUNNER_HOSTNAME: syla-core-$CI_PIPELINE_ID
-    RUNNER_TAG: $CI_PIPELINE_IID
-    RUNNER_PROJECT_ID: $CI_PROJECT_ID
-    RUNNER_PLAN: c3.small.x86
-    RUNNER_AAS_TARGET_REF: main
-  tags: []
-  image:
-    name: registry.gitlab.com/gitlab-org/cli:v1.36.0
-    entrypoint: [""]
-  script:
-    - glab config set -g check_update false
-    - >
-      curl -Ss -X POST --fail
-      --form "token=$RUNNER_AAS_TOKEN"
-      --form ref=main
-      --form "variables[TARGET_REF]=$RUNNER_AAS_TARGET_REF"
-      --form "variables[REQUEST]=$REQUEST"
-      --form "variables[SOURCE_JWT_TOKEN]=$JOB_ID_TOKEN"
-      --form "variables[RUNNER_PLAN]=$RUNNER_PLAN"
-      "$CI_API_V4_URL/projects/51177405/trigger/pipeline" > pipeline.json
-    - PIPELINE_ID=$(cat pipeline.json | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')
-    - echo "Pipeline triggered = $(cat pipeline.json | python3 -c 'import json,sys;print(json.load(sys.stdin)["web_url"])')"
-    - >
-      while true; do
-        PIPELINE=$(glab api projects/51177405/pipelines/$PIPELINE_ID)
-        PIPELINE_STATUS=$(echo $PIPELINE | python3 -c 'import json,sys;print(json.load(sys.stdin)["status"])')
-        echo "PIPELINE_STATUS = $PIPELINE_STATUS"
-        [[ $PIPELINE_STATUS == "" ]] && exit 1
-        [[ $PIPELINE_STATUS == "failed" ]] && exit 1
-        [[ $PIPELINE_STATUS == "success" ]] && break
-        sleep 5
-      done
+#create-runner:
+#  stage: .pre
+#  timeout: 15min
+#  id_tokens:
+#    JOB_ID_TOKEN:
+#      aud: runner-aas
+#  variables:
+#    REQUEST: create
+#    RUNNER_HOSTNAME: syla-core-$CI_PIPELINE_ID
+#    RUNNER_TAG: $CI_PIPELINE_IID
+#    RUNNER_PROJECT_ID: $CI_PROJECT_ID
+#    RUNNER_PLAN: c3.small.x86
+#    RUNNER_AAS_TARGET_REF: main
+#  tags: []
+#  image:
+#    name: registry.gitlab.com/gitlab-org/cli:v1.36.0
+#    entrypoint: [""]
+#  script:
+#    - glab config set -g check_update false
+#    - >
+#      curl -Ss -X POST --fail
+#      --form "token=$RUNNER_AAS_TOKEN"
+#      --form ref=main
+#      --form "variables[TARGET_REF]=$RUNNER_AAS_TARGET_REF"
+#      --form "variables[REQUEST]=$REQUEST"
+#      --form "variables[SOURCE_JWT_TOKEN]=$JOB_ID_TOKEN"
+#      --form "variables[RUNNER_PLAN]=$RUNNER_PLAN"
+#      "$CI_API_V4_URL/projects/51177405/trigger/pipeline" > pipeline.json
+#    - PIPELINE_ID=$(cat pipeline.json | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')
+#    - echo "Pipeline triggered = $(cat pipeline.json | python3 -c 'import json,sys;print(json.load(sys.stdin)["web_url"])')"
+#    - >
+#      while true; do
+#        PIPELINE=$(glab api projects/51177405/pipelines/$PIPELINE_ID)
+#        PIPELINE_STATUS=$(echo $PIPELINE | python3 -c 'import json,sys;print(json.load(sys.stdin)["status"])')
+#        echo "PIPELINE_STATUS = $PIPELINE_STATUS"
+#        [[ $PIPELINE_STATUS == "" ]] && exit 1
+#        [[ $PIPELINE_STATUS == "failed" ]] && exit 1
+#        [[ $PIPELINE_STATUS == "success" ]] && break
+#        sleep 5
+#      done
 
 
 #----------------------------------------------------------
@@ -96,22 +106,48 @@ update-workload-cluster:
 #     - $CI_PIPELINE_IID
 #     - equinix
 
+# ----------------------------------------------------------
+
+test-sso+workload-kubeconfig:
+  extends:
+    - .test-sso+workload-kubeconfig
+    - .rules:skip-if-only-deploy-mgmt
+  tags:
+    - equinix-dev-loic-docker
+test-no-sso+workload-kubeconfig:
+  extends:
+    - .test-no-sso+workload-kubeconfig
+    - .rules:skip-if-only-deploy-mgmt
+  tags:
+    - equinix-dev-loic-docker
+# ----------------------------------------------------------
+test-sso:
+  extends:
+    - .test-sso
+    - .rules:run-if-only-deploy-mgmt
+  tags:
+    - equinix-dev-loic-docker
 test-login:
   extends:
     - .test-login
-  before_script:
-    - !reference [.ensure_sylva_toolbox]
-    - |
-      # install hurl
-      HURL_VERSION=4.1.0
-      curl -SsL https://github.com/Orange-OpenSource/hurl/releases/download/${HURL_VERSION}/hurl-${HURL_VERSION}-x86_64-unknown-linux-gnu.tar.gz | tar xvz -C /tmp
-      mv /tmp/hurl-${HURL_VERSION}-x86_64-unknown-linux-gnu/hurl ./bin/hurl
+  tags:
+    - equinix-dev-loic-docker
+  #test-login:
+  #  extends:
+  #    - .test-login
+  #before_script:
+  #  - !reference [.ensure_sylva_toolbox]
+  #  - |
+  #    # install hurl
+  #    HURL_VERSION=4.1.0
+  #    curl -SsL https://github.com/Orange-OpenSource/hurl/releases/download/${HURL_VERSION}/hurl-${HURL_VERSION}-x86_64-unknown-linux-gnu.tar.gz | tar xvz -C /tmp
+  #    mv /tmp/hurl-${HURL_VERSION}-x86_64-unknown-linux-gnu/hurl ./bin/hurl
 
 #----------------------------------------------------------
 
-clean-runner:
-  stage: delete
-  extends: create-runner
-  variables:
-    REQUEST: delete
-  when: always
+#clean-runner:
+#  stage: delete
+#  extends: create-runner
+#  variables:
+#    REQUEST: delete
+#  when: always
