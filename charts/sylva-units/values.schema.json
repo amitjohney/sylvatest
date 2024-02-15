@@ -1087,7 +1087,7 @@
                   "additionalProperties": false,
                   "required": [
                     "provisioning_pool_interface",
-                    "public_pool_interface"
+                    "primary_pool_interface"
                   ],
                   "properties": {
                     "provisioning_pool_interface": {
@@ -1118,7 +1118,7 @@
                         }
                       ]
                     },
-                    "public_pool_interface": {
+                    "primary_pool_interface": {
                       "anyOf": [
                         {
                           "type": "object",
@@ -1170,7 +1170,7 @@
                 }
               ]
             },
-            "public_pool_interface": {
+            "primary_pool_interface": {
               "anyOf": [
                 {
                   "type": "string",
@@ -1342,7 +1342,7 @@
                   "additionalProperties": false,
                   "required": [
                     "provisioning_pool_interface",
-                    "public_pool_interface"
+                    "primary_pool_interface"
                   ],
                   "properties": {
                     "provisioning_pool_interface": {
@@ -1373,7 +1373,7 @@
                         }
                       ]
                     },
-                    "public_pool_interface": {
+                    "primary_pool_interface": {
                       "anyOf": [
                         {
                           "type": "object",
@@ -1424,7 +1424,7 @@
                 }
               ]
             },
-            "public_pool_interface": {
+            "primary_pool_interface": {
               "anyOf": [
                 {
                   "type": "string"
@@ -2113,7 +2113,7 @@
                 {
                   "type": "object",
                   "properties": {
-                    "public": {
+                    "primary": {
                       "anyOf": [
                         {
                           "type": "string",
@@ -3776,7 +3776,7 @@
                       "additionalProperties": false,
                       "required": [
                         "provisioning_pool_interface",
-                        "public_pool_interface"
+                        "primary_pool_interface"
                       ],
                       "properties": {
                         "provisioning_pool_interface": {
@@ -3807,7 +3807,7 @@
                             }
                           ]
                         },
-                        "public_pool_interface": {
+                        "primary_pool_interface": {
                           "anyOf": [
                             {
                               "type": "object",
@@ -3859,7 +3859,7 @@
                     }
                   ]
                 },
-                "public_pool_interface": {
+                "primary_pool_interface": {
                   "anyOf": [
                     {
                       "type": "string",
@@ -3873,7 +3873,7 @@
                     }
                   ]
                 },
-                "public_pool_name": {
+                "primary_pool_name": {
                   "anyOf": [
                     {
                       "type": "string"
@@ -3886,7 +3886,7 @@
                     }
                   ]
                 },
-                "public_pool_network": {
+                "primary_pool_network": {
                   "anyOf": [
                     {
                       "type": "string",
@@ -3900,7 +3900,7 @@
                     }
                   ]
                 },
-                "public_pool_gateway": {
+                "primary_pool_gateway": {
                   "anyOf": [
                     {
                       "type": "string",
@@ -3914,7 +3914,7 @@
                     }
                   ]
                 },
-                "public_pool_end": {
+                "primary_pool_end": {
                   "anyOf": [
                     {
                       "type": "string",
@@ -3928,7 +3928,7 @@
                     }
                   ]
                 },
-                "public_pool_start": {
+                "primary_pool_start": {
                   "anyOf": [
                     {
                       "type": "string",
@@ -3942,7 +3942,7 @@
                     }
                   ]
                 },
-                "public_pool_prefix": {
+                "primary_pool_prefix": {
                   "anyOf": [
                     {
                       "$ref": "#/$defs/ipv4-prefix"
@@ -4151,7 +4151,7 @@
             }
           ]
         },
-        "cluster_public_interfaces": {
+        "cluster_primary_interfaces": {
           "anyOf": [
             {
               "type": "array",
@@ -5923,11 +5923,11 @@
                 "anyOf": [
                   {
                     "required": [
-                      "public_pool_network",
-                      "public_pool_gateway",
-                      "public_pool_end",
-                      "public_pool_start",
-                      "public_pool_prefix",
+                      "primary_pool_network",
+                      "primary_pool_gateway",
+                      "primary_pool_end",
+                      "primary_pool_start",
+                      "primary_pool_prefix",
                       "provisioning_pool_network",
                       "provisioning_pool_gateway",
                       "provisioning_pool_end",
