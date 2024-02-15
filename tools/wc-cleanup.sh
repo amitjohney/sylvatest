@@ -15,8 +15,8 @@ fi
 echo $WORKLOAD_CLUSTER - $CLUSTER
 source bin/env
 export KUBECONFIG=management-cluster-kubeconfig
-flux suspend --all ks -n $CLUSTER
-flux suspend --all hr -n $CLUSTER
+flux suspend --all ks -n $WORKLOAD_CLUSTER
+flux suspend --all hr -n $WORKLOAD_CLUSTER
 kubectl patch  -n $WORKLOAD_CLUSTER clusters.cluster.x-k8s.io $CLUSTER --type merge -p '{"spec":{"paused": false}}'
 kubectl delete -n $WORKLOAD_CLUSTER hr $CLUSTER
 kubectl delete -n $WORKLOAD_CLUSTER heatstacks heatstack-capo-cluster-resources
