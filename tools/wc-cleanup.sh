@@ -1,3 +1,9 @@
+#!/bin/bash
+
+if [ "$#" -ne 2 ] && [ "$#" -ne 3 ]; then
+    echo "Usage: ./wc-cleanup.sh <Workload-cluster-name> <(optionally)cluster_object_name>"
+fi
+
 WORKLOAD_CLUSTER=$1
 if [[ -z "$2" ]]; then
   CLUSTER="cluster"
