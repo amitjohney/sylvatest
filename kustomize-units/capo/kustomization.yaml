@@ -1,7 +1,8 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - https://github.com/kubernetes-sigs/cluster-api-provider-openstack/releases/download/v0.9.0/infrastructure-components.yaml
+  #- https://github.com/kubernetes-sigs/cluster-api-provider-openstack/releases/download/v0.9.0/infrastructure-components.yaml
+  - https://github.com/kubernetes-sigs/cluster-api-provider-openstack/config/default?ref=75ffe73f88544dbc26c6636a491bca5b3f63c3d4
 patches:
   - target:
       group: apiextensions.k8s.io
@@ -14,9 +15,9 @@ patches:
 # images is build from this commit: https://github.com/kubernetes-sigs/cluster-api-provider-openstack/commit/95103049e28b9783e93b314a3ab130dc5cc4cf5d
 # this patch should be removed as soon as there will be a new release of capo controller
 images:
-- name: registry.k8s.io/capi-openstack/capi-openstack-controller:v0.9.0
+- name: gcr.io/k8s-staging-capi-openstack/capi-openstack-controller:dev
   newName: registry.gitlab.com/sylva-projects/sylva-elements/container-images/sandbox-registry/capi-openstack-controller-amd64
-  newTag: 0.9.0-get-server-by-id
+  newTag: 0.9.0-75ffe73f
 # Add labels to enable clusterctl move to retrieve resources correponding to capo CRDs
 labels:
   - pairs:
