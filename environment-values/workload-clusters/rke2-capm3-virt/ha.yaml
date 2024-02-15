@@ -11,7 +11,7 @@ cluster:
             cluster-role: worker
 
         provisioning_pool_interface: ens4
-        public_pool_interface: ens5
+        primary_pool_interface: ens5
 
       network_interfaces:
         ens4:
