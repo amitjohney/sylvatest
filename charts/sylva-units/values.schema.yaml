@@ -719,7 +719,6 @@ properties:
             format: hostname
           - const: ''
           - $ref: "#/$defs/string-with-gotpl"
-<<<<<<< HEAD
       minio_operator_console:  # -------------------------------
         anyOf:
           - type: string
@@ -733,9 +732,12 @@ properties:
           - const: ''
           - $ref: "#/$defs/string-with-gotpl"
       minio_monitoring_tenant_console:  # -------------------------------
-=======
+        anyOf:
+          - type: string
+            format: hostname
+          - const: ''
+          - $ref: "#/$defs/string-with-gotpl"
       loki:  # -------------------------------
->>>>>>> 3d989868 (initial commit (2))
         anyOf:
           - type: string
             format: hostname
@@ -764,13 +766,11 @@ properties:
         $ref: "#/$defs/cert-and-key"
       gitea:  # -------------------------------
         $ref: "#/$defs/cert-and-key"
-<<<<<<< HEAD
       minio_operator:  # -------------------------------
         $ref: "#/$defs/cert-and-key"
       minio_monitoring_tenant:  # -------------------------------
-=======
-      loki_scalable:  # -------------------------------
->>>>>>> a4ec3e69 (ading new way to handle certificates, password)
+        $ref: "#/$defs/cert-and-key"
+      loki:  # -------------------------------
         $ref: "#/$defs/cert-and-key"
 
   keycloak: # -------------------------------

@@ -3501,7 +3501,6 @@ units:
             readOnly: true
             subPath: ca.crt
 
-<<<<<<< HEAD
   minio-operator-init:
     info:
       description: sets up MinIO certificate for minio-operator
@@ -3509,21 +3508,11 @@ units:
       internal: true
     enabled_conditions:
       - '{{ tuple . "minio-operator" | include "unit-enabled" }}'
-=======
-  loki-scalable-init:
-    info:
-      description: sets up loki-scalable certificate
-      details: it generate certificate
-      internal: true
-    enabled_conditions:
-      - '{{ tuple . "loki-scalable" | include "unit-enabled" }}'
->>>>>>> a4ec3e69 (ading new way to handle certificates, password)
     depends_on:
       namespace-defs: true
       sylva-ca: true
     repo: sylva-core
     kustomization_substitute_secrets:
-<<<<<<< HEAD
       KEY: '{{ .Values.external_certificates.minio_operator.key | default "" | b64enc }}'
     kustomization_spec:
       path: ./kustomize-units/minio-operator-init
@@ -3589,6 +3578,16 @@ units:
             capabilities:
               drop:
                 - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
           ingress:
             enabled: true
             ingressClassName: nginx
@@ -3770,32 +3769,41 @@ units:
           name: monitoring-pool-0  # concatenation from .tenant chart values .name & .pools[*].name
           namespace: minio-monitoring-tenant
 
-  loki:
-=======
-      KEY: '{{ .Values.external_certificates.loki_scalable.key | default "" | b64enc }}'
+  loki-init:
+    info:
+      description: sets up Loki certificate
+      details: it generate certificate
+      internal: true
+    enabled_conditions:
+      - '{{ tuple . "loki" | include "unit-enabled" }}'
+    depends_on:
+      namespace-defs: true
+      sylva-ca: true
+    repo: sylva-core
+    kustomization_subtitute_secrets:
+      KEY: '{{ .Values.external_certificates.loki.key | default "" | b64enc }}'
     kustomization_spec:
-      path: ./kustomize-units/loki-scalable-init
+      path: ./kustomize-units/loki-init
       wait: true
       postBuild:
         substitute:
-          SERVICE: loki-scalable
+          SERVICE: loki
           SERVICE_DNS: '{{ .Values.external_hostnames.loki }}'
-          CERTIFICATE_NAMESPACE: loki-scalable
-          CERT: '{{ .Values.external_certificates.loki_scalable.cert | default "" | b64enc }}'
+          CERTIFICATE_NAMESPACE: loki
+          CERT: '{{ .Values.external_certificates.loki.cert | default "" | b64enc }}'
           CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
       _components:
-        - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.loki_scalable "cert") }}'
+        - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.loki "cert") }}'
         - "../tls-components/sylva-ca"
 
-  loki-scalable:
->>>>>>> a4ec3e69 (ading new way to handle certificates, password)
+  loki:
     info:
       description: installs Loki log storage in simple scalable mode
       maturity: beta
     depends_on:
       namespace-defs: true
-      loki-scalable-init: true
-      #minio-monitoring-tenant: true
+      loki-init: true
+      minio-monitoring-tenant: true
     enabled_conditions:
       - '{{ tuple . "minio-monitoring-tenant" | include "unit-enabled" }}'
     annotations:
@@ -4015,7 +4023,7 @@ units:
           tls:
             - hosts:
                 - '{{ .Values.external_hostnames.loki }}'
-              secretName: loki-scalable-tls
+              secretName: loki-tls
 
 # Not yet ready, need to get os_images into the script
   get-openstack-images:
@@ -4285,15 +4293,13 @@ external_certificates:
   harbor: {}
   os_image_server: {}
   gitea: {}
-<<<<<<< HEAD
   minio_operator: {}
   minio_monitoring_tenant: {}
+  loki: {}
 
 audit_log:
   level: 0
-=======
-  loki_scalable: {}
->>>>>>> a4ec3e69 (ading new way to handle certificates, password)
+  loki: {}
 
 keycloak: {}
 
@@ -4475,14 +4481,13 @@ _internal:
   default_replicas: '{{ tuple . .Values._internal.ha_cluster.mode | include "interpret-as-string" | eq "ha" | ternary 3 1 | include "preserve-type" }}'
 
   # minio bucket write password
-<<<<<<< HEAD
   minio_monitoring_tenant_bucket_password: '{{ derivePassword 1 "maximum" (tuple . .Values._internal.default_password | include "interpret-as-string") "minio-monitoring-tenant" "bucket" | sha1sum }}'
-
+  
   # minio console password
   minio_monitoring_tenant_console_password: '{{ derivePassword 1 "maximum" (tuple . .Values._internal.default_password | include "interpret-as-string") "minio-monitoring-tenant" "console" | sha1sum }}'
-=======
-  minio_monitoring_tenant_bucket_password: '{{ derivePassword 1 "maximum" .Values._internal.default_password "minio-monitoring-tenant" "bucket" }}'
->>>>>>> a4ec3e69 (ading new way to handle certificates, password)
+
+  # loki password
+  loki_password: '{{ derivePassword 1 "maximum" (tuple . .Values._internal.default_password | include "interpret-as-string") "loki" "password" | sha1sum }}'
 
   # unless the default password has already been generated by a previous run, we generate a new one randomly
   default_password: '{{ lookup "v1" "Secret" .Release.Namespace "sylva-units-values" | dig "data" "values" "" | b64dec | fromYaml | dig "_internal" "default_password" (randAlphaNum 64) }}'
