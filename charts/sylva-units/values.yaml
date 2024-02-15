@@ -2603,6 +2603,14 @@ units:
           capabilities:
             drop:
               - ALL
+        extraManifests:
+          - |
+            apiVersion: v1
+            kind: ConfigMap
+            metadata:
+              name: snmp-exporter-extra-ca-certs
+            data:
+              extra-ca-certs.pem: | {{ .Values.oci_registry_extra_ca_certs | default "" | nindent 4 }}
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:
@@ -2621,6 +2629,10 @@ units:
                       volumes:
                         - emptyDir: {}
                           name: config
+                        - name: extra-ca-certs
+                          configMap:
+                            name: snmp-exporter-extra-ca-certs
+
     helm_secret_values:
       extraInitContainers:
         - name: config-file-create
@@ -2634,6 +2646,13 @@ units:
               sylva_snmp_resources_version='{{ .Values.source_templates | dig "sylva-snmp-resources" "spec" "ref" "tag" true }}' &&
               flux pull artifact $sylva_snmp_resources_source:$sylva_snmp_resources_version -o /config &&
               helm template /config/sylva-snmp-resources --values /config/groups.json | yq .out > /config/snmp.yaml
+          env:
+            - name: http_proxy
+              value: '{{ .Values.proxies.http_proxy | default "" }}'
+            - name: https_proxy
+              value: '{{ .Values.proxies.https_proxy | default "" }}'
+            - name: no_proxy
+              value: '{{ include "sylva-units.no_proxy" (tuple .) | quote }}'
           securityContext:
             capabilities:
               drop:
@@ -2647,6 +2666,10 @@ units:
           volumeMounts:
             - mountPath: /config
               name: config
+            - name: extra-ca-certs
+              subPath: extra-ca-certs.pem
+              mountPath: /etc/ssl/certs/extra-ca-certs.pem
+              readOnly: true
 
   sylva-snmp-resources:
     info:
