@@ -454,6 +454,12 @@ For this to be possible, you **must** use some helpers, as illustrated by the fo
                    '------------------ condition -----------------------------------' '--value if true--' '--value if false--'
     ```
 
+In order to ease the definition of such templates, you can render locally the interpretation of values using following command:
+
+```shell
+helm template interpret charts/sylva-units --show-only templates/extras/interpreted-values.tpl
+```
+
 For more details on templating features & limitations, refer to [`_interpret-values.tpl`](templates/_interpret-values.tpl)
 
 ### How to add unit information
