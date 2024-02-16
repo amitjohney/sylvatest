@@ -56,7 +56,11 @@ def unzip_artifact(file_path):
     with tarfile.open(file_path, 'r:gz') as tar:
         tar.extractall(path=extraction_path)
         logger.info(f"Extracted '{file_path}' to '{extraction_path}'.")
-    # Find and gunzip the .gz file
+
+    # Initialize a variable to hold the path of a non-gzipped file, if found
+    non_gz_file_path = None
+
+    # Find and gunzip the .gz file or identify .raw/.qcow file
     for root, dirs, files in os.walk(extraction_path):
         for file in files:
             if file.endswith(".gz"):
@@ -66,7 +70,15 @@ def unzip_artifact(file_path):
                     shutil.copyfileobj(f_in, f_out)
                     logger.info(f"Gunzipped '{gz_file}' to '{extracted_file_path}'")
                 return extracted_file_path
-    # If no .gz file found, return None
+            elif file.endswith(".raw") or file.endswith(".qcow2"):
+                # Store the path but do not return immediately to prioritize .gz extraction
+                # If no .gz file found but a .raw or .qcow file was found, return its path
+                non_gz_file_path = os.path.join(root, file)
+                logger.info(f"Found non-gzipped file '{non_gz_file_path}'.")
+                return non_gz_file_path
+
+    # If no .gz, .raw, or .qcow file found, return None
+    logger.info(f"no .gz, .raw, or .qcow file found: {', '.join([f[0] for f in os.walk(extraction_path)])}")
     return None
 
 
