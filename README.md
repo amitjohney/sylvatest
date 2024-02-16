@@ -651,3 +651,4 @@ Once the bootstrap phase is done, and the pivot is done, the management cluster 
 One limitation of this approach is that management cluster can not delete itself properly, as it will shoot itself in the foot at some point.
 
 For resources created by CAPO, the [`tools/openstack-cleanup.sh`](tools/openstack-cleanup.sh) script is provided to help cleaning the resources.
+Test
