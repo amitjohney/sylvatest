@@ -38,7 +38,7 @@ cluster:
     provisioning_pool_end: 192.168.10.90
     provisioning_pool_prefix: "24"
 
-    dns_server: 1.1.1.1
+    dns_servers: [1.1.1.1]
 
   control_plane:  # tweak network configuration as needed
 

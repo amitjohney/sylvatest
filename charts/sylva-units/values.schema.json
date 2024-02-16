@@ -4040,11 +4040,14 @@
                     }
                   ]
                 },
-                "dns_server": {
+                "dns_servers": {
                   "anyOf": [
                     {
-                      "type": "string",
-                      "format": "ipv4"
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "format": "ipv4"
+                      }
                     },
                     {
                       "$ref": "#/$defs/string-with-gotpl"
@@ -5978,7 +5981,7 @@
                       "provisioning_pool_end",
                       "provisioning_pool_start",
                       "provisioning_pool_prefix",
-                      "dns_server"
+                      "dns_servers"
                     ],
                     "oneOf": [
                       {
