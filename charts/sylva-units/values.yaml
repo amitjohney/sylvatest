@@ -4024,6 +4024,7 @@ units:
     helm_secret_values:
       gateway:
         basicAuth:
+          username: loki-user
           password: '{{ .Values._internal.loki_password }}'
       loki:
         storage:
