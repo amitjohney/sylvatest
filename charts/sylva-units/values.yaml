@@ -4012,7 +4012,7 @@ units:
                   - '{{ .Values.external_hostnames.loki }}'
           basicAuth:
             enabled: true
-            username: loki-user
+            # (username and password set under helm_secret_values)
           nginxConfig:
             httpSnippet: |-
               client_max_body_size 50M;
