@@ -1455,6 +1455,8 @@ units:
           CLUSTER_NAME: '{{ .Values.cluster.name }}'
       _components:
         - '{{ tuple "components/management-cluster-only" (tuple . "kyverno" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/loki-aggregated-secrets" (tuple . "loki" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/thanos-aggregated-secrets" (tuple . "thanos" | include "unit-enabled") | include "set-only-if" }}'
 
   rancher-monitoring-clusterid-inject:
     info:
@@ -2997,7 +2999,7 @@ units:
         extraSecret:
           name: thanos-basic-auth
           data:
-            username: thanos-user
+            username: '{{ .Release.Namespace }}'
             password: '{{ .Values._internal.thanos_password }}'  # value from management cluster, set via Secret/shared-workload-clusters-settings
 
   prometheus-snmp-resources:
@@ -4357,6 +4359,34 @@ units:
           THANOS_STOREGATEWAY_DNS: '{{ .Values.external_hostnames.thanos_storegateway }}'
           THANOS_QUERY_DNS: '{{ .Values.external_hostnames.thanos_query }}'
 
+  thanos-credentials-secret:
+    info:
+      description: create a secret containing tenant's thanos credentials
+      internal: true
+    unit_templates:
+    - base-deps
+    enabled_conditions:
+      - '{{ tuple . "monitoring" | include "unit-enabled" }}'
+    depends_on:
+      kyverno-policies: true
+    repo: sylva-core
+    kustomization_substitute_secrets:
+      PASSWORD: '{{ .Values._internal.thanos_password }}'
+    kustomization_spec:
+      targetNamespace: '{{ .Release.Namespace }}'
+      path: ./kustomize-units/credentials-secret
+      postBuild:
+        substitute:
+          LABEL_NAME: sylva.io/aggregated-secret
+          LABEL_VALUE: thanos
+          SECRET_NAME: thanos-credentials
+          USERNAME: '{{ .Release.Namespace }}'
+      healthChecks: # ensure that kyverno has produced the secret
+      - apiVersion: v1
+        kind: Secret
+        namespace: sylva-system
+        name: thanos-secrets
+
   thanos:
     info:
       description: installs Thanos
@@ -4368,6 +4398,7 @@ units:
     depends_on:
       namespace-defs: true
       thanos-init: true
+      thanos-credentials-secret: true
       minio-monitoring-tenant: true
       '{{ .Values._internal.default_storage_class_unit }}': true
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
@@ -4472,8 +4503,6 @@ units:
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
-              drop:
-                - ALL
             seccompProfile:
               type: RuntimeDefault
           ingress:
@@ -4567,10 +4596,12 @@ units:
               - hosts:
                   - '{{ .Values.external_hostnames.thanos_receive }}'
                 secretName: thanos-tls
+      valuesFrom:
+      # Use tenant list built by kyverno policy thanos-aggregated-secret to fill auth.basicAuthUsers object
+      - kind: Secret
+        name: thanos-secrets
+        valuesKey: secrets
     helm_secret_values:
-      auth:
-        basicAuthUsers:
-          thanos-user: '{{ .Values._internal.thanos_password }}'
       objstoreConfig: |-
         type: "S3"
         config:
@@ -4657,7 +4688,7 @@ units:
           # we must use external name in order to work also for workload clusters
           LOKI_URL: '{{ .Values.logging.loki_url }}'
           CLUSTER_NAME: '{{ .Values.cluster.name }}'
-          LOKI_USERNAME: "loki-user"
+          LOKI_USERNAME: "{{ .Release.Namespace }}"
           LOKI_PASSWORD: '{{ .Values._internal.loki_password }}'
       wait: true
 
@@ -4690,8 +4721,35 @@ units:
         - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.loki "cert") }}'
         - "../tls-components/sylva-ca"
 
+  loki-credentials-secret:
+    info:
+      description: create a secret containing tenant's loki credentials
+      internal: true
+    unit_templates:
+    - base-deps
+    depends_on:
+      kyverno-policies: true
+    enabled_conditions:
+      - '{{ tuple . "logging" | include "unit-enabled" }}'
+    repo: sylva-core
+    kustomization_substitute_secrets:
+      PASSWORD: '{{ .Values._internal.loki_password }}'
+    kustomization_spec:
+      targetNamespace: '{{ .Release.Namespace }}'
+      path: ./kustomize-units/credentials-secret
+      postBuild:
+        substitute:
+          LABEL_NAME: sylva.io/aggregated-secret
+          LABEL_VALUE: loki
+          SECRET_NAME: loki-credentials
+          USERNAME: '{{ .Release.Namespace }}'
+      healthChecks: # ensure that kyverno has produced the secret
+      - apiVersion: v1
+        kind: Secret
+        namespace: sylva-system
+        name: loki-secrets
+
   loki:
-    enabled: false
     info:
       description: installs Loki log storage
       details: installs Loki log storage in simple scalable mode
@@ -4701,6 +4759,7 @@ units:
     depends_on:
       namespace-defs: true
       loki-init: true
+      loki-credentials-secret: true
       minio-monitoring-tenant: true
     enabled_conditions:
       - '{{ tuple . "logging" | include "unit-enabled" }}'
@@ -4919,11 +4978,12 @@ units:
           containerSecurityContext:
             seccompProfile:
               type: RuntimeDefault
+      valuesFrom:
+      # Use tenant list built by kyverno policy loki-aggregated-secret, it will fill loki.tenant object
+      - kind: Secret
+        name: loki-secrets
+        valuesKey: secrets
     helm_secret_values:
-      gateway:
-        basicAuth:
-          username: loki-user
-          password: '{{ .Values._internal.loki_password }}'
       loki:
         storage:
           s3:
@@ -5625,9 +5685,6 @@ shared_workload_clusters_values:
 shared_workload_clusters_secret_values:
   cluster:
     capo: '{{ tuple (dict "clouds_yaml" (.Values.cluster | dig "capo" "clouds_yaml" dict)) (.Values.cluster | dig "capo" "clouds_yaml" dict) | include "set-only-if" }}'
-  _internal:
-    thanos_password: '{{ .Values._internal.thanos_password }}'
-    loki_password: '{{ .Values._internal.loki_password }}'
 
 snmp:
   devices: []

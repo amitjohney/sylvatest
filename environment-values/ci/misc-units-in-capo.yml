@@ -62,6 +62,8 @@ units:
     enabled: true
   kyverno:
     enabled: true
+  kyverno-policies:
+    enabled: true
   keycloak:
     enabled: true
   keycloak-legacy-operator:
@@ -131,6 +133,8 @@ units:
   loki:
     enabled: true
   loki-init:
+    enabled: true
+  loki-credentials-secret:
     enabled: true
   ceph-csi-cephfs:
     enabled: true
