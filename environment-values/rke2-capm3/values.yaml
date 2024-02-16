@@ -36,7 +36,9 @@ cluster:
     provisioning_pool_start: 10.199.39.219
     provisioning_pool_end: 10.199.39.219
     provisioning_pool_prefix: "27"
-    dns_server: 1.2.3.4
+    dns_servers:
+    - 1.2.3.4
+    - 8.8.8.8
 
   control_plane:  # tweak network configuration as needed
 
