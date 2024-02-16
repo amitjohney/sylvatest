@@ -4247,8 +4247,8 @@ _internal:
   default_password: '{{ lookup "v1" "Secret" .Release.Namespace "sylva-units-values" | dig "data" "values" "" | b64dec | fromYaml | dig "_internal" "default_password" (randAlphaNum 64) }}'
 
   default_storage_class: >-
-    {{- if (tuple . "cinder-csi" | include "unit-enabled") -}}
-      {{ .Values.openstack.storageClass.name }}
+    {{- if (tuple . "ceph-csi-cephfs" | include "unit-enabled") -}}
+      csi-cephfs-sc
     {{- else if (tuple . "vsphere-csi-driver" | include "unit-enabled") -}}
       vsphere-csi
     {{- else if (tuple . "longhorn" | include "unit-enabled") -}}
@@ -4270,7 +4270,7 @@ _internal:
     {{- index (tuple . .Values._internal.storage_class_unit_map | include "interpret-inner-gotpl" | fromJson) "result" | dig $default_storage_class (printf "storage class unit not found for %s" $default_storage_class) -}}
 
   storage_class_RWX_support:
-    - longhorn
+    - csi-cephfs-sc
   default_storage_class_RWX_support: >-
     {{- $default_storage_class := tuple . .Values._internal.default_storage_class | include "interpret-as-string" -}}
     {{- has $default_storage_class .Values._internal.storage_class_RWX_support -}}
