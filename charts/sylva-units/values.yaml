@@ -1380,6 +1380,8 @@ units:
         - '{{ tuple "components/loki-aggregated-secrets" (tuple . "loki" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/thanos-aggregated-secrets" (tuple . "thanos" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/management-cluster-only" (tuple . "kyverno" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/loki-aggregated-secrets" (tuple . "loki" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/thanos-aggregated-secrets" (tuple . "thanos" | include "unit-enabled") | include "set-only-if" }}'
 
   rancher-monitoring-clusterid-inject:
     info:
