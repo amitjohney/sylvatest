@@ -279,6 +279,9 @@ units:
         createNamespace: true
       values:
         installCRDs: true
+        http_proxy: '{{ .Values.proxies.http_proxy }}' #proxy setting is required to reach external cert issuers
+        https_proxy: '{{ .Values.proxies.https_proxy }}'
+        no_proxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
         replicaCount: >-
           {{ ge (int .Values.cluster.control_plane_replicas) 3 | ternary 2 1 }}
         affinity:
@@ -373,19 +376,26 @@ units:
 
   sylva-ca:
     info:
-      description: provides a Certificate Authority for units of the Sylva stack
+      description: configures the Certificate Authority for units of the Sylva stack
       internal: true
     depends_on:
       cert-manager: true
       external-secrets-operator: true
     repo: sylva-core
+    kustomization_substitute_secrets:
+      KEY: '{{ .Values.external_x509_issuer.vault_token | default "" | b64enc }}'
     kustomization_spec:
       path: ./kustomize-units/sylva-ca
       wait: true
       postBuild:
         substitute:
           CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
-
+          ISS_SERVER: '{{ .Values.external_x509_issuer.server }}'
+          VAULT_PATH: '{{ .Values.external_x509_issuer.vault_path }}'
+      _components:
+        - '{{ tuple "components/acme-issuer" (eq .Values.external_x509_issuer.iss_type "acme") | include "set-only-if" }}'
+        - '{{ tuple "components/vault-issuer" (eq .Values.external_x509_issuer.iss_type "vault") | include "set-only-if"}}'
+        - '{{ tuple "components/ca-issuer" (not (hasKey .Values.external_x509_issuer "iss_type")) | include "set-only-if" }}'
 
   namespace-defs:
     info:
@@ -4058,6 +4068,12 @@ external_certificates:
 
 audit_log:
   level: 0
+
+external_x509_issuer: {}
+ # iss_type:  acme or vault
+ # vault_token:  authent token for vault,
+ # server: e.g. https://vault.external-domain:8200
+ # vault_path: e.g. /pki/sylva, only when using vault issuer
 
 keycloak: {}
 

@@ -1,0 +1,22 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: external-vault-token
+type: Opaque
+data:
+  token: ${KEY}
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: certificate-issuer
+spec:
+  vault:
+    path: ${VAULT_PATH}
+    server: ${ISS_SERVER} # e.g. https://vaultserver:8200
+    caBundle: ${CACERT}
+    auth:
+      tokenSecretRef:
+        name: external-vault-token
+        key: token

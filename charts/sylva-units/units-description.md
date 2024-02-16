@@ -97,7 +97,7 @@
 | **sandbox-privileged-namespace** | creates the sandbox namespace used to perform privileged operations like debugging a node |  | True | Kustomize | N/A |
 | **shared-workload-clusters-settings** | manages parameters which would be shared between management and workload clusters |  | True | Kustomize | N/A |
 | **sriov-resources** | configures SRIOV resources |  | True | Helm | N/A |
-| **sylva-ca** | provides a Certificate Authority for units of the Sylva stack |  | True | Kustomize | N/A |
+| **sylva-ca** | configures the Certificate Authority for units of the Sylva stack |  | True | Kustomize | N/A |
 | **sylva-dashboards** | adds Sylva-specific Grafana dashboards |  |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-dashboards.git) | 0.0.1 |
 | **sylva-snmp-resources** | contains OID files and generates configuration needed by the snmp-exporter<br/><br/>This unit is not to be enabled, as it will not be consumed by Flux. It is here only to have sylva-core produce the OCI artifact for it which is consumed directly by `snmp-exporter` unit (its init container). |  |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-snmp-resources.git) | 0.0.3 |
 | **synchronize-secrets** | allows secrets from Vault to be consumed other units, relies on ExternalSecrets |  | True | Kustomize | N/A |

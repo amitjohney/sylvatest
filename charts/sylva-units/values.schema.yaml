@@ -765,6 +765,21 @@ properties:
       minio_monitoring_tenant:  # -------------------------------
         $ref: "#/$defs/cert-and-key"
 
+  external_x509_issuer: # -------------------------------
+    type: object
+    additionalProperties: false
+    properties:
+      iss_type: # -------------------------------
+        type: string
+        pattern: "^(acme|vault)$"
+      vault_token: # -------------------------------
+        type: string
+      server: # -------------------------------
+        type: string
+        pattern: "^(https?://.*|)$"
+      vault_path: # -------------------------------
+        type: string
+
   keycloak: # -------------------------------
     type: object
     additionalProperties: false
