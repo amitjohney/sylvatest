@@ -625,6 +625,9 @@
                   "type": "string"
                 },
                 {
+                  "type": "number"
+                },
+                {
                   "$ref": "#/$defs/string-with-gotpl"
                 },
                 {
@@ -4743,6 +4746,19 @@
                       "type": "null"
                     }
                   ]
+                },
+                "kubectl": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/container-image"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 }
               }
             },
@@ -5413,6 +5429,35 @@
                           }
                         }
                       }
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "timeouts": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "cluster_delete_hook_job_timeout": {
+                  "anyOf": [
+                    {
+                      "type": "integer"
                     },
                     {
                       "$ref": "#/$defs/string-with-gotpl"
