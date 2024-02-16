@@ -2872,6 +2872,8 @@ units:
           create: true
           clusterID: '{{ .Values.ceph.cephfs_csi.clusterID }}'
           fsName: '{{ .Values.ceph.cephfs_csi.fs_name }}'
+          annotations:
+            storageclass.kubernetes.io/is-default-class: "true"
         csiConfig:
           - clusterID: '{{ .Values.ceph.cephfs_csi.clusterID }}'
             monitors: '{{ .Values.ceph.cephfs_csi.monitors_ips | include "preserve-type" }}'
