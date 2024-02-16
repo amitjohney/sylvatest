@@ -4013,11 +4013,6 @@ units:
           basicAuth:
             enabled: true
             # (username and password set under helm_secret_values)
-          nginxConfig:
-            httpSnippet: |-
-              client_max_body_size 50M;
-            serverSnippet: |-
-              client_max_body_size 50M;
           containerSecurityContext:
             seccompProfile:
               type: RuntimeDefault
