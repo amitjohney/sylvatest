@@ -3810,7 +3810,6 @@ units:
       sylvactl/readyMessage: "Loki can be reached at https://{{ .Values.external_hostnames.loki }} ({{ .Values.external_hostnames.loki }} must resolve to {{ .Values.display_external_ip }})"
     repo: loki
     helmrelease_spec:
-      releaseName: loki
       targetNamespace: loki
       chart:
         spec:
