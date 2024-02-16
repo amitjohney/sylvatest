@@ -3825,7 +3825,7 @@ units:
           rules:
             enabled: false
         loki:
-          auth_enabled: false
+          auth_enabled: true
           containerSecurityContext:
             seccompProfile:
               type: RuntimeDefault
@@ -3995,11 +3995,24 @@ units:
             - loki-memberlist
         gateway:
           enabled: true
-          basicAuth:
-            enabled: false
-            username: loki-user
           verboseLogging: true
           replicas: '{{ int .Values._internal.node_count | gt 2 | ternary 1 2 }}'
+          ingress:
+            enabled: true
+            ingressClassName: "nginx"
+            annotations:
+              nginx.ingress.kubernetes.io/proxy-body-size: "0"
+            hosts:
+              - host: '{{ .Values.external_hostnames.loki }}'
+                paths:
+                  - path: /
+            tls:
+              - secretName: loki-tls
+                hosts:
+                  - '{{ .Values.external_hostnames.loki }}'
+          basicAuth:
+            enabled: true
+            username: loki-user
           nginxConfig:
             httpSnippet: |-
               client_max_body_size 50M;
