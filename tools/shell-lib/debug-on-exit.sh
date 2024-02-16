@@ -1,5 +1,7 @@
 # Grab some info in case of failure, essentially usefull to troubleshoot CI, fell free to add your own commands while troubleshooting
 
+source $(realpath $(dirname $0))/common.sh
+
 unset KUBECONFIG
 
 # list of kinds to dump
@@ -126,6 +128,11 @@ function cluster_info_dump() {
 }
 
 echo "Start debug-on-exit at: $(date -Iseconds)"
+
+if [[ -n $ENV_PATH ]]; then
+    echo Dumping environment values to environment-values.yaml
+    _kustomize ${ENV_PATH} | tools/extractHelmReleaseValues.py --values-path=.spec.valuesFrom --skip-secrets > environment-values.yaml
+fi
 
 echo -e "\nDocker containers"
 docker ps
