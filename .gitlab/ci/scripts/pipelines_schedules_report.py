@@ -51,8 +51,8 @@ def order_stages(stages):
     for s in [
             ".pre",
             "deploy",
-            "update",
             "deploy-wc",
+            "update",
             "update-wc",
             "deployment-test",
             "delete",
