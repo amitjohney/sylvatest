@@ -65,7 +65,7 @@ units:
             access: "proxy"
             url: "https://{{ .Values.external_hostnames.thanos_query }}"
             basicAuth: true
-            basicAuthUser: "thanos-user"
+            basicAuthUser: "{{ .Release.Namespace }}"
             jsonData:
               tlsSkipVerify: true
             secureJsonData:
@@ -76,12 +76,10 @@ units:
             access: "proxy"
             url: "https://{{ .Values.external_hostnames.loki }}"
             basicAuth: true
-            basicAuthUser: "loki-user"
+            basicAuthUser: "{{ .Release.Namespace }}"
             jsonData:
               tlsSkipVerify: true
-              httpHeaderName1: 'X-Scope-OrgID'
             secureJsonData:
-              httpHeaderValue1: '{{ .Values.cluster.name }}'
               basicAuthPassword: '{{ .Values._internal.loki_password }}'
 
   logging:
