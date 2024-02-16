@@ -3819,7 +3819,7 @@ units:
         createNamespace: false
       values:
         global:
-          dnsService: "rke2-coredns-rke2-coredns"
+          dnsService: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "rke2-coredns-rke2-coredns" "kube-dns" }}'
         sidecar:
           rules:
             enabled: false
