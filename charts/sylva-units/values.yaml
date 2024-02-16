@@ -3891,7 +3891,6 @@ units:
       sylvactl/readyMessage: "Loki can be reached at https://{{ .Values.external_hostnames.loki }} ({{ .Values.external_hostnames.loki }} must resolve to {{ .Values.display_external_ip }})"
     repo: loki
     helmrelease_spec:
-      releaseName: loki
       targetNamespace: loki
       chart:
         spec:
@@ -4085,32 +4084,23 @@ units:
               nginx.ingress.kubernetes.io/proxy-body-size: "0"
             hosts:
               - host: '{{ .Values.external_hostnames.loki }}'
+                paths:
+                  - path: /
+                    pathType: Prefix
             tls:
               - secretName: loki-tls
                 hosts:
                   - '{{ .Values.external_hostnames.loki }}'
           basicAuth:
             enabled: true
-            username: loki-user
-          nginxConfig:
-            httpSnippet: |-
-              client_max_body_size 50M;
-            serverSnippet: |-
-              client_max_body_size 50M;
+            # (username and password set under helm_secret_values)
           containerSecurityContext:
-            runAsGroup: 1000
-            runAsUser: 1000
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            runAsNonRoot: true
             seccompProfile:
               type: RuntimeDefault
     helm_secret_values:
       gateway:
         basicAuth:
+          username: loki-user
           password: '{{ .Values._internal.loki_password }}'
       loki:
         storage:
