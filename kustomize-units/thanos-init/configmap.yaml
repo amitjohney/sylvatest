@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: thanos-init-unit
-data:
-  unit: thanos-init
