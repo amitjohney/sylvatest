@@ -3831,9 +3831,6 @@ units:
           version: 12.16.1
       values:
         fullnameOverride: "thanos"
-        auth:
-          basicAuthUsers:
-            thanos-user: '{{ .Values._internal.thanos_password }}'        
         metrics:
           enabled: true
           serviceMonitor:
@@ -4018,6 +4015,9 @@ units:
                   - '{{ .Values.external_hostnames.thanos_receive }}'
                 secretName: thanos-tls
     helm_secret_values:
+      auth:
+        basicAuthUsers:
+          thanos-user: '{{ .Values._internal.thanos_password }}'
       objstoreConfig: |-
         type: "S3"
         config:
