@@ -3994,7 +3994,10 @@ units:
           join_members:
             - loki-memberlist
         gateway:
-          enabled: false
+          enabled: true
+          basicAuth:
+            enabled: false
+            username: loki-user
           verboseLogging: true
           replicas: '{{ int .Values._internal.node_count | gt 2 | ternary 1 2 }}'
           nginxConfig:
@@ -4013,18 +4016,10 @@ units:
             runAsNonRoot: true
             seccompProfile:
               type: RuntimeDefault
-        ingress:
-          enabled: true
-          ingressClassName: "nginx"
-          annotations:
-            nginx.ingress.kubernetes.io/proxy-body-size: "0"
-          hosts:
-            - '{{ .Values.external_hostnames.loki }}'
-          tls:
-            - hosts:
-                - '{{ .Values.external_hostnames.loki }}'
-              secretName: loki-tls
     helm_secret_values:
+      gateway:
+        basicAuth:
+          password: '{{ .Values._internal.loki_password }}'
       loki:
         storage:
           s3:
