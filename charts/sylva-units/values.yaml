@@ -3788,7 +3788,7 @@ units:
   thanos-init:
     info:
       description: sets up thanos certificate
-      details: it generate certificate
+      details: it generates a multiple CN certificate for all Thanos components
       internal: true
     enabled_conditions:
       - '{{ tuple . "thanos" | include "unit-enabled" }}'
