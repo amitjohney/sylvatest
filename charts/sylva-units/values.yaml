@@ -1499,6 +1499,7 @@ units:
             ironichostNetwork: false
           persistence:
             ironic:
+              size: 10Gi
               storageClass: '{{ .Values._internal.default_storage_class }}'
               accessMode: ReadWriteOnce
         metal3-mariadb:
@@ -3992,7 +3993,7 @@ openstack:
 oci_registry_insecure: false
 
 metal3:
-  provider: sylva # sylva or suse
+  provider: suse # sylva or suse
   # external_bootstrap_ip:
   # bootstrap_ip:
 
