@@ -423,6 +423,7 @@ units:
     depends_on:
       namespace-defs: true
       '{{ .Values._internal.default_storage_class_unit }}': true
+      ceph-csi-cephfs: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/postgres-init
@@ -441,6 +442,7 @@ units:
       namespace-defs: true
       postgres-init: true
       '{{ .Values._internal.default_storage_class_unit }}': true
+      ceph-csi-cephfs: true
     helm_repo_url: https://charts.bitnami.com/bitnami
     helmrelease_spec:
       chart:
@@ -676,6 +678,7 @@ units:
       namespace-defs: true
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
       '{{ .Values._internal.default_storage_class_unit }}': true
+      ceph-csi-cephfs: true
       vault-operator: true
     annotations:
       sylvactl/readyMessage: "Vault UI can be reached at https://{{ .Values.external_hostnames.vault }} ({{ .Values.external_hostnames.vault }} must resolve to {{ .Values.display_external_ip }})"
@@ -1473,6 +1476,7 @@ units:
     depends_on:
       cert-manager: true
       '{{ .Values._internal.default_storage_class_unit }}': true
+      ceph-csi-cephfs: true
     helm_repo_url: https://suse-edge.github.io/charts
     helm_chart_artifact_name: metal3-suse
     helmrelease_spec:
@@ -1541,6 +1545,7 @@ units:
     depends_on:
       cert-manager: true
       '{{ .Values._internal.default_storage_class_unit }}': true
+      ceph-csi-cephfs: true
       metal3-sync-secrets: true # make sure that the password secrets are ready to be consumed
     kustomization_spec:
       postBuild:
@@ -3051,6 +3056,7 @@ units:
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
       '{{ .Values._internal.default_storage_class_unit }}': true
       os-images-info: true
+      ceph-csi-cephfs: true
     repo: os-image-server
     annotations:
       sylvactl/readyMessage: |
