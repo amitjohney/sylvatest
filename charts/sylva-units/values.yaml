@@ -3906,7 +3906,7 @@ units:
           rules:
             enabled: false
         loki:
-          auth_enabled: false
+          auth_enabled: true
           containerSecurityContext:
             seccompProfile:
               type: RuntimeDefault
@@ -3951,7 +3951,7 @@ units:
             type: s3
             s3:
               s3: null
-              endpoint: "minio.minio-monitoring.svc.cluster.local:443"
+              endpoint: "minio.minio-monitoring-tenant.svc.cluster.local:443"
               region: null
               accessKeyId: "minio"
               # secretAccessKey: # is passed via helm_secret_values, see below
@@ -4075,9 +4075,23 @@ units:
           join_members:
             - loki-memberlist
         gateway:
-          enabled: false
+          enabled: true
           verboseLogging: true
           replicas: '{{ int .Values._internal.node_count | gt 2 | ternary 1 2 }}'
+          ingress:
+            enabled: true
+            ingressClassName: "nginx"
+            annotations:
+              nginx.ingress.kubernetes.io/proxy-body-size: "0"
+            hosts:
+              - host: '{{ .Values.external_hostnames.loki }}'
+            tls:
+              - secretName: loki-tls
+                hosts:
+                  - '{{ .Values.external_hostnames.loki }}'
+          basicAuth:
+            enabled: true
+            username: loki-user
           nginxConfig:
             httpSnippet: |-
               client_max_body_size 50M;
@@ -4094,18 +4108,10 @@ units:
             runAsNonRoot: true
             seccompProfile:
               type: RuntimeDefault
-        ingress:
-          enabled: true
-          ingressClassName: "nginx"
-          annotations:
-            nginx.ingress.kubernetes.io/proxy-body-size: "0"
-          hosts:
-            - '{{ .Values.external_hostnames.loki }}'
-          tls:
-            - hosts:
-                - '{{ .Values.external_hostnames.loki }}'
-              secretName: loki-tls
     helm_secret_values:
+      gateway:
+        basicAuth:
+          password: '{{ .Values._internal.loki_password }}'
       loki:
         storage:
           s3:
@@ -4226,6 +4232,9 @@ units:
           version: 12.16.1
       values:
         fullnameOverride: "thanos"
+        auth:
+          basicAuthUsers:
+            thanos-user: '{{ .Values._internal.thanos_password }}'
         metrics:
           enabled: true
           serviceMonitor:
