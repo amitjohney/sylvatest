@@ -4005,6 +4005,7 @@ units:
               - host: '{{ .Values.external_hostnames.loki }}'
                 paths:
                   - path: /
+                    pathType: Prefix
             tls:
               - secretName: loki-tls
                 hosts:
@@ -4018,14 +4019,6 @@ units:
             serverSnippet: |-
               client_max_body_size 50M;
           containerSecurityContext:
-            runAsGroup: 1000
-            runAsUser: 1000
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            runAsNonRoot: true
             seccompProfile:
               type: RuntimeDefault
     helm_secret_values:
