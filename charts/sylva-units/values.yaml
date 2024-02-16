@@ -1979,6 +1979,7 @@ units:
     - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     depends_on:
       namespace-defs: true
+      ceph-csi-cephfs: true
     helm_repo_url: https://kubernetes.github.io/cloud-provider-openstack
     helmrelease_spec:
       chart:
