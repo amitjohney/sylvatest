@@ -3615,6 +3615,12 @@ units:
               - hosts:
                   - '{{ .Values.external_hostnames.minio_operator_console }}'
                 secretName: minio-operator-console-tls
+    kustomization_spec:
+      healthChecks:
+        - apiVersion: v1
+          kind: Secret
+          name: sts-tls
+          namespace: minio-operator
 
   minio-monitoring-tenant-init:
     info:
@@ -3793,6 +3799,7 @@ units:
     enabled_conditions:
       - '{{ tuple . "thanos" | include "unit-enabled" }}'
     depends_on:
+      namespace-defs: true
       sylva-ca: true
     repo: sylva-core
     kustomization_spec:
