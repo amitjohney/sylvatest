@@ -3871,7 +3871,7 @@ units:
               s3: null
               endpoint: "minio.minio-monitoring-tenant.svc.cluster.local:443"
               region: null
-              accessKeyId: "minio"
+              accessKeyId: "console"
               # secretAccessKey: # is passed via helm_secret_values, see below
               signatureVersion: null
               s3ForcePathStyle: true
