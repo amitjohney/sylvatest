@@ -3615,6 +3615,22 @@ units:
               - hosts:
                   - '{{ .Values.external_hostnames.minio_operator_console }}'
                 secretName: minio-operator-console-tls
+      _postRenderers:
+        - kustomize:
+            patches:
+              - target:
+                  kind: ClusterRole
+                  name: minio-operator-role 
+                patch: |
+                  - op: add 
+                    path: /rules/-
+                    value:
+                      apiGroups:
+                        - job.min.io
+                      resources:
+                        - '*'
+                      verbs:
+                        - '*'
     kustomization_spec:
       healthChecks:
         - apiVersion: v1
@@ -3681,9 +3697,6 @@ units:
           name: monitoring
           configuration:
             name: minio-root-account
-          exposeServices:
-            minio: true      # expose the MinIO S3 API
-            console: true    # expose the Console
           pools:
             - servers: 2
               name: pool-0
