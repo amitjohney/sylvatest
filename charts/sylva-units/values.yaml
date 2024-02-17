@@ -3621,16 +3621,16 @@ units:
               - target:
                   kind: ClusterRole
                   name: minio-operator-role 
-                patch: |-
-                  - op: 
-                    path: /rules
+                patch: |
+                  - op: add 
+                    path: /rules/-
                     value:
-                      - apiGroups:
-                      - job.min.io
+                      apiGroups:
+                        - job.min.io
                       resources:
-                      - '*'
+                        - '*'
                       verbs:
-                      - '*'
+                        - '*'
     kustomization_spec:
       healthChecks:
         - apiVersion: v1
