@@ -3617,16 +3617,20 @@ units:
                 secretName: minio-operator-console-tls
       _postRenderers:
         - kustomize:
-            patchesStrategicMerge:
-              - kind: ClusterRole
-                apiVersion: rbac.authorization.k8s.io/v1
-                rules:
-                - apiGroups:
-                  - job.min.io
-                  resources:
-                  - '*'
-                  verbs:
-                  - '*'
+            patches:
+              - target:
+                  kind: ClusterRole
+                  name: minio-operator-role 
+                patch: |-
+                  - op: 
+                    path: /rules
+                    value:
+                      - apiGroups:
+                      - job.min.io
+                      resources:
+                      - '*'
+                      verbs:
+                      - '*'
     kustomization_spec:
       healthChecks:
         - apiVersion: v1
