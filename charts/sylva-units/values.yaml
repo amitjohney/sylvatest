@@ -3620,9 +3620,9 @@ units:
             patches:
               - target:
                   kind: ClusterRole
-                  name: minio-operator-role 
+                  name: minio-operator-role
                 patch: |
-                  - op: add 
+                  - op: add
                     path: /rules/-
                     value:
                       apiGroups:
