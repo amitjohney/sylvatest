@@ -3723,6 +3723,12 @@ units:
                   type: RuntimeDefault
           metrics:
             enabled: disable
+          exposeServices:
+            minio: true
+            console: true
+          serviceMetadata:
+            annotations:
+              metallb.universe.tf/allow-shared-ip: cluster-external-ip
           features:
             bucketDNS: false
             enableSFTP: false
@@ -3789,7 +3795,7 @@ units:
           metadata:
             name: minio-root-account
           stringData:
-            config.env: | -
+            config.env: |-
               export MINIO_ROOT_USER=minio
               export MINIO_ROOT_PASSWORD={{ .Values._internal.minio_monitoring_tenant_root_password }}
         - |
