@@ -3599,11 +3599,29 @@ units:
                   - '{{ .Values.external_hostnames.minio_operator_console }}'
                 secretName: minio-operator-console-tls
 
+  wait-minio-operator:
+    info:
+      description: hack to  wait for minio operator to be ready
+      internal: true
+    enabled_conditions:
+      - '{{ tuple . "minio-operator" | include "unit-enabled" }}'
+    depends_on:
+      minio-operator: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/dummy/components/sleep-job/
+      postBuild:
+        substitute:
+          SLEEP_TIME: 60s
+      wait: true
+      force: true
+
   minio-monitoring-tenant-init:
     info:
       description: sets up MinIO certificate for minio-monitoring-tenant
       details: it generate certificate
       internal: true
+    unit_template: dummy
     enabled_conditions:
       - '{{ tuple . "minio-monitoring-tenant" | include "unit-enabled" }}'
     depends_on:
@@ -3635,7 +3653,7 @@ units:
       - '{{ or (tuple . "thanos" | include "unit-enabled") ( tuple . "loki" | include "unit-enabled") }}'
     depends_on:
       namespace-defs: true
-      minio-operator: true
+      wait-minio-operator: true
       minio-monitoring-tenant-init: true
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
     annotations:
