@@ -3723,14 +3723,14 @@ units:
                   type: RuntimeDefault
           metrics:
             enabled: disable
-          exposeServices:
-            minio: true
-            console: true
-          serviceMetadata:
-            consoleServiceAnnotations:
-              metallb.universe.tf/allow-shared-ip: cluster-external-ip
-            minioServiceAnnotations:
-              metallb.universe.tf/allow-shared-ip: cluster-external-ip
+#          exposeServices:
+#            minio: true
+#            console: true
+#          serviceMetadata:
+#            consoleServiceAnnotations:
+#              metallb.universe.tf/allow-shared-ip: cluster-external-ip
+#            minioServiceAnnotations:
+#              metallb.universe.tf/allow-shared-ip: cluster-external-ip
           features:
             bucketDNS: false
             enableSFTP: false
@@ -4055,7 +4055,7 @@ units:
         type: "S3"
         config:
           bucket: "thanos"
-          endpoint: {{ .Values.external_hostnames.minio_monitoring_tenant }}:443
+          endpoint: minio.minio-monitoring-tenant.svc.cluster.local:443
           access_key: "console"
           secret_key: '{{ .Values._internal.minio_monitoring_tenant_console_password }}'
           insecure: false
