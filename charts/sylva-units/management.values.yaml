@@ -55,7 +55,7 @@ units:
             basicAuth: true
             basicAuthPassword: '{{ .Values._internal.thanos_password }}'
             basicAuthUser: "thanos-user"
-            isDefault: true
+            #isDefault: true
             orgId: 1
             version: 1
           - name: Loki
@@ -68,10 +68,9 @@ units:
             orgId: 1
             version: 1
 
-  #logging:
-    # commented because loki is not merged yet
-    #depends_on:
-    #  loki: '{{ tuple . "loki" | include "unit-enabled" }}'
+  logging:
+    depends_on:
+      loki: '{{ tuple . "loki" | include "unit-enabled" }}'
 
   snmp-exporter:
     enabled: '{{ tuple . "capm3" | include "unit-enabled" }}'
