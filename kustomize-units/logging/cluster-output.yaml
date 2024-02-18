@@ -8,7 +8,7 @@ spec:
   loki:
     configure_kubernetes_labels: true
     extra_labels:
-      job: ${CLUSTER_NAME}"-job"
+      job: ${CLUSTER_NAME}-job
     tenant: ${CLUSTER_NAME}
     url: ${LOKI_URL}
     insecure_tls: true

@@ -47,31 +47,35 @@ units:
             clusterId: local
     helm_secret_values:
       grafana:
+        # https://grafana.com/docs/grafana/latest/administration/provisioning/#example-data-source-config-file
         additionalDataSources:
-          - name: Thanos
+          - name: Thanos3
             type: "prometheus"
             access: "proxy"
-            url: http://thanos-query.thanos.svc:9090
+            url: "https://{{ .Values.external_hostnames.thanos_query }}"
             basicAuth: true
-            basicAuthPassword: '{{ .Values._internal.thanos_password }}'
             basicAuthUser: "thanos-user"
-            isDefault: true
-            orgId: 1
-            version: 1
-          - name: Loki
+            jsonData:
+              tlsSkipVerify: true
+            secureJsonData:
+              basicAuthPassword: '{{ .Values._internal.thanos_password }}'
+            #isDefault: true
+          - name: Loki3
             type: "loki"
             access: "proxy"
-            url: http://loki-read.loki-scalable.svc:3100
-            basicAuth: true
-            basicAuthPassword: '{{ .Values._internal.loki_password }}'
+            url: "https://{{ .Values.external_hostnames.loki }}"
+            basicAuth: true           
             basicAuthUser: "loki-user"
-            orgId: 1
-            version: 1
+            jsonData:
+              tlsSkipVerify: true
+              httpHeaderName1: 'X-Scope-OrgID'
+            secureJsonData:
+              httpHeaderValue1: '{{ .Values.cluster.name }}'
+              basicAuthPassword: '{{ .Values._internal.loki_password }}'
 
-  #logging:
-    # commented because loki is not merged yet
-    #depends_on:
-    #  loki: '{{ tuple . "loki" | include "unit-enabled" }}'
+  logging:
+    depends_on:
+      loki: '{{ tuple . "loki" | include "unit-enabled" }}'
 
   snmp-exporter:
     enabled: '{{ tuple . "capm3" | include "unit-enabled" }}'

@@ -194,36 +194,6 @@ units:
       sylva-system/rancher-monitoring-clusterid-inject: '{{ tuple . "sylva-system/rancher-monitoring-clusterid-inject" | include "unit-enabled" }}'
       cluster-import: '{{ tuple . "cluster-import" | include "unit-enabled" }}'
     unit_template: base-deps
-    helmrelease_spec:
-      values:
-        prometheus:
-          prometheusSpec:
-            externalLabels:
-              cluster: '{{ .Values.cluster.name }}'  # required for multi-cluster dashboards
-            remoteWriteDashboards: true
-            remoteWrite:
-              - url: '{{ .Values.monitoring.thanos_receive_url }}'
-                name: '{{ .Values.cluster.name }}'
-                basicAuth:
-                  username:
-                    name: thanos-basic-auth
-                    key: username
-                  password:
-                    name: thanos-basic-auth
-                    key: password
-                tlsConfig:
-                  insecureSkipVerify: true
-                queue_config:
-                  batch_send_deadline: 5s
-                  min_backoff: 1s
-                  max_backoff: 30s
-    helm_secret_values:
-      prometheus:
-        extraSecret:
-          name: thanos-basic-auth
-          data:
-            username: thanos-user
-            password: '{{ .Values._internal.thanos_password }}'  # value from management cluster, set via Secret/shared-workload-clusters-settings
 
   kubevirt:
     enabled: false

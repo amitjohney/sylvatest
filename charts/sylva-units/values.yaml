@@ -2558,8 +2558,31 @@ units:
                   enabled: true
                 etcd:
                   enabled: true
-            #datasources:
-              #isDefaultDatasource: false
+            # value .grafana.sidecar.datasources.isDefaultDatasource (default true) only present in v103.0.0+up45.31.1
+            # see https://github.com/rancher/charts/blob/dev-v2.8/charts/rancher-monitoring/103.0.0+up45.31.1/values.yaml#L1583
+            # datasources:
+              # isDefaultDatasource: false
+        prometheus:
+          prometheusSpec:
+            externalLabels:
+              cluster: '{{ .Values.cluster.name }}'  # required for multi-cluster dashboards
+            remoteWriteDashboards: true
+            remoteWrite:
+              - url: '{{ .Values.monitoring.thanos_receive_url }}'
+                name: '{{ .Values.cluster.name }}'
+                basicAuth:
+                  username:
+                    name: thanos-basic-auth
+                    key: username
+                  password:
+                    name: thanos-basic-auth
+                    key: password
+                tlsConfig:
+                  insecureSkipVerify: true
+                queue_config:
+                  batch_send_deadline: 5s
+                  min_backoff: 1s
+                  max_backoff: 30s
       # Disable drift detection for rancher-monitoring webhooks
       _postRenderers:
         - kustomize:
@@ -2570,6 +2593,13 @@ units:
                 - op: add
                   path: /metadata/annotations/helm.toolkit.fluxcd.io~1driftDetection
                   value: disabled
+    helm_secret_values:
+      prometheus:
+        extraSecret:
+          name: thanos-basic-auth
+          data:
+            username: thanos-user
+            password: '{{ .Values._internal.thanos_password }}'  # value from management cluster, set via Secret/shared-workload-clusters-settings
 
   snmp-exporter:
     info:
@@ -3635,6 +3665,28 @@ units:
               - hosts:
                   - '{{ .Values.external_hostnames.minio_operator_console }}'
                 secretName: minio-operator-console-tls
+      _postRenderers:
+        - kustomize:
+            patches:
+              - target:
+                  kind: ClusterRole
+                  name: minio-operator-role
+                patch: |
+                  - op: add
+                    path: /rules/-
+                    value:
+                      apiGroups:
+                        - job.min.io
+                      resources:
+                        - '*'
+                      verbs:
+                        - '*'
+    kustomization_spec:
+      healthChecks:
+        - apiVersion: v1
+          kind: Secret
+          name: sts-tls
+          namespace: minio-operator
 
   minio-monitoring-tenant-init:
     info:
@@ -3690,8 +3742,9 @@ units:
       values:
         secrets:
           # we need existingSecret to be empty in order to have unit create Secret/minio-root-account out of .accessKey & .secretKey
-          existingSecret: {}
-          name: minio-root-account  # other environment variables than the root account ones are supported but not used for now, https://min.io/docs/minio/linux/reference/minio-server/settings.html#minio-environment-variables
+          # existingSecret: {}
+          # name: minio-root-account  # other environment variables than the root account ones are supported but not used for now, https://min.io/docs/minio/linux/reference/minio-server/settings.html#minio-environment-variables
+          existingSecret: minio-root-account
         tenant:
           name: monitoring
           configuration:
@@ -3783,11 +3836,24 @@ units:
                   - '{{ .Values.external_hostnames.minio_monitoring_tenant_console }}'
                 secretName: minio-monitoring-tenant-tls
     helm_secret_values:
-      secrets:
-        accessKey: minio
-        secretKey: '{{ .Values._internal.minio_monitoring_tenant_bucket_password }}'
+      #secrets:
+      #  accessKey: minio
+      #  secretKey: '{{ .Values._internal.minio_monitoring_tenant_bucket_password }}'
       # Secret for console login; should be later replaced by an ExternalSecret read by ESO from Vault
       extraResources:
+        - |
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: minio-root-account
+            namespace: minio-monitoring-tenant
+          type: Opaque
+          stringData:
+            config.env: |-
+              export MINIO_ROOT_USER="minio"
+              export MINIO_ROOT_PASSWORD='{{ .Values._internal.minio_monitoring_tenant_root_password }}'
+              export MINIO_STORAGE_CLASS_STANDARD="EC:2"
+              export MINIO_BROWSER="on"
         - |
           apiVersion: v1
           kind: Secret
@@ -4105,7 +4171,7 @@ units:
       loki:
         storage:
           s3:
-            secretAccessKey: '{{ .Values._internal.minio_monitoring_tenant_console_password }}'
+            secretAccessKey: '{{ .Values._internal.minio_monitoring_tenant_root_password }}'
 
   logging-crd:
     info:
@@ -4171,7 +4237,7 @@ units:
       postBuild:
         substitute:
           # we must use external name in order to work also for workload clusters
-          LOKI_URL: "https://{{ .Values.external_hostnames.loki }}:443"
+          LOKI_URL: '{{ .Values.logging.loki_url }}'
           CLUSTER_NAME: '{{ .Values.cluster.name }}'
           LOKI_USERNAME: "loki-user"
           LOKI_PASSWORD: '{{ .Values._internal.loki_password }}'
@@ -4415,7 +4481,7 @@ units:
           bucket: "thanos"
           endpoint: minio.minio-monitoring-tenant.svc.cluster.local:443
           access_key: "minio"
-          secret_key: '{{ .Values._internal.minio_monitoring_tenant_bucket_password }}'
+          secret_key: '{{ .Values._internal.minio_monitoring_tenant_root_password }}'
           insecure: false
           http_config:
             tls_config:
@@ -4840,10 +4906,10 @@ get_openstack_images_per_image_timeout_minutes: 20
 calico_wireguard_enabled: false
 
 logging:
-  loki_url: "https://{{ .Values.external_hostnames.loki }}:443"  # for workload clusters, this is overridden via shared_workload_clusters_values to point to the mgmt cluster Loki
+  loki_url: "https://{{ .Values.external_hostnames.loki }}"  # for workload clusters, this is overridden via shared_workload_clusters_values to point to the mgmt cluster Loki
 
 monitoring:
-  thanos_receive_url: https://{{ .Values.external_hostnames.thanos_receive }}:443/api/v1/receive  # for workload clusters, this is overridden via shared_workload_clusters_values to point to the mgmt cluster Thanos
+  thanos_receive_url: https://{{ .Values.external_hostnames.thanos_receive }}/api/v1/receive  # for workload clusters, this is overridden via shared_workload_clusters_values to point to the mgmt cluster Thanos
 
 _internal:
   ha_cluster:
@@ -4868,7 +4934,7 @@ _internal:
   default_replicas: '{{ tuple . .Values._internal.ha_cluster.mode | include "interpret-as-string" | eq "ha" | ternary 3 1 | include "preserve-type" }}'
 
   # minio bucket write password
-  minio_monitoring_tenant_bucket_password: '{{ derivePassword 1 "maximum" (tuple . .Values._internal.default_password | include "interpret-as-string") "minio-monitoring-tenant" "bucket" | sha1sum }}'
+  minio_monitoring_tenant_root_password: '{{ derivePassword 1 "maximum" (tuple . .Values._internal.default_password | include "interpret-as-string") "minio-monitoring-tenant" "bucket" | sha1sum }}'
 
   # minio console password
   minio_monitoring_tenant_console_password: '{{ derivePassword 1 "maximum" (tuple . .Values._internal.default_password | include "interpret-as-string") "minio-monitoring-tenant" "console" | sha1sum }}'
@@ -5000,9 +5066,17 @@ shared_workload_clusters_values:
   sylva_diskimagebuilder_images: '{{ .Values.sylva_diskimagebuilder_images | include "preserve-type" }}'
   os_images: '{{ .Values.os_images | include "preserve-type" }}'
 
+  monitoring:
+    thanos_receive_url: '{{ .Values.monitoring.thanos_receive_url }}'
+  logging:
+    loki_url: '{{ .Values.logging.loki_url }}'
+
 shared_workload_clusters_secret_values:
   cluster:
     capo: '{{ tuple (dict "clouds_yaml" (.Values.cluster | dig "capo" "clouds_yaml" dict)) (.Values.cluster | dig "capo" "clouds_yaml" dict) | include "set-only-if" }}'
+  _internal:
+    thanos_password: '{{ .Values._internal.thanos_password }}'
+    loki_password: '{{ .Values._internal.loki_password }}'
 
 snmp:
   devices: []
