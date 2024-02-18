@@ -3803,6 +3803,10 @@ units:
           kind: StatefulSet
           name: monitoring-pool-0  # concatenation from .tenant chart values .name & .pools[*].name
           namespace: minio-monitoring-tenant
+        - apiVersion: v1
+          kind: Secret
+          name: monitoring-tls
+          namespace: minio-monitoring-tenant
 
   thanos-init:
     info:
