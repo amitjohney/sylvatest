@@ -4047,13 +4047,14 @@ units:
         type: "S3"
         config:
           bucket: "thanos"
-          endpoint: minio.minio-monitoring-tenant.svc.cluster.local:443
+          endpoint: '{{ .Values.external_hostnames.minio_monitoring_tenant }}':443
           access_key: "console"
           secret_key: '{{ .Values._internal.minio_monitoring_tenant_console_password }}'
           insecure: false
           http_config:
-            tls_config:
             insecure_skip_verify: true
+            tls_config:
+              insecure_skip_verify: true
 
 # Not yet ready, need to get os_images into the script
   get-openstack-images:
