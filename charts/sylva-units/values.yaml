@@ -4051,9 +4051,9 @@ units:
         type: "S3"
         config:
           bucket: "thanos"
-          endpoint: {{ .Values.external_hostnames.minio_monitoring_tenant }}:443
-          access_key: "console"
-          secret_key: '{{ .Values._internal.minio_monitoring_tenant_console_password }}'
+          endpoint: minio.minio-monitoring-tenant.svc.cluster.local:443
+          access_key: "minio"
+          secret_key: '{{ .Values._internal.minio_monitoring_tenant_root_password }}'
           insecure: false
           http_config:
             tls_config:
