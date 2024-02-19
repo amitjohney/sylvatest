@@ -2673,14 +2673,17 @@ units:
               mountPath: /etc/ssl/certs/extra-ca-certs.pem
               readOnly: true
 
-  sylva-snmp-resources:
+  snmp-resources:
     info:
       description: contains OID files and generates configuration needed by the snmp-exporter
       details: >
-        This unit is not to be enabled, as it will not be consumed by Flux.
-        It is here only to have sylva-core produce the OCI artifact for it
-        which is consumed directly by `snmp-exporter` unit (its init container).
-    enabled: false
+        This unit is not to be enabled, as it will not actually be consumed by sylva-units.
+        It is here only to have sylva-core tools/oci/push-helm-charts-artifacts.sh
+        produce an OCI artifact for it, which will be consumed directly by the `snmp-exporter`
+        pods (in its init container).
+      hidden: true
+    enabled_conditions:
+      - false
     repo: sylva-snmp-resources
     helm_chart_artifact_name: sylva-snmp-resources
     helmrelease_spec:
@@ -3786,7 +3789,6 @@ units:
           name: monitoring-pool-0  # concatenation from .tenant chart values .name & .pools[*].name
           namespace: minio-monitoring-tenant
 
-# Not yet ready, need to get os_images into the script
   get-openstack-images:
     info:
       description: Automatically push openstack images to cinder
