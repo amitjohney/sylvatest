@@ -35,13 +35,13 @@ Aditional images can be created by forking the [Sylva diskimage-builder](https:/
 
 ```yaml
 os_images_oci_registries:
-  my_custom_repo:
+  my-custom-repo:
     url: oci://registry.gitlab.com/my-custom-project
     tag: 0.1.1
 
 sylva_diskimagebuilder_images:
   my-custom-image-rke2:
-    os_images_oci_registry: my_custom_repo
+    os_images_oci_registry: my-custom-repo
     enabled: true
 ```
 
@@ -88,3 +88,31 @@ cluster:
 for CAPO `image_name` is still available, but not recomended to be used. Either `image_key` or `image_name` can be specified under the same key, not both.<br/>
 
 for CAPM3 the same applies for `machine_image_*`. Either `image_key` or `machine_image_url` can be specified under the same key, not both.
+
+## bootstrap optimisation
+
+In order to save time and space during bootstrap deployment, we introduced a new optional value **bootstrap_os_images_override_enabled**
+
+The aim of this new optional list is to enable manually only **OS images** required for management cluster deployment.
+Furthermore all image_key(s) declared for management cluster will be automatically added to this dict:
+
+- `cluster.capo.image_key` or `cluster.capm3.image_key`
+- `cluster.control_plane.capo.image_key` or `cluster.control_plane.capm3.image_key` if defined
+- `cluster.machine_deployment_default.capo.image_key` or `cluster.machine_deployment_default.capo.image_key` if defined
+- every `cluster.machine_deployments.*.capo.image_key` or `cluster.machine_deployments.*.capm3.image_key` if defined
+
+The objective is to save time and disk space during the bootstrap deployment, and avoid useless image download.
+
+In most case, you don't have to set the following dict but you can if you want to force download of OS images.
+
+Example of settings:
+
+```yaml
+bootstrap_os_images_override_enabled:
+  - ubuntu-jammy-plain-rke2-1-27-10
+  - ubuntu-jammy-plain-rke2-1-26-9
+```
+
+items of this array are same as the ones used in **`sylva_diskimagebuilder_images`** and **`os_images`**.
+
+**note** if you add a image name not existing in neither **`sylva_diskimagebuilder_images`** and **`os_images`**, it will be ignored.
