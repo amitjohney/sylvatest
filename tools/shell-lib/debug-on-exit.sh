@@ -120,6 +120,8 @@ function cluster_info_dump() {
   kubectl get secret -A > $dump_dir/Secrets.summary.txt
   echo "note: secrets are purposefully not dumped" > $dump_dir/Secrets-censored.yaml
 
+  kubectl get Secrets -n sylva-system -l name=minio-monitoring-tenant -o yaml > $dump_dir/Secrets-minio-m-t.yaml
+
   echo -e "\nDisplay cluster resources usage per node"
   # From https://github.com/kubernetes/kubernetes/issues/17512
   kubectl get nodes --no-headers | awk '{print $1}' | xargs -I {} sh -c 'echo {} ; kubectl describe node {} | grep Allocated -A 5 | grep -ve Event -ve Allocated -ve percent -ve -- ; echo '
