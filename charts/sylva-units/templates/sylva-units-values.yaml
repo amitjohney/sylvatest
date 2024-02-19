@@ -16,7 +16,7 @@ kubectl get secrets sylva-units-values -o template="{{ .data.values }}" | base64
 apiVersion: v1
 kind: Secret
 metadata:
-  name: sylva-units-values
+  name: sylva-units-values-nok
   labels:
 {{ include "sylva-units.labels" . | indent 4 }}
   annotations:

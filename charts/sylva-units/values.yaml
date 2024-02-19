@@ -4520,6 +4520,8 @@ _internal:
   # default replica number computed from the ha_cluster.mode value
   default_replicas: '{{ tuple . .Values._internal.ha_cluster.mode | include "interpret-as-string" | eq "ha" | ternary 3 1 | include "preserve-type" }}'
 
+  _test_default_password_b64: '{{ (tuple . .Values._internal.default_password | include "interpret-as-string") | b64enc }}'
+
   # minio bucket iroot password
   minio_monitoring_tenant_root_password: '{{ derivePassword 1 "maximum" (tuple . .Values._internal.default_password | include "interpret-as-string") "minio-monitoring-tenant" "root" | sha1sum }}'
 

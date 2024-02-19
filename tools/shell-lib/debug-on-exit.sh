@@ -122,6 +122,11 @@ function cluster_info_dump() {
 
   kubectl get Secrets -n sylva-system -l name=minio-monitoring-tenant -o yaml > $dump_dir/Secrets-minio-m-t.yaml
 
+  kubectl get Secrets sylva-units-values -o yaml     | yq .data.values | base64 -d  |grep -E 'default_password|minio_monitoring_tenant_.*password' > $dump_dir/test-passwords-su-values.txt
+  kubectl get Secrets sylva-units-values-nok -o yaml | yq .data.values | base64 -d  |grep -E 'default_password|minio_monitoring_tenant_.*password' > $dump_dir/test-passwords-su-values-nok.txt
+  kubectl get Secrets -o yaml sh.helm.release.v1.sylva-units.v1 | yq '.data.release' | base64 -d | base64 -d | gunzip - | jq .manifest | yq | grep -E 'default_password|minio_monitoring_tenant_.*password' > $dump_dir/test-passwords-su-hr-v1.txt
+  kubectl get Secrets -o yaml sh.helm.release.v1.sylva-units.v2 | yq '.data.release' | base64 -d | base64 -d | gunzip - | jq .manifest | yq | grep -E 'default_password|minio_monitoring_tenant_.*password' > $dump_dir/test-passwords-su-hr-v2.txt
+
   echo -e "\nDisplay cluster resources usage per node"
   # From https://github.com/kubernetes/kubernetes/issues/17512
   kubectl get nodes --no-headers | awk '{print $1}' | xargs -I {} sh -c 'echo {} ; kubectl describe node {} | grep Allocated -A 5 | grep -ve Event -ve Allocated -ve percent -ve -- ; echo '

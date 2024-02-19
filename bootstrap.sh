@@ -62,7 +62,7 @@ echo_b "\U000023F3 Wait for units installed on management cluster to be ready"
 sylvactl watch \
   --reconcile \
   --kubeconfig management-cluster-kubeconfig \
-  --timeout $(ci_remaining_minutes_and_at_most ${MGMT_WATCH_TIMEOUT_MIN:-45}) \
+  --timeout $(ci_remaining_minutes_and_at_most ${MGMT_WATCH_TIMEOUT_MIN:-20}) \
   ${SYLVACTL_SAVE:+--save management-cluster-timeline.html}
 
 display_final_messages

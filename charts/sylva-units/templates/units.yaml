@@ -322,3 +322,17 @@ metadata:
 spec: {{ $kustomization_spec | toYaml | nindent 2 }}
   {{- end -}}
 {{ end }}
+---
+{{ $values_checksum := regexReplaceAll " passwordHash: .*" (.Values | toYaml) " passwordHash: xxxxxx" | sha256sum -}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sylva-units-values
+  labels:
+{{ include "sylva-units.labels" . | indent 4 }}
+  annotations:
+    values-checksum: "{{ $values_checksum }}"
+type: Opaque
+stringData:
+  values: |
+{{ $envAll.Values | toYaml| indent 4 }}
