@@ -1391,7 +1391,7 @@ units:
         substitute:
           httpProxy: '{{ .Values.proxies.https_proxy }}'
           httpsProxy: '{{ .Values.proxies.https_proxy }}'
-          noProxy: '{{ include "sylva-units.no_proxy" . }}'
+          noProxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
 
   cloud-formation-operator:
     info:
