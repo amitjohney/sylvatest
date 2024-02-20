@@ -3689,6 +3689,7 @@ units:
       minio-operator: true
       minio-monitoring-tenant-init: true
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
+      single-replica-storageclass: '{{ tuple . "single-replica-storageclass" | include "unit-enabled" }}'
     annotations:
       sylvactl/readyMessage: MinIO monitoring tenant console can be reached at https://{{ .Values.external_hostnames.minio_monitoring_tenant_console }} ({{ .Values.external_hostnames.minio_monitoring_tenant_console }} must resolve to {{ .Values.display_external_ip }})
     repo: minio-operator
@@ -3714,7 +3715,7 @@ units:
               name: pool-0
               volumesPerserver: 4
               size: 3Gi
-              storageClassName: '{{ .Values._internal.default_storage_class }}'
+              storageClassName: '{{ tuple . (tuple . "single-replica-storageclass" | include "unit-enabled") "single-replica-storageclass" .Values._internal.default_storage_class | include "interpret-ternary" }}'
               containerSecurityContext:
                 runAsUser: 1000
                 runAsGroup: 1000
@@ -4330,7 +4331,33 @@ units:
             accessKeyId: "console"
             secretAccessKey: '{{ .Values._internal.minio_monitoring_user_password }}'
 
-# Not yet ready, need to get os_images into the script
+  single-replica-storageclass:
+    info:
+      description: Create a longhorn storage class with a single replica
+      internal: true
+    repo: sylva-core
+    depends_on:
+      longhorn: true
+    enabled_conditions:
+      - '{{ tuple . "minio-monitoring-tenant" | include "unit-enabled" }}'
+      - '{{ tuple . "longhorn" | include "unit-enabled" }}'
+    kustomization_spec:
+      path: ./kustomize-units/longhorn-storageclass
+      wait: true
+      postBuild:
+        substitute:
+          CLASS_NAME: single-replica-storageclass
+      _patches:
+        - target:
+            kind: StorageClass
+          patch: |
+            kind: _unused_
+            metadata:
+              name: _unused_
+            parameters:
+              numberOfReplicas: "1"
+              dataLocality: "best-effort"
+
   get-openstack-images:
     info:
       description: Automatically push openstack images to cinder
