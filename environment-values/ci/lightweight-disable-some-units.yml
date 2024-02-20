@@ -19,3 +19,7 @@ units:
     enabled: false
   minio-monitoring-tenant:
     enabled: false
+  thanos:
+    enabled: false
+  logging:
+    enabled: false
