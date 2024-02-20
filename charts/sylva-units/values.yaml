@@ -141,6 +141,13 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: 0.0.3
 
+  loki:
+    kind: GitRepository
+    spec:
+      url: https://github.com/grafana/loki.git
+      ref:
+        tag: v2.9.3
+
 helm_repo_spec_default:
   interval: 60m0s
 
@@ -413,6 +420,7 @@ units:
         - '{{ tuple "components/minio-operator" (tuple . "minio-operator" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/minio-monitoring-tenant" (tuple . "minio-monitoring-tenant" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/thanos" (tuple . "thanos" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/loki" (tuple . "loki" | include "unit-enabled") | include "set-only-if" }}'
 
 # Postgresql deployment for keycloak
   postgres-init:
@@ -4058,6 +4066,271 @@ units:
               insecure_skip_verify: true
             insecure_skip_verify: true
 
+  loki-init:
+    info:
+      description: sets up Loki certificate
+      details: it generate certificate
+      internal: true
+    enabled_conditions:
+      - '{{ tuple . "loki" | include "unit-enabled" }}'
+    depends_on:
+      namespace-defs: true
+      sylva-ca: true
+    repo: sylva-core
+    kustomization_substitute_secrets:
+      KEY: '{{ .Values.external_certificates.loki.key | default "" | b64enc }}'
+    kustomization_spec:
+      path: ./kustomize-units/loki-init
+      wait: true
+      postBuild:
+        substitute:
+          SERVICE: loki
+          SERVICE_DNS: '{{ .Values.external_hostnames.loki }}'
+          CERTIFICATE_NAMESPACE: loki
+          CERT: '{{ .Values.external_certificates.loki.cert | default "" | b64enc }}'
+          CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
+      _components:
+        - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.loki "cert") }}'
+        - "../tls-components/sylva-ca"
+
+  loki:
+    info:
+      description: installs Loki log storage
+      details: installs Loki log storage in simple scalable mode
+      maturity: beta
+    depends_on:
+      namespace-defs: true
+      loki-init: true
+      minio-monitoring-tenant: true
+    enabled_conditions:
+      - '{{ tuple . "logging" | include "unit-enabled" }}'
+    annotations:
+      sylvactl/readyMessage: "Loki can be reached at https://{{ .Values.external_hostnames.loki }} ({{ .Values.external_hostnames.loki }} must resolve to {{ .Values.display_external_ip }})"
+    repo: loki
+    helmrelease_spec:
+      targetNamespace: loki
+      chart:
+        spec:
+          chart: production/helm/loki
+          version: v2.9.2
+      install:
+        createNamespace: false
+      values:
+        global:
+          dnsService: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "rke2-coredns-rke2-coredns" "kube-dns" }}'
+        sidecar:
+          rules:
+            enabled: false
+        loki:
+          auth_enabled: true
+          containerSecurityContext:
+            seccompProfile:
+              type: RuntimeDefault
+          analytics:
+            reporting_enabled: false
+          server:
+            http_listen_port: 3100
+            grpc_listen_port: 9095
+            http_server_idle_timeout: 600s
+            http_server_read_timeout: 600s
+            http_server_write_timeout: 600s
+            grpc_server_max_recv_msg_size: 52428800
+            grpc_server_max_send_msg_size: 52428800
+          # -- Limits config
+          limits_config:
+            enforce_metric_name: false
+            reject_old_samples: false
+            reject_old_samples_max_age: 168h
+            max_cache_freshness_per_query: 10m
+            split_queries_by_interval: 15m
+            query_timeout: 10m
+            ingestion_rate_strategy: local
+            ingestion_rate_mb: 15
+            ingestion_burst_size_mb: 20
+            unordered_writes: true
+          # todo
+          ingester:
+            chunk_block_size: 262144
+            chunk_idle_period: 3m
+            chunk_retain_period: 1m
+            max_transfer_retries: 0
+            wal:
+              enabled: true
+              dir: /data/wal
+          commonConfig:
+            replication_factor: 1
+          storage:
+            bucketNames:
+              chunks: "loki-chunks"
+              ruler: "loki-ruler"
+              admin: "loki-admin"
+            type: s3
+            s3:
+              s3: null
+              endpoint: "minio.minio-monitoring-tenant.svc.cluster.local:443"
+              region: null
+              # accessKeyId and secretAccessKey are passed via helm_secret_values, see below
+              signatureVersion: null
+              s3ForcePathStyle: true
+              insecure: false
+              http_config:
+                idle_conn_timeout: 90s
+                insecure_skip_verify: true
+        test:
+          enabled: false
+        monitoring:
+          dashboards:
+            enabled: true
+            labels:
+              grafana_dashboard: "1"
+          rules:
+            enabled: true
+            alerting: true
+            additionalGroups:
+              - name: additional-loki-rules
+                rules:
+                  - record: job:loki_request_duration_seconds_bucket:sum_rate
+                    expr: sum(rate(loki_request_duration_seconds_bucket[1m])) by (le, job)
+                  - record: job_route:loki_request_duration_seconds_bucket:sum_rate
+                    expr: sum(rate(loki_request_duration_seconds_bucket[1m])) by (le, job, route)
+                  - record: node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate
+                    expr: sum(rate(container_cpu_usage_seconds_total[1m])) by (node, namespace, pod, container)
+            podsecurityContext:
+              seccompProfile:
+                type: RuntimeDefault
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
+          serviceMonitor:
+            enabled: true
+            metricsInstance:
+              enabled: true
+          # todo: need GrafanaAgent
+          selfMonitoring:
+            enabled: false
+            tenant:
+              name: "self-monitoring"
+            grafanaAgent:
+              installOperator: false
+          lokiCanary:
+            enabled: false
+            labelname: pod
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
+        write:
+          replicas: '{{ int .Values._internal.node_count | gt 2 | ternary 1 2 }}'
+          persistence:
+            size: 3Gi
+          autoscaling:
+            enable: true
+            minReplicas: 2
+            maxReplicas: 6
+            targetCPUUtilizationPercentage: 40
+          podSecurityContext:
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          extraVolumes:
+            - name: data
+              emptyDir: {}
+            - name: loki
+              emptyDir: {}
+          extraVolumeMounts:
+            - name: data
+              mountPath: /data
+            - name: loki
+              mountPath: /loki
+        tablemanager:
+          enabled: false
+        read:
+          replicas: '{{ int .Values._internal.node_count | gt 2 | ternary 1 2 }}'
+          persistence:
+            size: 3Gi
+          podSecurityContext:
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+        backend:
+          replicas: '{{ int .Values._internal.node_count | gt 2 | ternary 1 2 }}'
+          persistence:
+            size: 3Gi
+          podSecurityContext:
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+        memberlist:
+          service:
+            publishNotReadyAddresses: true
+          join_members:
+            - loki-memberlist
+        gateway:
+          enabled: true
+          verboseLogging: true
+          replicas: '{{ int .Values._internal.node_count | gt 2 | ternary 1 2 }}'
+          ingress:
+            enabled: true
+            ingressClassName: "nginx"
+            annotations:
+              nginx.ingress.kubernetes.io/proxy-body-size: "0"
+            hosts:
+              - host: '{{ .Values.external_hostnames.loki }}'
+                paths:
+                  - path: /
+                    pathType: Prefix
+            tls:
+              - secretName: loki-tls
+                hosts:
+                  - '{{ .Values.external_hostnames.loki }}'
+          basicAuth:
+            enabled: true
+            # (username and password set under helm_secret_values)
+          containerSecurityContext:
+            seccompProfile:
+              type: RuntimeDefault
+    helm_secret_values:
+      gateway:
+        basicAuth:
+          username: loki-user
+          password: '{{ .Values._internal.loki_password }}'
+      loki:
+        storage:
+          s3:
+            accessKeyId: "console"
+            secretAccessKey: '{{ .Values._internal.minio_monitoring_user_password }}'
+
+# Not yet ready, need to get os_images into the script
   get-openstack-images:
     info:
       description: Automatically push openstack images to cinder
@@ -4318,6 +4591,7 @@ external_hostnames:
   thanos_storegateway: 'thanos-storegateway.{{ .Values.cluster_domain }}'
   thanos_receive: 'thanos-receive.{{ .Values.cluster_domain }}'
   thanos_query: 'thanos-query.{{ .Values.cluster_domain }}'
+  loki: 'loki.{{ .Values.cluster_domain }}'
 
 external_certificates:
   rancher: {}
@@ -4331,6 +4605,7 @@ external_certificates:
   minio_operator: {}
   minio_monitoring_tenant: {}
   thanos: {}
+  loki: {}
 
 audit_log:
   level: 0
@@ -4495,6 +4770,9 @@ calico_wireguard_enabled: false
 monitoring:
   thanos_receive_url: https://{{ .Values.external_hostnames.thanos_receive }}:443/api/v1/receive  # for workload clusters, this is overridden via shared_workload_clusters_values to point to the mgmt cluster Thanos
 
+logging:
+  loki_url: "https://{{ .Values.external_hostnames.loki }}"  # for workload clusters, this is overridden via shared_workload_clusters_values to point to the mgmt cluster Loki
+
 _internal:
   ha_cluster:
 
@@ -4525,6 +4803,9 @@ _internal:
 
   # thanos password
   thanos_password: '{{ lookup "v1" "Secret" .Release.Namespace "sylva-units-values" | dig "data" "values" "" | b64dec | fromYaml | dig "_internal" "thanos_password" (randAlphaNum 64) }}'
+
+  # loki password
+  loki_password: '{{ lookup "v1" "Secret" .Release.Namespace "sylva-units-values" | dig "data" "values" "" | b64dec | fromYaml | dig "_internal" "loki_password" (randAlphaNum 64) }}'
 
   # unless the default password has already been generated by a previous run, we generate a new one randomly
   default_password: '{{ lookup "v1" "Secret" .Release.Namespace "sylva-units-values" | dig "data" "values" "" | b64dec | fromYaml | dig "_internal" "default_password" (randAlphaNum 64) }}'
@@ -4648,6 +4929,8 @@ shared_workload_clusters_values:
   os_images: '{{ .Values.os_images | include "preserve-type" }}'
   monitoring:
     thanos_receive_url: '{{ .Values.monitoring.thanos_receive_url }}'
+  logging:
+    loki_url: '{{ .Values.logging.loki_url }}'
 
 shared_workload_clusters_secret_values:
   cluster:

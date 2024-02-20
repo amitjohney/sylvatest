@@ -761,6 +761,12 @@ properties:
             format: hostname
           - const: ''
           - $ref: "#/$defs/string-with-gotpl"
+      loki:  # -------------------------------
+        anyOf:
+          - type: string
+            format: hostname
+          - const: ''
+          - $ref: "#/$defs/string-with-gotpl"
 
   external_certificates:  # -------------------------------
     type: object
@@ -790,7 +796,8 @@ properties:
         $ref: "#/$defs/cert-and-key"
       thanos:  # -------------------------------
         $ref: "#/$defs/cert-and-key"
-
+      loki:  # -------------------------------
+        $ref: "#/$defs/cert-and-key"
 
   keycloak: # -------------------------------
     type: object
@@ -979,6 +986,9 @@ properties:
     type: boolean
 
   monitoring:  # -------------------------------
+    type: object
+
+  logging:  # -------------------------------
     type: object
 
   _internal:  # -------------------------------
