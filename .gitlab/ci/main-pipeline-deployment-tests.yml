@@ -265,7 +265,7 @@ capm3-HA-ubuntu-rke2-virt-deploy:
   variables:
     MGMT_ADDITIONAL_VALUES: environment-values/rke2-capm3-virt/ha.yaml
     WC_ADDITIONAL_VALUES: environment-values/workload-clusters/rke2-capm3-virt/ha.yaml
-    RUNNER_PLAN: s3.xlarge.x86
+    RUNNER_PLAN: m3.large.x86
 
 capm3-ubuntu-rke2-virt-deploy:
   extends: .capm3-virt-equinix-deploy
