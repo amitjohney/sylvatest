@@ -2579,6 +2579,29 @@ units:
               multicluster:
                 global:
                   enabled: true
+                etcd:
+                  enabled: true
+        prometheus:
+          prometheusSpec:
+            externalLabels:
+              cluster: '{{ .Values.cluster.name }}'  # required for multi-cluster dashboards
+            remoteWriteDashboards: true
+            remoteWrite:
+              - url: '{{ .Values.monitoring.thanos_receive_url }}'
+                name: '{{ .Values.cluster.name }}'
+                basicAuth:
+                  username:
+                    name: thanos-basic-auth
+                    key: username
+                  password:
+                    name: thanos-basic-auth
+                    key: password
+                tlsConfig:
+                  insecureSkipVerify: true
+                queue_config:
+                  batch_send_deadline: 5s
+                  min_backoff: 1s
+                  max_backoff: 30s
       # Disable drift detection for rancher-monitoring webhooks
       _postRenderers:
         - kustomize:
@@ -2589,6 +2612,13 @@ units:
                 - op: add
                   path: /metadata/annotations/helm.toolkit.fluxcd.io~1driftDetection
                   value: disabled
+    helm_secret_values:
+      prometheus:
+        extraSecret:
+          name: thanos-basic-auth
+          data:
+            username: thanos-user
+            password: '{{ .Values._internal.thanos_password }}'  # value from management cluster, set via Secret/shared-workload-clusters-settings
 
   snmp-exporter:
     info:
@@ -4195,6 +4225,7 @@ units:
         - "../tls-components/sylva-ca"
 
   loki:
+    enabled: false
     info:
       description: installs Loki log storage
       details: installs Loki log storage in simple scalable mode
