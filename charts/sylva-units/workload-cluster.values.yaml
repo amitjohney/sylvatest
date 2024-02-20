@@ -298,6 +298,22 @@ units:
     enabled: true
     unit_template: base-deps
 
+  logging-crd:
+    enabled: true
+    unit_template: base-deps
+
+  logging:
+    enabled: false
+    unit_template: base-deps
+
+  logging-config:
+    enabled: true
+    unit_template: base-deps
+    depends_on:
+      sylva-system/loki: true
+    kustomization_spec:
+      targetNamespace: "cattle-logging-system"
+
   sylva-prometheus-rules:
     enabled: true
     unit_template: base-deps

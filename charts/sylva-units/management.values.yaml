@@ -46,6 +46,10 @@ units:
           cattle:
             clusterId: local
 
+  logging:
+    depends_on:
+      loki: '{{ tuple . "loki" | include "unit-enabled" }}'
+
   snmp-exporter:
     enabled: '{{ tuple . "capm3" | include "unit-enabled" }}'
 
