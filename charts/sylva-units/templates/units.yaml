@@ -3,21 +3,12 @@
 {{ range $unit_name, $unit_def := .Values.units }}
 
   {{- if include "unit-enabled" (tuple $envAll $unit_name) -}}
-    {{/* inherit settings from any specified unit_template */}}
-    {{- if $unit_def.unit_template -}}
-      {{- if not (hasKey $envAll.Values.unit_templates $unit_def.unit_template) -}}
-        {{ fail (printf "unit %s has 'unit_template: %s', but no such template is declared in unit_templates" $unit_name $unit_def.unit_template) }}
-      {{- end -}}
-      {{/* interpret _unit_name_ in unit template */}}
-      {{- $_ := set $envAll.Values "_unit_name_" $unit_name -}}
-      {{- $unit_template := deepCopy (index $origUnitTemplates $unit_def.unit_template) }}
-      {{- $unit_template := index (tuple $envAll (index $origUnitTemplates $unit_def.unit_template) | include "interpret-inner-gotpl" | fromJson) "result" -}}
-      {{/* merge unit definition with unit template */}}
-      {{- $unit_def = mergeOverwrite $unit_template $unit_def -}}
-    {{- end -}}
+
+    {{/* inherit settings from any template specified in unit.<this unit>.unit_templates */}}
+    {{- $unit_def := include "unit-def-from-templates" (tuple $envAll $unit_name $origUnitTemplates) | fromJson -}}
 
     {{- if not (or (hasKey $unit_def "kustomization_spec") (hasKey $unit_def "helmrelease_spec")) -}}
-      {{- fail (printf "unit %s has neither kustomization_spec or helmrelease_spec" $unit_name) -}}
+      {{- fail (printf "unit %s has neither kustomization_spec or helmrelease_spec:\n%s" $unit_name ($unit_def | toYaml)) -}}
     {{- end -}}
 
     {{/*********** Prepare labels used in all generated objects */}}
