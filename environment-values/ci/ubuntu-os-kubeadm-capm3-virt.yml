@@ -1,6 +1,6 @@
 ---
 sylva_diskimagebuilder_images:
-  ubuntu-jammy-plain-rke2-1-26-9:
+  ubuntu-jammy-plain-rke2-1-27-6:
     default_enabled: false
   ubuntu-jammy-plain-kubeadm-1-27-6:
     default_enabled: true
