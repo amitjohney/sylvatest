@@ -7318,6 +7318,20 @@
               "$ref": "#/$defs/string-with-gotpl"
             }
           ]
+        },
+        "loki": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "hostname"
+            },
+            {
+              "const": ""
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            }
+          ]
         }
       }
     },
@@ -7359,6 +7373,9 @@
           "$ref": "#/$defs/cert-and-key"
         },
         "thanos": {
+          "$ref": "#/$defs/cert-and-key"
+        },
+        "loki": {
           "$ref": "#/$defs/cert-and-key"
         }
       }
@@ -7617,6 +7634,9 @@
       "type": "boolean"
     },
     "monitoring": {
+      "type": "object"
+    },
+    "logging": {
       "type": "object"
     },
     "_internal": {
