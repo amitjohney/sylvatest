@@ -232,8 +232,8 @@ capo-fip-deploy:
     ENV_NAME: kubeadm-capo
     CAPO_TAG: "${ENV_TAG_OCI}-fip"
     MGMT_ADDITIONAL_VALUES: environment-values/ci/capo-fip.yml
+    WC_ADDITIONAL_VALUES: environment-values/ci/capo-fip.yml
     MGMT_WATCH_TIMEOUT_MIN: 20
-    ONLY_DEPLOY_MGMT: "TRUE"
     E2E_JOB_MR_PARITY: none
   trigger:
     include: .gitlab/ci/pipeline-deploy-capo.yml

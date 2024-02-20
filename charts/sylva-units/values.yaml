@@ -2230,6 +2230,28 @@ units:
           loadBalancerIP: '{{ .Values.cluster_virtual_ip }}'
           annotations:
             metallb.universe.tf/allow-shared-ip: cluster-external-ip
+        # Following extraZonePlugins lines include all chart defaults plus the hosts plugin
+        extraZonePlugins:
+          - name: log
+          - name: errors
+          - name: health
+            configBlock: |-
+              lameduck 5s
+          - name: ready
+          - name: prometheus
+            parameters: 0.0.0.0:9153
+          - name: forward
+            parameters: . /etc/resolv.conf
+          - name: loop
+          - name: reload
+          - name: loadbalance
+          - name: hosts
+            configBlock: |-
+              {{- $display_external_ip := .Values.display_external_ip }}
+              {{- range $name,$domain := .Values.external_hostnames }}
+              {{ $display_external_ip }} {{ $domain }}
+              {{- end }}
+              fallthrough
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:
