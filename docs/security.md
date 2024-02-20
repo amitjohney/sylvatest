@@ -585,6 +585,12 @@ Then, for each images, we can have the list of components (softwares and package
 
 The optional unit "Neuvector" addresses the platform Zero Trust Security by providing vulnerability Management, Compliance, Runtime Security, Supply Chain Security, Network Visibility and Container Segmentation. Please refer to the [SUSE Neuvector Official documentation](https://www.suse.com/products/neuvector/) for further details.
 
+The image CVE scanning capability is disabled by default in order to save resources. To enable this feature, set the environment variable `.Values.neuvector_scanning_enabled` to true in your `values.yaml` file:
+
+```yaml
+neuvector_scanning_enabled: true
+```
+
 ### Neuvector admin console
 
 To administrate Neuvector, you can access its Web UI: `https://neuvector.<cluster_domain_name>`,  e.g. at https://neuvector.sylva.

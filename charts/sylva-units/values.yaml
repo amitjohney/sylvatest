@@ -972,9 +972,11 @@ units:
             secretName: neuvector-tls
         cve:
           updater:
+            enabled: '{{ .Values.neuvector_scanning_enabled | include "preserve-type" }}'
             image:
               repository: neuvector/updater
           scanner:
+            enabled: '{{ .Values.neuvector_scanning_enabled | include "preserve-type" }}'
             image:
               repository: neuvector/scanner
               env:
@@ -998,13 +1000,32 @@ units:
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:
-              - kind: CronJob
-                apiVersion: batch/v1
+              - kind: |-
+                  {{- if .Values.neuvector_scanning_enabled -}}
+                  CronJob
+                  {{- else -}}
+                  Deployment
+                  {{- end -}}
+                apiVersion: |-
+                  {{- if .Values.neuvector_scanning_enabled -}}
+                  batch/v1
+                  {{- else -}}
+                  apps/v1
+                  {{- end -}}
                 metadata:
-                  name: neuvector-updater-pod
+                  name: |-
+                    {{- if .Values.neuvector_scanning_enabled -}}
+                    neuvector-updater-pod
+                    {{- else -}}
+                    neuvector-manager-pod
+                    {{- end -}}
                   namespace: neuvector
-                spec:
+                spec: |-
+                  {{- if .Values.neuvector_scanning_enabled -}}
                   startingDeadlineSeconds: 21600
+                  {{- else -}}
+                  []
+                  {{- end -}}
     kustomization_spec:
       healthChecks:
         - apiVersion: apps/v1
@@ -4842,6 +4863,9 @@ get_openstack_images_per_image_timeout_minutes: 20
 
 # disable wireguard by default
 calico_wireguard_enabled: false
+
+# disable Neuvector scanning capability by default
+neuvector_scanning_enabled: false
 
 monitoring:
   thanos_receive_url: https://{{ .Values.external_hostnames.thanos_receive }}:443/api/v1/receive  # for workload clusters, this is overridden via shared_workload_clusters_values to point to the mgmt cluster Thanos

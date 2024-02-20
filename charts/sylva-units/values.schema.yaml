@@ -985,6 +985,9 @@ properties:
   calico_wireguard_enabled:
     type: boolean
 
+  neuvector_scanning_enabled:
+    type: boolean
+
   monitoring:  # -------------------------------
     type: object
 
