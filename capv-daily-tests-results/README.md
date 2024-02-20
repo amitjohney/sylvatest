@@ -8,6 +8,8 @@ The results are summarized by the following table:
 
 | Date                      | Management Cluster CAPI Providers | Sylva-Core main commit ID        | Management cluster result                    | Workload cluster result              | Test logs (only for failed tests) |
 |---------------------------|-----------------------------------|----------------------------------|----------------------------------------------|--------------------------------------|-----------------------------------|
+|2024-02-20 01:33|rke2-capv|34aefef00a214c93551135fb47b56857b6deb5d0|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/4c2ee47f28004dd9bb1dbd22679c7bdb/capv-logs.gz)|
+|2024-02-20 01:23|kubeadm-capv|34aefef00a214c93551135fb47b56857b6deb5d0|:white_check_mark:|:white_check_mark:|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/4c2ee47f28004dd9bb1dbd22679c7bdb/capv-logs.gz)|
 |2024-02-17 01:21|kubeadm-capv|b734aa6bf86c76f8572d8e591907578c01e08dc8|:white_check_mark:|:white_check_mark:|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/820206134d4faa4404092795d14ce0e6/capv-logs.gz)|
 |2024-02-17 01:57|rke2-capv|b734aa6bf86c76f8572d8e591907578c01e08dc8|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/fdfb9476eab2ae074f0e667f80d57a27/capv-logs.gz)|
 |2024-02-17 01:57|rke2-capv|b734aa6bf86c76f8572d8e591907578c01e08dc8|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/ae86f7636fb2ebbe5f11929c35772ff0/capv-logs.gz)|
@@ -27,7 +29,6 @@ The results are summarized by the following table:
 |2024-02-09 01:57|rke2-capv|92d5c2a514c4603b1924f71c6d7435886a9b6170|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/2d4b6fa8c2803afabe5aeb81f850feda/capv-logs.gz)|
 |2024-02-09 01:57|kubeadm-capv|92d5c2a514c4603b1924f71c6d7435886a9b6170|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/2d4b6fa8c2803afabe5aeb81f850feda/capv-logs.gz)|
 |2024-02-08 01:30|rke2-capv|f8ed5e856f87a35481d397c948cfeb8612e6e8a2|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/7614ed7daaff4447c5cc6e03a858ad0e/capv-logs.gz)|
-|2024-02-08 01:30|kubeadm-capv|f8ed5e856f87a35481d397c948cfeb8612e6e8a2|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/7614ed7daaff4447c5cc6e03a858ad0e/capv-logs.gz)|
 
 Old layout table:
 
