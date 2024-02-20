@@ -2923,7 +2923,8 @@
                         "capd",
                         "capo",
                         "capv",
-                        "capm3"
+                        "capm3",
+                        "capa"
                       ]
                     },
                     {
@@ -2939,7 +2940,8 @@
                     {
                       "enum": [
                         "cabpk",
-                        "cabpr"
+                        "cabpr",
+                        "cabpe"
                       ]
                     },
                     {
