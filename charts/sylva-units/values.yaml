@@ -1392,6 +1392,8 @@ units:
           httpProxy: '{{ .Values.proxies.https_proxy }}'
           httpsProxy: '{{ .Values.proxies.https_proxy }}'
           noProxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
+    kustomization_substitute_secrets:
+      CREDENTIALS: '{{ .Values.cluster.capa.credentials  | toYaml | b64enc }}'
 
   cloud-formation-operator:
     info:
