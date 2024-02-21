@@ -13,10 +13,10 @@ units:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
 
   capa:
-    enabled: true
+    enabled: false
 
   cloud-formation-operator:
-    enabled: true
+    enabled: false
 
   capm3:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
