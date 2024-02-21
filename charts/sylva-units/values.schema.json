@@ -2848,7 +2848,8 @@
         "name": {
           "anyOf": [
             {
-              "type": "string"
+              "type": "string",
+              "format": "hostname"
             },
             {
               "$ref": "#/$defs/string-with-gotpl"
