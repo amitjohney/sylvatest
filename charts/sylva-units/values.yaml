@@ -1394,7 +1394,7 @@ units:
           noProxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
     kustomization_substitute_secrets:
       # CAPO_CLOUD_YAML: '{{ .Values.cluster.capo.clouds_yaml  | toYaml | b64enc }}'
-      CREDENTIALS: '{{ .Values.cluster.capa.cloud.credentials | default "" | b64enc }}'
+      CREDENTIALS: '{{ .Values.cluster.capa.clouds_yaml.clouds.capa_cloud.credentials | default "" | b64enc }}'
 
   cloud-formation-operator:
     info:
