@@ -31,6 +31,9 @@ spec:
   - kind: Secret
     name: sylva-units-secrets
     valuesKey: secrets
+  - kind: Secret
+    name: sylva-units-secrets
+    valuesKey: credentials
   - kind: ConfigMap
     name: sylva-units-values
     valuesKey: values
