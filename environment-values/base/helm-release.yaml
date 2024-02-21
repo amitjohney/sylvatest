@@ -33,7 +33,7 @@ spec:
     valuesKey: secrets
   - kind: Secret
     name: sylva-units-secrets
-    valuesKey: credentials
+    valuesKey: secrets-capa
   - kind: ConfigMap
     name: sylva-units-values
     valuesKey: values
