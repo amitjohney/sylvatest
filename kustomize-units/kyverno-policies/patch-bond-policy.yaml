@@ -1,0 +1,40 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: patch-bond-policy
+  namespace: sylva-system
+  annotations:
+    policies.kyverno.io/title: Patch metal3 networkdata to add bond_miimon option
+    policies.kyverno.io/minversion: 1.11.0
+spec:
+  rules:
+  - name: patch-bond-rule
+    match:
+      any:
+      # Unfortunately we wan't match any label as they are not present at secret creation
+      - resources:
+          kinds:
+          - Secret
+    preconditions:
+      all:
+      - key: "{{ request.object.type || '' }}"
+        operator: Equals
+        value: infrastructure.cluster.x-k8s.io/secret
+      - key: "{{ request.object.data.networkData || '' }}"
+        operator: NotEquals
+        value: ''
+    context:
+    - name: sourceData
+      variable:
+        value: "{{ base64_decode(request.object.data.networkData) | parse_yaml(@) }}"
+    - name: patchedLinks
+      variable:
+        value: "{{ sourceData | [links[?type == 'bond'] | map(&merge(@,{bond_miimon: `100`}), @), links[?type != 'bond']][] }}"
+    - name: networkData
+      variable:
+        value: "{{ merge(sourceData, {links: patchedLinks}) }}"
+    mutate:
+      patchStrategicMerge:
+        data:
+          networkData: "{{ networkData | to_string(@) | base64_encode(@) }}"

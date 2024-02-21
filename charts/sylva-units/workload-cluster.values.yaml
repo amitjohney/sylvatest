@@ -136,7 +136,7 @@ units:
       sylva-system/{{ .Values.cluster.capi_providers.infra_provider }}: true
       sylva-system/{{ .Values.cluster.capi_providers.bootstrap_provider }}: true
       sylva-system/{{ .Values._internal.metal3_unit }}: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
-
+      sylva-system/kyverno-policies: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
 
   cluster-reachable:
     enabled: true
