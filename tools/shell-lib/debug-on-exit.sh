@@ -1,6 +1,10 @@
+#!/bin/bash
+
 # Grab some info in case of failure, essentially usefull to troubleshoot CI, fell free to add your own commands while troubleshooting
 
 unset KUBECONFIG
+BASE_DIR=${BASE_DIR:-"."}
+KIND_CLUSTER_NAME=${KIND_CLUSTER_NAME:-"sylva"}
 
 # list of kinds to dump
 #
@@ -166,7 +170,7 @@ if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
         else
           # in case of baremetal emulation workload cluster is only accessible from Rancher
           # and rancher API certificates does not match expected (so kubectl must be used with insecure-skip-tls-verify)
-          ./tools/shell-lib/get-wc-kubeconfig-from-rancher.sh $workload_cluster_name > $BASE_DIR/workload-cluster-kubeconfig-rancher
+          $BASE_DIR/tools/shell-lib/get-wc-kubeconfig-from-rancher.sh $workload_cluster_name > $BASE_DIR/workload-cluster-kubeconfig-rancher
           yq -i e '.clusters[].cluster.insecure-skip-tls-verify = true' $BASE_DIR/workload-cluster-kubeconfig-rancher
           yq -i e 'del(.clusters[].cluster.certificate-authority-data)' $BASE_DIR/workload-cluster-kubeconfig-rancher
           export KUBECONFIG=$BASE_DIR/workload-cluster-kubeconfig-rancher
