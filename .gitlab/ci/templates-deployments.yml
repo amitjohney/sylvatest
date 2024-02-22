@@ -9,6 +9,12 @@ include:
 .common-deployment:
   setup_ci_values:
     - |
+      function change_git_revision() {
+        echo -e "Changing git revision to use \\e[1;94m$1\\e[0m"
+        git checkout $1
+        echo -e "Current revision: $(git rev-parse HEAD)"
+      }
+    - |
       function update_values_file() {
         echo -e "Applying values from \\e[1;94m$@\\e[0m to \\e[1;92m$values_file\\e[0m"
         yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file $@
@@ -16,6 +22,12 @@ include:
         cat $values_file
       }
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_common[collapsed=true]\r\e[0KRunning common deployment steps\e[0m"
+    - |
+      if [ -n "${GIT_REVISION}" ] ; then
+        change_git_revision $GIT_REVISION
+      else
+        echo -e "Current revision: $(git rev-parse HEAD)"
+      fi
     - |
       if [[ ${CLUSTER_TYPE} == 'workload' ]]; then
           ENV_SUB_PATH="environment-values/workload-clusters"
@@ -192,6 +204,7 @@ include:
     - ./bootstrap.sh environment-values/${ENV_NAME}
   variables:
     SPECIFIC_VALUES_FILE: $MGMT_INITIAL_ADDITIONAL_VALUES
+    GIT_REVISION: $MGMT_INITIAL_REVISION
 
 .update-management:
   extends: .management-base
@@ -201,6 +214,7 @@ include:
     - ./apply.sh environment-values/${ENV_NAME}
   variables:
     SPECIFIC_VALUES_FILE: $MGMT_UPDATE_ADDITIONAL_VALUES
+    GIT_REVISION: $MGMT_UPDATE_REVISION
 
 .workload-base:
   extends: .docker-service
@@ -229,6 +243,7 @@ include:
     - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
   variables:
     SPECIFIC_VALUES_FILE: $WC_INITIAL_ADDITIONAL_VALUES
+    GIT_REVISION: $WC_INITIAL_REVISION
 
 .update-workload:
   extends: .workload-base
@@ -238,6 +253,7 @@ include:
     - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
   variables:
     SPECIFIC_VALUES_FILE: $WC_UPDATE_ADDITIONAL_VALUES
+    GIT_REVISION: $WC_UPDATE_REVISION
 
 .cleanup-capo:
   stage: delete
