@@ -3,3 +3,14 @@ kind: Kustomization
 
 resources:
   - sylva-namespace.yaml
+
+patches:
+  # ensure that Flux will never delete namespaces defined in namespace-defs kustomization
+  - target:
+      kind: Namespace
+    patch: |
+      kind: _unused_
+      metadata:
+        name: _unused_
+        annotations:
+          kustomize.toolkit.fluxcd.io/prune: disabled
