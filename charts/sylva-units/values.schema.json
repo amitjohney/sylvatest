@@ -7402,16 +7402,23 @@
           "type": "object",
           "properties": {
             "uri": {
-              "type": "string",
               "anyOf": [
                 {
-                  "pattern": "^(https?://.*|)$"
+                  "type": "string",
+                  "anyOf": [
+                    {
+                      "pattern": "^(https?://.*|)$"
+                    },
+                    {
+                      "pattern": "^(oci://.*)$"
+                    },
+                    {
+                      "pattern": "^{{ .Values.sylva_base_oci_registry }}/.*$"
+                    }
+                  ]
                 },
                 {
-                  "pattern": "^(oci://.*)$"
-                },
-                {
-                  "pattern": "^{{ .Values.sylva_base_oci_registry }}/.*$"
+                  "$ref": "#/$defs/string-with-gotpl"
                 }
               ]
             },
