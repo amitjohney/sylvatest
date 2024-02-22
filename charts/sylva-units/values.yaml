@@ -1311,12 +1311,18 @@ units:
             enabled: true
         admissionController:
           replicas: '{{ .Values._internal.default_replicas | include "preserve-type" }}'
+          resources:
+            limits:
+              memory: 1024Mi
         cleanupController:
           replicas: '{{ .Values._internal.default_replicas | include "preserve-type" }}'
         reportsController:
           replicas: '{{ .Values._internal.default_replicas | include "preserve-type" }}'
         backgroundController:
           replicas: '{{ .Values._internal.default_replicas | include "preserve-type" }}'
+          resources:
+            limits:
+              memory: 1024Mi
           rbac:
             clusterRole:
               extraResources:
