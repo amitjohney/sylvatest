@@ -997,36 +997,24 @@ units:
           requests:
             cpu: 100m
             memory: 2280Mi
-      _postRenderers:
-        - kustomize:
-            patchesStrategicMerge:
-              - kind: |-
-                  {{- if .Values.neuvector_scanning_enabled -}}
-                  CronJob
-                  {{- else -}}
-                  Deployment
-                  {{- end -}}
-                apiVersion: |-
-                  {{- if .Values.neuvector_scanning_enabled -}}
-                  batch/v1
-                  {{- else -}}
-                  apps/v1
-                  {{- end -}}
-                metadata:
-                  name: |-
-                    {{- if .Values.neuvector_scanning_enabled -}}
-                    neuvector-updater-pod
-                    {{- else -}}
-                    neuvector-manager-pod
-                    {{- end -}}
-                  namespace: neuvector
-                spec: |-
-                  {{- if .Values.neuvector_scanning_enabled -}}
-                  startingDeadlineSeconds: 21600
-                  {{- else -}}
-                  []
-                  {{- end -}}
-    kustomization_spec:
+      _postRenderers: |
+       {{- $kustomization = "
+        kustomize:
+          patchesStrategicMerge:
+            - kind: CronJob
+              apiVersion: batch/v1
+              metadata:
+                name: neuvector-updater-pod
+                namespace: neuvector
+              spec:
+                startingDeadlineSeconds: 21600
+        " -}}
+        {{- if .Values.neuvector_scanning_enabled -}}
+        {{- list ($patch | fromYaml) | include "preserve-type" -}}
+        {{- else -}}
+        {{- list | include "preserve-type" -}}
+        {{- end -}}
+
       healthChecks:
         - apiVersion: apps/v1
           kind: Deployment
