@@ -819,11 +819,13 @@ properties:
         type: object
         properties:
           uri:
-            type: string
             anyOf:
-              - pattern: "^(https?://.*|)$"
-              - pattern: "^(oci://.*)$"
-              - pattern: "^{{ .Values.sylva_base_oci_registry }}/.*$"
+              - type: string
+                anyOf:
+                  - pattern: "^(https?://.*|)$"
+                  - pattern: "^(oci://.*)$"
+                  - pattern: "^{{ .Values.sylva_base_oci_registry }}/.*$"
+              - $ref: "#/$defs/string-with-gotpl"
           filename:
             type: string
           checksum:
