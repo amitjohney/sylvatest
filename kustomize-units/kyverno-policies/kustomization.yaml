@@ -7,3 +7,4 @@ resources:
 - disable-automount-sa.yaml
 - prevent-deletion.yaml
 - patch-bond-policy.yaml
+- rancher-webhook-failurepolicy.yaml

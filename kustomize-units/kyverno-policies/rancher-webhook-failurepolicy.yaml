@@ -1,0 +1,230 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: rancher-webhook-failurepolicy
+  namespace: sylva-system
+  annotations:
+    policies.kyverno.io/title: rancher-webhook soft start
+    policies.kyverno.io/minversion: 1.11.0
+    policies.kyverno.io/description: >-
+      Set rancher-webhook failure policy to ignore until deployment has at least one ready replica
+
+      As rancher is installed concurently with other units, its webhook may prevent
+      other resources from accessing the API until rancher-webhook pods are available.
+
+      This policy sets failure policy to ignore until a first rancher-webhook
+      pod is ready. Then it restores previous configuration.
+
+      I also changes replicas to 3 on rancher webhook deployment as this is
+      not configurable by other means.
+
+spec:
+  rules:
+
+  # Increase the number of replicas of rancher-webhook deployment
+  - name: rancher-webhook-set-replicas
+    match:
+      any:
+      - resources:
+          kinds:
+          - Deployment
+          names:
+          - rancher-webhook
+          namespaces:
+          - cattle-system
+    mutate:
+      targets:
+      - apiVersion: apps/v1
+        kind: Deployment
+        name: rancher-webhook
+        namespace: cattle-system
+      patchStrategicMerge:
+        spec:
+          replicas: 3
+
+  # Label rancher webhook deployment has at least one ready replica,
+  # as well as the webhooks to notify them to restore default configuration
+  - name: rancher-webhook-replica-ready
+    skipBackgroundRequests: false
+    match:
+      any:
+      - resources:
+          kinds:
+          - Deployment
+          names:
+          - rancher-webhook
+          namespaces:
+          - cattle-system
+          selector:
+            matchExpressions:
+            - key: sylva/rancher-webhook-ready
+              operator: DoesNotExist
+    preconditions:
+      all:
+      - key: "{{ request.object.status.readyReplicas || `0` }}"
+        operator: GreaterThanOrEquals
+        value: 1
+    mutate:
+      targets:
+      - apiVersion: admissionregistration.k8s.io/v1
+        kind: ValidatingWebhookConfiguration
+        name: rancher.cattle.io
+      - apiVersion: admissionregistration.k8s.io/v1
+        kind: MutatingWebhookConfiguration
+        name: rancher.cattle.io
+      - apiVersion: apps/v1
+        kind: Deployment
+        name: rancher-webhook
+        namespace: cattle-system
+      patchStrategicMerge:
+        metadata:
+          labels:
+            sylva/rancher-webhook-ready: "{{ time_now_utc() | replace_all(@, ':', '_') }}"
+
+  # Set rancher validating webhook failurePolicy to Ignore when deployment is not yet ready
+  - name: rancher-validating-webhook-startup
+    skipBackgroundRequests: false
+    match:
+      any:
+      - resources:
+          kinds:
+          - admissionregistration.k8s.io/v1/ValidatingWebhookConfiguration
+          names:
+          - rancher.cattle.io
+          selector:
+            matchExpressions:
+            - key: sylva/rancher-webhook-ready
+              operator: DoesNotExist
+    context:
+    - name: rancherWebhook
+      apiCall:
+        urlPath: "/apis/apps/v1/namespaces/cattle-system/deployments/rancher-webhook"
+    preconditions:
+      all:
+      - key: "{{ rancherWebhook.status.readyReplicas || `0` }}"
+        operator: LessThan
+        value: 1
+      - key: "{{ contains(keys(rancherWebhook.metadata.labels || `{}`), 'sylva/rancher-webhook-ready') }}"
+        operator: Equals
+        value: false
+    mutate:
+      targets:
+      - apiVersion: admissionregistration.k8s.io/v1
+        kind: ValidatingWebhookConfiguration
+        name: rancher.cattle.io
+      foreach:
+      - list: "request.object.webhooks"
+        patchStrategicMerge:
+          metadata:
+            annotations:
+              sylva/rancher-webhook-config: "{{ request.object.webhooks | to_string(@) }}"
+          webhooks:
+          - name: "{{ element.name }}"
+            failurePolicy: Ignore
+
+  # Restore rancher validating webhook configuration when deployment has at least one ready replica
+  - name: rancher-validating-webhook-started
+    skipBackgroundRequests: false
+    match:
+      any:
+      - resources:
+          kinds:
+          - admissionregistration.k8s.io/v1/ValidatingWebhookConfiguration
+          names:
+          - rancher.cattle.io
+          selector:
+            matchExpressions:
+            - key: sylva/rancher-webhook-ready      # Set by rancher-webhook-replica-ready rule to notify that there is one ready replicas
+              operator: Exists
+    preconditions:
+      all:
+      - key: "{{ request.object.metadata.annotations.\"sylva/rancher-webhook-config\" || '' }}"
+        operator: NotEquals
+        value: ''
+    mutate:
+      targets:
+      - apiVersion: admissionregistration.k8s.io/v1
+        kind: ValidatingWebhookConfiguration
+        name: rancher.cattle.io
+      patchStrategicMerge:
+        metadata:
+          annotations:
+            $patch: delete
+            sylva/rancher-webhook-config: ""
+          labels:
+            sylva/rancher-webhook-restored: "{{ time_now_utc() | replace_all(@, ':', '_') }}"
+        webhooks: '{{ request.object.metadata.annotations."sylva/rancher-webhook-config" | parse_json(@) }}'
+
+  # Set rancher mutating webhook failurePolicy to Ignore when deployment is not yet ready
+  - name: rancher-mutating-webhook-startup
+    skipBackgroundRequests: false
+    match:
+      any:
+      - resources:
+          kinds:
+          - admissionregistration.k8s.io/v1/MutatingWebhookConfiguration
+          names:
+          - rancher.cattle.io
+          selector:
+            matchExpressions:
+            - key: sylva/rancher-webhook-ready
+              operator: DoesNotExist
+    context:
+    - name: rancherWebhook
+      apiCall:
+        urlPath: "/apis/apps/v1/namespaces/cattle-system/deployments/rancher-webhook"
+    preconditions:
+      all:
+      - key: "{{ rancherWebhook.status.readyReplicas || `0` }}"
+        operator: LessThan
+        value: 1
+      - key: "{{ contains(keys(rancherWebhook.metadata.labels || `{}`), 'sylva/rancher-webhook-ready') }}"
+        operator: Equals
+        value: false
+    mutate:
+      targets:
+      - apiVersion: admissionregistration.k8s.io/v1
+        kind: MutatingWebhookConfiguration
+        name: rancher.cattle.io
+      foreach:
+      - list: "request.object.webhooks"
+        patchStrategicMerge:
+          metadata:
+            annotations:
+              sylva/rancher-webhook-config: "{{ request.object.webhooks | to_string(@) }}"
+          webhooks:
+          - name: "{{ element.name }}"
+            failurePolicy: Ignore
+
+  # Restore rancher mutating webhook configuration when deployment has at least one ready replica
+  - name: rancher-mutating-webhook-started
+    skipBackgroundRequests: false
+    match:
+      any:
+      - resources:
+          kinds:
+          - admissionregistration.k8s.io/v1/MutatingWebhookConfiguration
+          names:
+          - rancher.cattle.io
+          selector:
+            matchExpressions:
+            - key: sylva/rancher-webhook-ready      # Set by rancher-webhook-replica-ready rule to notify that there is one ready replicas
+              operator: Exists
+    preconditions:
+      all:
+      - key: "{{ request.object.metadata.annotations.\"sylva/rancher-webhook-config\" || '' }}"
+        operator: NotEquals
+        value: ''
+    mutate:
+      targets:
+      - apiVersion: admissionregistration.k8s.io/v1
+        kind: MutatingWebhookConfiguration
+        name: rancher.cattle.io
+      patchStrategicMerge:
+        metadata:
+          annotations:
+            $patch: delete
+            sylva/rancher-webhook-config: ""
+          labels:
+            sylva/rancher-webhook-restored: "{{ time_now_utc() | replace_all(@, ':', '_') }}"
+        webhooks: '{{ request.object.metadata.annotations."sylva/rancher-webhook-config" | parse_json(@) }}'

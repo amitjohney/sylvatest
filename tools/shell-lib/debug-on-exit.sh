@@ -48,6 +48,8 @@ additional_resources="
   Metal3Machines
   Metal3DataTemplates
   BaremetalHosts
+  ValidatingWebhookConfigurations
+  MutatingWebhookConfigurations
 "
 
 function dump_additional_resources() {

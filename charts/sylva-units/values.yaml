@@ -1334,6 +1334,17 @@ units:
                 resources:
                   - "externalsecrets"
                 verbs: ["get", "list", "watch", "patch", "update"]
+              - apiGroups:
+                - apps
+                resources:
+                - deployments
+                verbs: ["get", "list", "watch", "patch", "update"]
+              - apiGroups:
+                - admissionregistration.k8s.io
+                resources:
+                - mutatingwebhookconfigurations
+                - validatingwebhookconfigurations
+                verbs: ["get", "list", "watch", "patch", "update"]
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:
@@ -2241,6 +2252,7 @@ units:
       rancher-init: true
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
       synchronize-secrets: true
+      kyverno-policies: true
     annotations:
       sylvactl/readyMessage: "Rancher UI can be reached at https://{{ .Values.external_hostnames.rancher }} ({{ .Values.external_hostnames.rancher }} must resolve to {{ .Values.display_external_ip }})"
     helm_repo_url: https://releases.rancher.com/server-charts/latest
