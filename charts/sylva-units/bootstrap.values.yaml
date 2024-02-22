@@ -48,6 +48,7 @@ units:
   cluster:
     depends_on:
       kyverno-policies: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+      libvirt-metal: '{{ tuple . "libvirt-metal" | include "unit-enabled" }}'
 
   kyverno:
     enabled_conditions:
