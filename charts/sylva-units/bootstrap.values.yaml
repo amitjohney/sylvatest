@@ -472,6 +472,7 @@ units:
       multus-ready: true
     repo: libvirt-metal
     helmrelease_spec:
+      targetNamespace: sylva-system
       chart:
         spec:
           chart: charts/libvirt-metal
