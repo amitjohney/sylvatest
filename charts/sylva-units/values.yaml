@@ -1475,6 +1475,8 @@ units:
     info:
       description: installs capa CAPI infra provider, for aws
       maturity: core-component
+    unit_templates:
+    - base-deps
     repo: sylva-core
     #depends_on:
     #  cert-manager: true
@@ -1493,6 +1495,8 @@ units:
     info:
       description: installs cloudstack operator unit
       maturity: core-component
+    unit_templates:
+    - base-deps
     repo: sylva-core
     depends_on:
       cert-manager: true
@@ -1505,6 +1509,8 @@ units:
     info:
       description: installs eks CAPI bootstrap provider
       maturity: core-component
+    unit_templates:
+    - base-deps
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/cabpe
