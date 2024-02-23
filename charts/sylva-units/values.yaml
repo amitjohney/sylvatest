@@ -4794,6 +4794,8 @@ units:
       maturity: beta
     unit_templates:
     - base-deps
+    depends_on:
+      monitoring: true
     enabled_conditions:
       - '{{ tuple . "monitoring" | include "unit-enabled" }}'
     repo: sylva-prometheus-rules
