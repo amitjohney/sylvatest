@@ -255,6 +255,7 @@ units:
       description: imports workload cluster into Rancher
       internal: true
     unit_templates:
+    - base-deps
     - kustomization-deployed-on-mgmt-cluster
     depends_on:
       sylva-system/rancher: true  # depends on rancher unit in sylva-system ns
