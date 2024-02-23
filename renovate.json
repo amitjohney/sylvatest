@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "gitlab>sylva-projects/sylva-elements/renovate-config:default"
   ],
   "prConcurrentLimit": 0,
   "labels": [
@@ -22,12 +22,6 @@
     ]
   },
   "packageRules": [
-    {
-      "description": "Allow renovate self-update only once a week",
-      "matchPackageNames": ["renovate-bot/renovate-runner"],
-      "groupName": "renovate",
-      "schedule": ["before 4am on monday"]
-    },
     {
       "description": "Regroup vsphere-cloud-controller-manager updates",
       "matchFileNames": ["kustomize-units/vsphere-cloud-controller-manager/**"],
