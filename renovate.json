@@ -82,15 +82,6 @@
       "groupName": "rancher-monitoring"
     },
     {
-      "description": "Regroup metallb updates",
-      "matchPackageNames": [
-        "metallb",
-        "metallb/metallb"
-      ],
-      "enabled": false,
-      "groupName": "metallb"
-    },
-    {
       "description": "Regroup longhorn updates",
       "matchPackageNames": [
         "longhorn",
