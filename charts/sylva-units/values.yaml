@@ -69,7 +69,8 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.1.47
+        #tag: 0.1.47
+        branch: jagrati/test1
 
   local-path-provisioner:
     kind: GitRepository
@@ -1469,6 +1470,34 @@ units:
                 capabilities:
                   drop:
                     - ALL
+  capa:
+    info:
+      description: installs capa CAPI infra provider, for aws
+      maturity: core-component
+    repo: sylva-core
+    #depends_on:
+    #  cert-manager: true
+    kustomization_spec:
+      path: ./kustomize-units/capa
+      wait: true
+      postBuild:
+        substitute:
+          httpProxy: '{{ .Values.proxies.https_proxy }}'
+          httpsProxy: '{{ .Values.proxies.https_proxy }}'
+          noProxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
+    kustomization_substitute_secrets:
+      CREDENTIALS: '{{ .Values.cluster.capa | toYaml }}'
+
+  cloud-formation-operator:
+    info:
+      description: installs cloudstack operator unit
+      maturity: core-component
+    repo: sylva-core
+    depends_on:
+      cert-manager: true
+    kustomization_spec:
+      path: ./kustomize-units/cloud-formation-operator
+      wait: true
 
   capm3:
     info:
@@ -1518,6 +1547,16 @@ units:
       postBuild:
         substitute:
           force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
+      wait: true
+  
+  cabpe:
+    enabled: false
+    info:
+      description: installs eks CAPI bootstrap provider
+      maturity: core-component
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/cabpe
       wait: true
 
   cabpr:
@@ -4901,6 +4940,9 @@ cluster:
     #     networkName: ""
     # ssh_key: ''
     numCPUs: 4
+
+  #capa:
+    # ssh_key_name: ""
 
   capm3:
     machine_image_checksum_type: sha256
