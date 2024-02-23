@@ -470,6 +470,7 @@ units:
     - '{{ not (.Values.libvirt_metal.nodes | empty) }}'
     depends_on:
       multus-ready: true
+      ingress-nginx: true
     repo: libvirt-metal
     helmrelease_spec:
       chart:
