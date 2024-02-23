@@ -2,6 +2,7 @@ apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
   name: numa-fg-test-vm
+  namespace: kubevirt-tests
 spec:
   running: true
   template:
@@ -21,10 +22,11 @@ spec:
             guestMappingPassthrough: { }
         resources:
           limits:
-            memory: 64M
+            hugepages-2Mi: 4096Mi
+            memory: 4096Mi
         memory:
           hugepages:
-            pageSize: 2M
+            pageSize: 2Mi
         devices:
           disks:
             - name: containerdisk
@@ -36,7 +38,7 @@ spec:
       volumes:
       - name: containerdisk
         containerDisk:
-          image: quay.io/kubevirt/cirros-container-disk-demo:v1.1.0
+          image: quay.io/kubevirt/centos8-container-disk-images:8.4.2105
       - name: cloudinitdisk
         cloudInitNoCloud:
           userDataBase64: SGkuXG4=
