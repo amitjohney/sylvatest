@@ -265,7 +265,7 @@ units:
               echo "-- Retrieve target cluster kubeconfig"
               kubectl -n $TARGET_NAMESPACE get secret {{ .Values.cluster.name }}-kubeconfig -o jsonpath='{.data.value}' | base64 -d > /tmp/management-cluster-kubeconfig
               echo "-- Copy secrets and configmaps from bootstrap to management cluster"
-              kubectl -n $TARGET_NAMESPACE get configmaps,secrets,gitrepository,helmrepository \
+              kubectl -n $TARGET_NAMESPACE get configmaps,secrets,gitrepository,ocirepository,helmrepository \
                 -l copy-from-bootstrap-to-management= \
                 -o json \
                   | jq '.items[] | del(.metadata.labels."helm.toolkit.fluxcd.io/name")
