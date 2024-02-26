@@ -81,7 +81,7 @@ $defs:
 
   string-with-gotpl:
     type: string
-    pattern: ".*{{ .* }}.*"
+    pattern: '(.|\n)*{{(.|\n)*}}(.|\n)*'
 
   ipv4-cidr-full:
     type: string
@@ -441,11 +441,13 @@ properties:
                         type: string
 
               _postRenderers: # -------------------------------
-                type: array
-                items:
-                  anyOf:
-                  - type: object
-                  - $ref: "#/$defs/gotpl"
+                anyOf:
+                  - $ref: "#/$defs/string-with-gotpl"
+                  - type: array
+                    items:
+                      anyOf:
+                      - type: object
+                      - $ref: "#/$defs/gotpl"
 
             # prevent having dependsOn here (we want it at the upper level with 'depends_on')
             not:
@@ -988,8 +990,14 @@ properties:
   additional_sylva_units_status_info:  # -------------------------------
     type: object
 
-  calico_wireguard_enabled:
-    type: boolean
+  security:
+    type: object
+    additionalProperties: false
+    properties:
+      calico_wireguard_enabled:
+        type: boolean
+      neuvector_scanning_enabled:
+        type: boolean
 
   monitoring:  # -------------------------------
     type: object

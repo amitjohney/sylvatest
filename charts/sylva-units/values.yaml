@@ -1026,9 +1026,11 @@ units:
             secretName: neuvector-tls
         cve:
           updater:
+            enabled: '{{ .Values.security.neuvector_scanning_enabled | include "preserve-type" }}'
             image:
               repository: neuvector/updater
           scanner:
+            enabled: '{{ .Values.security.neuvector_scanning_enabled | include "preserve-type" }}'
             image:
               repository: neuvector/scanner
               env:
@@ -1049,16 +1051,23 @@ units:
           requests:
             cpu: 100m
             memory: 2280Mi
-      _postRenderers:
-        - kustomize:
-            patchesStrategicMerge:
-              - kind: CronJob
-                apiVersion: batch/v1
-                metadata:
-                  name: neuvector-updater-pod
-                  namespace: neuvector
-                spec:
-                  startingDeadlineSeconds: 21600
+      _postRenderers: |
+        {{- $patch := `
+        kustomize:
+          patchesStrategicMerge:
+            - kind: CronJob
+              apiVersion: batch/v1
+              metadata:
+                name: neuvector-updater-pod
+                namespace: neuvector
+              spec:
+                startingDeadlineSeconds: 21600
+        ` -}}
+        {{- if .Values.security.neuvector_scanning_enabled -}}
+        {{- list ($patch | fromYaml) | include "preserve-type" -}}
+        {{- else -}}
+        {{- list | include "preserve-type" -}}
+        {{- end -}}
     kustomization_spec:
       healthChecks:
         - apiVersion: apps/v1
@@ -2066,7 +2075,7 @@ units:
             bgp: Enabled
           registry: UseDefault
         felixConfiguration:
-          wireguardEnabled: '{{ .Values.calico_wireguard_enabled | include "preserve-type" }}'
+          wireguardEnabled: '{{ .Values.security.calico_wireguard_enabled | include "preserve-type" }}'
 
   metallb:
     info:
@@ -4937,7 +4946,7 @@ cluster:
     - 100.73.0.0/16
   cluster_pods_cidrs:
     - 100.72.0.0/16
-  calico_wireguard_enabled: '{{ .Values.calico_wireguard_enabled | include "preserve-type" }}'
+  calico_wireguard_enabled: '{{ .Values.security.calico_wireguard_enabled | include "preserve-type" }}'
 
   use_custom_rancher_dns_resolver: false
   ntp: '{{ .Values.ntp | include "preserve-type" }}'
@@ -5235,8 +5244,9 @@ os_images_default_download_storage_space: 8Gi
 
 get_openstack_images_per_image_timeout_minutes: 20
 
-# disable wireguard by default
-calico_wireguard_enabled: false
+security:
+  calico_wireguard_enabled: false  # disable wireguard by default
+  neuvector_scanning_enabled: false # disable Neuvector scanning capability by default
 
 monitoring:
   thanos_receive_url: https://{{ .Values.external_hostnames.thanos_receive }}:443/api/v1/receive  # for workload clusters, this is overridden via shared_workload_clusters_values to point to the mgmt cluster Thanos
