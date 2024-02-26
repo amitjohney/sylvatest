@@ -36,7 +36,7 @@
 | **os-image-server** | Deploys a web server on management cluster which serves OS images for baremetal clusters. | stable |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/os-image-server.git) | 1.8.0 |
 | **postgres** | installs Postgresql for Keycloak | stable |  | [Helm](https://charts.bitnami.com/bitnami) | 14.0.5 |
 | **rancher** | installs Rancher | stable |  | [Helm](https://releases.rancher.com/server-charts/latest) | 2.8.2 |
-| **sriov** | installs SRIOV operator | stable |  | [Helm](https://charts.rancher.io/) | 102.1.0+up0.1.0 |
+| **sriov** | installs SRIOV operator | stable |  | [Helm](https://charts.rancher.io/) | 103.0.0+up0.1.0 |
 | **vault** | installs Vault<br/><br/>Vault assumes that the certificate vault-tls has been issued | stable |  | [Kustomize](https://raw.githubusercontent.com/banzaicloud/bank-vaults/1.19.0/operator/deploy/rbac.yaml) | 1.19.0 |
 | **vault-config-operator** | installs Vault config operator | stable |  | [Helm](https://redhat-cop.github.io/vault-config-operator) | v0.8.25 |
 | **vault-operator** | installs Vault operator | stable |  | [Helm](https://github.com/bank-vaults/vault-operator.git) | v1.21.2 |
