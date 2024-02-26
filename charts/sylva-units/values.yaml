@@ -2096,6 +2096,9 @@ units:
       chart:
         spec:
           chart: rancher
+          # When changing the major or minor version of rancher, make sure that renovate is
+          # also updated to accept the corresponding versions of the other rancher charts (monitory, sriov, longhorn)
+          # See https://github.com/rancher/charts/blob/dev-v2.9/README.md
           version: 2.8.2
       targetNamespace: cattle-system
       interval: 10m0s
@@ -2759,7 +2762,7 @@ units:
       chart:
         spec:
           chart: sriov-crd
-          version: 102.1.0+up0.1.0
+          version: 103.0.0+up0.1.0
 
   sriov:
     info:
@@ -2776,12 +2779,9 @@ units:
       chart:
         spec:
           chart: sriov
-          version: 102.1.0+up0.1.0
+          version: 103.0.0+up0.1.0
       values:
         cert_manager: true
-        rancher-nfd:
-          image:
-            tag: v0.13.2-build20230605
 
   sriov-resources:
     info:
