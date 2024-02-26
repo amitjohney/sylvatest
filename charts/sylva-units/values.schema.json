@@ -5519,6 +5519,9 @@
                       "type": "object",
                       "additionalProperties": false,
                       "properties": {
+                        "enabled": {
+                          "type": "boolean"
+                        },
                         "openstack_glance_uuid": {
                           "anyOf": [
                             {
@@ -7401,6 +7404,9 @@
         "^[a-z0-9][a-z0-9-]{1,50}[a-z0-9]$": {
           "type": "object",
           "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
             "uri": {
               "anyOf": [
                 {

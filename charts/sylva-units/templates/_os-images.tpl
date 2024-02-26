@@ -5,9 +5,11 @@ osImages:
 {{- $sylva_base_oci_registry := (tuple . .Values.sylva_base_oci_registry | include "interpret-as-string") }}
 {{- if (.Values.os_images) }}
   {{- range $os_image_name, $os_image_props := .Values.os_images }}
+     {{- if ($os_image_props.enabled) }}
   {{ $os_image_name }}:
     {{- range $prop_key, $prop_value := $os_image_props }}
     {{ $prop_key }}: {{ $prop_value | quote }}
+    {{- end }}
     {{- end }}
   {{- end }}
   {{- range $os_image_name, $os_image_props := $sylva_dib_images }}
