@@ -74,6 +74,14 @@
       "groupName": "rancher-cis-benchmark"
     },
     {
+      "description": "Regroup rancher-logging updates",
+      "matchPackageNames": [
+        "rancher-logging",
+        "rancher-logging-crd"
+      ],
+      "groupName": "rancher-logging"
+    },
+    {
       "description": "Regroup rancher-monitoring updates",
       "matchPackageNames": [
         "rancher-monitoring",
@@ -118,6 +126,8 @@
     {
       "description": "Prevent helm rancher update to over 103 due to compatibility issue with rancher 2.8",
       "matchPackageNames": [
+        "rancher-logging",
+        "rancher-logging-crd",
         "rancher-monitoring-crd",
         "rancher-monitoring",
         "sriov-crd",
