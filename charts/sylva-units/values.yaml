@@ -2809,7 +2809,7 @@ units:
         createNamespace: true
       values:
         fullnameOverride: 'snmp-exporter'
-        replicas: 3
+        replicas: 1
         extraArgs:
           - "--config.file=/config/snmp.yaml"
         serviceMonitor:
