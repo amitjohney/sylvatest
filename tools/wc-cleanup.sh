@@ -12,7 +12,7 @@ else
   CLUSTER=$2
 fi
 
-echo $WORKLOAD_CLUSTER - $CLUSTER
+echo "Deleting workload cluster named $WORKLOAD_CLUSTER with cluster named $CLUSTER"
 source bin/env
 export KUBECONFIG=management-cluster-kubeconfig
 flux suspend --all ks -n $WORKLOAD_CLUSTER
