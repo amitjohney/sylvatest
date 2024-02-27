@@ -69,7 +69,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.1.47
+        tag: 0.1.48
 
   local-path-provisioner:
     kind: GitRepository
@@ -1762,7 +1762,7 @@ units:
     - dummy
     # we copy the dependencies of the 'cluster' unit
     # (with the exception of "capo-cluster-resources" which we don't need, given how what it produces is consumed)
-    depends_on: '{{ omit .Values.units.cluster.depends_on "capo-cluster-resources" | include "preserve-type" }}'
+    depends_on: '{{ omit .Values.units.cluster.depends_on "capo-cluster-resources" "cluster-bmh" | include "preserve-type" }}'
 
   local-path-provisioner:
     info:
@@ -1799,6 +1799,34 @@ units:
                         securityContext:
                           runAsUser: 10000
 
+  cluster-bmh:
+    info:
+      description: definitions for Cluster API BareMetalHosts resources (capm3)
+      maturity: core-component
+    repo: sylva-capi-cluster
+    helm_chart_artifact_name: sylva-capi-cluster
+    unit_templates:
+    - base-deps
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+    #depends_on: the dependency on metal3 is handled in management.values.yaml
+    #            and workload-cluster.values.yaml
+    labels:
+      suspend-on-pivot: "yes"  # must be suspended before pivot
+    kustomization_spec:
+      prune: '{{ not (eq .Release.Namespace "sylva-system") | include "preserve-type" }}'
+    helmrelease_spec:
+      targetNamespace: '{{ .Release.Namespace }}'
+      chart:
+        spec:
+          chart: .
+      values:
+        resource_groups:
+          - baremetal-hosts
+    # we pass everything that is under `cluster` to this unit that uses sylva-capi-cluster chart
+    # (we do it via a secret because some of the values are credentials in many scenarios)
+    helm_secret_values: '{{ .Values.cluster | include "preserve-type" }}'
+
   cluster:
     info:
       description: holds the Cluster API definition for the cluster
@@ -1813,7 +1841,7 @@ units:
       '{{ .Values.cluster.capi_providers.bootstrap_provider }}': true
       capo-cluster-resources: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
       get-openstack-images: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
-      '{{ .Values._internal.metal3_unit }}': '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+      cluster-bmh: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
       sylva-system/os-image-server: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
     labels:
       suspend-on-pivot: "yes"  # must be suspended before pivot
@@ -1835,6 +1863,10 @@ units:
       chart:
         spec:
           chart: .
+      values:
+        resource_groups:
+          - cluster-resource
+          - base
       valuesFrom:
         - kind: ConfigMap
           name: capo-cluster-resources

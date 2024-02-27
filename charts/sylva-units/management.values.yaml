@@ -41,6 +41,10 @@ units:
   cabpr:  # RKE2
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
 
+  cluster-bmh:
+    depends_on:
+      '{{ .Values._internal.metal3_unit }}': '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+
   cluster:
     depends_on:
       kyverno-policies: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
