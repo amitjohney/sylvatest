@@ -29,6 +29,22 @@ sylva_diskimagebuilder_version: 0.1.7
 
 ```
 
+## Using custom images
+
+Aditional images can be created by forking the [Sylva diskimage-builder](https://gitlab.com/sylva-projects/sylva-elements/diskimage-builder) repository and producing the desired images then pushing them as oci artifacts. These can then be used by specifying the oci repository and adding the image key under `sylva_diskimagebuilder_images`
+
+```yaml
+os_images_oci_registries:
+  my_custom_repo:
+    url: oci://registry.gitlab.com/my-custom-project
+    tag: 0.1.1
+
+sylva_diskimagebuilder_images:
+  my-custom-image-rke2:
+    os_images_oci_registry: my_custom_repo
+    enabled: true
+```
+
 ## How these values can simplify the deployment process
 
 The available keys for each image are `default_enabled` and `enabled`, of boolean type. In order to use an image, it must first be enabled, unless it's the `default_enabled` one.<br/>
