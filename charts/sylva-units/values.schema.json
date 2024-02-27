@@ -2859,6 +2859,28 @@
             }
           ]
         },
+        "resource_groups": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "baremetal-hosts",
+                  "cluster-resource",
+                  "base",
+                  "all"
+                ]
+              }
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "air_gapped": {
           "anyOf": [
             {

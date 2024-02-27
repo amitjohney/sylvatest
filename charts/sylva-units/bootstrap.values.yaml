@@ -45,6 +45,11 @@ unit_helmrelease_spec_default:
   interval: 100000m
 
 units:
+  cluster-bmh:
+    depends_on:
+      '{{ .Values._internal.metal3_unit }}': '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+      libvirt-metal: '{{ tuple . "libvirt-metal" | include "unit-enabled" }}'
+
   cluster:
     depends_on:
       kyverno-policies: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
@@ -328,10 +333,14 @@ units:
       # for now we keep the 'cluster' unit disabled, it produces CAPI resources
       # defining the management cluster, which we can't define before having done the pivot
       # (this value override is reverted after pivot by the pivot job below)
-      values: |
+      values:
+        '
         {{- $chartValues := lookup "helm.toolkit.fluxcd.io/v2beta2" "HelmRelease" "sylva-system" "sylva-units" | dig "spec" "values" dict -}}
-        {{- $disableCluster := dict "units" (dict "cluster" (dict "enabled" false)) -}}
-        {{- mergeOverwrite $chartValues $disableCluster | include "preserve-type" -}}
+        {{- $disableCluster := dict "units" (dict "cluster"     (dict "enabled" false)
+                                                  "cluster-bmh" (dict "enabled" false)
+                                            )
+        -}}
+        {{- mergeOverwrite $chartValues $disableCluster | include "preserve-type" -}}'
       valuesFrom: '{{ lookup "helm.toolkit.fluxcd.io/v2beta2" "HelmRelease" "sylva-system" "sylva-units" | dig "spec" "valuesFrom" list | include "preserve-type" }}'
 
   pivot:
@@ -433,7 +442,7 @@ units:
 
               echo "-- Patch the mgmt cluster sylva-units HelmRelease to enable 'cluster' unit in the management cluster"
               kubectl -n $TARGET_NAMESPACE --kubeconfig /tmp/management-cluster-kubeconfig \
-                  patch helmrelease sylva-units --type=json --patch='[{"op":"remove","path":"/spec/values/units/cluster/enabled"}]'
+                  patch helmrelease sylva-units --type=json --patch='[{"op":"remove","path":"/spec/values/units/cluster/enabled"},{"op":"remove","path":"/spec/values/units/cluster-bmh/enabled"}]'
 
               # NOTE: here we could add a reference to another valueFile that would deploy units specific to the management cluster
               # '[{"op":"add","path":"/spec/chart/spec/valuesFiles/-","value":"charts/sylva-units/management.values.yaml"}]'
@@ -520,6 +529,7 @@ units_override_enabled:
   - ingress-nginx
   - os-images-info
   - os-image-server
+  - cluster-bmh
   - cluster
   - cluster-reachable
   - namespace-defs
