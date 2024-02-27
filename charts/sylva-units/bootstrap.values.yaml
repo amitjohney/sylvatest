@@ -57,6 +57,8 @@ units:
   kyverno-policies:
     enabled_conditions:
       - '{{ tuple . "capm3" | include "unit-enabled" }}'
+    kustomization_spec:
+      _components: []
 
   metal3-suse:
     enabled_conditions:

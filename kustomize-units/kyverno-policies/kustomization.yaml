@@ -3,7 +3,6 @@ kind: Kustomization
 
 resources:
 - tag.yaml
-- default-namespace.yaml
 - disable-automount-sa.yaml
-- prevent-deletion.yaml
 - patch-bond-policy.yaml
+- default-namespace.yaml
