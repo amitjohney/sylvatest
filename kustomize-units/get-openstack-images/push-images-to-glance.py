@@ -2,12 +2,15 @@
 #
 # This script can be tested with:
 #
-#   OS_IMAGES_INFO_PATH=my-os-images.info.yaml OS_CLOUD=falcon kustomize-units/get-openstack-images/push-images-to-glance.py
+#   OS_IMAGES_INFO_PATH=my-os-images.info.yaml TARGET_NAMESPACE=sylva-system OS_CLIENT_CONFIG_FILE=./cloud.yaml OS_CLOUD=capo_cloud kustomize-units/get-openstack-images/push-images-to-glance.py
 #
 # With my-os-images.info.yaml having content similar as the one produced by the os-images-info unit:
 #
 #   kubectl get configmap os-images-info -o yaml | yq '.data."values.yaml"' > my-os-images.info.yaml
-
+#
+# And cloud.yaml with the content similar to:
+#
+#   kubectl get secrets cluster-cloud-config -n sylva-system -o yaml | yq '.data."clouds.yaml"' | base64 -d > clouds.yaml
 
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
@@ -25,12 +28,19 @@ import yaml
 from distutils.util import strtobool
 
 class MyProvider(oras.provider.Registry):
+    def get_oci_manifest(self, artifact_url):
+        try:
+            container = self.get_container(artifact_url)
+            manifest = self.get_manifest(container)
+            return manifest
+        except Exception as e:
+            logger.error(f"upsie... {e}")
+            return None
     def pull_image(self, artifact_uri):
         try:
             res = self.pull(target=artifact_uri)
             if len(res) > 1:
                 raise ValueError("Expected only one file, but multiple files were found.")
-                sys.exit(1)
             return res[0]
         except Exception as e:
             logger.error(f"upsie... {e}")
@@ -72,46 +82,65 @@ def unzip_artifact(file_path):
 
 def image_exists_in_glance(checksum, _image_name):
     try:
-        matching_images = [image for image in conn.image.images(tags=[f"sylva-md5-{checksum}"]) if image.properties is not None and image.get('checksum') == checksum]
+        matching_images = [
+            {
+                'id': image.id,
+                'name': image.name,
+                'checksum': image.get('checksum'),
+                'tags': image.tags
+            } 
+            for image in conn.image.images(tags=[f"sylva-md5-{checksum}"])
+            if image.properties is not None and image.get('checksum') == checksum
+        ]
         if _image_name in [i['name'] for i in matching_images]:
             logger.warning(f"Image with name '{_image_name}' already exists.")
         return matching_images
     except Exception as e:
         logger.warning(f"Following exception occurred: {e}")
-        return None
+        return []
 
 
-def push_image_to_glance(file, manifest, image_name, image_format):
-    # Create an image resource without custom properties
-    with open(file, 'rb') as image_data:
-        try:
-            _checksum = manifest['md5']
-            logger.info(f"{image_name}: creating image")
-            image = conn.image.create_image(
-                name=image_name,
-                data=image_data,
-                disk_format=image_format,
-                md5=_checksum,
-                allow_duplicates=True
-            )
-            logger.info(f"  Image UUID: {image.id}")
+def push_image_to_glance(file, manifest, image_name, image_format, update_only=False, existing_image=None):
+    _checksum = manifest['md5']
+    tag = f"sylva-md5-{_checksum}"
 
-            # Update the image with custom properties
-            logger.info(f"  Updating image properties on image...")
-            image_properties = {f"sylva/{k}": v for k, v in manifest.items()}
+    # Update the image with custom properties if it's an update_only operation
+    if update_only:
+        if not existing_image or 'id' not in existing_image:
+            logger.error("Existing image details are required for updating.")
+            return None
+        image_id = existing_image['id']
+        logger.info(f"Updating image properties for image ID {image_id} with tag {tag}...")
+    else:
+        # Create an image resource without custom properties if it's not an update_only operation
+        with open(file, 'rb') as image_data:
+            try:
+                logger.info(f"{image_name}: creating image with tag {tag}")
+                image = conn.image.create_image(
+                    name=image_name,
+                    data=image_data,
+                    disk_format=image_format,
+                    md5=_checksum,
+                    tags=[tag],
+                    allow_duplicates=True
+                )
+                logger.info(f"Image UUID: {image.id}")
+                image_id = image.id  # Use the new image's ID for updating properties
+            except Exception as e:
+                logger.error(f"Error creating image: {e}")
+                raise
 
-            logger.info(f"  {image_properties}")
-            updated_image = conn.image.update_image(
-                image.id,
-                properties=image_properties,
-            )
-            tag = f"sylva-md5-{_checksum}"
-            logger.info(f"  Tagging image with {tag}...")
-            conn.image.add_tag(image.id, tag)
-            return updated_image
-        except Exception as e:
-            logger.error(f"upsie... {e}")
-            raise
+    # Common block for updating image properties
+    try:
+        logger.info("Updating image properties...")
+        image_properties = {f"sylva/{k}": v for k, v in manifest.items()}
+        logger.info(f"Image properties to update: {image_properties}")
+        updated_image = conn.image.update_image(image_id, properties=image_properties)
+        return updated_image
+    except Exception as e:
+        logger.error(f"Error updating image properties: {e}")
+        pass
+
 
 # Set namspace var
 NAMESPACE = os.environ.get('TARGET_NAMESPACE')
@@ -135,9 +164,9 @@ logger.info(f"os_images: {os_images}")
 
 # Initialize openstack connection
 try:
-  cloud_name = os.environ.get("OS_CLOUD","capo_cloud")  # 'capo-cloud' is the cloud name we hardcode for CAPO in Sylva
+    cloud_name = os.environ.get("OS_CLOUD","capo_cloud")  # 'capo-cloud' is the cloud name we hardcode for CAPO in Sylva
 except KeyError:
-  raise Exception("no OS_CLOUD environment variable specified")
+    raise Exception("no OS_CLOUD environment variable specified")
 conn = openstack.connect(cloud=cloud_name, verify=False)
 
 # Initialize oras class
@@ -149,8 +178,9 @@ for os_name, os_image_info in os_images.items():
     md5_checksum = os_image_info['md5']
     image_format = os_image_info['image-format']
     logger.info(f"Working on image: {os_name} with MD5 checksum {md5_checksum}")
-    is_image_in_glance = image_exists_in_glance(md5_checksum,os_name)
-    if not is_image_in_glance:
+    existing_images = image_exists_in_glance(md5_checksum, os_name)
+
+    if not existing_images:
         logger.info(f"image not in Glance: {os_name} / md5 {md5_checksum}" )
         logger.info(f"Pulling image: {os_name} from artifact uri: {artifact}")
         oras_pull_path = oras_client.pull_image(artifact)
@@ -168,14 +198,38 @@ for os_name, os_image_info in os_images.items():
             logger.warning(f"{e}")
             pass
 
-        logger.info("Updating configmap")
-        configmap.update({os_name: {'openstack_glance_uuid': image['id']}})
+        if image and 'id' in image:
+            logger.info("Updating configmap")
+            configmap.update({os_name: {'openstack_glance_uuid': image['id']}})
+        else:
+            logger.warning("Image push to Glance failed, image ID is unavailable, or image is None; configmap will not be updated.")
     else:
-        logger.info('\n'.join([f"Image already in glance: Name: {image.name}, UUID: {image.id}, OS Name: {os_name}" for image in is_image_in_glance if image.get('checksum') == md5_checksum])) # add image name in manifest without tag and get it from there if needed.
-        configmap.update({os_name: {'openstack_glance_uuid': is_image_in_glance[0]['id']}})
+        # Image already exists in Glance, so we might want to update it
+        logger.info(f"Image already in Glance: {os_name} with MD5 checksum {md5_checksum}")
+        image_to_update = existing_images[0]  # Assuming we get one image back
+        logger.info(f"Existing image details - Name: {image_to_update['name']}, UUID: {image_to_update['id']}")
+
+        # Optional: Pull manifest to verify/update image properties
+        manifest = oras_client.get_oci_manifest(artifact)
+
+        try:
+            logger.info("Updating image properties in Glance...")
+            updated_image = push_image_to_glance(None, os_image_info, os_name, image_format, update_only=True, existing_image=image_to_update)
+            if updated_image and 'id' in updated_image:
+                logger.info(f"Image properties updated for image ID {updated_image['id']}")
+            else:
+                logger.warning("Image properties could not be updated")
+        except Exception as e:
+            logger.warning(f"Error updating image properties: {e}")
+            pass
+
+        # Update configmap with the existing image's UUID
+        configmap.update({os_name: {'openstack_glance_uuid': image_to_update['id']}})
+
     logger.info(f"Finished processing image: {os_name}")
 
-logger.info(f"Images UUID map:\n {configmap}")
+logger.info(f"""Images UUID map:
+{configmap}""")
 
 logger.info(f"Pushing ConfigMap to Kubernetes...")
 
