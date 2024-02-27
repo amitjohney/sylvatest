@@ -2922,7 +2922,7 @@ units:
           createDefaultDiskLabeledNodes: true
           allowVolumeCreationWithDegradedAvailability: false
           storageMinimalAvailablePercentage: 10
-          replicaReplenishmentWaitInterval: "3600"
+          replicaReplenishmentWaitInterval: "1800"
 
   cluster-creator-login:
     info:
