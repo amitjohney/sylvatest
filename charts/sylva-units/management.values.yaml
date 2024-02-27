@@ -82,6 +82,9 @@ units:
             secureJsonData:
               basicAuthPassword: '{{ .Values._internal.loki_password }}'
 
+  loki:
+    enabled: true
+
   logging:
     depends_on:
       loki: '{{ tuple . "loki" | include "unit-enabled" }}'
