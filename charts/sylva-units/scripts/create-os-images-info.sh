@@ -28,7 +28,8 @@ yq '.osImages | keys | .[]' /opt/images.yaml | while read os_image_key; do
   echo "      $os_image_key:" >> $configmap_file
   # Check if the artifact is a Sylva diskimage-builder artifact
   uri=$(yq '.osImages.[env(os_image_key)].uri' /opt/images.yaml)
-  if [[ "$uri" == *"sylva-elements/diskimage-builder"* ]]; then
+  sylva_dib_image=$(yq '.osImages.[env(os_image_key)].sylva_dib_image' /opt/images.yaml)
+  if [[ "$sylva_dib_image" == "true" ]]; then
     echo "This is a Sylva diskimage-builder image. Updating image details from artifact at $uri"
     url=$(echo $uri| sed 's|oci://||')
     # Get artifact annotations and insert them as image details
@@ -37,7 +38,7 @@ yq '.osImages | keys | .[]' /opt/images.yaml | while read os_image_key; do
     echo $manifest | yq '.annotations |with_entries(select(.key|contains("sylva")))' -P | sed "s|.*/|        |" >> $configmap_file
   fi
   echo "Adding user provided details"
-  yq '.osImages.[env(os_image_key)]' /opt/images.yaml | sed 's/^/        /' >> $configmap_file
+  yq '.osImages.[env(os_image_key)] |del(.. | select(has("sylva_dib_image")).sylva_dib_image)' /opt/images.yaml | sed 's/^/        /' >> $configmap_file
   echo ---
 done
 

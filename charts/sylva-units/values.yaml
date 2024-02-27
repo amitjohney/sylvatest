@@ -5208,6 +5208,11 @@ sylva_base_oci_registry:
   }}'
 sylva_core_oci_registry: '{{ .Values.sylva_base_oci_registry }}/sylva-core'
 
+os_images_oci_registries:
+  sylva:
+    url: '{{ .Values.sylva_base_oci_registry }}/sylva-elements/diskimage-builder'
+    tag: '{{ .Values.sylva_diskimagebuilder_version }}'
+
 k8s_version_short: "1.27"
 
 # Renovate Bot needs additional information to detect sylva diskimage-builder version
