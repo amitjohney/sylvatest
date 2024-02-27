@@ -16,6 +16,7 @@ stages:
   - update
   - update-wc
   - deployment-test
+  - delete-wc
   - delete
 
 default:
