@@ -2,7 +2,8 @@
 osImages:
 {{- $sylva_dib_images := .Values.sylva_diskimagebuilder_images }}
 {{- $sylva_dib_version := .Values.sylva_diskimagebuilder_version }}
-{{- $sylva_base_oci_registry := (tuple . .Values.sylva_base_oci_registry | include "interpret-as-string") }}
+{{- $os_images_oci_registries := .Values.os_images_oci_registries }}
+{{- $os_images := .Values.os_images }}
 {{- if (.Values.os_images) }}
   {{- range $os_image_name, $os_image_props := .Values.os_images }}
   {{ $os_image_name }}:
@@ -10,18 +11,15 @@ osImages:
     {{ $prop_key }}: {{ $prop_value | quote }}
     {{- end }}
   {{- end }}
-  {{- range $os_image_name, $os_image_props := $sylva_dib_images }}
-    {{- if ($os_image_props.enabled) }}
-  {{ $os_image_name }}:
-    uri: {{ $sylva_base_oci_registry }}/sylva-elements/diskimage-builder/{{ $os_image_name }}:{{ $sylva_dib_version }}
-    {{- end }}
-  {{- end }}
-{{- else }}
-  {{- range $os_image_name, $os_image_props := $sylva_dib_images }}
-    {{- if (or ($os_image_props.enabled) ($os_image_props.default_enabled)) }}
-  {{ $os_image_name }}:
-    uri: {{ $sylva_base_oci_registry }}/sylva-elements/diskimage-builder/{{ $os_image_name }}:{{ $sylva_dib_version }}
-    {{- end }}
-  {{- end }}
 {{- end }}
+  {{- range $os_image_name, $os_image_props := $sylva_dib_images }}
+    {{- if (or ($os_image_props.enabled) (and $os_image_props.default_enabled (not $os_images ))) }}
+  {{ $os_image_name }}:
+    {{- $os_image_props := mergeOverwrite (dict "os_images_oci_registry" "sylva") $os_image_props }}
+    {{- $oci_registry_url := dig $os_image_props.os_images_oci_registry "url" "" $os_images_oci_registries }}
+    {{- $oci_registry_tag := dig $os_image_props.os_images_oci_registry "tag" "" $os_images_oci_registries }}
+    uri: '{{ $oci_registry_url }}/{{ $os_image_name }}:{{ $oci_registry_tag }}'
+    sylva_dib_image: true
+    {{- end }}
+  {{- end }}
 {{- end }}
