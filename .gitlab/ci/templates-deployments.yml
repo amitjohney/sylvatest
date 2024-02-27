@@ -316,8 +316,6 @@ include:
     - echo "-- Wait for test-sso pod to be created"
     - kubectl wait --for=condition=Ready pod/test-sso --kubeconfig $WORKLOAD_CLUSTER_NAME-rancher.yaml --timeout=60s
     - echo "-- All done"
-  tags:
-    - $CAPO_PLATFORM_TAG
 
 .test-sso:
   stage: deployment-test

@@ -87,14 +87,16 @@ update-workload-cluster:
   - . ./bin/env
 
 # Currently no workload cluster are created in capm3-virt test case
-# test-workload-cluster-rke2-virt-m3:
-#   extends:
-#     - .test-workload-cluster
-#   before_script:
-#     - !reference [.ensure_sylva_toolbox]
-#   tags:
-#     - $CI_PIPELINE_IID
-#     - equinix
+test-workload-cluster-rke2-virt-m3:
+  extends:
+    - .test-sso+workload-kubeconfig
+  before_script:
+    - !reference [.ensure_sylva_toolbox]
+    - pip install selenium colorama
+    - |
+      GECKODRIVER_VERSION=v0.34.0
+      curl -s -L  https://github.com/mozilla/geckodriver/releases/download/${GECKODRIVER_VERSION}/geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz |  tar xvz -C /tmp
+      mv /tmp/geckodriver /bin/geckodriver
 
 test-login:
   extends:

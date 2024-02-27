@@ -2694,6 +2694,22 @@ units:
                           seccompProfile:
                             type: RuntimeDefault
 
+  custom-resource-state-flux:
+    info:
+      description: add custom resource state for flux
+      internal: true
+    unit_templates:
+    - base-deps
+    enabled_conditions:
+    - '{{ tuple . "monitoring" | include "unit-enabled" }}'
+    depends_on:
+      monitoring-crd: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/flux-ksm
+      wait: false
+      force: true
+
   monitoring-crd:
     info:
       description: installs monitoring stack CRDs
@@ -2713,7 +2729,7 @@ units:
       chart:
         spec:
           chart: rancher-monitoring-crd
-          version: 102.0.2+up40.1.2
+          version: 103.0.0+up45.31.1
       install:
         createNamespace: true
 
@@ -2734,10 +2750,69 @@ units:
       chart:
         spec:
           chart: rancher-monitoring
-          version: 102.0.2+up40.1.2
+          version: 103.0.0+up45.31.1
       install:
         createNamespace: true
       values:
+        kube-state-metrics:
+           collectors:
+              - certificatesigningrequests
+              - configmaps
+              - cronjobs
+              - daemonsets
+              - deployments
+              - endpoints
+              - horizontalpodautoscalers
+              - ingresses
+              - jobs
+              - leases
+              - limitranges
+              - mutatingwebhookconfigurations
+              - namespaces
+              - networkpolicies
+              - nodes
+              - persistentvolumeclaims
+              - persistentvolumes
+              - poddisruptionbudgets
+              - pods
+              - replicasets
+              - replicationcontrollers
+              - resourcequotas
+              - secrets
+              - services
+              - statefulsets
+              - storageclasses
+              - validatingwebhookconfigurations
+              - volumeattachments
+              - kustomizations
+              - helmreleases
+           rbac:
+             extraRules:
+               - apiGroups:
+                   - apiextensions.k8s.io
+                   - source.toolkit.fluxcd.io
+                   - kustomize.toolkit.fluxcd.io
+                   - helm.toolkit.fluxcd.io
+                   - notification.toolkit.fluxcd.io
+                   - image.toolkit.fluxcd.io
+                 resources:
+                   - customresourcedefinitions
+                   - gitrepositories
+                   - buckets
+                   - helmrepositories
+                   - helmcharts
+                   - ocirepositories
+                   - kustomizations
+                   - helmreleases
+                   - alerts
+                   - providers
+                   - receivers
+                   - imagerepositories
+                   - imagepolicies
+                   - imageupdateautomations
+                 verbs: [ "list", "watch" ]
+           customResourceState:
+             enabled: true
         grafana:
           sidecar:
             dashboards:
