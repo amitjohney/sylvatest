@@ -21,7 +21,7 @@ create-runner:
     RUNNER_HOSTNAME: syla-core-$CI_PIPELINE_ID
     RUNNER_TAG: $CI_PIPELINE_IID
     RUNNER_PROJECT_ID: $CI_PROJECT_ID
-    RUNNER_PLAN: c3.small.x86
+    RUNNER_PLAN: m3.small.x86
     RUNNER_AAS_TARGET_REF: main
   tags: []
   image:
