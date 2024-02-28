@@ -12,6 +12,8 @@ include:
       function change_git_revision() {
         echo -e "Changing git revision to use \\e[1;94m$1\\e[0m"
         git checkout $1
+        git pull
+        git status
         echo -e "Current revision: $(git rev-parse HEAD)"
       }
     - |
