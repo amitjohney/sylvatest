@@ -13,6 +13,13 @@ RANCHER_URL=$(kubectl get ingress -n cattle-system rancher -o jsonpath='{ .spec.
 echo >&2 "RANCHER_URL = $RANCHER_URL"
 BOOTSTRAP_PASSWORD=$(kubectl -n cattle-system get secret bootstrap-secret -o jsonpath='{.data.bootstrapPassword}' | base64 -d)
 TOKEN=$(curl --insecure -s https://$RANCHER_URL/v3-public/localProviders/local?action=login -H 'content-type: application/json' --data-binary '{"username":"admin","password":"'$BOOTSTRAP_PASSWORD'","ttl":60000}' | yq eval .token -)
-KUBECONFIG_URL=$(curl --insecure -s https://$RANCHER_URL/v3/clusters/  -H "Authorization: Bearer $TOKEN" | yq eval '.data[] | select (.name=="'$WORKLOAD_CLUSTER_NAME-capi'") | .actions.generateKubeconfig' - | tr -d '"')
+CLUSTERS=$(curl --insecure -s https://$RANCHER_URL/v3/clusters/  -H "Authorization: Bearer $TOKEN" )
+echo >&2 "Detected clusters: $(echo $CLUSTERS | yq '[.data[].name] | join(", ")')"
 
-curl --insecure -s -X POST $KUBECONFIG_URL -H "Authorization: Bearer $TOKEN" | yq eval .config -
+KUBECONFIG_URL=$(echo $CLUSTERS | yq eval '.data[] | select(.name=="'$WORKLOAD_CLUSTER_NAME-capi'") | .actions.generateKubeconfig' - | tr -d '"')
+
+if [[ -n "$KUBECONFIG_URL" ]]; then
+    curl --insecure -s -X POST $KUBECONFIG_URL -H "Authorization: Bearer $TOKEN" | yq eval .config -
+else
+    echo >&2 "[ERROR] unable to find kubeconfig for cluster $WORKLOAD_CLUSTER_NAME"
+fi
