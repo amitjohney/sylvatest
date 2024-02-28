@@ -3,10 +3,19 @@ include:
   - local: .gitlab/ci/child-pipeline-default.yml
   - local: .gitlab/ci/templates-deployments.yml
 
+# Default tag will be used for all deployments/updates jobs
 default:
   tags:
     - $CI_PIPELINE_IID
     - equinix
+    - shell
+
+# test-tags will be used to run the tests jobs in a docker executor based runner
+.test-tags:
+  tags:
+    - $CI_PIPELINE_IID
+    - equinix
+    - docker
 
 #----------------------------------------------------------
 
@@ -82,30 +91,20 @@ update-workload-cluster:
 
 #----------------------------------------------------------
 
-.ensure_sylva_toolbox:
-  - . tools/shell-lib/common.sh environment-values/${ENV_NAME}; echo_b
-  - . ./bin/env
+test-sso+workload-kubeconfig:
+  extends:
+    - .test-sso+workload-kubeconfig
+    - .test-tags
 
-# Currently no workload cluster are created in capm3-virt test case
-# test-workload-cluster-rke2-virt-m3:
-#   extends:
-#     - .test-workload-cluster
-#   before_script:
-#     - !reference [.ensure_sylva_toolbox]
-#   tags:
-#     - $CI_PIPELINE_IID
-#     - equinix
+test-no-sso+workload-kubeconfig:
+  extends:
+    - .test-no-sso+workload-kubeconfig
+    - .test-tags
 
 test-login:
   extends:
     - .test-login
-  before_script:
-    - !reference [.ensure_sylva_toolbox]
-    - |
-      # install hurl
-      HURL_VERSION=4.1.0
-      curl -SsL https://github.com/Orange-OpenSource/hurl/releases/download/${HURL_VERSION}/hurl-${HURL_VERSION}-x86_64-unknown-linux-gnu.tar.gz | tar xvz -C /tmp
-      mv /tmp/hurl-${HURL_VERSION}-x86_64-unknown-linux-gnu/hurl ./bin/hurl
+    - .test-tags
 
 #----------------------------------------------------------
 

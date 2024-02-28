@@ -267,6 +267,14 @@ include:
   tags:
     - $CAPO_PLATFORM_TAG
 
+
+.capm3-virt-kubeconfig:
+  - |
+    if [[ ${ENV_NAME} == 'rke2-capm3-virt' ]]; then
+      yq -i e '.clusters[].cluster.insecure-skip-tls-verify = true' $WORKLOAD_CLUSTER_NAME-rancher.yaml
+      yq -i e 'del(.clusters[].cluster.certificate-authority-data)' $WORKLOAD_CLUSTER_NAME-rancher.yaml
+    fi
+
 .test_scripts:
   edit_hosts_file:
     - domain=$(kubectl --kubeconfig management-cluster-kubeconfig get secret sylva-units-values -oyaml | yq '.data.values | @base64d' | yq '.cluster_domain')
@@ -283,6 +291,9 @@ include:
     - unset https_proxy http_proxy
     - export KUBECONFIG=management-cluster-kubeconfig
     - ./tools/shell-lib/get-wc-kubeconfig-from-rancher.sh $WORKLOAD_CLUSTER_NAME > $WORKLOAD_CLUSTER_NAME-rancher.yaml
+    # For capm3 job we need to modify the $WORKLOAD_CLUSTER_NAME-rancher.yaml to remove the certificate and use an insecure option
+    - !reference [.capm3-virt-kubeconfig]
+
   test_sso:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_test_loging[collapsed=true]\r\e[0KGet ingress saved into /etc/hosts and set variables\e[0m"
     - export flux_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n flux-system flux-webui-weave-gitops -o jsonpath='{ .spec.tls[].hosts[] }')
@@ -299,6 +310,8 @@ include:
     - echo "-- Testing login using SSO"
     - unset https_proxy http_proxy
     - python3 ./tools/login-test/test-sso.py
+    # For capm3 job we need to modify the $WORKLOAD_CLUSTER_NAME-rancher.yaml to remove the certificate and use an insecure option
+    - !reference [.capm3-virt-kubeconfig]
 
 .test-sso+workload-kubeconfig:
   stage: deployment-test
