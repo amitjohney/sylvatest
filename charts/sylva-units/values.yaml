@@ -4408,6 +4408,26 @@ units:
       install:
         createNamespace: false
 
+  logging-fluentbit:
+    info:
+      description: configure fluentbit
+      maturity: beta
+      internal: true
+    enabled_conditions:
+      - '{{ tuple . "logging" | include "unit-enabled" }}'
+    unit_templates:
+      - base-deps
+    depends_on:
+      namespace-defs: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/logging-fluentbit
+      targetNamespace: cattle-logging-system
+      postBuild:
+        substitute:
+          RELEASE_NAME: logging
+          NAMESPACE: cattle-logging-system
+
   logging:
     enabled: false
     info:
@@ -4417,6 +4437,7 @@ units:
     - base-deps
     depends_on:
       logging-crd: true
+      logging-fluentbit: true
     helm_repo_url: https://charts.rancher.io/
     helmrelease_spec:
       releaseName: logging
@@ -4428,9 +4449,6 @@ units:
       install:
         createNamespace: false
       values:
-        additionalLoggingSources:
-          rke2:
-            enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | include "as-bool" }}'
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
