@@ -2946,7 +2946,8 @@
                         "capd",
                         "capo",
                         "capv",
-                        "capm3"
+                        "capm3",
+                        "capa"
                       ]
                     },
                     {
@@ -2962,7 +2963,8 @@
                     {
                       "enum": [
                         "cabpk",
-                        "cabpr"
+                        "cabpr",
+                        "cabpe"
                       ]
                     },
                     {
@@ -3359,6 +3361,61 @@
                           ]
                         }
                       }
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "capa": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "image_name": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "instance_type": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "ssh_key_name": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^[0-9A-Za-z@._ -]+$"
                     },
                     {
                       "$ref": "#/$defs/string-with-gotpl"
