@@ -7,9 +7,16 @@
 # If run manually, the tool can be used after having preliminarily done
 # a 'docker login registry.gitlab.com' with suitable credentials.
 #
+# To enable signing when running manually, export the environment variables:
+# - COSIGN_PASSWORD
+# - COSIGN_PRIVATE_KEY (in PEM format)
+#
+# Cosign default signing material is available on sylva project gitlab://43786055
+#
 # Requirements:
 # - helm
 # - git
+# - cosign
 
 set -eu
 set -o pipefail
@@ -18,8 +25,10 @@ SECONDS=0
 
 BASE_DIR="$(realpath $(dirname $0)/../..)"
 OCI_REGISTRY="${1:-oci://registry.gitlab.com/sylva-projects/sylva-core/}"
+REGISTRY_URI="${OCI_REGISTRY/oci:\/\//}"
 LOG_ERROR_FILE=$(mktemp)
 VALUES_FILE="$BASE_DIR/charts/sylva-units/values.yaml"
+FORCE_HELM_CHART_PROCESSING=${FORCE_HELM_CHART_PROCESSING:-false}  # can be set to "true" to force OCI artifact sign&push even it they already exist
 
 # if we run in a gitlab CI job, then we use the credentials provided by gitlab job environment
 if [[ -n ${CI_REGISTRY_USER:-} ]]; then
@@ -62,11 +71,55 @@ function check_invalid_semver_tag {
   echo "${new_version:-$version}"
 }
 
+function artifact_integrity {
+  local tgz_file=$1
+  local artifact_name=$2
+  local artifact_version=$3
+
+  artifact_url=$OCI_REGISTRY/$artifact_name:${artifact_version}
+  
+  rm -rf /tmp/*
+  echo "flux pull artifact $artifact_url -o /tmp"
+  # The integrity test makes sense only if the OCI artifact exists
+  if (flux pull artifact $artifact_url -o /tmp); then
+    echo "Checking the integrity of the existing unsigned artifact $artifact_name:${artifact_version} :: $artifact_url"
+    pulled_name=$(ls /tmp)  # to handle situation where artifact is renamed e.g. s/core/neuvector-core
+    tmp_dir=$(mktemp -d /tmp/tgz-XXXXXXX)
+    tar -xzvf $tgz_file -C $tmp_dir
+    echo "---------- make a diff --------------"
+    find /tmp -name Chart.lock -type f -delete
+    find /tmp -depth -name .git -type d -exec rm -rv {} +
+    diff -qr /tmp/$pulled_name $tmp_dir/$pulled_name
+  fi
+}
+
+
+function push_and_sign {
+ 
+      local tgz_file=$1
+      local chart_name=$2
+      local artifact_version=$3
+
+      if !(artifact_integrity $tgz_file $artifact_name $artifact_version); then
+        echo "[ERROR] cannot push and sign $chart_name because its content differs from the content of the already existing OCI artifact"
+        return 1
+      fi
+      
+      helm push $tgz_file $OCI_REGISTRY >output 2>&1
+      local digest=$(grep 'Digest:' output | sed 's/^.*: //')
+      if [[ -v COSIGN_PRIVATE_KEY ]] && [[ -v COSIGN_PASSWORD ]]; then
+      # Sign the Helm chart, it adds a new tag
+         cosign sign -y --tlog-upload=false --key  env://COSIGN_PRIVATE_KEY  "$REGISTRY_URI/${chart_name}@${digest}"
+      fi
+      rm -f output
+}
+
 function process_chart_in_helm_repo {
   local helm_repo=$1
   local chart_name=$2
   local chart_version=$3
   local artifact_name=$4
+  local version_to_check=$5
 
   local tgz_file="$chart_name-$chart_version.tgz"
 
@@ -88,8 +141,8 @@ function process_chart_in_helm_repo {
         tgz_file=$new_tgz_file
       fi
 
-      # Push Helm chart to OCI
-      helm push $tgz_file $OCI_REGISTRY
+      # Push Helm chart to OCI, then sign if signing material is available
+      push_and_sign $tgz_file $chart_name $version_to_check
       rm -f $tgz_file
     else
       if ls $chart_name*tgz >/dev/null 2>&1; then
@@ -122,8 +175,8 @@ function process_chart_in_git {
 
     helm package --version $revision $TMPD/$chart_path
     if [[ -e $tgz_file ]]; then
-      # Push Helm chart to OCI
-      helm push "$tgz_file" $OCI_REGISTRY
+      # Push Helm chart to OCI, then sign if signing material is available
+      push_and_sign $tgz_file $chart_name $revision
       #flux push artifact $OCI_REGISTRY/$chart_name:$git_revision --path=$chart_path --source=$git_repo --revision=$git_revision ${creds:-}
     else
       error $chart_name "The $tgz_file is not present after the 'helm package' operation, check that the chart version is correct"
@@ -144,15 +197,54 @@ function show_status {
   fi
 }
 
-function artifact_exists {
+function can_skip_artifact_push {
+  # if the environment variable FORCE_HELM_CHART_PROCESSING is set to true, the helm chart is processed even if it exists
+  if [[ $FORCE_HELM_CHART_PROCESSING == "true" ]]; then
+          echo "Force processing artifact $1 ..."
+          return 1
+  fi
+
   echo "Checking if artifact $1 exists..."
-  flux pull artifact $1 -o /tmp > /dev/null 2>&1
+
+  if (flux pull artifact $1 -o /tmp); then
+    # artifact exists
+     if [[ -v COSIGN_PRIVATE_KEY ]] && [[ -v COSIGN_PASSWORD ]]; then
+       artifact_uri=$(echo $1 | sed 's/oci:\/\///')
+       echo "Check if artifact $artifact_uri is signed with the correct key"
+       if cosign verify --insecure-ignore-tlog=true --key env://COSIGN_PUBLIC_KEY $artifact_uri; then
+         echo "Artifact $artifact_uri exists and is already signed with the correct key, skipping it"
+         # Don't process the artifact if it exists and properly signed
+         return 0
+       else
+         echo "Artifact $artifact_uri exists and needs to be signed"
+         return 1
+       fi
+     fi
+     # artifact exists and no signing material available
+     return 0
+  else
+    # artifact does no exist
+    return 1
+  fi
+
 }
 
 
 ### Helm registry login with credentials of Gitlab job environment
 if [[ -n ${CI_REGISTRY_USER:-} ]]; then
     echo "$CI_REGISTRY_PASSWORD" | helm registry login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
+fi
+
+if ! [[ -v COSIGN_PRIVATE_KEY ]]; then
+   echo "[WARNING] Unable to sign the Helm Charts, the private key is not set"
+else
+   # cosign uploads a new tag to the registry, so:
+   docker login registry.gitlab.com -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+fi
+
+
+if ! [[ -v COSIGN_PASSWORD ]]; then
+   echo "[WARNING] Unable to sign the Helm Charts, the private key password is not available"
 fi
 
 ### Parse values file ###
@@ -195,12 +287,12 @@ for unit_name in $(yq -r '(.units | ... comments="" | keys())[]' $VALUES_FILE | 
         version_to_check=$(check_invalid_semver_tag $version)
         echo "Version to check: $version_to_check"
         artifact_url=$OCI_REGISTRY/$artifact_name:${version_to_check/+/_}
-        if (artifact_exists $artifact_url); then
+        if (can_skip_artifact_push $artifact_url); then
           echo "Skipping $chart processing, $artifact_name:$version_to_check already exists in $OCI_REGISTRY"
           continue
         fi
 
-        process_chart_in_helm_repo $helm_repo_url $chart $version $artifact_name
+        process_chart_in_helm_repo $helm_repo_url $chart $version $artifact_name ${version_to_check/+/_}
       done
     else
       ## Helm charts in git repository ##
@@ -214,7 +306,7 @@ for unit_name in $(yq -r '(.units | ... comments="" | keys())[]' $VALUES_FILE | 
 
       ## no processing is needed if the OCI artifact already exist in the OCI repository
       artifact_url=$OCI_REGISTRY/$chart_name:${git_revision/+/_}
-      if (artifact_exists $artifact_url); then
+      if (can_skip_artifact_push $artifact_url); then
         echo "Skipping $chart_name processing, $chart_name:$git_revision already exists in $OCI_REGISTRY"
         echo -e $section_end
         continue
