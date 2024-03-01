@@ -3149,15 +3149,8 @@ units:
             - name: no_proxy
               value: '{{ include "sylva-units.no_proxy" (tuple .) | quote }}'
           securityContext:
-            capabilities:
-              drop:
-              - ALL
-            runAsNonRoot: true
             runAsUser: 1000
             readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-            seccompProfile:
-              type: RuntimeDefault
           volumeMounts:
             - mountPath: /config
               name: config
@@ -4101,20 +4094,6 @@ units:
         createNamespace: false
       values:
         operator:
-          containerSecurityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
           resources:
             requests:
               cpu: 200m
@@ -4122,21 +4101,6 @@ units:
               ephemeral-storage: 500Mi
         console:
           enabled: true
-          containerSecurityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            runAsNonRoot: true
-            seccompProfile:
-              type: RuntimeDefault
           ingress:
             enabled: true
             ingressClassName: nginx
@@ -4404,20 +4368,6 @@ units:
               - hosts:
                   - 'thanos-query.{{ .Values.external_hostnames.thanos_query }}'
                 secretName: thanos-tls
-          containerSecurityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
         queryFrontend:
           enabled: true
           loglevel: debug
@@ -4435,20 +4385,6 @@ units:
               - hosts:
                   - '{{ .Values.external_hostnames.thanos }}'
                 secretName: thanos-tls
-          containerSecurityContext:
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            runAsNonRoot: true
-            seccompProfile:
-              type: RuntimeDefault
         storegateway:
           enabled: true
           logLevel: debug
@@ -4456,25 +4392,6 @@ units:
             enabled: false
             storageClass: '{{ .Values._internal.default_storage_class }}'
             size: 8Gi
-          containerSecurityContext:
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          podSecurityContext:
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
           ingress:
             enabled: true
             hostname: '{{ .Values.external_hostnames.thanos_storegateway }}'
@@ -4489,25 +4406,6 @@ units:
           retentionResolutionRaw: 2d
           retentionResolution5m: 30d
           retentionResolution1h: 1y
-          containerSecurityContext:
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          podSecurityContext:
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
         bucketweb:
           enabled: false
         ruler:
@@ -4517,47 +4415,14 @@ units:
             enabled: true
           containerSecurityContext:
             runAsUser: 1001
-            runAsNonRoot: true
             privileged: false
             readOnlyRootFilesystem: true
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          podSecurityContext:
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
         receive:
           enabled: true
           mode: standalone
           logLevel: debug
           persistence:
             enabled: false
-          containerSecurityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
           ingress:
             enabled: true
             ingressClassName: "nginx"
@@ -4734,9 +4599,6 @@ units:
             enabled: false
         loki:
           auth_enabled: true
-          containerSecurityContext:
-            seccompProfile:
-              type: RuntimeDefault
           analytics:
             reporting_enabled: false
           server:
@@ -4806,17 +4668,6 @@ units:
                     expr: sum(rate(loki_request_duration_seconds_bucket[1m])) by (le, job, route)
                   - record: node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate
                     expr: sum(rate(container_cpu_usage_seconds_total[1m])) by (node, namespace, pod, container)
-            podsecurityContext:
-              seccompProfile:
-                type: RuntimeDefault
-            securityContext:
-              allowPrivilegeEscalation: false
-              capabilities:
-                drop:
-                  - ALL
-              runAsNonRoot: true
-              seccompProfile:
-                type: RuntimeDefault
           serviceMonitor:
             enabled: true
             metricsInstance:
@@ -4831,14 +4682,6 @@ units:
           lokiCanary:
             enabled: false
             labelname: pod
-            securityContext:
-              allowPrivilegeEscalation: false
-              capabilities:
-                drop:
-                  - ALL
-              runAsNonRoot: true
-              seccompProfile:
-                type: RuntimeDefault
         write:
           replicas: '{{ int .Values._internal.node_count | gt 2 | ternary 1 2 }}'
           persistence:
@@ -4848,17 +4691,6 @@ units:
             minReplicas: 2
             maxReplicas: 6
             targetCPUUtilizationPercentage: 40
-          podSecurityContext:
-            seccompProfile:
-              type: RuntimeDefault
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            runAsNonRoot: true
-            seccompProfile:
-              type: RuntimeDefault
           extraVolumes:
             - name: data
               emptyDir: {}
@@ -4875,32 +4707,10 @@ units:
           replicas: '{{ int .Values._internal.node_count | gt 2 | ternary 1 2 }}'
           persistence:
             size: 3Gi
-          podSecurityContext:
-            seccompProfile:
-              type: RuntimeDefault
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            runAsNonRoot: true
-            seccompProfile:
-              type: RuntimeDefault
         backend:
           replicas: '{{ int .Values._internal.node_count | gt 2 | ternary 1 2 }}'
           persistence:
             size: 3Gi
-          podSecurityContext:
-            seccompProfile:
-              type: RuntimeDefault
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            runAsNonRoot: true
-            seccompProfile:
-              type: RuntimeDefault
         memberlist:
           service:
             publishNotReadyAddresses: true
