@@ -2940,6 +2940,8 @@ units:
         createNamespace: true
       values:
         grafana:
+          plugins:
+            - yesoreyeram-boomtable-panel
           sidecar:
             dashboards:
               enabled: true
