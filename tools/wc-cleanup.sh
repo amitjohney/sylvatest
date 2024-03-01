@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e
-export BASE_DIR="$(realpath $(dirname $0))"
+export BASE_DIR="$(realpath $(dirname $0)/.. )"
 
 if [ "$#" -lt 1 ] || [ "$#" -gt 3 ]; then
     echo "Usage: ./wc-cleanup.sh <Workload-cluster-name> <(optionally)cluster_object_name> <(optionally)IReallyWantToDelete>"
@@ -27,18 +27,18 @@ if [[ $CONFIRMATION != "IReallyWantToDelete" ]]; then
   exit 0
 fi
 
-echo "Running wc-cleanup.sh from dir: ${PWD}"
+echo "Running wc-cleanup.sh from dir: ${BASE_DIR}"
 
 if [[ -f ${BASE_DIR}/management-cluster-kubeconfig ]]; then
     export KUBECONFIG=${BASE_DIR}/management-cluster-kubeconfig
 else
-    echo "management-cluster-kubeconfig file is not present in ${PWD}"
+    echo "management-cluster-kubeconfig file is not present in ${BASE_DIR}"
     exit -1
 fi
 if [[ -f ${BASE_DIR}/bin/env ]]; then
     source ${BASE_DIR}/bin/env
 else
-    echo "bin/env is not present in ${PWD}"
+    echo "bin/env is not present in ${BASE_DIR}"
     exit -1
 fi
 
