@@ -1,8 +1,12 @@
 #!/bin/bash
 
-#if [ "$#" -ne 1 ] && [ "$#" -ne 2 ]; then
+set -e
+
 if [ "$#" -lt 1 ] || [ "$#" -gt 3 ]; then
     echo "Usage: ./wc-cleanup.sh <Workload-cluster-name> <(optionally)cluster_object_name> <(optionally)IReallyWantToDelete>"
+    echo "Run this script from sylva-core repo as this script expects below files to be in place:"
+    echo " - management-cluster-kubeconfig"
+    echo " - bin/env"
     exit 1
 fi
 
@@ -25,9 +29,22 @@ if [[ $CONFIRMATION != "IReallyWantToDelete" ]]; then
   exit 0
 fi
 
+echo "Running wc-cleanup.sh from dir: ${PWD}"
+
+if [[ -f management-cluster-kubeconfig ]]; then
+    export KUBECONFIG=management-cluster-kubeconfig
+else
+    echo "management-cluster-kubeconfig file is not present in ${PWD}"
+    exit -1
+fi
+if [[ -f bin/env ]]; then
+    source bin/env
+else
+    echo "bin/env is not present in ${PWD}"
+    exit -1
+fi
+
 echo "Deleting workload cluster named \"$WORKLOAD_CLUSTER\" with cluster named \"$CLUSTER\""
-source bin/env
-export KUBECONFIG=management-cluster-kubeconfig
 flux suspend --all ks -n $WORKLOAD_CLUSTER
 flux suspend --all hr -n $WORKLOAD_CLUSTER
 kubectl delete -n $WORKLOAD_CLUSTER hr $CLUSTER
