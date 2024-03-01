@@ -1,12 +1,10 @@
 #!/bin/bash
 
 set -e
+export BASE_DIR="$(realpath $(dirname $0))"
 
 if [ "$#" -lt 1 ] || [ "$#" -gt 3 ]; then
     echo "Usage: ./wc-cleanup.sh <Workload-cluster-name> <(optionally)cluster_object_name> <(optionally)IReallyWantToDelete>"
-    echo "Run this script from sylva-core repo as this script expects below files to be in place:"
-    echo " - management-cluster-kubeconfig"
-    echo " - bin/env"
     exit 1
 fi
 
@@ -31,14 +29,14 @@ fi
 
 echo "Running wc-cleanup.sh from dir: ${PWD}"
 
-if [[ -f management-cluster-kubeconfig ]]; then
-    export KUBECONFIG=management-cluster-kubeconfig
+if [[ -f ${BASE_DIR}/management-cluster-kubeconfig ]]; then
+    export KUBECONFIG=${BASE_DIR}/management-cluster-kubeconfig
 else
     echo "management-cluster-kubeconfig file is not present in ${PWD}"
     exit -1
 fi
-if [[ -f bin/env ]]; then
-    source bin/env
+if [[ -f ${BASE_DIR}/bin/env ]]; then
+    source ${BASE_DIR}/bin/env
 else
     echo "bin/env is not present in ${PWD}"
     exit -1
