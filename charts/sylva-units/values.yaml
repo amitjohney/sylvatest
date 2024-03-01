@@ -4424,7 +4424,7 @@ units:
       chart:
         spec:
           chart: rancher-logging
-          version: 102.0.1+up3.17.10
+          version: 103.0.0+up3.17.10
       install:
         createNamespace: false
       values:
@@ -4437,7 +4437,26 @@ units:
           capabilities:
             drop: ["ALL"]
           seccompProfile:
-            type: RuntimeDefault
+            type: runAsNonRoot
+          runAsNonRoot: true
+        podSecurityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          fsGroup: 2000
+        logging:
+          fluentd:
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop: ["ALL"]
+              seccompProfile:
+                type: runAsNonRoot
+              runAsNonRoot: true
+            podSecurityContext:
+              runAsNonRoot: true
+              runAsUser: 1000
+              fsGroup: 2000
 
   logging-config:
     info:
