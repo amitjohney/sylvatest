@@ -57,7 +57,7 @@ units:
 
   kyverno:
     enabled_conditions:
-      - '{{ tuple . "capm3" | include "unit-enabled" }}'
+      - '{{ tuple . "shared-workload-clusters-oci-source" | include "unit-enabled" }}'
 
   kyverno-policies:
     enabled_conditions:
@@ -549,3 +549,4 @@ units_override_enabled:
   - libvirt-metal
   - vsphere-cpi
   - get-openstack-images
+  - shared-workload-clusters-oci-source
