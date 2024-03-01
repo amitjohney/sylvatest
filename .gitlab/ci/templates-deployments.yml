@@ -315,6 +315,7 @@ include:
 
 .test-sso+workload-kubeconfig:
   stage: deployment-test
+  image: $CI_LOGIN_TEST_IMAGE
   retry:
     max: 2
   script:
@@ -338,12 +339,14 @@ include:
   stage: deployment-test
   retry:
     max: 2
+  image: $CI_LOGIN_TEST_IMAGE
   script:
     - !reference [.test_scripts, edit_hosts_file]
     - !reference [.test_scripts, test_sso]
 
 .test-no-sso+workload-kubeconfig:
   stage: deployment-test
+  image: $CI_LOGIN_TEST_IMAGE
   before_script:
     - apk add jq
   script:
@@ -363,6 +366,7 @@ include:
 
 .test-login:
   stage: deployment-test
+  image: $CI_LOGIN_TEST_IMAGE
   variables:
     HURL_JUNIT_REPORT: login_junit_report.xml
   artifacts:

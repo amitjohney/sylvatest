@@ -1,4 +1,4 @@
-
+---
 # ==========================================
 # Common templates
 # ==========================================
@@ -8,7 +8,13 @@ variables:
   # renovate: datasource=docker
   OPENSTACK_CLIENT_IMAGE: registry.gitlab.com/sylva-projects/sylva-elements/container-images/openstack-client:v0.0.8
   # renovate: datasource=docker
-  CI_IMAGE: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image:v1.0.17
+  CI_IMAGE: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image/snapshot:0.0.0-git-53be671c
+  # renovate: datasource=docker
+  CI_YAMLLINT_IMAGE: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image/ci-yamllint/snapshot:0.0.0-git-53be671c
+  # renovate: datasource=docker
+  CI_LOGIN_TEST_IMAGE: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image/ci-login-test/snapshot:0.0.0-git-53be671c
+  # renovate: datasource=docker
+  CI_CHART_JOBS_IMAGE: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image/ci-chart-jobs/snapshot:0.0.0-git-53be671c
 
 .docker-service:
   services:
