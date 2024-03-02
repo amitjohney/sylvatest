@@ -1609,6 +1609,7 @@ units:
       targetNamespace: metal3-system
       values:
         global:
+          enable_tls: false
           ironicIP: '{{ .Values.cluster_virtual_ip }}'
           provisioningInterface: eth0
         metal3-ironic:
