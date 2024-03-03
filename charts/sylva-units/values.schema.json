@@ -7454,8 +7454,9 @@
             "filename": {
               "type": "string"
             },
-            "checksum": {
-              "type": "string"
+            "sha256": {
+              "type": "string",
+              "pattern": "[a-f0-9]*"
             },
             "os": {
               "type": "string"
