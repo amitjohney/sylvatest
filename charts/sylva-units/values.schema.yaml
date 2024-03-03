@@ -830,8 +830,9 @@ properties:
               - $ref: "#/$defs/string-with-gotpl"
           filename:
             type: string
-          checksum:
+          sha256:
             type: string
+            pattern: "[a-f0-9]*"
           os:
             type: string
           k8s-version:
