@@ -367,7 +367,7 @@ units:
       chart:
         spec:
           chart: trivy-operator
-          version: 0.20.0
+          version: 0.20.6
       targetNamespace: trivy-system
       install:
         createNamespace: true
