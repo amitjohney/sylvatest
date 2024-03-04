@@ -14,6 +14,7 @@ spec:
           - kustomize.toolkit.fluxcd.io/*/Kustomization
           names:
           - cluster
+          - cluster-bmh
           namespaces:
           - sylva-system
     validate:
