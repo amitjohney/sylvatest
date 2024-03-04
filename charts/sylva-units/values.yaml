@@ -2847,6 +2847,8 @@ units:
         replicas: 3
         extraArgs:
           - "--config.file=/config/snmp.yaml"
+        podAnnotations:
+          sylva/snmp-values: '{{ .Values.snmp | toJson | sha256sum | trunc 8 }}'
         serviceMonitor:
           enabled: true
           namespace: snmp-exporter
