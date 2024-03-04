@@ -1,8 +1,8 @@
 cluster:
   control_plane_replicas: 1
   capo:
-    network_id: 489b1587-4aa4-49b2-be56-62af67efa68f   # private side VN connected to an OpenStack router
+    network_id: 1f96aab6-280f-4cf8-833f-8dac8fb9313b   # private side VN connected to an OpenStack router
     flavor_name: "m1.xlarge"
 
 openstack:
-  external_network_id: c314d52c-80fe-42b6-9092-55be383d1951   # public side VN connected to same OpenStack router, for FIP
+  external_network_id: 607511b1-295d-405f-a919-8ab76ebaf721   # public side VN connected to same OpenStack router, for FIP
