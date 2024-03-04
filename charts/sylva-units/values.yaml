@@ -2605,8 +2605,6 @@ units:
               - ALL
           privileged: false
           runAsNonRoot: true
-          runAsGroup: 10000
-          runAsUser: 10000
           seccompProfile:
             type: RuntimeDefault
           runAsGroup: 1
