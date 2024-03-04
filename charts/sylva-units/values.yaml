@@ -2053,8 +2053,9 @@ units:
       namespace-defs: true
     helm_repo_url: https://rke2-charts.rancher.io
     helm_chart_versions:
-      v3.25.001: '{{ not .Values._internal.k8s_post_1_26_6  }}'
-      v3.26.101: '{{ .Values._internal.k8s_post_1_26_6 }}'
+      v3.25.001: '{{ include "k8s-version-match" (tuple . "<1.26")  }}'
+      v3.26.101: '{{ include "k8s-version-match" (tuple . ">=1.26.6,<=1.27.6") }}'
+      v3.26.300: '{{ include "k8s-version-match" (tuple . ">=1.27.10") }}'
     helmrelease_spec:
       releaseName: rke2-calico-crd
       targetNamespace: kube-system
@@ -2091,8 +2092,9 @@ units:
       calico-crd: true
     helm_repo_url: https://rke2-charts.rancher.io
     helm_chart_versions:
-      v3.25.001: '{{ not .Values._internal.k8s_post_1_26_6  }}'
-      v3.26.101: '{{ .Values._internal.k8s_post_1_26_6 }}'
+      v3.25.001: '{{ include "k8s-version-match" (tuple . "<1.26") }}'
+      v3.26.101: '{{ include "k8s-version-match" (tuple . ">=1.26.6,<=1.27.6") }}'
+      v3.26.300: '{{ include "k8s-version-match" (tuple . ">=1.27.10") }}'
     helmrelease_spec:
       chart:
         spec:
@@ -2537,8 +2539,9 @@ units:
       calico: '{{ tuple . "calico" | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io
     helm_chart_versions:
-      4.5.202: '{{ not .Values._internal.k8s_post_1_26_6  }}'
-      4.6.101: '{{ .Values._internal.k8s_post_1_26_6 }}'
+      4.5.202: '{{ include "k8s-version-match" (tuple . "<1.26") }}'
+      4.6.101: '{{ include "k8s-version-match" (tuple . ">=1.26,<=1.27.6") }}'
+      4.8.200: '{{ include "k8s-version-match" (tuple . ">=1.27.10") }}'
     helmrelease_spec:
       releaseName: rke2-ingress-nginx
       targetNamespace: kube-system
@@ -5189,20 +5192,20 @@ k8s_version_short: "1.27"
 
 # Renovate Bot needs additional information to detect sylva diskimage-builder version
 # renovate: depName=sylva-projects/sylva-elements/diskimage-builder
-sylva_diskimagebuilder_version: 0.1.8
+sylva_diskimagebuilder_version: 0.1.9
 
 sylva_diskimagebuilder_images:
-  ubuntu-jammy-plain-rke2-1-27-6:
+  ubuntu-jammy-plain-rke2-1-27-10:
     default_enabled: true
   ubuntu-jammy-plain-rke2-1-26-9: {}
   ubuntu-jammy-plain-rke2-1-25-14: {}
-  ubuntu-jammy-hardened-rke2-1-27-6: {}
+  ubuntu-jammy-hardened-rke2-1-27-10: {}
   ubuntu-jammy-hardened-rke2-1-26-9: {}
   ubuntu-jammy-hardened-rke2-1-25-14: {}
-  opensuse-15-5-plain-rke2-1-27-6: {}
+  opensuse-15-5-plain-rke2-1-27-10: {}
   opensuse-15-5-plain-rke2-1-26-9: {}
   opensuse-15-5-plain-rke2-1-25-14: {}
-  opensuse-15-5-hardened-rke2-1-27-6: {}
+  opensuse-15-5-hardened-rke2-1-27-10: {}
   opensuse-15-5-hardened-rke2-1-26-9: {}
   opensuse-15-5-hardened-rke2-1-25-14: {}
 
@@ -5322,8 +5325,6 @@ _internal:
   bootstrap_node_ip: '{{ lookup "v1" "ConfigMap" "sylva-system" "cluster-public-endpoint" | dig "data" "address" "not_found" | default "not_found" }}'
 
   metal3_unit: '{{ .Values.metal3.provider | eq "suse" | ternary "metal3-suse" "metal3" }}'
-
-  k8s_post_1_26_6: '{{ semverCompare ">1.26.6" (tuple . .Values.cluster.k8s_version | include "interpret-as-string") | include "preserve-type" }}'
 
   k8s_version_map:
     1.25: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.25.14+rke2r1" "v1.25.14" }}'

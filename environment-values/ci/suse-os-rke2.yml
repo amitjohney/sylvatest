@@ -1,13 +1,13 @@
 ---
 sylva_diskimagebuilder_images:
-  ubuntu-jammy-plain-rke2-1-27-6:
+  ubuntu-jammy-plain-rke2-1-27-10:
     default_enabled: false
-  opensuse-15-5-plain-rke2-1-27-6:
+  opensuse-15-5-plain-rke2-1-27-10:
     default_enabled: true
 
 cluster:
   # following are needed to override the Ubuntu based image for capm3-rke2-virt CIs
   capm3:
-    image_key: opensuse-15-5-plain-rke2-1-27-6
+    image_key: opensuse-15-5-plain-rke2-1-27-10
   capo:
-    image_key: opensuse-15-5-plain-rke2-1-27-6
+    image_key: opensuse-15-5-plain-rke2-1-27-10

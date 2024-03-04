@@ -196,3 +196,25 @@ See usage in units.yaml and sources.yaml
   {{/* return the result */}}
   {{- $unit_def | toJson -}}
 {{ end }}
+
+
+{{/*
+
+k8s-version-match
+
+Tests whether the cluster k8s version matches semver constraints.
+
+Usage (in some values.yaml file of sylva-units):
+
+  foo: {{ include "k8s-version-match" (tuple . ">1.26.1,<=1.27.5" )}}
+
+Result (in sylva-units final rendering, where boolean typing will have been preserved):
+
+  foo: true  # or false if the version is not between 1.26.1 and 1.27.5
+
+*/}}
+{{ define "k8s-version-match" }}
+  {{- $envAll := index . 0 -}}
+  {{- $match := index . 1 -}}
+  {{- semverCompare $match (tuple $envAll $envAll.Values.cluster.k8s_version | include "interpret-as-string") | include "preserve-type" -}}
+{{ end }}
