@@ -122,7 +122,6 @@ include:
 
           # The PRIVATE variables below are set in the gitlab runner configuration
           # and allow to enable extra values needed in the context of the platform on which this test actually runs
-          PRIVATE_RUNNER_CONTEXT=$PRIVATE_RUNNER_CONTEXT  # Temporary: to be set at runner level
           echo "Applying private $PRIVATE_RUNNER_CONTEXT values"
           PRIVATE_RUNNER_VALUES_PATH=${CI_PROJECT_DIR}/environment-values/ci/private/${PRIVATE_RUNNER_CONTEXT}-base
 

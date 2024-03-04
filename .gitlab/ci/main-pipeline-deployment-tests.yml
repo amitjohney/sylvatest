@@ -257,8 +257,8 @@ capo-fip-deploy:
   variables:
     ENV_NAME: kubeadm-capo
     CAPO_TAG: "${ENV_TAG_OCI}-fip"
-    MGMT_ADDITIONAL_VALUES: environment-values/ci/capo-fip.yml
-    WC_ADDITIONAL_VALUES: environment-values/ci/capo-fip.yml
+    MGMT_ADDITIONAL_VALUES: environment-values/ci/private/${PRIVATE_RUNNER_CONTEXT}-base/capo-fip.yml
+    WC_ADDITIONAL_VALUES: environment-values/ci/private/${PRIVATE_RUNNER_CONTEXT}-base/capo-fip.yml
     MGMT_WATCH_TIMEOUT_MIN: 20
     E2E_JOB_MR_PARITY: none
     CAPO_PLATFORM_TAG: capo-infra-rocket
