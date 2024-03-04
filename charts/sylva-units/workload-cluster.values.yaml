@@ -211,7 +211,6 @@ units:
 
   monitoring-crd:
     enabled: false
-    unit_template: base-deps
 
   monitoring:
     enabled: false
