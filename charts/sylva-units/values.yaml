@@ -1373,6 +1373,9 @@ units:
     kustomization_spec:
       path: ./kustomize-units/kyverno-policies
       wait: true
+      postBuild:
+        substitute:
+          CLUSTER_NAME: '{{ .Values.cluster.name }}'
       _components:
         - '{{ tuple "components/management-cluster-only" (tuple . "kyverno" | include "unit-enabled") | include "set-only-if" }}'
 
