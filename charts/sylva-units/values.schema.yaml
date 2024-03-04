@@ -463,7 +463,7 @@ properties:
           helm_chart_versions:  # -------------------------------
             type: object
             items:
-              type: string
+              type: boolean
 
           helm_chart_artifact_name:
             type: string

@@ -152,7 +152,7 @@ spec: {{ $helm_repo_spec | toYaml | nindent 2 }}
       {{- if hasKey $unit_def "helm_chart_versions" -}}
         {{- $helm_chart_versions_selection := "" -}}
         {{- range $ver, $enabled := $unit_def.helm_chart_versions }}
-          {{- if eq $enabled "true" -}}
+          {{- if $enabled -}}
             {{- if $helm_chart_versions_selection -}}
               {{- fail (printf "unit '%s' has 'true' set on more than one version inside 'helm_chart_versions'" $unit_name) }}
             {{- else -}}
