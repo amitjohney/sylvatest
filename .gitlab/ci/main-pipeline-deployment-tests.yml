@@ -207,7 +207,7 @@ capo-kubeadm-oci-deploy:
     CAPO_TAG: $ENV_TAG_OCI
     E2E_JOB_MR_PARITY: odd
     ENV_NAME: kubeadm-capo
-    CAPO_PLATFORM_TAG: falcon
+    CAPO_PLATFORM_TAG: capo-infra-falcon
     PRIVATE_RUNNER_CONTEXT: falcon
   trigger:
     include: .gitlab/ci/pipeline-deploy-capo.yml
@@ -219,7 +219,7 @@ capo-rke2-deploy:
     CAPO_TAG: $ENV_TAG
     E2E_JOB_MR_PARITY: odd
     ENV_NAME: rke2-capo
-    CAPO_PLATFORM_TAG: falcon
+    CAPO_PLATFORM_TAG: capo-infra-falcon
     PRIVATE_RUNNER_CONTEXT: falcon
   trigger:
     include: .gitlab/ci/pipeline-deploy-capo.yml
@@ -231,7 +231,7 @@ capo-rke2-oci-deploy:
     CAPO_TAG: $ENV_TAG_OCI
     E2E_JOB_MR_PARITY: even
     ENV_NAME: rke2-capo
-    CAPO_PLATFORM_TAG: falcon
+    CAPO_PLATFORM_TAG: capo-infra-falcon
     PRIVATE_RUNNER_CONTEXT: falcon
   trigger:
     include: .gitlab/ci/pipeline-deploy-capo.yml
@@ -246,7 +246,7 @@ capo-misc-units-deploy:
     MGMT_ADDITIONAL_VALUES: environment-values/ci/misc-units-in-capo.yml
     WC_ADDITIONAL_VALUES: environment-values/ci/misc-units-in-capo-wkld.yml
     MGMT_WATCH_TIMEOUT_MIN: 45
-    CAPO_PLATFORM_TAG: falcon
+    CAPO_PLATFORM_TAG: capo-infra-falcon
     PRIVATE_RUNNER_CONTEXT: falcon
   trigger:
     include: .gitlab/ci/pipeline-deploy-capo.yml
