@@ -723,56 +723,21 @@ units:
         - kustomize:
             patches:
               - target:
-                  kind: Deployment|StatefulSet
-                patch: |-
-                  - op: add
-                    path: /spec/template/spec/containers/0/securityContext
-                    value:
-                      runAsNonRoot: true
-                      seccompProfile:
-                        type: RuntimeDefault
-                      allowPrivilegeEscalation: false
-                      capabilities:
-                        drop:
-                          - ALL
-              - target:
-                  kind: Deployment
-                  name: harbor-registry
-                patch: |-
-                  - op: add
-                    path: /spec/template/spec/containers/1/securityContext
-                    value:
-                      runAsNonRoot: true
-                      seccompProfile:
-                        type: RuntimeDefault
-                      allowPrivilegeEscalation: false
-                      capabilities:
-                        drop:
-                          - ALL
-              - target:
                   kind: StatefulSet
                   name: harbor-database
                 patch: |-
                   - op: add
+                    path: /spec/template/spec/containers/0/securityContext
+                    value:
+                      runAsUser: 999
+                  - op: add
                     path: /spec/template/spec/initContainers/0/securityContext
                     value:
-                      runAsNonRoot: true
-                      seccompProfile:
-                        type: RuntimeDefault
-                      allowPrivilegeEscalation: false
-                      capabilities:
-                        drop:
-                          - ALL
+                      runAsUser: 999
                   - op: add
                     path: /spec/template/spec/initContainers/1/securityContext
                     value:
-                      runAsNonRoot: true
-                      seccompProfile:
-                        type: RuntimeDefault
-                      allowPrivilegeEscalation: false
-                      capabilities:
-                        drop:
-                          - ALL
+                      runAsUser: 999
       install:
         createNamespace: true
 
@@ -2631,16 +2596,8 @@ units:
         createNamespace: true
       values:
         securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - ALL
-          privileged: false
-          runAsNonRoot: true
-          runAsGroup: 10000
-          runAsUser: 10000
-          seccompProfile:
-            type: RuntimeDefault
+          runAsGroup: 1
+          runAsUser: 1
         conf:
           env:
             - name: URL_REMAP
@@ -3912,17 +3869,8 @@ units:
       releaseName: gitea
       values:
         containerSecurityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - ALL
-          privileged: false
-          readOnlyRootFilesystem: true
           runAsGroup: 1000
-          runAsNonRoot: true
           runAsUser: 1000
-          seccompProfile:
-            type: RuntimeDefault
         redis-cluster:
           enabled: false
         postgresql:
@@ -4213,21 +4161,11 @@ units:
               containerSecurityContext:
                 runAsUser: 1000
                 runAsGroup: 1000
-                runAsNonRoot: true
-                allowPrivilegeEscalation: false
-                capabilities:
-                  drop:
-                    - ALL
-                seccompProfile:
-                  type: RuntimeDefault
               securityContext:
                 runAsUser: 1000
                 runAsGroup: 1000
                 fsGroup: 1000
                 fsGroupChangePolicy: "OnRootMismatch"
-                runAsNonRoot: true
-                seccompProfile:
-                  type: RuntimeDefault
           metrics:
             enabled: disable
           features:
@@ -4506,12 +4444,7 @@ units:
           rke2:
             enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | include "as-bool" }}'
         securityContext:
-          allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
-          capabilities:
-            drop: ["ALL"]
-          seccompProfile:
-            type: RuntimeDefault
 
   logging-config:
     info:
