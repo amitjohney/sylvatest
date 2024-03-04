@@ -20,9 +20,9 @@ spec:
           dedicatedCpuPlacement: true
         resources:
           requests:
-            memory: 64M
+            memory: 4096Mi
           limits:
-            memory: 64M
+            memory: 4096Mi
         devices:
           disks:
             - name: containerdisk

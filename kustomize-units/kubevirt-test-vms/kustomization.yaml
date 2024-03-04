@@ -10,5 +10,5 @@ resources:
 - cirros-vm.yaml
 - cpumanager-fg-vm.yaml
 - numa-fg-vm.yaml
-- sriov-nw.yaml
-- sriov-vm.yaml
+#- sriov-nw.yaml
+#- sriov-vm.yaml
