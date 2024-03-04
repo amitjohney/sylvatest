@@ -3150,14 +3150,17 @@ units:
       chart:
         spec:
           chart: ceph-csi-cephfs
-          version: 3.9.0
+          version: 3.10.2
       values:
         provisioner:
           replicaCount: '{{ .Values.cluster.control_plane_replicas }}'
         storageClass:
           create: true
+          name: cephfs-csi
           clusterID: '{{ .Values.ceph.cephfs_csi.clusterID }}'
           fsName: '{{ .Values.ceph.cephfs_csi.fs_name }}'
+          annotations:
+            storageclass.kubernetes.io/is-default-class: '{{ .Values._internal.default_storage_class | eq "cephfs-csi" }}'
         csiConfig:
           - clusterID: '{{ .Values.ceph.cephfs_csi.clusterID }}'
             monitors: '{{ .Values.ceph.cephfs_csi.monitors_ips | include "preserve-type" }}'
@@ -5270,7 +5273,9 @@ _internal:
   default_password: '{{ lookup "v1" "Secret" .Release.Namespace "sylva-units-values" | dig "data" "values" "" | b64dec | fromYaml | dig "_internal" "default_password" (randAlphaNum 64) }}'
 
   default_storage_class: >-
-    {{- if (tuple . "cinder-csi" | include "unit-enabled") -}}
+    {{ if (tuple . "ceph-csi-cephfs" | include "unit-enabled") -}}
+      cephfs-csi
+    {{- else if (tuple . "cinder-csi" | include "unit-enabled") -}}
       {{ .Values.openstack.storageClass.name }}
     {{- else if (tuple . "vsphere-csi-driver" | include "unit-enabled") -}}
       vsphere-csi
@@ -5287,6 +5292,7 @@ _internal:
     longhorn: longhorn
     vsphere-csi: vsphere-csi-driver
     '{{ .Values.openstack.storageClass.name }}': cinder-csi
+    cephfs-csi: ceph-csi-cephfs
 
   default_storage_class_unit: >-
     {{- $default_storage_class := tuple . .Values._internal.default_storage_class | include "interpret-as-string" -}}
@@ -5294,6 +5300,7 @@ _internal:
 
   storage_class_RWX_support:
     - longhorn
+    - cephfs-csi
   default_storage_class_RWX_support: >-
     {{- $default_storage_class := tuple . .Values._internal.default_storage_class | include "interpret-as-string" -}}
     {{- has $default_storage_class .Values._internal.storage_class_RWX_support -}}
