@@ -37,7 +37,7 @@ def rancher_sso(endpoint, username, password, workload_name):
   print(browser.current_url)
   print(browser.title)
   browser.implicitly_wait(10)
-  delay = 30
+  delay = 90
   try:
     element_present = EC.presence_of_element_located((By.XPATH, '//button[@class="btn bg-primary"]'))
     WebDriverWait(browser, delay).until(element_present)
@@ -63,8 +63,10 @@ def rancher_sso(endpoint, username, password, workload_name):
   try:
     mgmt_present = EC.presence_of_element_located((By.XPATH, '//a[@href="/dashboard/c/local/explorer"]'))
     WebDriverWait(browser, delay).until(mgmt_present)
+    print("Rancher UI is present")
     mgmt_clickable = EC.element_to_be_clickable((By.XPATH, '//a[@href="/dashboard/c/local/explorer"]'))
     WebDriverWait(browser, delay).until(mgmt_clickable)
+    print("Rancher UI is clickable")
   except TimeoutException:
     print ("Cannot access the Rancher UI")
     exit(1)
