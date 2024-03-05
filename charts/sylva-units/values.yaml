@@ -4231,6 +4231,8 @@ units:
         queryFrontend:
           enabled: true
           loglevel: debug
+          extaFlags:
+            - --query-frontend.forward-header "Authorization"          
           config: |-
             type: IN-MEMORY
             config:
