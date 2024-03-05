@@ -90,7 +90,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/os-image-server.git
       ref:
-        tag: 1.9.0
+        tag: 2.0.0
 
   capo-contrail-bgpaas:
     kind: GitRepository
@@ -1889,7 +1889,7 @@ units:
           optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
         - kind: ConfigMap
           name: '{{ .Values._internal.os_images_info_configmap }}'  # this configmap is a byproduct of the os-images-info unit
-          valuesKey: values-s-c-c.yaml
+          valuesKey: values.yaml
           optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capm3") | include "as-bool" }}'
     # we pass everything that is under `cluster` to this unit that uses sylva-capi-cluster chart
     # (we do it via a secret because some of the values are credentials in many scenarios)
@@ -4825,7 +4825,7 @@ units:
           noProxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
           TMP_STORAGE_SPACE: '{{ .Values.os_images_default_download_storage_space }}'
           # compute total timeout based on per-image timeout and number of images
-          ACTIVE_DEADLINE_SECONDS: '{{ mul .Values.get_openstack_images_per_image_timeout_minutes 60 (include "generate-os-images" . | fromYaml | dig "osImages" dict | len) }}'
+          ACTIVE_DEADLINE_SECONDS: '{{ mul .Values.get_openstack_images_per_image_timeout_minutes 60 (include "generate-os-images" . | fromYaml | dig "os_images" dict | len) }}'
       _patches:
         - target:
             kind: Job
@@ -5076,7 +5076,7 @@ keycloak: {}
 # cis benchmark is only for rke2 so far, e.g. rke2-cis-1.23-profile-hardened
 cis_benchmark_scan_profile: '{{ eq .Values.cluster.capi_providers.bootstrap_provider "cabpr" | ternary "rke2-cis-1.23-profile-hardened" "no-scan-profile-defined-for-kubeadm-cluster" }}'
 
-# osImages images that should be served and from where they should be downloaded
+# os_images images that should be served and from where they should be downloaded
 # if empty default value are used
 os_images: {}
 
