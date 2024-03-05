@@ -1405,6 +1405,7 @@ units:
     kustomization_spec:
       path: ./kustomize-units/shared-workload-clusters-settings
       wait: true
+      force: true
       targetNamespace: sylva-system
       postBuild:
         substitute:
