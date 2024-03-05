@@ -169,7 +169,7 @@ configmap = {}
 os_images_info_path = os.environ.get("OS_IMAGES_INFO_PATH", '/opt/config/os-images-info.yaml')
 with open(os_images_info_path, 'r') as file:
     os_images = yaml.safe_load(file.read())
-os_images = os_images['osImages']
+os_images = os_images['os_images']
 logger.info(f"os_images: {os_images}")
 
 ##############################

@@ -1,5 +1,5 @@
 {{- define "generate-os-images" -}}
-osImages:
+os_images:
 {{- $sylva_dib_images := .Values.sylva_diskimagebuilder_images }}
 {{- $sylva_dib_version := .Values.sylva_diskimagebuilder_version }}
 {{- $os_images_oci_registries := .Values.os_images_oci_registries }}
