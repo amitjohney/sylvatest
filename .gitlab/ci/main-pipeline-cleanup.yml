@@ -62,7 +62,7 @@
 scheduled-cleanup-capo-falcon:
   extends: .scheduled-cleanup-capo
   variables:
-    CAPO_PLATFORM_TAG: falcon
+    CAPO_PLATFORM_TAG: capo-infra-falcon
 
 
 scheduled-cleanup-capo-rocket:
