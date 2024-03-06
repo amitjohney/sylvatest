@@ -1,0 +1,11 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: metal3-pdb
+  namespace: metal3-system
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+      webhook: metal3-io-v1alpha1-baremetalhost

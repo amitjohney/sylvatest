@@ -90,6 +90,7 @@
 | **management-cluster-flux** | installs flux in management cluster during bootstrap |  | True | Kustomize | N/A |
 | **management-sylva-units** | installs sylva-units in management cluster during bootstrap |  | True | Helm | N/A |
 | **metal3-init** | generates Metal3 random credentials |  | True | Kustomize | N/A |
+| **metal3-pdb** | add pdb to baremetal-operator pods |  | True | Kustomize | N/A |
 | **metal3-sync-secrets** | configures secrets for Metal3 components |  | True | Kustomize | N/A |
 | **minio-monitoring-tenant-init** | sets up MinIO certificate for minio-monitoring-tenant<br/><br/>it generate certificate |  | True | Kustomize | N/A |
 | **minio-operator-init** | sets up MinIO certificate for minio-operator<br/><br/>it generate certificate |  | True | Kustomize | N/A |

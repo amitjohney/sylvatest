@@ -1332,6 +1332,10 @@ units:
           rbac:
             clusterRole:
               extraResources:
+              - apiGroups: ["apps"]
+                resources:
+                  - "deployments"
+                verbs: ["get", "list", "watch", "patch", "update"]
               - apiGroups: ["helm.toolkit.fluxcd.io"]
                 resources:
                   - "helmreleases"
@@ -1436,6 +1440,8 @@ units:
         substitute:
           force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
       wait: true
+      _components:
+        - '{{ tuple "components/ha" (.Values._internal.ha_cluster.mode | eq "ha") | include "set-only-if" }}'
 
   capd:
     info:
@@ -1453,6 +1459,8 @@ units:
         substitute:
           CAPD_DOCKER_HOST: '{{ .Values.capd_docker_host }}'
       wait: true
+      _components:
+        - '{{ tuple "components/ha" (.Values._internal.ha_cluster.mode | eq "ha") | include "set-only-if" }}'
 
   capo:
     info:
@@ -1466,6 +1474,8 @@ units:
     kustomization_spec:
       path: ./kustomize-units/capo
       wait: true
+      _components:
+        - '{{ tuple "components/ha" (.Values._internal.ha_cluster.mode | eq "ha") | include "set-only-if" }}'
       _patches:
         - target:
             group: apps
@@ -1502,6 +1512,8 @@ units:
           force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
           enableBMHNameBasedPreallocation: "true"
       wait: true
+      _components:
+        - '{{ tuple "components/ha" (.Values._internal.ha_cluster.mode | eq "ha") | include "set-only-if" }}'
 
   capv:
     info:
@@ -1518,6 +1530,8 @@ units:
         substitute:
           force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
       wait: true
+      _components:
+        - '{{ tuple "components/ha" (.Values._internal.ha_cluster.mode | eq "ha") | include "set-only-if" }}'
 
   cabpk:
     info:
@@ -1534,6 +1548,8 @@ units:
         substitute:
           force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
       wait: true
+      _components:
+        - '{{ tuple "components/ha" (.Values._internal.ha_cluster.mode | eq "ha") | include "set-only-if" }}'
 
   cabpr:
     info:
@@ -1547,6 +1563,8 @@ units:
     kustomization_spec:
       path: ./kustomize-units/cabpr
       wait: true
+      _components:
+        - '{{ tuple "components/ha" (.Values._internal.ha_cluster.mode | eq "ha") | include "set-only-if" }}'
       _patches:
         - target:
             group: apps
@@ -1592,6 +1610,7 @@ units:
     depends_on:
       cert-manager: true
       '{{ .Values._internal.default_storage_class_unit }}': true
+      metal3-pdb: '{{ tuple . "metal3-pdb" | include "unit-enabled" }}'
     helm_repo_url: https://suse-edge.github.io/charts
     helm_chart_artifact_name: metal3-suse
     helmrelease_spec:
@@ -1616,6 +1635,7 @@ units:
             annotations:
               metallb.universe.tf/allow-shared-ip: cluster-external-ip
           baremetaloperator:
+            replicaCount: '{{ .Values._internal.ha_cluster.mode | eq "ha" | ternary 2 1 | include "preserve-type" }}'
             ironichostNetwork: false
           persistence:
             ironic:
@@ -1625,6 +1645,22 @@ units:
         metal3-mariadb:
           persistence:
             storageClass: '{{ .Values._internal.default_storage_class }}'
+
+  metal3-pdb:
+    info:
+      description: add pdb to baremetal-operator pods
+      internal: true
+    unit_templates:
+    - base-deps
+    enabled_conditions:
+    - '{{ or (tuple . "metal3" | include "unit-enabled") (tuple . "metal3-suse" | include "unit-enabled") }}'
+    - '{{ .Values._internal.ha_cluster.mode | eq "ha" }}'
+    depends_on:
+      kyverno: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/metal3-pdb
+      wait: true
 
   metal3-init:
     info:
@@ -1669,6 +1705,7 @@ units:
       cert-manager: true
       '{{ .Values._internal.default_storage_class_unit }}': true
       metal3-sync-secrets: true # make sure that the password secrets are ready to be consumed
+      metal3-pdb: '{{ tuple . "metal3-pdb" | include "unit-enabled" }}'
     kustomization_spec:
       postBuild:
         substitute:
@@ -1745,6 +1782,16 @@ units:
           valuesKey: metal3-ironic-inspector-secret
           targetPath: auth.ironicInspectorPassword
           optional: false
+      _postRenderers:
+        - kustomize:
+            patches:
+            - target:
+                kind: Deployment
+                name: baremetal-operator-controller-manager
+              patch: |
+                - op: replace
+                  path: /spec/replicas
+                  value: '{{ .Values._internal.ha_cluster.mode | eq "ha" | ternary 2 1 | include "preserve-type" }}'
 
   capi-providers-pivot-ready:
     info:
@@ -2264,6 +2311,7 @@ units:
           CERT: '{{ .Values.external_certificates.rancher.cert | default "" | b64enc }}'
           CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
       _components:
+        - '{{ tuple "components/webhook-ha" (.Values._internal.ha_cluster.mode | eq "ha") | include "set-only-if" }}'
         - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.rancher "cert") }}'
         - "../tls-components/sylva-ca"
       healthChecks:

@@ -1,0 +1,25 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: capm3-pdb
+  namespace: capm3-system
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      cluster.x-k8s.io/provider: infrastructure-metal3
+      control-plane: controller-manager
+      app: capm3-controller-manager
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ipam-pdb
+  namespace: capm3-system
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      cluster.x-k8s.io/provider: infrastructure-metal3
+      control-plane: controller-manager
+      app: ipam-controller-manager
