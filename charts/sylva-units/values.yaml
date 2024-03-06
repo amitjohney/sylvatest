@@ -4200,6 +4200,7 @@ units:
         query:
           enabled: true
           logLevel: debug
+          logFormat: json
           dnsDiscovery:
             enabled: true
           extraFlags:
@@ -4231,8 +4232,9 @@ units:
         queryFrontend:
           enabled: true
           loglevel: debug
-          extaFlags:
-            - --query-frontend.forward-header "Authorization"          
+          logFormat: json
+          extraFlags:
+            - --query-frontend.forward-header="Authorization"          
           config: |-
             type: IN-MEMORY
             config:
@@ -4264,6 +4266,7 @@ units:
         storegateway:
           enabled: true
           logLevel: debug
+          logFormat: json
           persistence:
             enabled: false
             storageClass: '{{ .Values._internal.default_storage_class }}'
@@ -4298,6 +4301,7 @@ units:
         compactor:
           enabled: true
           logLevel: debug
+          logFormat: json
           retentionResolutionRaw: 2d
           retentionResolution5m: 30d
           retentionResolution1h: 1y
@@ -4325,6 +4329,7 @@ units:
         ruler:
           enabled: false
           logLevel: debug
+          logFormat: json
           dnsDiscovery:
             enabled: true
           containerSecurityContext:
@@ -4354,6 +4359,7 @@ units:
           enabled: true
           mode: standalone
           logLevel: debug
+          logFormat: json
           persistence:
             enabled: false
           containerSecurityContext:
@@ -4418,7 +4424,7 @@ units:
         createNamespace: false
 
   logging:
-    enabled: false
+    enabled: true
     info:
       description: installs Rancher Fluentbit/Fluentd logging stack, for log collecting and shipping
       maturity: beta
@@ -4501,7 +4507,7 @@ units:
         - "../tls-components/sylva-ca"
 
   loki:
-    enabled: false
+    enabled: true
     info:
       description: installs Loki log storage
       details: installs Loki log storage in simple scalable mode
