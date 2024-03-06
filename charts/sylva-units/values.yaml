@@ -1879,6 +1879,8 @@ units:
     unit_templates:
     - base-deps
     helm_chart_artifact_name: sylva-capi-cluster
+    enabled_conditions:
+      - '{{ not (and (.Values.capi_providers.infra_provider | eq "capm3") .Values.metal3.disable_cluster_unit) }}'
     depends_on:
       capi: true
       '{{ .Values.cluster.capi_providers.infra_provider }}': true
@@ -1998,7 +2000,9 @@ units:
     - dummy
     enabled: false
     depends_on:
-      cluster: true
+      '{{ .Release.Namespace }}/cluster': true  # we use the ns/kustomization-name syntax here, to avoid triggering
+                                                # the "unit X is declared with a dependency on disabled unit Y"
+                                                # check when the 'cluster' unit is disabled
     kustomization_spec:
       targetNamespace: default
       kubeConfig:
@@ -5050,6 +5054,7 @@ metal3:
   provider: suse # sylva or suse
   # external_bootstrap_ip:
   # bootstrap_ip:
+  disable_cluster_unit: false
 
 vsphere:
   vsphere-cpi:

@@ -1232,6 +1232,9 @@ allOf:
               type: string
               format: ipv4
 
+            disable_cluster_unit:  # -------------------------------
+              type: boolean
+
   # additional constraints for .vsphere
   - if:
       properties:
