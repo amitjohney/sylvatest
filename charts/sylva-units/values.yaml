@@ -2194,7 +2194,7 @@ units:
             metadata:
               name: "{{ .Values.openstack.storageClass.name }}"
               annotations:
-                storageclass.kubernetes.io/is-default-class: "{{ eq .Values._internal.default_storage_class "cinder-csi" }}"
+                storageclass.kubernetes.io/is-default-class: "{{ eq .Values._internal.default_storage_class .Values.openstack.storageClass.name }}"
             provisioner: cinder.csi.openstack.org
             volumeBindingMode: Immediate
             reclaimPolicy: Delete
