@@ -33,6 +33,11 @@ function check_args() {
   fi
 }
 
+if ! python3 -c 'import yaml' &>/dev/null; then
+    echo "PyYAML python package is required to run this script, install it on your system and start over."
+    exit 1
+fi
+
 function _kustomize {
   kustomize build --load-restrictor LoadRestrictionsNone $1
 }
