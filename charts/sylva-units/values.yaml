@@ -549,7 +549,7 @@ units:
     unit_templates:
     - base-deps
     depends_on:
-      kubevirt: true
+      capi-rancher-import: true
     helm_repo_url: https://suse-edge.github.io/charts
     helmrelease_spec:
       chart:
