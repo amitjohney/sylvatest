@@ -219,7 +219,7 @@ capo-rke2-deploy:
     CAPO_TAG: $ENV_TAG
     E2E_JOB_MR_PARITY: odd
     ENV_NAME: rke2-capo
-    CAPO_PLATFORM_TAG: capo-infra-rokcet
+    CAPO_PLATFORM_TAG: capo-infra-rocket
     PRIVATE_RUNNER_CONTEXT: rocket
   trigger:
     include: .gitlab/ci/pipeline-deploy-capo.yml
