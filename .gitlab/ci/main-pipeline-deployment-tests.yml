@@ -195,6 +195,8 @@ capo-kubeadm-deploy:
     CAPO_TAG: $ENV_TAG
     E2E_JOB_MR_PARITY: even
     ENV_NAME: kubeadm-capo
+    CAPO_PLATFORM_TAG: capo-infra-rocket
+    PRIVATE_RUNNER_CONTEXT: rocket
   trigger:
     include: .gitlab/ci/pipeline-deploy-capo.yml
     strategy: depend
@@ -205,6 +207,8 @@ capo-kubeadm-oci-deploy:
     CAPO_TAG: $ENV_TAG_OCI
     E2E_JOB_MR_PARITY: odd
     ENV_NAME: kubeadm-capo
+    CAPO_PLATFORM_TAG: capo-infra-falcon
+    PRIVATE_RUNNER_CONTEXT: falcon
   trigger:
     include: .gitlab/ci/pipeline-deploy-capo.yml
     strategy: depend
@@ -215,6 +219,8 @@ capo-rke2-deploy:
     CAPO_TAG: $ENV_TAG
     E2E_JOB_MR_PARITY: odd
     ENV_NAME: rke2-capo
+    CAPO_PLATFORM_TAG: capo-infra-falcon
+    PRIVATE_RUNNER_CONTEXT: falcon
   trigger:
     include: .gitlab/ci/pipeline-deploy-capo.yml
     strategy: depend
@@ -225,6 +231,8 @@ capo-rke2-oci-deploy:
     CAPO_TAG: $ENV_TAG_OCI
     E2E_JOB_MR_PARITY: even
     ENV_NAME: rke2-capo
+    CAPO_PLATFORM_TAG: capo-infra-falcon
+    PRIVATE_RUNNER_CONTEXT: falcon
   trigger:
     include: .gitlab/ci/pipeline-deploy-capo.yml
     strategy: depend
@@ -238,6 +246,8 @@ capo-misc-units-deploy:
     MGMT_ADDITIONAL_VALUES: environment-values/ci/misc-units-in-capo.yml
     WC_ADDITIONAL_VALUES: environment-values/ci/misc-units-in-capo-wkld.yml
     MGMT_WATCH_TIMEOUT_MIN: 45
+    CAPO_PLATFORM_TAG: capo-infra-falcon
+    PRIVATE_RUNNER_CONTEXT: falcon
   trigger:
     include: .gitlab/ci/pipeline-deploy-capo.yml
     strategy: depend
@@ -247,10 +257,12 @@ capo-fip-deploy:
   variables:
     ENV_NAME: kubeadm-capo
     CAPO_TAG: "${ENV_TAG_OCI}-fip"
-    MGMT_ADDITIONAL_VALUES: environment-values/ci/capo-fip.yml
-    WC_ADDITIONAL_VALUES: environment-values/ci/capo-fip.yml
+    MGMT_ADDITIONAL_VALUES: environment-values/ci/private/${PRIVATE_RUNNER_CONTEXT}-base/capo-fip.yml
+    WC_ADDITIONAL_VALUES: environment-values/ci/private/${PRIVATE_RUNNER_CONTEXT}-base/capo-fip.yml
     MGMT_WATCH_TIMEOUT_MIN: 20
     E2E_JOB_MR_PARITY: none
+    CAPO_PLATFORM_TAG: capo-infra-rocket
+    PRIVATE_RUNNER_CONTEXT: rocket
   trigger:
     include: .gitlab/ci/pipeline-deploy-capo.yml
     strategy: depend
@@ -260,12 +272,16 @@ capo-rke2-suse-os:
   variables:
     MGMT_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2.yml
     WC_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2.yml
+    CAPO_PLATFORM_TAG: capo-infra-rocket
+    PRIVATE_RUNNER_CONTEXT: rocket
 
 capo-rke2-oci-suse-os:
   extends: capo-rke2-oci-deploy
   variables:
     MGMT_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2.yml
     WC_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2.yml
+    CAPO_PLATFORM_TAG: capo-infra-rocket
+    PRIVATE_RUNNER_CONTEXT: rocket
 
 .capm3-virt-equinix-deploy:
   extends: .default-trigger

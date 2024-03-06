@@ -122,7 +122,6 @@ include:
 
           # The PRIVATE variables below are set in the gitlab runner configuration
           # and allow to enable extra values needed in the context of the platform on which this test actually runs
-          PRIVATE_RUNNER_CONTEXT=falcon   # Temporary: to be set at runner level
           echo "Applying private $PRIVATE_RUNNER_CONTEXT values"
           PRIVATE_RUNNER_VALUES_PATH=${CI_PROJECT_DIR}/environment-values/ci/private/${PRIVATE_RUNNER_CONTEXT}-base
 
@@ -258,6 +257,7 @@ include:
     - !reference [.common-deployment, os_cloud]
     - ./tools/openstack-cleanup.sh capo_cloud "${CAPO_TAG}"
   tags:
+    - capo-ci
     - $CAPO_PLATFORM_TAG
 
 
@@ -325,6 +325,7 @@ include:
     - kubectl wait --for=condition=Ready pod/test-sso --kubeconfig $WORKLOAD_CLUSTER_NAME-rancher.yaml --timeout=60s
     - echo "-- All done"
   tags:
+    - capo-ci
     - $CAPO_PLATFORM_TAG
 
 .test-sso:
