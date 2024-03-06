@@ -1880,7 +1880,7 @@ units:
     - base-deps
     helm_chart_artifact_name: sylva-capi-cluster
     enabled_conditions:
-      - '{{ not (and (.Values.capi_providers.infra_provider | eq "capm3") .Values.metal3.disable_cluster_unit) }}'
+      - '{{ not (and (.Values.cluster.capi_providers.infra_provider | eq "capm3") .Values.metal3.disable_cluster_unit) }}'
     depends_on:
       capi: true
       '{{ .Values.cluster.capi_providers.infra_provider }}': true
