@@ -219,6 +219,9 @@ units:
     # can be enabled at runtime if desired
     enabled: false
 
+  kubevirt-dashboard:
+    enabled: false
+
   kubevirt-test-vms:
     enabled: false
 

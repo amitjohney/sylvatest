@@ -542,6 +542,24 @@ units:
                 - Snapshot
 
 
+  kubevirt-dashboard:
+    info:
+      description: installs kubevirt dashboard extension
+      maturity: beta
+    unit_templates:
+    - base-deps
+    depends_on:
+      kubevirt: true
+    helm_repo_url: https://suse-edge.github.io/charts
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: kubevirt-dashboard-extension
+          version: 0.1.2
+      targetNamespace: kubevirt
+      install:
+        createNamespace: true
+
   kubevirt-test-vms:
     info:
       description: deploys kubevirt VMs for testing

@@ -65,6 +65,9 @@ units:
   kubevirt:
     enabled: false
 
+  kubevirt-dashboard:
+    enabled: false
+
   kubevirt-test-vms:
     enabled: false
 
