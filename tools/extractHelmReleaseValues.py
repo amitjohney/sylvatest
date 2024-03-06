@@ -30,7 +30,9 @@ def extract_helm_release_values_from(helm_release_manifest, values_path):
 def do_nothing(*args, **xargs):
     pass
 
-def main(values_path):
+def main(options):
+    values_path = options.values_path
+
     # Load the YAML documents from standard input
     kustomize_yaml = list(yaml.safe_load_all(sys.stdin))
     if kustomize_yaml:
@@ -54,8 +56,11 @@ def main(values_path):
                             if yaml_doc.get("kind") == item["kind"] and yaml_doc.get("metadata", {}).get("name") == item["name"]:
                                 data = yaml_doc.get("data", {}).get(values_key, "")
                                 if item["kind"] == "Secret":
-                                    data = base64.b64decode(data).decode("utf-8")
-                                    secrets_configmaps_data.append(yaml.safe_load(data))  # Append Secret base64-decoded YAML content to the list
+                                    if not options.skip_secrets:
+                                        data = base64.b64decode(data).decode("utf-8")
+                                        secrets_configmaps_data.append(yaml.safe_load(data))  # Append Secret base64-decoded YAML content to the list
+                                    else:
+                                        pass # ignore the secret
                                 else:
                                     secrets_configmaps_data.append(yaml.safe_load(data))  # Append ConfigMap YAML content to the list
                     # Merge YAML contents of Secrets and ConfigMaps
@@ -83,17 +88,18 @@ Program reads manifests from stdin and attempts to return sylva-units values, ba
     parser.add_option("--values-path", choices=[".spec.valuesFrom", ".spec.values", ".spec.chart.spec.valuesFiles"],
                       default=".spec.valuesFrom",
                       help='path to extract values from HelmRelease')
+    parser.add_option("--skip-secrets", action="store_true",
+                      default=False,
+                      help="don't process values in Secrets")
     parser.add_option("-d", "--debug", action="store_true",
                       default=False,
                       help='debug')
 
     (options, args) = parser.parse_args()
 
-    values_path = options.values_path
-
     if options.debug:
         debug_fn = print
     else:
         debug_fn = do_nothing
 
-    main(values_path)
+    main(options)
