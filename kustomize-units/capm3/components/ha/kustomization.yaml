@@ -1,0 +1,28 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+resources:
+  - disruption-budget.yaml
+
+replicas:
+- name: capm3-controller-manager
+  count: 2
+- name: ipam-controller-manager
+  count: 2
+
+# Add specific label to each pods to distinguish them in PodDisruptionBudget
+patches:
+  - target:
+      kind: Deployment
+      name: capm3-controller-manager
+    patch: |-
+      - op: add
+        path: /spec/template/metadata/labels/app
+        value: capm3-controller-manager
+  - target:
+      kind: Deployment
+      name: ipam-controller-manager
+    patch: |-
+      - op: add
+        path: /spec/template/metadata/labels/app
+        value: ipam-controller-manager
