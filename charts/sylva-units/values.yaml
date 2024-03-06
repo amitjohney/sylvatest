@@ -5387,7 +5387,7 @@ _internal:
   k8s_version_map:
     1.25: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.25.14+rke2r1" "v1.25.14" }}'
     1.26: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.26.9+rke2r1" "v1.26.9" }}'
-    1.27: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.27.6+rke2r1" "v1.27.6" }}'
+    1.27: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.27.10+rke2r1" "v1.27.10" }}'
 
   # total number of nodes in this cluster
   node_count:
