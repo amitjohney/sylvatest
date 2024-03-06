@@ -257,7 +257,6 @@ include:
     - !reference [.common-deployment, os_cloud]
     - ./tools/openstack-cleanup.sh capo_cloud "${CAPO_TAG}"
   tags:
-    - capo-ci
     - $CAPO_PLATFORM_TAG
 
 
@@ -325,7 +324,6 @@ include:
     - kubectl wait --for=condition=Ready pod/test-sso --kubeconfig $WORKLOAD_CLUSTER_NAME-rancher.yaml --timeout=60s
     - echo "-- All done"
   tags:
-    - capo-ci
     - $CAPO_PLATFORM_TAG
 
 .test-sso:
