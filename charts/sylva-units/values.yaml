@@ -541,7 +541,6 @@ units:
                 - CPUManager
                 - Snapshot
 
-
   kubevirt-dashboard:
     info:
       description: installs kubevirt dashboard extension
