@@ -1,10 +1,10 @@
 <!-- markdownlint-disable MD044 -->
 | name | full description | maturity | internal | source | version |
 | :----- | :----- | :----- | :----- | :----- | :----- |
-| **cabpk** | installs Kubeadm CAPI bootstrap provider | core-component |  | [Kustomize](https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.6.1/bootstrap-components.yaml) | v1.6.1 |
+| **cabpk** | installs Kubeadm CAPI bootstrap provider | core-component |  | [Kustomize](https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.6.2/bootstrap-components.yaml) | v1.6.2 |
 | **cabpr** | installs RKE2 CAPI bootstrap provider | core-component |  | [Kustomize](https://github.com/rancher-sandbox/cluster-api-provider-rke2/releases/download/v0.2.6/bootstrap-components.yaml) | v0.2.6 |
-| **capd** | installs Docker CAPI infra provider | core-component |  | [Kustomize](https://github.com/kubernetes-sigs/cluster-api//test/infrastructure/docker/config/default/?ref=v1.6.1) | v1.6.1 |
-| **capi** | installs Cluster API core operator | core-component |  | [Kustomize](https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.6.1/core-components.yaml) | v1.6.1 |
+| **capd** | installs Docker CAPI infra provider | core-component |  | [Kustomize](https://github.com/kubernetes-sigs/cluster-api//test/infrastructure/docker/config/default/?ref=v1.6.2) | v1.6.2 |
+| **capi** | installs Cluster API core operator | core-component |  | [Kustomize](https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.6.2/core-components.yaml) | v1.6.2 |
 | **capm3** | installs Metal3 CAPI infra provider, for baremetal | core-component |  | [Kustomize](https://github.com/metal3-io/cluster-api-provider-metal3/releases/download/v1.6.0/infrastructure-components.yaml) | v1.6.0 |
 | **capo** | installs OpenStack CAPI infra provider | core-component |  | [Kustomize](https://github.com/kubernetes-sigs/cluster-api-provider-openstack/config/default?ref=75ffe73f88544dbc26c6636a491bca5b3f63c3d4) | 75 |
 | **capv** | installs vSphere CAPI infra provider | core-component |  | [Kustomize](https://github.com/kubernetes-sigs/cluster-api-provider-vsphere/releases/download/v1.9.2/infrastructure-components.yaml) | v1.9.2 |
