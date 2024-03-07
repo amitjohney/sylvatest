@@ -5311,6 +5311,22 @@ _internal:
         {{- eq (int .Values.cluster.control_plane_replicas) 2  | ternary "" "install run" | required (print "requested control_plane_replicas=" .Values.cluster.control_plane_replicas ": this mode is forbidden") -}}
       {{- end -}}
 
+  # variable used for the validation of .Values.os_images fields for baremetal deployments
+  os_images_validation: >-
+    {{- if ( gt (.Values.os_images | len) 0 ) }}
+      {{- $capm3_required := tuple . "os-image-server" | include "unit-enabled" }}
+      {{- $capo_required := .Values.cluster.capi_providers.infra_provider | eq "capo" }}
+      {{- range $os_image_name, $os_image_props := .Values.os_images }}
+        {{- if $capm3_required }}
+          {{- $os_image_props.sha256 | required ( print "'sha256' must be specified for os_image '" $os_image_name "'" ) }}
+          {{- dig "image-format" "" $os_image_props | required ( print "'image-format' must be specified for os_image '" $os_image_name "'. It can be raw or qcow2" ) }}
+        {{- end }}
+        {{ if $capo_required }}
+          {{- $os_image_props.md5 | required ( print "'md5' must be specified for os_image '" $os_image_name "'" ) }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+
   # default replica number computed from the ha_cluster.mode value
   default_replicas: '{{ tuple . .Values._internal.ha_cluster.mode | include "interpret-as-string" | eq "ha" | ternary 3 1 | include "preserve-type" }}'
 
