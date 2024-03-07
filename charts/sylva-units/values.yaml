@@ -4464,7 +4464,6 @@ units:
         createNamespace: false
 
   logging:
-    enabled: false
     info:
       description: installs Rancher Fluentbit/Fluentd logging stack, for log collecting and shipping
       maturity: beta
@@ -4547,7 +4546,6 @@ units:
         - "../tls-components/sylva-ca"
 
   loki:
-    enabled: false
     info:
       description: installs Loki log storage
       details: installs Loki log storage in simple scalable mode

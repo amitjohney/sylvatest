@@ -5,6 +5,8 @@ units:
     enabled: false
   monitoring:
     enabled: false
+  logging:
+    enabled: false
   keycloak:
     enabled: false
   flux-webui:
