@@ -10,10 +10,11 @@ spec:
       any:
       - resources:
           kinds:
-          - helm.toolkit.fluxcd.io/v2beta1/HelmRelease
-          - kustomize.toolkit.fluxcd.io/v1/Kustomization
+          - helm.toolkit.fluxcd.io/*/HelmRelease
+          - kustomize.toolkit.fluxcd.io/*/Kustomization
           names:
           - cluster
+          - cluster-bmh
           namespaces:
           - sylva-system
     validate:
@@ -29,11 +30,11 @@ spec:
       any:
       - resources:
           kinds:
-          - cluster.x-k8s.io/v1beta1/Cluster
+          - cluster.x-k8s.io/*/Cluster
           - "controlplane.cluster.x-k8s.io/*/*"
           selector:
             matchLabels:
-              cluster.x-k8s.io/cluster-name: management-cluster
+              cluster.x-k8s.io/cluster-name: ${CLUSTER_NAME:-management-cluster}
     validate:
       message: Deleting the Sylva Flux resources that describe the Cluster API cluster for the management cluster is not possible without breaking the Sylva management cluster.
       deny:
