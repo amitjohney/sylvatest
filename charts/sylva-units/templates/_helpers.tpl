@@ -122,6 +122,9 @@ Usage:
   {{- $envAll := index . 0 -}}
   {{- $unit_name := index . 1 -}}
 
+  {{/* interpret unit name to cover the case where it would be a template */}}
+  {{- $unit_name = tuple $envAll $unit_name | include "interpret-as-string" -}}
+
   {{- $unit_enabled := $envAll.Values.units_enabled_default -}}
 
   {{- $unit_def := index $envAll.Values.units $unit_name -}}
