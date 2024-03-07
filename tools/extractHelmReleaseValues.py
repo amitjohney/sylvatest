@@ -55,9 +55,14 @@ def main(values_path):
                                 data = yaml_doc.get("data", {}).get(values_key, "")
                                 if item["kind"] == "Secret":
                                     data = base64.b64decode(data).decode("utf-8")
-                                    secrets_configmaps_data.append(yaml.safe_load(data))  # Append Secret base64-decoded YAML content to the list
+                                parsed_data = yaml.safe_load(data)
+                                if parsed_data == None:
+                                    continue # Ignore empty files
+                                elif not isinstance(parsed_data, dict):
+                                    print(f'Errror: data provided for {item["kind"]}/{item["name"]} is not a dict (data: {parsed_data})')
+                                    sys.exit(1)
                                 else:
-                                    secrets_configmaps_data.append(yaml.safe_load(data))  # Append ConfigMap YAML content to the list
+                                    secrets_configmaps_data.append(parsed_data)
                     # Merge YAML contents of Secrets and ConfigMaps
                     while secrets_configmaps_data:
                         result = recursive_dict_combine(result, secrets_configmaps_data.pop(0), do_nothing)
