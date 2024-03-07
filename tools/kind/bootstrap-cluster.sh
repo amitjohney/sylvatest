@@ -102,8 +102,8 @@ elif yq -e '.cluster.capi_providers.infra_provider == "capd"' ${VALUES_FILE} &>/
 fi
 
 echo -e "Creating kind cluster with following config:\n$KIND_CONFIG"
-if yq -e '.registry_mirrors.hosts_config."docker.io".[0].mirror_url' ${VALUES_FILE} &>/dev/null; then
-    DOCKER_REGISTRY_MIRROR=$(yq -e '.registry_mirrors.hosts_config."docker.io".[0].mirror_url' ${VALUES_FILE} | sed 's~http[s]*://~~g')
+if  _kustomize ${ENV_PATH} | python3 ${BASE_DIR}/tools/extractHelmReleaseValues.py --values-path .spec.valuesFrom | yq -e '.registry_mirrors.hosts_config."docker.io".[0].mirror_url' &>/dev/null; then
+    DOCKER_REGISTRY_MIRROR=$(_kustomize ${ENV_PATH} | python3 ${BASE_DIR}/tools/extractHelmReleaseValues.py --values-path .spec.valuesFrom | yq -e '.registry_mirrors.hosts_config."docker.io".[0].mirror_url' | sed 's~http[s]*://~~g')
     # remove version path from mirror url if present
     if [[ $DOCKER_REGISTRY_MIRROR =~ /v[0-9]+/ ]]; then
       DOCKER_REGISTRY_MIRROR=$(echo "$DOCKER_REGISTRY_MIRROR" | sed 's~/v[0-9]\+/~/~g')
