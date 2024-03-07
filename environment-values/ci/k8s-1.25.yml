@@ -1,5 +1,6 @@
+k8s_version_short: "1.25"
+
 cluster:
-  k8s_version_short: "1.25"      # before apply-workload-cluster.sh
   control_plane_replicas: 3
   capo:
     image_key: ubuntu-jammy-plain-rke2-1-25-14       # before apply-workload-cluster.sh
