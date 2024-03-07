@@ -10,9 +10,39 @@ include:
   setup_ci_values:
     - |
       function change_git_revision() {
+        echo "GIT_REVISION: $GIT_REVISION"
+          if git ls-remote --exit-code --tags https://gitlab.com/sylva-projects/sylva-core.git "${GIT_REVISION}" > /dev/null; then
+            echo "Provided GIT_REVISION: $GIT_REVISION is a known upstream tag. Using it as it"
+            if [ -n "${OCI_TAG}" ] ; then
+              OCI_TAG=${GIT_REVISION}
+            fi
+          elif git ls-remote --exit-code --heads https://gitlab.com/sylva-projects/sylva-core.git "${GIT_REVISION}" > /dev/null; then
+            echo "Provided GIT_REVISION: $GIT_REVISION is a known upstream branch. It will be used as reference for fetching sylva-core code"
+            GIT_REVISION=$(git ls-remote --exit-code --heads https://gitlab.com/sylva-projects/sylva-core.git "${GIT_REVISION}" | cut -f 1)
+            SHORT_ID=$(echo $GIT_REVISION | head -c 8)
+            if [ -n "${OCI_TAG}" ] ; then
+              OCI_TAG=0.0.0-git-$SHORT_ID
+            fi
+          else
+            echo "Provided GIT_REVISION: $GIT_REVISION, will try to use it as a commit id"
+            SHORT_ID=$(echo $GIT_REVISION | head -c 8)
+            if [ -n "${OCI_TAG}" ] ; then
+              OCI_TAG=0.0.0-git-$SHORT_ID
+            fi
+          fi
+        if [ -n "${OCI_TAG}" ] ; then
+          echo "Sylva-units chart will use: $OCI_TAG reference"
+          echo "Checking if oci://registry.gitlab.com/sylva-projects/sylva-core/sylva-units:$OCI_TAG exist"
+          if helm pull oci://registry.gitlab.com/sylva-projects/sylva-core/sylva-units --version $OCI_TAG -d /tmp > /dev/null; then
+            echo "oci://registry.gitlab.com/sylva-projects/sylva-core/sylva-units:$OCI_TAG was sucessfully pulled"
+          else
+            echo "Failed to retrieve: oci://registry.gitlab.com/sylva-projects/sylva-core/sylva-units:$OCI_TAG"
+            echo "Ensure you are targeting a branch with an open MR and check if that OCI artifact was not removed by cleanup job"
+          fi
+        fi
+        git fetch origin $GIT_REVISION
         echo -e "Changing git revision to use \\e[1;94m$1\\e[0m"
-        git checkout $1
-        git pull
+        git checkout $GIT_REVISION
         git status
         echo -e "Current revision: $(git rev-parse HEAD)"
       }
