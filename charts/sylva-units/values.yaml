@@ -4213,7 +4213,7 @@ units:
             hostname: '{{ .Values.external_hostnames.thanos_query }}'
             extraTls:
               - hosts:
-                  - 'thanos-query.{{ .Values.external_hostnames.thanos_query }}'
+                  - '{{ .Values.external_hostnames.thanos_query }}'
                 secretName: thanos-tls
           containerSecurityContext:
             allowPrivilegeEscalation: false
@@ -4233,8 +4233,17 @@ units:
           enabled: true
           loglevel: debug
           logFormat: json
+          args:
+            - query-frontend
+            - --log.level=debug
+            - --log.format=json
+            - --query-frontend.downstream-url=http://thanos-query.thanos.svc.cluster.local:9090
           extraFlags:
-            - --query-frontend.forward-header="Authorization"          
+            - --query-range.split-interval=12h
+            - --labels.split-interval=12h
+            - --query-frontend.log-queries-longer-than=10s
+            - --query-frontend.downstream-url=http://thanos-query.thanos.svc.cluster.local:9090
+            - --query-frontend.forward-header="Authorization"
           config: |-
             type: IN-MEMORY
             config:
@@ -4443,6 +4452,7 @@ units:
       install:
         createNamespace: false
       values:
+        systemdLogPath: "/var/log/journal/"
         additionalLoggingSources:
           rke2:
             enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | include "as-bool" }}'
