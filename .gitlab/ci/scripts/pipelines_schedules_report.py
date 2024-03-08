@@ -35,6 +35,7 @@ status_icon = {
     "success": ":heavy_check_mark:", # ✅
     "canceled": "🛇",
     "skipped": "⏩",
+    "running": "🔄",
 }
 
 def print_report(text):
