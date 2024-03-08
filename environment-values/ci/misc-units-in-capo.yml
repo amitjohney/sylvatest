@@ -128,6 +128,10 @@ units:
     enabled: true
   logging-config:
     enabled: true
+  loki:
+    enabled: true
+  loki-init:
+    enabled: true
   ceph-csi-cephfs:
     enabled: true
   harbor-init:
