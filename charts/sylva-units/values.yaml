@@ -69,7 +69,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.1.38
+        tag: 0.2.4
 
   local-path-provisioner:
     kind: GitRepository
@@ -90,7 +90,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/os-image-server.git
       ref:
-        tag: 1.8.0
+        tag: 2.0.0
 
   capo-contrail-bgpaas:
     kind: GitRepository
@@ -125,14 +125,35 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-dashboards.git
       ref:
-        tag: 0.0.1
+        tag: 0.0.3
 
   minio-operator:
     kind: GitRepository
     spec:
       url: https://github.com/minio/operator.git
       ref:
-        tag: v5.0.11
+        tag: v5.0.13
+
+  sylva-snmp-resources:
+    kind: GitRepository
+    spec:
+      url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-snmp-resources.git
+      ref:
+        tag: 0.0.3
+
+  loki:
+    kind: GitRepository
+    spec:
+      url: https://github.com/grafana/loki.git
+      ref:
+        tag: v2.9.3
+
+  sylva-prometheus-rules:
+    kind: GitRepository
+    spec:
+      url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-prometheus-rules.git
+      ref:
+        tag: 0.0.7
 
 helm_repo_spec_default:
   interval: 60m0s
@@ -173,7 +194,7 @@ unit_helmrelease_kustomization_spec_default:
 units_enabled_default: false
 
 # unit_template define unit settings
-#   a unit can inherit from one of those
+#   a unit can inherit from multiple of those
 unit_templates:
   sylva-units:
     repo: sylva-core
@@ -190,6 +211,12 @@ unit_templates:
       postBuild:
         substitute:
           UNIT_NAME: '{{ .Values._unit_name_ }}'
+
+  # this unit template gather depends_on common
+  # to most units
+  base-deps: {}
+    # the actual dependencies aren't the same for bootstrap/management and workload-cluster
+    # se the actual content is found in values files specific to each
 
 # this defines Flux HelmRelease objects, and for each  # FIXME
 # a corresponding GitRepository or OCIRepository (and Secret, TODO: the Secret don't need to be generated for each unit)
@@ -231,8 +258,10 @@ units:
   #
   #   helm_secret_values: # (dict), if set what is put here is injected in HelmRelease.valuesFrom as a Secret
   #   kustomization_substitute_secrets: # (dict), if set what is put here is injected in Kustomization.postBuild.substituteFrom as a Secret
-  #   unit_template: optional, today used only for units that use sylva-units itself
-  #                  the settings for the unit are inherited from the corresponding entry under unit_templates
+  #   unit_templates: optional, list of names of "unit templates"
+  #                   unit templates are defined under "unit_templates"
+  #                   the settings for the unit are inherited from the corresponding entries under .Values.unit_templates,
+  #                   merging them in the specified order
 
   flux-system:
     info:
@@ -240,6 +269,7 @@ units:
       details: Note that Flux is always installed on the current cluster as a pre-requisite to installing the chart
       maturity: core-component
     repo: sylva-core
+    unit_templates: []  # we intendedly don't inherit from base-deps, because flux is itself part of base dependencies
     kustomization_spec:
       path: ./kustomize-units/flux-system/base
       targetNamespace: flux-system
@@ -261,6 +291,8 @@ units:
     info:
       description: installs cert-manager, an X.509 certificate controller
       maturity: core-component
+    unit_templates:
+    - base-deps
     helm_repo_url: https://charts.jetstack.io
     helmrelease_spec:
       chart:
@@ -328,12 +360,14 @@ units:
       description: installs Trivy operator
       maturity: beta
     enabled: no
+    unit_templates:
+    - base-deps
     helm_repo_url: https://aquasecurity.github.io/helm-charts/
     helmrelease_spec:
       chart:
         spec:
           chart: trivy-operator
-          version: 0.20.0
+          version: 0.20.6
       targetNamespace: trivy-system
       install:
         createNamespace: true
@@ -368,6 +402,8 @@ units:
     info:
       description: provides a Certificate Authority for units of the Sylva stack
       internal: true
+    unit_templates:
+    - base-deps
     depends_on:
       cert-manager: true
       external-secrets-operator: true
@@ -384,6 +420,8 @@ units:
     info:
       description: creates sylva-system namespace and other namespaces to be used by various units
       internal: true
+    unit_templates:
+    - base-deps
     depends_on:
       kyverno-policies: '{{ tuple . "kyverno-policies" | include "unit-enabled" }}' # make sure that the policy disable-automountserviceaccounttoken applies
     repo: sylva-core
@@ -396,13 +434,18 @@ units:
         - '{{ tuple "components/metal3" (tuple . "metal3" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/longhorn" (tuple . "longhorn" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/keycloak" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/harbor" (tuple . "harbor" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/vault" (tuple . "vault" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/rancher" (tuple . "rancher" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/sriov" (tuple . "sriov" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/cattle-monitoring" (tuple . "monitoring" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/ceph-csi-cephfs" (tuple . "ceph-csi-cephfs" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/cattle-logging" (tuple . "logging" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/gitea" (tuple . "gitea" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/minio-operator" (tuple . "minio-operator" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/minio-monitoring-tenant" (tuple . "minio-monitoring-tenant" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/thanos" (tuple . "thanos" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/loki" (tuple . "loki" | include "unit-enabled") | include "set-only-if" }}'
 
 # Postgresql deployment for keycloak
   postgres-init:
@@ -411,6 +454,8 @@ units:
       internal: true
     enabled_conditions:
     - '{{ tuple . "postgres" | include "unit-enabled"  }}'
+    unit_templates:
+    - base-deps
     depends_on:
       namespace-defs: true
       '{{ .Values._internal.default_storage_class_unit }}': true
@@ -428,6 +473,8 @@ units:
       maturity: stable
     enabled_conditions:
     - '{{ tuple . "keycloak" | include "unit-enabled" }}'
+    unit_templates:
+    - base-deps
     depends_on:
       namespace-defs: true
       postgres-init: true
@@ -437,7 +484,7 @@ units:
       chart:
         spec:
           chart: postgresql
-          version: 13.4.2
+          version: 14.0.5
       targetNamespace: keycloak
       values:
         global:
@@ -464,6 +511,8 @@ units:
     info:
       description: installs kubevirt
       maturity: beta
+    unit_templates:
+    - base-deps
     helm_repo_url: https://suse-edge.github.io/charts
     helmrelease_spec:
       chart:
@@ -487,6 +536,8 @@ units:
     info:
       description: deploys kubevirt VMs for testing
       internal: true
+    unit_templates:
+    - base-deps
     depends_on:
       kubevirt: true
       multus: true
@@ -501,15 +552,12 @@ units:
       description: sets up Harbor prerequisites
       details: it generates namespace, certificate, admin password, OIDC configuration
       internal: true
+    depends_on:
+      namespace-defs: true
+    unit_templates:
+    - base-deps
     enabled_conditions:
       - '{{ tuple . "harbor" | include "unit-enabled" }}'
-    depends_on:
-      sylva-ca: true
-      keycloak-resources: true
-      kyverno: true
-      vault: true
-      vault-config-operator: true
-      keycloak-add-client-scope: true
     repo: sylva-core
     kustomization_substitute_secrets:
       KEY: '{{ .Values.external_certificates.harbor.key | default "" | b64enc }}'
@@ -533,9 +581,12 @@ units:
     info:
       description: installs Harbor
       maturity: beta
+    unit_templates:
+    - base-deps
     depends_on:
+      namespace-defs: true
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
-      harbor-init: true
+      harbor-init: '{{ tuple . "harbor-init" | include "unit-enabled" }}'
     annotations:
       sylvactl/readyMessage: "Harbor UI can be reached at https://{{ .Values.external_hostnames.harbor }} ({{ .Values.external_hostnames.harbor }} must resolve to {{ .Values.display_external_ip }})"
     helm_repo_url: https://helm.goharbor.io
@@ -566,7 +617,7 @@ units:
               #storageClass: '{{ .Values._internal.default_storage_class }}'
               #size: 8Gi
         externalURL: 'https://{{ .Values.external_hostnames.harbor }}'
-        existingSecretAdminPassword: "harbor-init"
+        existingSecretAdminPassword: '{{ tuple "harbor-init" (tuple . "harbor-init" | include "unit-enabled") | include "set-only-if" }}'
         expose:
           ingress:
             enabled: true
@@ -587,22 +638,6 @@ units:
           noProxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
       _postRenderers:
         - kustomize:
-            patchesStrategicMerge:
-              - kind: Deployment
-                apiVersion: apps/v1
-                metadata:
-                  name: harbor-core
-                spec:
-                  template:
-                    spec:
-                      containers:
-                        - name: core
-                          env:
-                            - name: CONFIG_OVERWRITE_JSON
-                              valueFrom:
-                                secretKeyRef:
-                                  key: CONFIG_OVERWRITE_JSON
-                                  name: "harbor-oidc"
             patches:
               - target:
                   kind: Deployment|StatefulSet
@@ -665,6 +700,8 @@ units:
     depends_on:
       namespace-defs: true
     repo: vault-operator
+    unit_templates:
+    - base-deps
     helmrelease_spec:
       chart:
         spec:
@@ -683,6 +720,8 @@ units:
       details: |
         Vault assumes that the certificate vault-tls has been issued
       maturity: stable
+    unit_templates:
+    - base-deps
     depends_on:
       namespace-defs: true
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
@@ -741,6 +780,8 @@ units:
     info:
       description: installs Vault config operator
       maturity: stable
+    unit_templates:
+    - base-deps
     depends_on:
       namespace-defs: true
       cert-manager: true
@@ -761,6 +802,8 @@ units:
       description: generates random secrets in vault, configure password policy, authentication backends, etc...
       internal: true
     repo: sylva-core
+    unit_templates:
+    - base-deps
     depends_on:
       vault: true
       vault-config-operator: true
@@ -776,6 +819,8 @@ units:
       internal: true
     enabled_conditions:
     - '{{ tuple . "keycloak" | include "unit-enabled" }}'
+    unit_templates:
+    - base-deps
     depends_on:
       keycloak-resources: true
       vault: true
@@ -793,12 +838,14 @@ units:
     info:
       description: installs the External Secrets operator
       maturity: stable
+    unit_templates:
+    - base-deps
     helm_repo_url: https://charts.external-secrets.io
     helmrelease_spec:
       chart:
         spec:
           chart: external-secrets
-          version: 0.9.11
+          version: 0.9.13
       targetNamespace: external-secrets
       install:
         createNamespace: true
@@ -809,6 +856,8 @@ units:
     info:
       description: defines External Secrets stores
       internal: true
+    unit_templates:
+    - base-deps
     depends_on:
       external-secrets-operator: true
       vault: true
@@ -824,6 +873,8 @@ units:
       description: install CIS operator CRDs
       maturity: stable
       hidden: true
+    unit_templates:
+    - base-deps
     enabled_conditions:
     - '{{ tuple . "cis-operator" | include "unit-enabled" }}'
     helm_repo_url: https://charts.rancher.io
@@ -840,6 +891,8 @@ units:
     info:
       description: install CIS operator
       maturity: stable
+    unit_templates:
+    - base-deps
     enabled_conditions:
     - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
     depends_on:
@@ -858,6 +911,8 @@ units:
       details: |
         it generates a report which can be viewed and downloaded in CSV from the Rancher UI, at https://rancher.sylva/dashboard/c/local/cis/cis.cattle.io.clusterscan
       internal: true
+    unit_templates:
+    - base-deps
     enabled_conditions:
     - '{{ tuple . "cis-operator" | include "unit-enabled" }}'
     depends_on:
@@ -876,6 +931,8 @@ units:
       details: |
         it generates namespace, certificate, admin password, policy exception for using latest tag images (required for the pod managing the database of vulnerabilities since this DB is updated often)
       internal: true
+    unit_templates:
+    - base-deps
     enabled_conditions:
     - '{{ tuple . "neuvector" | include "unit-enabled" }}'
     depends_on:
@@ -917,6 +974,8 @@ units:
       description: installs Neuvector
       maturity: beta
     enabled: no
+    unit_templates:
+    - base-deps
     depends_on:
       neuvector-init: true
       ingress-nginx: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
@@ -967,9 +1026,11 @@ units:
             secretName: neuvector-tls
         cve:
           updater:
+            enabled: '{{ .Values.security.neuvector_scanning_enabled | include "preserve-type" }}'
             image:
               repository: neuvector/updater
           scanner:
+            enabled: '{{ .Values.security.neuvector_scanning_enabled | include "preserve-type" }}'
             image:
               repository: neuvector/scanner
               env:
@@ -990,16 +1051,23 @@ units:
           requests:
             cpu: 100m
             memory: 2280Mi
-      _postRenderers:
-        - kustomize:
-            patchesStrategicMerge:
-              - kind: CronJob
-                apiVersion: batch/v1
-                metadata:
-                  name: neuvector-updater-pod
-                  namespace: neuvector
-                spec:
-                  startingDeadlineSeconds: 21600
+      _postRenderers: |
+        {{- $patch := `
+        kustomize:
+          patchesStrategicMerge:
+            - kind: CronJob
+              apiVersion: batch/v1
+              metadata:
+                name: neuvector-updater-pod
+                namespace: neuvector
+              spec:
+                startingDeadlineSeconds: 21600
+        ` -}}
+        {{- if .Values.security.neuvector_scanning_enabled -}}
+        {{- list ($patch | fromYaml) | include "preserve-type" -}}
+        {{- else -}}
+        {{- list | include "preserve-type" -}}
+        {{- end -}}
     kustomization_spec:
       healthChecks:
         - apiVersion: apps/v1
@@ -1015,6 +1083,8 @@ units:
     info:
       description: initializes and configures Keycloak
       maturity: stable
+    unit_templates:
+    - base-deps
     depends_on:
       sylva-ca: true
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
@@ -1072,6 +1142,8 @@ units:
     info:
       description: installs Keycloak "legacy" operator
       maturity: stable
+    unit_templates:
+    - base-deps
     enabled_conditions:
     - '{{ tuple . "keycloak" | include "unit-enabled" }}'
     depends_on:
@@ -1110,6 +1182,8 @@ units:
     info:
       description: configures keycloak resources
       internal: true
+    unit_templates:
+    - base-deps
     enabled_conditions:
     - '{{ tuple . "keycloak" | include "unit-enabled" }}'
     depends_on:
@@ -1123,6 +1197,7 @@ units:
       targetNamespace: keycloak
       _components:
         - '{{ tuple "components/neuvector" (tuple . "neuvector" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/harbor" (tuple . "harbor" | include "unit-enabled") | include "set-only-if" }}'
       postBuild:
         substitute:
           RANCHER_DNS: '{{ .Values.external_hostnames.rancher }}'
@@ -1145,10 +1220,7 @@ units:
           name: keycloak-client-secret-flux-webui-client  # this secret is a byproduct of the flux-webui-client KeycloakClient resource
           namespace: keycloak
         - '{{ tuple (dict "apiVersion" "v1" "kind" "Secret" "name" "keycloak-client-secret-neuvector-client" "namespace" "keycloak") (tuple . "neuvector" | include "unit-enabled") | include "set-only-if" }}'  # # this secret is a byproduct of the neuvector client KeycloakClient resource
-        - apiVersion: v1
-          kind: Secret
-          name: keycloak-client-secret-harbor-client  # this secret is a byproduct of the harbor-client KeycloakClient resource
-          namespace: keycloak
+        - '{{ tuple (dict "apiVersion" "v1" "kind" "Secret" "name" "keycloak-client-secret-harbor-client" "namespace" "keycloak") (tuple . "harbor" | include "unit-enabled") | include "set-only-if" }}'  # # this secret is a byproduct of the harbor client KeycloakClient resource
 
 
   keycloak-add-client-scope:
@@ -1158,6 +1230,8 @@ units:
         a job to manually add a custom client-scope to sylva realm (on top of default ones)
         while CRD option does not yet provide good results (overrides defaults)
       internal: true
+    unit_templates:
+    - base-deps
     enabled_conditions:
     - '{{ tuple . "flux-webui" | include "unit-enabled" }}'
     - '{{ tuple . "keycloak" | include "unit-enabled" }}'
@@ -1197,6 +1271,8 @@ units:
     info:
       description: configures OIDC secrets for Keycloack
       internal: true
+    unit_templates:
+    - base-deps
     enabled_conditions:
     - '{{ tuple . "keycloak" | include "unit-enabled" }}'
     depends_on:
@@ -1222,6 +1298,8 @@ units:
     info:
       description: installs Kyverno
       maturity: stable
+    unit_templates:
+    - base-deps
     helm_repo_url: https://kyverno.github.io/kyverno
     helmrelease_spec:
       chart:
@@ -1239,15 +1317,25 @@ units:
             enabled: true
         admissionController:
           replicas: '{{ .Values._internal.default_replicas | include "preserve-type" }}'
+          resources:
+            limits:
+              memory: 1024Mi
         cleanupController:
           replicas: '{{ .Values._internal.default_replicas | include "preserve-type" }}'
         reportsController:
           replicas: '{{ .Values._internal.default_replicas | include "preserve-type" }}'
         backgroundController:
           replicas: '{{ .Values._internal.default_replicas | include "preserve-type" }}'
+          resources:
+            limits:
+              memory: 1024Mi
           rbac:
             clusterRole:
               extraResources:
+              - apiGroups: ["apps"]
+                resources:
+                  - "deployments"
+                verbs: ["get", "list", "watch", "patch", "update"]
               - apiGroups: ["helm.toolkit.fluxcd.io"]
                 resources:
                   - "helmreleases"
@@ -1279,6 +1367,8 @@ units:
     info:
       description: configures Kyverno policies
       internal: true
+    unit_templates:
+    - base-deps
     enabled_conditions:
     - '{{ tuple . "kyverno" | include "unit-enabled" }}'
     depends_on:
@@ -1287,11 +1377,15 @@ units:
     kustomization_spec:
       path: ./kustomize-units/kyverno-policies
       wait: true
+      _components:
+        - '{{ tuple "components/management-cluster-only" (tuple . "kyverno" | include "unit-enabled") | include "set-only-if" }}'
 
   rancher-monitoring-clusterid-inject:
     info:
       description: injects Rancher cluster ID in Helm values of Rancher monitoring chart
       internal: true
+    unit_templates:
+    - base-deps
     enabled_conditions:
     - '{{ tuple . "kyverno" | include "unit-enabled" }}'
     - '{{ tuple . "rancher" | include "unit-enabled" }}'
@@ -1307,12 +1401,15 @@ units:
     info:
       description: manages parameters which would be shared between management and workload clusters
       internal: true
+    unit_templates:
+    - base-deps
     depends_on:
       kyverno: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/shared-workload-clusters-settings
       wait: true
+      force: true
       targetNamespace: sylva-system
       postBuild:
         substitute:
@@ -1333,6 +1430,8 @@ units:
       description: installs Cluster API core operator
       maturity: core-component
     repo: sylva-core
+    unit_templates:
+    - base-deps
     depends_on:
       cert-manager: true
     kustomization_spec:
@@ -1341,6 +1440,8 @@ units:
         substitute:
           force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
       wait: true
+      _components:
+        - '{{ tuple "components/ha" (.Values._internal.ha_cluster.mode | eq "ha") | include "set-only-if" }}'
 
   capd:
     info:
@@ -1348,6 +1449,8 @@ units:
       maturity: core-component
       kustomization_path: ./kustomize-units/capd/base
     repo: sylva-core
+    unit_templates:
+    - base-deps
     depends_on:
       cert-manager: true
     kustomization_spec:
@@ -1356,17 +1459,23 @@ units:
         substitute:
           CAPD_DOCKER_HOST: '{{ .Values.capd_docker_host }}'
       wait: true
+      _components:
+        - '{{ tuple "components/ha" (.Values._internal.ha_cluster.mode | eq "ha") | include "set-only-if" }}'
 
   capo:
     info:
       description: installs OpenStack CAPI infra provider
       maturity: core-component
     repo: sylva-core
+    unit_templates:
+    - base-deps
     depends_on:
       cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/capo
       wait: true
+      _components:
+        - '{{ tuple "components/ha" (.Values._internal.ha_cluster.mode | eq "ha") | include "set-only-if" }}'
       _patches:
         - target:
             group: apps
@@ -1391,6 +1500,8 @@ units:
       description: installs Metal3 CAPI infra provider, for baremetal
       maturity: core-component
     repo: sylva-core
+    unit_templates:
+    - base-deps
     depends_on:
       cert-manager: true
       '{{ .Values._internal.metal3_unit }}': true
@@ -1401,12 +1512,16 @@ units:
           force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
           enableBMHNameBasedPreallocation: "true"
       wait: true
+      _components:
+        - '{{ tuple "components/ha" (.Values._internal.ha_cluster.mode | eq "ha") | include "set-only-if" }}'
 
   capv:
     info:
       description: installs vSphere CAPI infra provider
       maturity: core-component
     repo: sylva-core
+    unit_templates:
+    - base-deps
     depends_on:
       cert-manager: true
     kustomization_spec:
@@ -1415,12 +1530,16 @@ units:
         substitute:
           force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
       wait: true
+      _components:
+        - '{{ tuple "components/ha" (.Values._internal.ha_cluster.mode | eq "ha") | include "set-only-if" }}'
 
   cabpk:
     info:
       description: installs Kubeadm CAPI bootstrap provider
       maturity: core-component
     repo: sylva-core
+    unit_templates:
+    - base-deps
     depends_on:
       cert-manager: true
     kustomization_spec:
@@ -1429,17 +1548,23 @@ units:
         substitute:
           force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
       wait: true
+      _components:
+        - '{{ tuple "components/ha" (.Values._internal.ha_cluster.mode | eq "ha") | include "set-only-if" }}'
 
   cabpr:
     info:
       description: installs RKE2 CAPI bootstrap provider
       maturity: core-component
     repo: sylva-core
+    unit_templates:
+    - base-deps
     depends_on:
       cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/cabpr
       wait: true
+      _components:
+        - '{{ tuple "components/ha" (.Values._internal.ha_cluster.mode | eq "ha") | include "set-only-if" }}'
       _patches:
         - target:
             group: apps
@@ -1480,20 +1605,26 @@ units:
       description: installs SUSE-maintained Metal3 operator
       maturity: beta
     enabled: false
+    unit_templates:
+    - base-deps
     depends_on:
       cert-manager: true
       '{{ .Values._internal.default_storage_class_unit }}': true
+      metal3-pdb: '{{ tuple . "metal3-pdb" | include "unit-enabled" }}'
     helm_repo_url: https://suse-edge.github.io/charts
+    helm_chart_artifact_name: metal3-suse
     helmrelease_spec:
       chart:
         spec:
           chart: metal3
-          version: 0.6.0
+          version: 0.6.1
+      timeout: 30m
       install:
         createNamespace: true
       targetNamespace: metal3-system
       values:
         global:
+          enable_tls: false
           ironicIP: '{{ .Values.cluster_virtual_ip }}'
           provisioningInterface: eth0
         metal3-ironic:
@@ -1504,19 +1635,39 @@ units:
             annotations:
               metallb.universe.tf/allow-shared-ip: cluster-external-ip
           baremetaloperator:
+            replicaCount: '{{ .Values._internal.ha_cluster.mode | eq "ha" | ternary 2 1 | include "preserve-type" }}'
             ironichostNetwork: false
           persistence:
             ironic:
+              size: 10Gi
               storageClass: '{{ .Values._internal.default_storage_class }}'
               accessMode: ReadWriteOnce
         metal3-mariadb:
           persistence:
             storageClass: '{{ .Values._internal.default_storage_class }}'
 
+  metal3-pdb:
+    info:
+      description: add pdb to baremetal-operator pods
+      internal: true
+    unit_templates:
+    - base-deps
+    enabled_conditions:
+    - '{{ or (tuple . "metal3" | include "unit-enabled") (tuple . "metal3-suse" | include "unit-enabled") }}'
+    - '{{ .Values._internal.ha_cluster.mode | eq "ha" }}'
+    depends_on:
+      kyverno: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/metal3-pdb
+      wait: true
+
   metal3-init:
     info:
       description: generates Metal3 random credentials
       internal: true
+    unit_templates:
+    - base-deps
     enabled_conditions:
     - '{{ tuple . "metal3" | include "unit-enabled" }}'
     depends_on:
@@ -1531,6 +1682,8 @@ units:
     info:
       description: configures secrets for Metal3 components
       internal: true
+    unit_templates:
+    - base-deps
     enabled_conditions:
     - '{{ tuple . "metal3" | include "unit-enabled" }}'
     depends_on:
@@ -1546,10 +1699,13 @@ units:
       description: install Metal3 operator
       maturity: stable
     enabled: false
+    unit_templates:
+    - base-deps
     depends_on:
       cert-manager: true
       '{{ .Values._internal.default_storage_class_unit }}': true
       metal3-sync-secrets: true # make sure that the password secrets are ready to be consumed
+      metal3-pdb: '{{ tuple . "metal3-pdb" | include "unit-enabled" }}'
     kustomization_spec:
       postBuild:
         substitute:
@@ -1557,9 +1713,9 @@ units:
           # See https://gitlab.com/sylva-projects/sylva-core/-/issues/659
           var_substitution_enabled: "true"
     repo: metal3
-    helm_chart_artifact_name: metal3
+    helm_chart_artifact_name: metal3-sylva
     helmrelease_spec:
-      timeout: 10m
+      timeout: 30m
       chart:
         spec:
           chart: .
@@ -1626,6 +1782,16 @@ units:
           valuesKey: metal3-ironic-inspector-secret
           targetPath: auth.ironicInspectorPassword
           optional: false
+      _postRenderers:
+        - kustomize:
+            patches:
+            - target:
+                kind: Deployment
+                name: baremetal-operator-controller-manager
+              patch: |
+                - op: replace
+                  path: /spec/replicas
+                  value: '{{ .Values._internal.ha_cluster.mode | eq "ha" | ternary 2 1 | include "preserve-type" }}'
 
   capi-providers-pivot-ready:
     info:
@@ -1635,16 +1801,20 @@ units:
         It is here only to have a single thing to look at to determine
         if everything is ready for pivot (see bootstrap.values.yaml pivot unit)
       internal: true
-    unit_template: dummy
+    unit_templates:
+    - base-deps
+    - dummy
     # we copy the dependencies of the 'cluster' unit
     # (with the exception of "capo-cluster-resources" which we don't need, given how what it produces is consumed)
-    depends_on: '{{ omit .Values.units.cluster.depends_on "capo-cluster-resources" | include "preserve-type" }}'
+    depends_on: '{{ omit .Values.units.cluster.depends_on "capo-cluster-resources" "cluster-bmh" | include "preserve-type" }}'
 
   local-path-provisioner:
     info:
       description: installs local-path CSI
       maturity: stable
     repo: local-path-provisioner
+    unit_templates:
+    - base-deps
     helmrelease_spec:
       chart:
         spec:
@@ -1673,11 +1843,41 @@ units:
                         securityContext:
                           runAsUser: 10000
 
+  cluster-bmh:
+    info:
+      description: definitions for Cluster API BareMetalHosts resources (capm3)
+      maturity: core-component
+    repo: sylva-capi-cluster
+    helm_chart_artifact_name: sylva-capi-cluster
+    unit_templates:
+    - base-deps
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+    #depends_on: the dependency on metal3 is handled in management.values.yaml
+    #            and workload-cluster.values.yaml
+    labels:
+      suspend-on-pivot: "yes"  # must be suspended before pivot
+    kustomization_spec:
+      prune: '{{ not (eq .Release.Namespace "sylva-system") | include "preserve-type" }}'
+    helmrelease_spec:
+      targetNamespace: '{{ .Release.Namespace }}'
+      chart:
+        spec:
+          chart: .
+      values:
+        resource_groups:
+          - baremetal-hosts
+    # we pass everything that is under `cluster` to this unit that uses sylva-capi-cluster chart
+    # (we do it via a secret because some of the values are credentials in many scenarios)
+    helm_secret_values: '{{ .Values.cluster | include "preserve-type" }}'
+
   cluster:
     info:
       description: holds the Cluster API definition for the cluster
       maturity: core-component
     repo: sylva-capi-cluster
+    unit_templates:
+    - base-deps
     helm_chart_artifact_name: sylva-capi-cluster
     depends_on:
       capi: true
@@ -1685,7 +1885,7 @@ units:
       '{{ .Values.cluster.capi_providers.bootstrap_provider }}': true
       capo-cluster-resources: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
       get-openstack-images: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
-      '{{ .Values._internal.metal3_unit }}': '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+      cluster-bmh: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
       sylva-system/os-image-server: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
     labels:
       suspend-on-pivot: "yes"  # must be suspended before pivot
@@ -1707,6 +1907,10 @@ units:
       chart:
         spec:
           chart: .
+      values:
+        resource_groups:
+          - cluster-resource
+          - base
       valuesFrom:
         - kind: ConfigMap
           name: capo-cluster-resources
@@ -1733,7 +1937,7 @@ units:
           optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
         - kind: ConfigMap
           name: '{{ .Values._internal.os_images_info_configmap }}'  # this configmap is a byproduct of the os-images-info unit
-          valuesKey: values-s-c-c.yaml
+          valuesKey: values.yaml
           optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capm3") | include "as-bool" }}'
     # we pass everything that is under `cluster` to this unit that uses sylva-capi-cluster chart
     # (we do it via a secret because some of the values are credentials in many scenarios)
@@ -1743,6 +1947,8 @@ units:
     info:
       description: installs cronjob responsible for unused CAPI resources cleaning
       internal: true
+    unit_templates:
+    - base-deps
     depends_on:
       cluster: false # we can't depend directly on 'cluster' unit, since it's being disabled in 'management-sylva-units' and re-enabled by 'pivot'
       capi: true
@@ -1761,7 +1967,8 @@ units:
     info:
       description: unit to check readiness of cluster CAPI objects
       internal: true
-    unit_template: dummy
+    unit_templates:
+    - dummy
     enabled_conditions:
     - '{{ tuple . "cluster" | include "unit-enabled" }}'
     depends_on:
@@ -1787,7 +1994,8 @@ units:
       details: >
         This unit will be enabled in bootstrap cluster to check connectivity to management cluster
         and in various workload-cluster namespaces in management cluster to check connectivity to workload clusters
-    unit_template: dummy
+    unit_templates:
+    - dummy
     enabled: false
     depends_on:
       cluster: true
@@ -1801,17 +2009,26 @@ units:
     info:
       description: installs OpenStack Heat operator
       maturity: core-component
+    unit_templates:
+    - base-deps
     enabled_conditions:
     - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/heat-operator
       wait: true
+      images:
+        - name: controller
+          newName: registry.gitlab.com/sylva-projects/sylva-elements/heat-operator
+          newTag: 0.0.7
+
 
   sylva-units-operator:
     info:
       description: installs sylva-units operator
       maturity: experimental
+    unit_templates:
+    - base-deps
     repo: sylva-core
     depends_on:
       flux-system: true
@@ -1827,6 +2044,8 @@ units:
     info:
       description: installs Sylva operator for managing workload clusters
       maturity: experimental
+    unit_templates:
+    - base-deps
     repo: sylva-core
     depends_on:
       sylva-units-operator: true
@@ -1842,6 +2061,8 @@ units:
     info:
       description: installs OpenStack Heat stack for CAPO cluster prerequisites
       internal: true
+    unit_templates:
+    - base-deps
     enabled_conditions:
     - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     repo: sylva-core
@@ -1861,7 +2082,7 @@ units:
           CAPO_EXTERNAL_NETWORK_ID: '{{ tuple .Values.openstack.external_network_id .Values.openstack.external_network_id | include "set-only-if" }}'
           CONTROL_PLANE_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}'
           WORKER_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}'
-          CAPO_CREATE_IRONIC_SECURITY_GROUP: '{{ tuple . (and (tuple . "metal3" | include "unit-enabled") (.Values.cluster.capi_providers.infra_provider | eq "capo")) "true" "false" | include "interpret-ternary" }}'
+          CAPO_CREATE_IRONIC_SECURITY_GROUP: '{{ tuple . (and (tuple . .Values._internal.metal3_unit | include "unit-enabled") (.Values.cluster.capi_providers.infra_provider | eq "capo")) "true" "false" | include "interpret-ternary" }}'
           COMMON_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}'
     kustomization_substitute_secrets:
       CAPO_CLOUD_YAML: '{{ .Values.cluster.capo.clouds_yaml  | toYaml | b64enc }}'
@@ -1872,14 +2093,17 @@ units:
       description: installs Calico CRDs
       maturity: stable
       hidden: true
+    unit_templates:
+    - base-deps
     enabled_conditions:
     - '{{ tuple . "calico" | include "unit-enabled" }}'
     depends_on:
       namespace-defs: true
     helm_repo_url: https://rke2-charts.rancher.io
     helm_chart_versions:
-      v3.25.001: '{{ not .Values._internal.k8s_post_1_26_6  }}'
-      v3.26.101: '{{ .Values._internal.k8s_post_1_26_6 }}'
+      v3.25.001: '{{ include "k8s-version-match" (tuple . "<1.26")  }}'
+      v3.26.101: '{{ include "k8s-version-match" (tuple . ">=1.26.6,<=1.27.6") }}'
+      v3.26.300: '{{ include "k8s-version-match" (tuple . ">=1.27.10") }}'
     helmrelease_spec:
       releaseName: rke2-calico-crd
       targetNamespace: kube-system
@@ -1894,6 +2118,8 @@ units:
       details: |
         For v1.25.x to v1.26.x, see https://gitlab.com/sylva-projects/sylva-core/-/issues/664
       internal: true
+    unit_templates:
+    - base-deps
     enabled_conditions:
     - '{{ tuple . "calico" | include "unit-enabled" }}'
     repo: sylva-core
@@ -1908,12 +2134,15 @@ units:
       maturity: stable
     enabled_conditions:
     - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'  # installed by RKE2 when RKE2 is used
+    unit_templates:
+    - base-deps
     depends_on:
       calico-crd: true
     helm_repo_url: https://rke2-charts.rancher.io
     helm_chart_versions:
-      v3.25.001: '{{ not .Values._internal.k8s_post_1_26_6  }}'
-      v3.26.101: '{{ .Values._internal.k8s_post_1_26_6 }}'
+      v3.25.001: '{{ include "k8s-version-match" (tuple . "<1.26") }}'
+      v3.26.101: '{{ include "k8s-version-match" (tuple . ">=1.26.6,<=1.27.6") }}'
+      v3.26.300: '{{ include "k8s-version-match" (tuple . ">=1.27.10") }}'
     helmrelease_spec:
       chart:
         spec:
@@ -1925,22 +2154,24 @@ units:
             bgp: Enabled
           registry: UseDefault
         felixConfiguration:
-          wireguardEnabled: '{{ .Values.calico_wireguard_enabled | include "preserve-type" }}'
+          wireguardEnabled: '{{ .Values.security.calico_wireguard_enabled | include "preserve-type" }}'
 
   metallb:
     info:
       description: installs MetalLB operator
       maturity: stable
+    unit_templates:
+    - base-deps
     enabled_conditions:
       - '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" }}'
     depends_on:
-      calico: true
+      calico: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
     helm_repo_url: https://metallb.github.io/metallb
     helmrelease_spec:
       chart:
         spec:
           chart: metallb
-          version: 0.13.12
+          version: 0.14.3
       targetNamespace: metallb-system
       install:
         createNamespace: true
@@ -1978,6 +2209,8 @@ units:
     info:
       description: installs OpenStack Cinder CSI
       maturity: stable
+    unit_templates:
+    - base-deps
     enabled_conditions:
     - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     depends_on:
@@ -2008,7 +2241,7 @@ units:
             metadata:
               name: "{{ .Values.openstack.storageClass.name }}"
               annotations:
-                storageclass.kubernetes.io/is-default-class: "true"
+                storageclass.kubernetes.io/is-default-class: "{{ eq .Values._internal.default_storage_class .Values.openstack.storageClass.name }}"
             provisioner: cinder.csi.openstack.org
             volumeBindingMode: Immediate
             reclaimPolicy: Delete
@@ -2039,6 +2272,8 @@ units:
     info:
       description: allows secrets from Vault to be consumed other units, relies on ExternalSecrets
       internal: true
+    unit_templates:
+    - base-deps
     depends_on:
       eso-secret-stores: true
       vault-secrets: true
@@ -2057,6 +2292,8 @@ units:
       description: initializes and configures Rancher
       maturity: beta
       internal: true
+    unit_templates:
+    - base-deps
     depends_on:
       namespace-defs: true
       sylva-ca: true
@@ -2074,6 +2311,7 @@ units:
           CERT: '{{ .Values.external_certificates.rancher.cert | default "" | b64enc }}'
           CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
       _components:
+        - '{{ tuple "components/webhook-ha" (.Values._internal.ha_cluster.mode | eq "ha") | include "set-only-if" }}'
         - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.rancher "cert") }}'
         - "../tls-components/sylva-ca"
       healthChecks:
@@ -2086,6 +2324,8 @@ units:
     info:
       description: installs Rancher
       maturity: stable
+    unit_templates:
+    - base-deps
     depends_on:
       namespace-defs: true
       cert-manager: true
@@ -2100,6 +2340,9 @@ units:
       chart:
         spec:
           chart: rancher
+          # When changing the major or minor version of rancher, make sure that renovate is
+          # also updated to accept the corresponding versions of the other rancher charts (monitory, sriov, longhorn)
+          # See https://github.com/rancher/charts/blob/dev-v2.9/README.md
           version: 2.8.2
       targetNamespace: cattle-system
       interval: 10m0s
@@ -2182,6 +2425,8 @@ units:
     info:
       description: configures Rancher for Keycloak OIDC integration
       internal: true
+    unit_templates:
+    - base-deps
     enabled_conditions:
     - '{{ tuple . "rancher" | include "unit-enabled" }}'
     - '{{ tuple . "keycloak" | include "unit-enabled" }}'
@@ -2205,6 +2450,8 @@ units:
       details: >
         is here only to allow for DNS resolution of Ingress hosts (FQDNs), used for importing workload clusters into Rancher and for flux-webui to use Keycloak SSO
       maturity: stable
+    unit_templates:
+    - base-deps
     depends_on:
       capd-metallb-config: '{{ tuple . "capd-metallb-config" | include "unit-enabled" }}'
     helm_repo_url: https://ori-edge.github.io/k8s_gateway/
@@ -2223,6 +2470,28 @@ units:
           loadBalancerIP: '{{ .Values.cluster_virtual_ip }}'
           annotations:
             metallb.universe.tf/allow-shared-ip: cluster-external-ip
+        # Following extraZonePlugins lines include all chart defaults plus the hosts plugin
+        extraZonePlugins:
+          - name: log
+          - name: errors
+          - name: health
+            configBlock: |-
+              lameduck 5s
+          - name: ready
+          - name: prometheus
+            parameters: 0.0.0.0:9153
+          - name: forward
+            parameters: . /etc/resolv.conf
+          - name: loop
+          - name: reload
+          - name: loadbalance
+          - name: hosts
+            configBlock: |-
+              {{- $display_external_ip := .Values.display_external_ip }}
+              {{- range $name,$domain := .Values.external_hostnames }}
+              {{ $display_external_ip }} {{ $domain }}
+              {{- end }}
+              fallthrough
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:
@@ -2250,6 +2519,8 @@ units:
     info:
       description: configures MetalLB in a capd context
       internal: true
+    unit_templates:
+    - base-deps
     enabled_conditions:
     - '{{ tuple . "metallb" | include "unit-enabled" }}'
     - '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" }}'
@@ -2267,6 +2538,8 @@ units:
     info:
       description: installs the capi-rancher-import operator, which let's us import Cluster AIP workload clusters in management cluster's Rancher
       internal: true
+    unit_templates:
+    - base-deps
     enabled_conditions:
     - '{{ tuple . "rancher" | include "unit-enabled" }}'
     repo: capi-rancher-import
@@ -2308,13 +2581,16 @@ units:
     info:
       description: installs Nginx ingress controller
       maturity: stable
+    unit_templates:
+    - base-deps
     depends_on:
       capd-metallb-config: '{{ tuple . "capd-metallb-config" | include "unit-enabled" }}'
       calico: '{{ tuple . "calico" | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io
     helm_chart_versions:
-      4.5.202: '{{ not .Values._internal.k8s_post_1_26_6  }}'
-      4.6.101: '{{ .Values._internal.k8s_post_1_26_6 }}'
+      4.5.202: '{{ include "k8s-version-match" (tuple . "<1.26") }}'
+      4.6.101: '{{ include "k8s-version-match" (tuple . ">=1.26,<=1.27.6") }}'
+      4.8.200: '{{ include "k8s-version-match" (tuple . ">=1.27.10") }}'
     helmrelease_spec:
       releaseName: rke2-ingress-nginx
       targetNamespace: kube-system
@@ -2350,6 +2626,8 @@ units:
     enabled_conditions:
     - '{{ tuple . "rancher" | include "unit-enabled" }}'
     repo: sylva-core
+    unit_templates:
+    - base-deps
     depends_on:
       rancher: true
     kustomization_spec:
@@ -2365,6 +2643,8 @@ units:
       description: initializes and configures flux-webui
       maturity: beta
       internal: true
+    unit_templates:
+    - base-deps
     depends_on:
       sylva-ca: true
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
@@ -2393,6 +2673,8 @@ units:
     info:
       description: installs Weave GitOps Flux web GUI
       maturity: stable
+    unit_templates:
+    - base-deps
     depends_on:
       flux-system: true
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
@@ -2499,6 +2781,8 @@ units:
       description: installs monitoring stack CRDs
       maturity: stable
       hidden: true
+    unit_templates:
+    - base-deps
     depends_on:
       namespace-defs: true
     enabled_conditions:
@@ -2511,7 +2795,7 @@ units:
       chart:
         spec:
           chart: rancher-monitoring-crd
-          version: 102.0.2+up40.1.2
+          version: 103.0.3+up45.31.1
       install:
         createNamespace: true
 
@@ -2519,6 +2803,8 @@ units:
     info:
       description: installs monitoring stack
       maturity: stable
+    unit_templates:
+    - base-deps
     depends_on:
       namespace-defs: true
       monitoring-crd: true
@@ -2530,7 +2816,7 @@ units:
       chart:
         spec:
           chart: rancher-monitoring
-          version: 102.0.2+up40.1.2
+          version: 103.0.3+up45.31.1
       install:
         createNamespace: true
       values:
@@ -2542,6 +2828,29 @@ units:
               multicluster:
                 global:
                   enabled: true
+                etcd:
+                  enabled: true
+        prometheus:
+          prometheusSpec:
+            externalLabels:
+              cluster: '{{ .Values.cluster.name }}'  # required for multi-cluster dashboards
+            remoteWriteDashboards: true
+            remoteWrite:
+              - url: '{{ .Values.monitoring.thanos_receive_url }}'
+                name: '{{ .Values.cluster.name }}'
+                basicAuth:
+                  username:
+                    name: thanos-basic-auth
+                    key: username
+                  password:
+                    name: thanos-basic-auth
+                    key: password
+                tlsConfig:
+                  insecureSkipVerify: true
+                queue_config:
+                  batch_send_deadline: 5s
+                  min_backoff: 1s
+                  max_backoff: 30s
       # Disable drift detection for rancher-monitoring webhooks
       _postRenderers:
         - kustomize:
@@ -2552,6 +2861,13 @@ units:
                 - op: add
                   path: /metadata/annotations/helm.toolkit.fluxcd.io~1driftDetection
                   value: disabled
+    helm_secret_values:
+      prometheus:
+        extraSecret:
+          name: thanos-basic-auth
+          data:
+            username: thanos-user
+            password: '{{ .Values._internal.thanos_password }}'  # value from management cluster, set via Secret/shared-workload-clusters-settings
 
   snmp-exporter:
     info:
@@ -2561,6 +2877,8 @@ units:
     - '{{ tuple . "monitoring" | include "unit-enabled" }}'
     - '{{ .Values.snmp.devices | empty | not }}'
     - '{{ .Values.snmp.groups | empty | not }}'
+    unit_templates:
+    - base-deps
     depends_on:
       monitoring: true
     helm_repo_url: https://prometheus-community.github.io/helm-charts
@@ -2576,9 +2894,18 @@ units:
       values:
         fullnameOverride: 'snmp-exporter'
         replicas: 3
+        extraArgs:
+          - "--config.file=/config/snmp.yaml"
+        podAnnotations:
+          sylva/snmp-values: '{{ .Values.snmp | toJson | sha256sum | trunc 8 }}'
         serviceMonitor:
           enabled: true
           namespace: snmp-exporter
+          relabelings:
+            - sourceLabels: [__param_module]
+              targetLabel: module
+            - sourceLabels: [__param_target]
+              targetLabel: instance
           params: |
             {{- $result := list -}}
             {{- range $device := .Values.snmp.devices }}
@@ -2600,6 +2927,14 @@ units:
           capabilities:
             drop:
               - ALL
+        extraManifests:
+          - |
+            apiVersion: v1
+            kind: ConfigMap
+            metadata:
+              name: snmp-exporter-extra-ca-certs
+            data:
+              extra-ca-certs.pem: | {{ .Values.oci_registry_extra_ca_certs | default "" | nindent 4 }}
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:
@@ -2611,37 +2946,81 @@ units:
                   template:
                     spec:
                       containers:
-                      - name: configmap-reload
-                        securityContext:
-                          allowPrivilegeEscalation: false
-                          capabilities:
-                            drop:
-                              - ALL
+                        - name: snmp-exporter
+                          volumeMounts:
+                            - mountPath: /config
+                              name: config
+                      volumes:
+                        - emptyDir: {}
+                          name: config
+                        - name: extra-ca-certs
+                          configMap:
+                            name: snmp-exporter-extra-ca-certs
 
     helm_secret_values:
-      config: |
-        {{- $files := .Files }}
-        {{- range $group_name, $group_keys := .Values.snmp.groups }}
-        {{ $oid_file := printf "configs/snmp-exporter/%s.yaml" $group_keys.hw_type }}
-        {{- $group_name }}:
-          version: {{ $group_keys.version }}
-          auth:
-            community: '{{ $group_keys.auth.community }}'
-            security_level: '{{ $group_keys.auth.security_level }}'
-            username: '{{ $group_keys.auth.username }}'
-            password: '{{ $group_keys.auth.password }}'
-            auth_protocol: '{{ $group_keys.auth.auth_protocol }}'
-            priv_protocol: '{{ $group_keys.auth.priv_protocol }}'
-            priv_password: '{{ $group_keys.auth.priv_password }}'
-          {{- $files.Get $oid_file | nindent 2 }}
-        {{- end -}}
+      extraInitContainers:
+        - name: config-file-create
+          image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/sylva-toolbox:v0.3.10
+          command: ["/bin/sh"]
+          args:
+            - -c
+            - >-
+              echo -e '{{ ( dict "groups" .Values.snmp.groups ) | toJson }}' > /config/groups.json &&
+              sylva_snmp_resources_source='{{ .Values.sylva_core_oci_registry }}/sylva-snmp-resources' &&
+              sylva_snmp_resources_version='{{ .Values.source_templates | dig "sylva-snmp-resources" "spec" "ref" "tag" true }}' &&
+              flux pull artifact $sylva_snmp_resources_source:$sylva_snmp_resources_version -o /config &&
+              helm template /config/sylva-snmp-resources --values /config/groups.json | yq .out > /config/snmp.yaml
+          env:
+            - name: http_proxy
+              value: '{{ .Values.proxies.http_proxy | default "" }}'
+            - name: https_proxy
+              value: '{{ .Values.proxies.https_proxy | default "" }}'
+            - name: no_proxy
+              value: '{{ include "sylva-units.no_proxy" (tuple .) | quote }}'
+          securityContext:
+            capabilities:
+              drop:
+              - ALL
+            runAsNonRoot: true
+            runAsUser: 1000
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - mountPath: /config
+              name: config
+            - name: extra-ca-certs
+              subPath: extra-ca-certs.pem
+              mountPath: /etc/ssl/certs/extra-ca-certs.pem
+              readOnly: true
 
+  snmp-resources:
+    info:
+      description: contains OID files and generates configuration needed by the snmp-exporter
+      details: >
+        This unit is not to be enabled, as it will not actually be consumed by sylva-units.
+        It is here only to have sylva-core tools/oci/push-helm-charts-artifacts.sh
+        produce an OCI artifact for it, which will be consumed directly by the `snmp-exporter`
+        pods (in its init container).
+      hidden: true
+    enabled_conditions:
+      - false
+    unit_templates: []  # see above, this isn't a real unit
+    repo: sylva-snmp-resources
+    helm_chart_artifact_name: sylva-snmp-resources
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: .
 
   sylva-dashboards:
     info:
       description: adds Sylva-specific Grafana dashboards
     enabled_conditions:
       - '{{ tuple . "monitoring" | include "unit-enabled" }}'
+    unit_templates:
+    - base-deps
     depends_on:
       monitoring: true
     repo: sylva-dashboards
@@ -2661,6 +3040,8 @@ units:
       description: installs Multus
       maturity: stable
     enabled: false
+    unit_templates:
+    - base-deps
     depends_on:
       calico: '{{ tuple . "calico" | include "unit-enabled" }}'
     helm_repo_url: https://rke2-charts.rancher.io/
@@ -2703,7 +3084,9 @@ units:
         It performs healthchecks outside of the multus unit,
         in order to properly target workload cluster when we deploy multus in it.
       internal: true
-    unit_template: dummy
+    unit_templates:
+    - base-deps
+    - dummy
     enabled_conditions:
       - '{{ tuple . "multus" | include "unit-enabled" }}'
     depends_on:
@@ -2724,6 +3107,8 @@ units:
       description: installs SRIOV CRDs
       maturity: stable
       hidden: true
+    unit_templates:
+    - base-deps
     enabled_conditions:
     - '{{ tuple . "sriov" | include "unit-enabled" }}'
     depends_on:
@@ -2738,13 +3123,15 @@ units:
       chart:
         spec:
           chart: sriov-crd
-          version: 102.1.0+up0.1.0
+          version: 103.0.0+up0.1.0
 
   sriov:
     info:
       description: installs SRIOV operator
       maturity: stable
     enabled: false
+    unit_templates:
+    - base-deps
     depends_on:
       namespace-defs: true
       sriov-crd: true
@@ -2755,18 +3142,17 @@ units:
       chart:
         spec:
           chart: sriov
-          version: 102.1.0+up0.1.0
+          version: 103.0.0+up0.1.0
       values:
         cert_manager: true
-        rancher-nfd:
-          image:
-            tag: v0.13.2-build20230605
 
   sriov-resources:
     info:
       description: configures SRIOV resources
       internal: true
     enabled: false
+    unit_templates:
+    - base-deps
     depends_on:
       namespace-defs: true
       sriov: true
@@ -2784,6 +3170,8 @@ units:
     info:
       description: configures DNS inside cluster
       internal: true
+    unit_templates:
+    - base-deps
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/coredns
@@ -2801,11 +3189,48 @@ units:
           CLUSTER_VIRTUAL_IP: '{{ .Values.cluster_virtual_ip }}'
           CLUSTER_DOMAIN: '{{ .Values.cluster_domain }}'
 
+  ceph-csi-cephfs:
+    info:
+      description: Installs Ceph-CSI
+      maturity: beta
+    enabled: false
+    unit_templates:
+    - base-deps
+    depends_on:
+      namespace-defs: true
+    helm_repo_url: https://ceph.github.io/csi-charts
+    helmrelease_spec:
+      targetNamespace: ceph-csi-cephfs
+      chart:
+        spec:
+          chart: ceph-csi-cephfs
+          version: 3.10.2
+      values:
+        provisioner:
+          replicaCount: '{{ .Values.cluster.control_plane_replicas }}'
+        storageClass:
+          create: true
+          name: cephfs-csi
+          clusterID: '{{ .Values.ceph.cephfs_csi.clusterID }}'
+          fsName: '{{ .Values.ceph.cephfs_csi.fs_name }}'
+          annotations:
+            storageclass.kubernetes.io/is-default-class: '{{ .Values._internal.default_storage_class | eq "cephfs-csi" }}'
+        csiConfig:
+          - clusterID: '{{ .Values.ceph.cephfs_csi.clusterID }}'
+            monitors: '{{ .Values.ceph.cephfs_csi.monitors_ips | include "preserve-type" }}'
+    helm_secret_values:
+      secret:
+        create: true
+        adminID: '{{ .Values.ceph.cephfs_csi.adminID }}'
+        adminKey: '{{ .Values.ceph.cephfs_csi.adminKey }}'
+
   longhorn-crd:
     info:
       description: installs Longhorn CRDs
       maturity: stable
       hidden: true
+    unit_templates:
+    - base-deps
     enabled_conditions:
     - '{{ tuple . "longhorn" | include "unit-enabled" }}'
     depends_on:
@@ -2817,13 +3242,15 @@ units:
       chart:
         spec:
           chart: longhorn-crd
-          version: 102.3.1+up1.5.3
+          version: 103.2.1+up1.5.3
 
   longhorn:
     info:
       description: installs Longhorn CSI
       maturity: stable
     enabled: false
+    unit_templates:
+    - base-deps
     depends_on:
       namespace-defs: true
       longhorn-crd: true
@@ -2836,17 +3263,20 @@ units:
       chart:
         spec:
           chart: longhorn
-          version: 102.3.1+up1.5.3
+          version: 103.2.1+up1.5.3
       values:
         defaultSettings:
           createDefaultDiskLabeledNodes: true
           allowVolumeCreationWithDegradedAvailability: false
           storageMinimalAvailablePercentage: 10
+          replicaReplenishmentWaitInterval: 3600
 
   cluster-creator-login:
     info:
       description: configures Rancher account used for workload cluster imports
       internal: true
+    unit_templates:
+    - base-deps
     enabled_conditions:
     - '{{ tuple . "rancher" | include "unit-enabled" }}'
     depends_on:
@@ -2882,6 +3312,8 @@ units:
       internal: true
     enabled_conditions:
     - '{{ tuple . "rancher" | include "unit-enabled" }}'
+    unit_templates:
+    - base-deps
     depends_on:
       cluster-creator-login: true
       kyverno: true
@@ -2901,6 +3333,8 @@ units:
     repo: sylva-core
     enabled_conditions:
       - '{{ or (tuple . "capm3" | include "unit-enabled") (.Values.cluster.capi_providers.infra_provider | eq "capo") }}'
+    unit_templates:
+    - base-deps
     kustomization_spec:
       path: ./kustomize-units/kube-job
       force: true
@@ -2967,6 +3401,8 @@ units:
       maturity: stable
     enabled_conditions:
       - '{{ tuple . .Values._internal.metal3_unit | include "unit-enabled" }}'
+    unit_templates:
+    - base-deps
     depends_on:
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
       '{{ .Values._internal.default_storage_class_unit }}': true
@@ -3035,6 +3471,8 @@ units:
     enabled: false
     repo: capo-contrail-bgpaas
     helm_chart_artifact_name: capo-contrail-bgpaas
+    unit_templates:
+    - base-deps
     depends_on:
       heat-operator: '{{ tuple . "heat-operator" | include "unit-enabled" }}'
       capo: '{{ tuple . "capo" | include "unit-enabled" }}'
@@ -3055,6 +3493,8 @@ units:
     info:
       description: configures Vsphere Cloud controller manager
       internal: true
+    unit_templates:
+    - base-deps
     enabled_conditions:
       - '{{ eq .Values.cluster.capi_providers.infra_provider "capv" }}'
     repo: cloud-provider-vsphere
@@ -3094,6 +3534,8 @@ units:
     info:
       description: installs Vsphere CSI
       maturity: stable
+    unit_templates:
+    - base-deps
     enabled_conditions:
       - '{{ eq .Values.cluster.capi_providers.infra_provider "capv" }}'
     repo: sylva-core
@@ -3129,6 +3571,8 @@ units:
         creates the sandbox namespace used
         to perform privileged operations like debugging a node
       internal: true
+    unit_templates:
+    - base-deps
     enabled: false
     repo: sylva-core
     kustomization_spec:
@@ -3145,6 +3589,8 @@ units:
       internal: true
     enabled_conditions:
     - '{{ tuple . "gitea" | include "unit-enabled" }}'
+    unit_templates:
+    - base-deps
     depends_on:
       namespace-defs: true
       vault-config-operator: true
@@ -3160,6 +3606,8 @@ units:
       internal: true
     enabled_conditions:
     - '{{ tuple . "gitea" | include "unit-enabled" }}'
+    unit_templates:
+    - base-deps
     depends_on:
       namespace-defs: true
       eso-secret-stores: true
@@ -3209,6 +3657,8 @@ units:
       internal: true
     enabled_conditions:
     - '{{ tuple . "gitea" | include "unit-enabled" }}'
+    unit_templates:
+    - base-deps
     depends_on:
       keycloak: true
       keycloak-legacy-operator: true
@@ -3232,6 +3682,8 @@ units:
       maturity: stable
     enabled_conditions:
     - '{{ tuple . "gitea" | include "unit-enabled" }}'
+    unit_templates:
+    - base-deps
     depends_on:
       namespace-defs: true
       gitea-eso: true
@@ -3260,6 +3712,8 @@ units:
       maturity: stable
     enabled_conditions:
     - '{{ tuple . "gitea" | include "unit-enabled" }}'
+    unit_templates:
+    - base-deps
     depends_on:
       namespace-defs: true
       gitea-eso: true
@@ -3270,7 +3724,7 @@ units:
       chart:
         spec:
           chart: postgresql-ha
-          version: 11.9.4
+          version: 11.9.8
       targetNamespace: gitea
       releaseName: gitea-postgres
       values:
@@ -3290,6 +3744,8 @@ units:
       description: installs Gitea
       maturity: stable
     enabled: false
+    unit_templates:
+    - base-deps
     depends_on:
       cert-manager: true
       gitea-eso: true
@@ -3442,6 +3898,8 @@ units:
       description: sets up MinIO certificate for minio-operator
       details: it generate certificate
       internal: true
+    unit_templates:
+    - base-deps
     enabled_conditions:
       - '{{ tuple . "minio-operator" | include "unit-enabled" }}'
     depends_on:
@@ -3469,11 +3927,14 @@ units:
       description: install MinIO operator
       details: MinIO operator is used to manage multiple S3 tenants
       maturity: beta
+    unit_templates:
+    - base-deps
     enabled_conditions:
       - '{{ tuple . "minio-monitoring-tenant" | include "unit-enabled" }}'
     depends_on:
       namespace-defs: true
       minio-operator-init: true
+      ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
     annotations:
       sylvactl/readyMessage: "minio operator console can be reached at https://{{ .Values.external_hostnames.minio_operator_console }} ({{ .Values.external_hostnames.minio_operator_console }} must resolve to {{ .Values.display_external_ip }})"
     repo: minio-operator
@@ -3533,12 +3994,36 @@ units:
               - hosts:
                   - '{{ .Values.external_hostnames.minio_operator_console }}'
                 secretName: minio-operator-console-tls
+      _postRenderers:
+        - kustomize:
+            patches:
+              - target:
+                  kind: ClusterRole
+                  name: minio-operator-role
+                patch: |
+                  - op: add
+                    path: /rules/-
+                    value:
+                      apiGroups:
+                        - job.min.io
+                      resources:
+                        - '*'
+                      verbs:
+                        - '*'
+    kustomization_spec:
+      healthChecks:
+        - apiVersion: v1
+          kind: Secret
+          name: sts-tls
+          namespace: minio-operator
 
   minio-monitoring-tenant-init:
     info:
       description: sets up MinIO certificate for minio-monitoring-tenant
       details: it generate certificate
       internal: true
+    unit_templates:
+    - base-deps
     enabled_conditions:
       - '{{ tuple . "minio-monitoring-tenant" | include "unit-enabled" }}'
     depends_on:
@@ -3566,12 +4051,16 @@ units:
       description: creates a MinIO tenant for the monitoring stack
       details: Loki and Thanos will use this MinIO S3 storage
       maturity: beta
-    enabled_conditions: []
-    #  - '{{ or (tuple . "thanos" | include "unit-enabled") ( tuple . "loki" | include "unit-enabled") }}'
+    unit_templates:
+    - base-deps
+    enabled_conditions:
+      - '{{ or (tuple . "thanos" | include "unit-enabled") ( tuple . "loki" | include "unit-enabled") }}'
     depends_on:
       namespace-defs: true
       minio-operator: true
       minio-monitoring-tenant-init: true
+      ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
+      single-replica-storageclass: '{{ tuple . "single-replica-storageclass" | include "unit-enabled" }}'
     annotations:
       sylvactl/readyMessage: MinIO monitoring tenant console can be reached at https://{{ .Values.external_hostnames.minio_monitoring_tenant_console }} ({{ .Values.external_hostnames.minio_monitoring_tenant_console }} must resolve to {{ .Values.display_external_ip }})
     repo: minio-operator
@@ -3587,20 +4076,17 @@ units:
         secrets:
           # we need existingSecret to be empty in order to have unit create Secret/minio-root-account out of .accessKey & .secretKey
           existingSecret: {}
-          name: minio-root-account  # other environment variables than the root account ones are supported but not used for now, https://min.io/docs/minio/linux/reference/minio-server/settings.html#minio-environment-variables
+          name: minio-root-account
         tenant:
           name: monitoring
           configuration:
             name: minio-root-account
-          exposeServices:
-            minio: true      # expose the MinIO S3 API
-            console: true    # expose the Console
           pools:
             - servers: 2
               name: pool-0
               volumesPerserver: 4
               size: 3Gi
-              storageClassName: '{{ .Values._internal.default_storage_class }}'
+              storageClassName: '{{ tuple . (tuple . "single-replica-storageclass" | include "unit-enabled") "single-replica-storageclass" .Values._internal.default_storage_class | include "interpret-ternary" }}'
               containerSecurityContext:
                 runAsUser: 1000
                 runAsGroup: 1000
@@ -3681,8 +4167,7 @@ units:
     helm_secret_values:
       secrets:
         accessKey: minio
-        secretKey: '{{ .Values._internal.minio_monitoring_tenant_bucket_password }}'
-      # Secret for console login; should be later replaced by an ExternalSecret read by ESO from Vault
+        secretKey: '{{ .Values._internal.minio_monitoring_root_password }}'
       extraResources:
         - |
           apiVersion: v1
@@ -3692,7 +4177,7 @@ units:
             name: storage-user
           stringData:
             CONSOLE_ACCESS_KEY: console
-            CONSOLE_SECRET_KEY: '{{ .Values._internal.minio_monitoring_tenant_console_password }}'
+            CONSOLE_SECRET_KEY: '{{ .Values._internal.minio_monitoring_user_password }}'
     kustomization_spec:
       # these healthChecks are added so that MinIO backend setup
       # for tenant.minio.min.io/monitoring created by this unit is ready
@@ -3701,12 +4186,666 @@ units:
           kind: StatefulSet
           name: monitoring-pool-0  # concatenation from .tenant chart values .name & .pools[*].name
           namespace: minio-monitoring-tenant
+        - apiVersion: v1
+          kind: Secret
+          name: monitoring-tls
+          namespace: minio-monitoring-tenant
 
-# Not yet ready, need to get os_images into the script
+  thanos-init:
+    info:
+      description: sets up thanos certificate
+      details: it generates a multiple CN certificate for all Thanos components
+      internal: true
+    enabled_conditions:
+      - '{{ tuple . "thanos" | include "unit-enabled" }}'
+    unit_templates:
+    - base-deps
+    depends_on:
+      namespace-defs: true
+      sylva-ca: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/thanos-init
+      wait: true
+      postBuild:
+        substitute:
+          SERVICE: thanos
+          THANOS_DNS: '{{ .Values.external_hostnames.thanos }}'
+          THANOS_RECEIVE_DNS: '{{ .Values.external_hostnames.thanos_receive }}'
+          THANOS_STOREGATEWAY_DNS: '{{ .Values.external_hostnames.thanos_storegateway }}'
+          THANOS_QUERY_DNS: '{{ .Values.external_hostnames.thanos_query }}'
+
+  thanos:
+    info:
+      description: installs Thanos
+      maturity: beta
+    enabled_conditions:
+      - '{{ tuple . "monitoring" | include "unit-enabled" }}'
+    unit_templates:
+    - base-deps
+    depends_on:
+      namespace-defs: true
+      thanos-init: true
+      minio-monitoring-tenant: true
+      '{{ .Values._internal.default_storage_class_unit }}': true
+      ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
+    annotations:
+      sylvactl/readyMessage: Thanos UI can be reached at https://{{ .Values.external_hostnames.thanos }} ({{ .Values.external_hostnames.thanos }} must resolve to {{ .Values.display_external_ip }})
+    helm_repo_url: https://charts.bitnami.com/bitnami
+    helmrelease_spec:
+      targetNamespace: thanos
+      install:
+        createNamespace: false
+      chart:
+        spec:
+          chart: thanos
+          version: 12.16.1
+      values:
+        fullnameOverride: "thanos"
+        metrics:
+          enabled: true
+          serviceMonitor:
+            enabled: true
+        query:
+          enabled: true
+          logLevel: debug
+          dnsDiscovery:
+            enabled: true
+          extraFlags:
+            - --query.auto-downsampling
+            - --query.replica-label=prometheus_replica
+            - --query.replica-label=prometheus
+          ingress:
+            enabled: true
+            ingressClassName: "nginx"
+            hostname: '{{ .Values.external_hostnames.thanos_query }}'
+            extraTls:
+              - hosts:
+                  - 'thanos-query.{{ .Values.external_hostnames.thanos_query }}'
+                secretName: thanos-tls
+          containerSecurityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+        queryFrontend:
+          enabled: true
+          loglevel: debug
+          config: |-
+            type: IN-MEMORY
+            config:
+              max_size: 1GB
+              max_size_items: 0
+              validity: 0s
+          ingress:
+            enabled: true
+            ingressClassName: "nginx"
+            hostname: '{{ .Values.external_hostnames.thanos }}'
+            extraTls:
+              - hosts:
+                  - '{{ .Values.external_hostnames.thanos }}'
+                secretName: thanos-tls
+          containerSecurityContext:
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+        storegateway:
+          enabled: true
+          logLevel: debug
+          persistence:
+            enabled: false
+            storageClass: '{{ .Values._internal.default_storage_class }}'
+            size: 8Gi
+          containerSecurityContext:
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          podSecurityContext:
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          ingress:
+            enabled: true
+            hostname: '{{ .Values.external_hostnames.thanos_storegateway }}'
+            ingressClassName: "nginx"
+            extraTls:
+              - hosts:
+                  - '{{ .Values.external_hostnames.thanos_storegateway }}'
+                secretName: thanos-tls
+        compactor:
+          enabled: true
+          logLevel: debug
+          retentionResolutionRaw: 2d
+          retentionResolution5m: 30d
+          retentionResolution1h: 1y
+          containerSecurityContext:
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          podSecurityContext:
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+        bucketweb:
+          enabled: false
+        ruler:
+          enabled: false
+          logLevel: debug
+          dnsDiscovery:
+            enabled: true
+          containerSecurityContext:
+            runAsUser: 1001
+            runAsNonRoot: true
+            privileged: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          podSecurityContext:
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+        receive:
+          enabled: true
+          mode: standalone
+          logLevel: debug
+          persistence:
+            enabled: false
+          containerSecurityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          ingress:
+            enabled: true
+            ingressClassName: "nginx"
+            hostname: '{{ .Values.external_hostnames.thanos_receive }}'
+            extraTls:
+              - hosts:
+                  - '{{ .Values.external_hostnames.thanos_receive }}'
+                secretName: thanos-tls
+    helm_secret_values:
+      auth:
+        basicAuthUsers:
+          thanos-user: '{{ .Values._internal.thanos_password }}'
+      objstoreConfig: |-
+        type: "S3"
+        config:
+          bucket: "thanos"
+          endpoint: minio.minio-monitoring-tenant.svc.cluster.local
+          access_key: "minio"
+          secret_key: '{{ .Values._internal.minio_monitoring_root_password }}'
+          insecure: false
+          http_config:
+            tls_config:
+              insecure_skip_verify: true
+            insecure_skip_verify: true
+
+  logging-crd:
+    info:
+      description: install rancher-logging CRD
+      maturity: beta
+      hidden: true
+    enabled_conditions:
+      - '{{ tuple . "logging" | include "unit-enabled" }}'
+    unit_templates:
+    - base-deps
+    depends_on:
+      namespace-defs: true
+    helm_repo_url: https://charts.rancher.io/
+    helmrelease_spec:
+      releaseName: logging-crd
+      targetNamespace: cattle-logging-system
+      chart:
+        spec:
+          chart: rancher-logging-crd
+          version: 103.0.0+up3.17.10
+      install:
+        createNamespace: false
+
+  logging:
+    enabled: false
+    info:
+      description: installs Rancher Fluentbit/Fluentd logging stack, for log collecting and shipping
+      maturity: beta
+    unit_templates:
+    - base-deps
+    depends_on:
+      logging-crd: true
+    helm_repo_url: https://charts.rancher.io/
+    helmrelease_spec:
+      releaseName: logging
+      targetNamespace: cattle-logging-system
+      chart:
+        spec:
+          chart: rancher-logging
+          version: 103.0.0+up3.17.10
+      install:
+        createNamespace: false
+      values:
+        additionalLoggingSources:
+          rke2:
+            enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | include "as-bool" }}'
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
+          seccompProfile:
+            type: RuntimeDefault
+
+  logging-config:
+    info:
+      description: Configures rancher-logging to ship logs to Loki
+      internal: true
+    enabled_conditions:
+    - '{{ tuple . "logging" | include "unit-enabled" }}'
+    unit_templates:
+    - base-deps
+    depends_on:
+      logging: true
+      #loki: this dependency is handled in a different way, in management.values.yaml and workload-cluster.values.yaml
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/logging
+      postBuild:
+        substitute:
+          # we must use external name in order to work also for workload clusters
+          LOKI_URL: '{{ .Values.logging.loki_url }}'
+          CLUSTER_NAME: '{{ .Values.cluster.name }}'
+          LOKI_USERNAME: "loki-user"
+          LOKI_PASSWORD: '{{ .Values._internal.loki_password }}'
+      wait: true
+
+  loki-init:
+    info:
+      description: sets up Loki certificate
+      details: it generate certificate
+      internal: true
+    enabled_conditions:
+      - '{{ tuple . "loki" | include "unit-enabled" }}'
+    unit_templates:
+    - base-deps
+    depends_on:
+      namespace-defs: true
+      sylva-ca: true
+    repo: sylva-core
+    kustomization_substitute_secrets:
+      KEY: '{{ .Values.external_certificates.loki.key | default "" | b64enc }}'
+    kustomization_spec:
+      path: ./kustomize-units/loki-init
+      wait: true
+      postBuild:
+        substitute:
+          SERVICE: loki
+          SERVICE_DNS: '{{ .Values.external_hostnames.loki }}'
+          CERTIFICATE_NAMESPACE: loki
+          CERT: '{{ .Values.external_certificates.loki.cert | default "" | b64enc }}'
+          CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
+      _components:
+        - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.loki "cert") }}'
+        - "../tls-components/sylva-ca"
+
+  loki:
+    enabled: false
+    info:
+      description: installs Loki log storage
+      details: installs Loki log storage in simple scalable mode
+      maturity: beta
+    unit_templates:
+    - base-deps
+    depends_on:
+      namespace-defs: true
+      loki-init: true
+      minio-monitoring-tenant: true
+    enabled_conditions:
+      - '{{ tuple . "logging" | include "unit-enabled" }}'
+    annotations:
+      sylvactl/readyMessage: "Loki can be reached at https://{{ .Values.external_hostnames.loki }} ({{ .Values.external_hostnames.loki }} must resolve to {{ .Values.display_external_ip }})"
+    repo: loki
+    helmrelease_spec:
+      targetNamespace: loki
+      chart:
+        spec:
+          chart: production/helm/loki
+          version: v2.9.2
+      install:
+        createNamespace: false
+      values:
+        global:
+          dnsService: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "rke2-coredns-rke2-coredns" "kube-dns" }}'
+        sidecar:
+          rules:
+            enabled: false
+        loki:
+          auth_enabled: true
+          containerSecurityContext:
+            seccompProfile:
+              type: RuntimeDefault
+          analytics:
+            reporting_enabled: false
+          server:
+            http_listen_port: 3100
+            grpc_listen_port: 9095
+            http_server_idle_timeout: 600s
+            http_server_read_timeout: 600s
+            http_server_write_timeout: 600s
+            grpc_server_max_recv_msg_size: 52428800
+            grpc_server_max_send_msg_size: 52428800
+          # -- Limits config
+          limits_config:
+            enforce_metric_name: false
+            reject_old_samples: false
+            reject_old_samples_max_age: 168h
+            max_cache_freshness_per_query: 10m
+            split_queries_by_interval: 15m
+            query_timeout: 10m
+            ingestion_rate_strategy: local
+            ingestion_rate_mb: 15
+            ingestion_burst_size_mb: 20
+            unordered_writes: true
+          # todo
+          ingester:
+            chunk_block_size: 262144
+            chunk_idle_period: 3m
+            chunk_retain_period: 1m
+            max_transfer_retries: 0
+            wal:
+              enabled: true
+              dir: /data/wal
+          commonConfig:
+            replication_factor: 1
+          storage:
+            bucketNames:
+              chunks: "loki-chunks"
+              ruler: "loki-ruler"
+              admin: "loki-admin"
+            type: s3
+            s3:
+              s3: null
+              endpoint: "minio.minio-monitoring-tenant.svc.cluster.local:443"
+              region: null
+              # accessKeyId and secretAccessKey are passed via helm_secret_values, see below
+              signatureVersion: null
+              s3ForcePathStyle: true
+              insecure: false
+              http_config:
+                idle_conn_timeout: 90s
+                insecure_skip_verify: true
+        test:
+          enabled: false
+        monitoring:
+          dashboards:
+            enabled: true
+            labels:
+              grafana_dashboard: "1"
+          rules:
+            enabled: true
+            alerting: true
+            additionalGroups:
+              - name: additional-loki-rules
+                rules:
+                  - record: job:loki_request_duration_seconds_bucket:sum_rate
+                    expr: sum(rate(loki_request_duration_seconds_bucket[1m])) by (le, job)
+                  - record: job_route:loki_request_duration_seconds_bucket:sum_rate
+                    expr: sum(rate(loki_request_duration_seconds_bucket[1m])) by (le, job, route)
+                  - record: node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate
+                    expr: sum(rate(container_cpu_usage_seconds_total[1m])) by (node, namespace, pod, container)
+            podsecurityContext:
+              seccompProfile:
+                type: RuntimeDefault
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
+          serviceMonitor:
+            enabled: true
+            metricsInstance:
+              enabled: true
+          # todo: need GrafanaAgent
+          selfMonitoring:
+            enabled: false
+            tenant:
+              name: "self-monitoring"
+            grafanaAgent:
+              installOperator: false
+          lokiCanary:
+            enabled: false
+            labelname: pod
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
+        write:
+          replicas: '{{ int .Values._internal.node_count | gt 2 | ternary 1 2 }}'
+          persistence:
+            size: 3Gi
+          autoscaling:
+            enable: true
+            minReplicas: 2
+            maxReplicas: 6
+            targetCPUUtilizationPercentage: 40
+          podSecurityContext:
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          extraVolumes:
+            - name: data
+              emptyDir: {}
+            - name: loki
+              emptyDir: {}
+          extraVolumeMounts:
+            - name: data
+              mountPath: /data
+            - name: loki
+              mountPath: /loki
+        tablemanager:
+          enabled: false
+        read:
+          replicas: '{{ int .Values._internal.node_count | gt 2 | ternary 1 2 }}'
+          persistence:
+            size: 3Gi
+          podSecurityContext:
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+        backend:
+          replicas: '{{ int .Values._internal.node_count | gt 2 | ternary 1 2 }}'
+          persistence:
+            size: 3Gi
+          podSecurityContext:
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+        memberlist:
+          service:
+            publishNotReadyAddresses: true
+          join_members:
+            - loki-memberlist
+        gateway:
+          enabled: true
+          verboseLogging: true
+          replicas: '{{ int .Values._internal.node_count | gt 2 | ternary 1 2 }}'
+          ingress:
+            enabled: true
+            ingressClassName: "nginx"
+            annotations:
+              nginx.ingress.kubernetes.io/proxy-body-size: "0"
+            hosts:
+              - host: '{{ .Values.external_hostnames.loki }}'
+                paths:
+                  - path: /
+                    pathType: Prefix
+            tls:
+              - secretName: loki-tls
+                hosts:
+                  - '{{ .Values.external_hostnames.loki }}'
+          basicAuth:
+            enabled: true
+            # (username and password set under helm_secret_values)
+          containerSecurityContext:
+            seccompProfile:
+              type: RuntimeDefault
+    helm_secret_values:
+      gateway:
+        basicAuth:
+          username: loki-user
+          password: '{{ .Values._internal.loki_password }}'
+      loki:
+        storage:
+          s3:
+            accessKeyId: "console"
+            secretAccessKey: '{{ .Values._internal.minio_monitoring_user_password }}'
+
+  single-replica-storageclass:
+    info:
+      description: Create a longhorn storage class with a single replica
+      internal: true
+    repo: sylva-core
+    unit_templates:
+    - base-deps
+    depends_on:
+      longhorn: true
+    enabled_conditions:
+      - '{{ tuple . "minio-monitoring-tenant" | include "unit-enabled" }}'
+      - '{{ tuple . "longhorn" | include "unit-enabled" }}'
+    kustomization_spec:
+      path: ./kustomize-units/longhorn-storageclass
+      wait: true
+      postBuild:
+        substitute:
+          CLASS_NAME: single-replica-storageclass
+      _patches:
+        - target:
+            kind: StorageClass
+          patch: |
+            kind: _unused_
+            metadata:
+              name: _unused_
+            parameters:
+              numberOfReplicas: "1"
+              dataLocality: "best-effort"
+
+  sylva-prometheus-rules:
+    info:
+      description: installs prometheus rules using external helm chart & rules git repo
+      maturity: beta
+    unit_templates:
+    - base-deps
+    depends_on:
+      monitoring: true
+    enabled_conditions:
+      - '{{ tuple . "monitoring" | include "unit-enabled" }}'
+    repo: sylva-prometheus-rules
+    helmrelease_spec:
+      releaseName: sylva-prometheus-rules
+      targetNamespace: sylva-prometheus-rules
+      chart:
+        spec:
+          chart: prometheus-rules
+      install:
+        createNamespace: true
+      values:
+        createRules:
+          allclusters: true
+          '{{ .Values.cluster.name }}': true
+
   get-openstack-images:
     info:
       description: Automatically push openstack images to cinder
       internal: true
+    unit_templates:
+    - base-deps
     depends_on:
       os-images-info: true
     enabled_conditions:
@@ -3736,7 +4875,7 @@ units:
           noProxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
           TMP_STORAGE_SPACE: '{{ .Values.os_images_default_download_storage_space }}'
           # compute total timeout based on per-image timeout and number of images
-          ACTIVE_DEADLINE_SECONDS: '{{ mul .Values.get_openstack_images_per_image_timeout_minutes 60 (include "generate-os-images" . | fromYaml | dig "osImages" dict | len) }}'
+          ACTIVE_DEADLINE_SECONDS: '{{ mul .Values.get_openstack_images_per_image_timeout_minutes 60 (include "generate-os-images" . | fromYaml | dig "os_images" dict | len) }}'
       _patches:
         - target:
             kind: Job
@@ -3773,7 +4912,7 @@ cluster:
   images:
     kube_vip:
       repository: ghcr.io/kube-vip/kube-vip
-      tag: "v0.6.4"
+      tag: "v0.7.1"
 
   # Nodes number for control-plane
   control_plane_replicas: 3
@@ -3838,7 +4977,7 @@ cluster:
     - 100.73.0.0/16
   cluster_pods_cidrs:
     - 100.72.0.0/16
-  calico_wireguard_enabled: '{{ .Values.calico_wireguard_enabled | include "preserve-type" }}'
+  calico_wireguard_enabled: '{{ .Values.security.calico_wireguard_enabled | include "preserve-type" }}'
 
   use_custom_rancher_dns_resolver: false
   ntp: '{{ .Values.ntp | include "preserve-type" }}'
@@ -3876,6 +5015,25 @@ cluster:
 
   enable_longhorn: '{{ or (tuple . "longhorn" | include "unit-enabled") (tuple . .Values.units.longhorn.enabled | include "interpret-for-test") | include "as-bool" }}'
 
+  default_node_class: generic
+  node_classes: {}
+    # generic:
+    #   kernel_cmdline:
+    #     hugepages:
+    #       enabled: false
+    #       2M_percentage_total: ""
+    #       1G_percentage_total: ""
+    #       default_size: 2M
+    #     extra_options: ""
+    #   kubelet_extra_args: {}
+    #   kubelet_config_file_options: {}
+    #   nodeTaints: {}
+    #   nodeLabels: {}
+    #   nodeAnnotations: {}
+    #   additional_commands:
+    #     pre_bootstrap_commands: []
+    #     post_bootstrap_commands: []
+
 capd_docker_host: unix:///var/run/docker.sock
 
 openstack:
@@ -3890,7 +5048,7 @@ openstack:
 oci_registry_insecure: false
 
 metal3:
-  provider: sylva # sylva or suse
+  provider: suse # sylva or suse
   # external_bootstrap_ip:
   # bootstrap_ip:
 
@@ -3940,6 +5098,11 @@ external_hostnames:
   minio_operator_console: 'minio-operator-console.{{ .Values.cluster_domain }}'
   minio_monitoring_tenant: 'minio-monitoring-tenant.{{ .Values.cluster_domain }}'
   minio_monitoring_tenant_console: 'minio-monitoring-tenant-console.{{ .Values.cluster_domain }}'
+  thanos: 'thanos.{{ .Values.cluster_domain }}'
+  thanos_storegateway: 'thanos-storegateway.{{ .Values.cluster_domain }}'
+  thanos_receive: 'thanos-receive.{{ .Values.cluster_domain }}'
+  thanos_query: 'thanos-query.{{ .Values.cluster_domain }}'
+  loki: 'loki.{{ .Values.cluster_domain }}'
 
 external_certificates:
   rancher: {}
@@ -3952,6 +5115,8 @@ external_certificates:
   gitea: {}
   minio_operator: {}
   minio_monitoring_tenant: {}
+  thanos: {}
+  loki: {}
 
 audit_log:
   level: 0
@@ -3961,7 +5126,7 @@ keycloak: {}
 # cis benchmark is only for rke2 so far, e.g. rke2-cis-1.23-profile-hardened
 cis_benchmark_scan_profile: '{{ eq .Values.cluster.capi_providers.bootstrap_provider "cabpr" | ternary "rke2-cis-1.23-profile-hardened" "no-scan-profile-defined-for-kubeadm-cluster" }}'
 
-# osImages images that should be served and from where they should be downloaded
+# os_images images that should be served and from where they should be downloaded
 # if empty default value are used
 os_images: {}
 
@@ -3978,6 +5143,15 @@ sriov:
 #       vendor: ""
 #       pfNames: []
 #       rootDevices: []
+
+# add ceph cluster details
+ceph:
+  cephfs_csi:
+    clusterID: ""
+    fs_name: ""
+    adminID: ""
+    adminKey: ""
+    monitors_ips: []
 
 # add your proxy settings if required
 proxies:
@@ -4064,24 +5238,29 @@ sylva_base_oci_registry:
   }}'
 sylva_core_oci_registry: '{{ .Values.sylva_base_oci_registry }}/sylva-core'
 
+os_images_oci_registries:
+  sylva:
+    url: '{{ .Values.sylva_base_oci_registry }}/sylva-elements/diskimage-builder'
+    tag: '{{ .Values.sylva_diskimagebuilder_version }}'
+
 k8s_version_short: "1.27"
 
 # Renovate Bot needs additional information to detect sylva diskimage-builder version
 # renovate: depName=sylva-projects/sylva-elements/diskimage-builder
-sylva_diskimagebuilder_version: 0.1.8
+sylva_diskimagebuilder_version: 0.1.9
 
 sylva_diskimagebuilder_images:
-  ubuntu-jammy-plain-rke2-1-27-6:
+  ubuntu-jammy-plain-rke2-1-27-10:
     default_enabled: true
   ubuntu-jammy-plain-rke2-1-26-9: {}
   ubuntu-jammy-plain-rke2-1-25-14: {}
-  ubuntu-jammy-hardened-rke2-1-27-6: {}
+  ubuntu-jammy-hardened-rke2-1-27-10: {}
   ubuntu-jammy-hardened-rke2-1-26-9: {}
   ubuntu-jammy-hardened-rke2-1-25-14: {}
-  opensuse-15-5-plain-rke2-1-27-6: {}
+  opensuse-15-5-plain-rke2-1-27-10: {}
   opensuse-15-5-plain-rke2-1-26-9: {}
   opensuse-15-5-plain-rke2-1-25-14: {}
-  opensuse-15-5-hardened-rke2-1-27-6: {}
+  opensuse-15-5-hardened-rke2-1-27-10: {}
   opensuse-15-5-hardened-rke2-1-26-9: {}
   opensuse-15-5-hardened-rke2-1-25-14: {}
 
@@ -4101,8 +5280,15 @@ os_images_default_download_storage_space: 8Gi
 
 get_openstack_images_per_image_timeout_minutes: 20
 
-# disable wireguard by default
-calico_wireguard_enabled: false
+security:
+  calico_wireguard_enabled: false  # disable wireguard by default
+  neuvector_scanning_enabled: false # disable Neuvector scanning capability by default
+
+monitoring:
+  thanos_receive_url: https://{{ .Values.external_hostnames.thanos_receive }}:443/api/v1/receive  # for workload clusters, this is overridden via shared_workload_clusters_values to point to the mgmt cluster Thanos
+
+logging:
+  loki_url: "https://{{ .Values.external_hostnames.loki }}"  # for workload clusters, this is overridden via shared_workload_clusters_values to point to the mgmt cluster Loki
 
 _internal:
   ha_cluster:
@@ -4126,17 +5312,25 @@ _internal:
   # default replica number computed from the ha_cluster.mode value
   default_replicas: '{{ tuple . .Values._internal.ha_cluster.mode | include "interpret-as-string" | eq "ha" | ternary 3 1 | include "preserve-type" }}'
 
-  # minio bucket write password
-  minio_monitoring_tenant_bucket_password: '{{ derivePassword 1 "maximum" .Values._internal.default_password "minio-monitoring-tenant" "bucket" | sha1sum }}'
+  # minio bucket root password
+  minio_monitoring_root_password: '{{ lookup "v1" "Secret" .Release.Namespace "sylva-units-values" | dig "data" "values" "" | b64dec | fromYaml | dig "_internal" "minio_monitoring_root_password" (randAlphaNum 64) }}'
 
   # minio console password
-  minio_monitoring_tenant_console_password: '{{ derivePassword 1 "maximum" .Values._internal.default_password "minio-monitoring-tenant" "console"  | sha1sum }}'
+  minio_monitoring_user_password: '{{ lookup "v1" "Secret" .Release.Namespace "sylva-units-values" | dig "data" "values" "" | b64dec | fromYaml | dig "_internal" "minio_monitoring_user_password" (randAlphaNum 64) }}'
+
+  # thanos password
+  thanos_password: '{{ lookup "v1" "Secret" .Release.Namespace "sylva-units-values" | dig "data" "values" "" | b64dec | fromYaml | dig "_internal" "thanos_password" (randAlphaNum 64) }}'
+
+  # loki password
+  loki_password: '{{ lookup "v1" "Secret" .Release.Namespace "sylva-units-values" | dig "data" "values" "" | b64dec | fromYaml | dig "_internal" "loki_password" (randAlphaNum 64) }}'
 
   # unless the default password has already been generated by a previous run, we generate a new one randomly
   default_password: '{{ lookup "v1" "Secret" .Release.Namespace "sylva-units-values" | dig "data" "values" "" | b64dec | fromYaml | dig "_internal" "default_password" (randAlphaNum 64) }}'
 
   default_storage_class: >-
-    {{- if (tuple . "cinder-csi" | include "unit-enabled") -}}
+    {{ if (tuple . "ceph-csi-cephfs" | include "unit-enabled") -}}
+      cephfs-csi
+    {{- else if (tuple . "cinder-csi" | include "unit-enabled") -}}
       {{ .Values.openstack.storageClass.name }}
     {{- else if (tuple . "vsphere-csi-driver" | include "unit-enabled") -}}
       vsphere-csi
@@ -4153,6 +5347,7 @@ _internal:
     longhorn: longhorn
     vsphere-csi: vsphere-csi-driver
     '{{ .Values.openstack.storageClass.name }}': cinder-csi
+    cephfs-csi: ceph-csi-cephfs
 
   default_storage_class_unit: >-
     {{- $default_storage_class := tuple . .Values._internal.default_storage_class | include "interpret-as-string" -}}
@@ -4160,6 +5355,7 @@ _internal:
 
   storage_class_RWX_support:
     - longhorn
+    - cephfs-csi
   default_storage_class_RWX_support: >-
     {{- $default_storage_class := tuple . .Values._internal.default_storage_class | include "interpret-as-string" -}}
     {{- has $default_storage_class .Values._internal.storage_class_RWX_support -}}
@@ -4189,12 +5385,10 @@ _internal:
 
   metal3_unit: '{{ .Values.metal3.provider | eq "suse" | ternary "metal3-suse" "metal3" }}'
 
-  k8s_post_1_26_6: '{{ semverCompare ">1.26.6" (tuple . .Values.cluster.k8s_version | include "interpret-as-string") | include "preserve-type" }}'
-
   k8s_version_map:
     1.25: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.25.14+rke2r1" "v1.25.14" }}'
     1.26: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.26.9+rke2r1" "v1.26.9" }}'
-    1.27: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.27.6+rke2r1" "v1.27.6" }}'
+    1.27: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.27.10+rke2r1" "v1.27.10" }}'
 
   # total number of nodes in this cluster
   node_count:
@@ -4226,6 +5420,8 @@ shared_workload_clusters_values:
   registry_mirrors: '{{ .Values.registry_mirrors | include "set-if-defined" }}'
 
   sylva_base_oci_registry: '{{ .Values.sylva_base_oci_registry }}'
+  oci_registry_extra_ca_certs: '{{ .Values.oci_registry_extra_ca_certs | include "set-if-defined" }}'
+  oci_registry_insecure: '{{ .Values.oci_registry_insecure | include "set-if-defined" }}'
 
   cluster:
     air_gapped: '{{ .Values.air_gapped | include "set-if-defined" }}'
@@ -4239,6 +5435,9 @@ shared_workload_clusters_values:
       image_name: '{{ .Values.cluster.capo.image_name | include "set-if-defined" }}'
       image_key: '{{ .Values.cluster.capo.image_key | include "set-if-defined" }}'
       network_id: '{{ .Values.cluster.capo.network_id | include "set-if-defined" }}'
+    default_node_class: '{{ .Values.cluster.default_node_class }}'
+    node_classes: '{{ .Values.cluster.node_classes | include "preserve-type" }}'
+
   units:
     cluster-import:
       enabled: '{{ tuple . "rancher" | include "unit-enabled" }}'
@@ -4247,10 +5446,17 @@ shared_workload_clusters_values:
   sylva_diskimagebuilder_version: '{{ .Values.sylva_diskimagebuilder_version }}'
   sylva_diskimagebuilder_images: '{{ .Values.sylva_diskimagebuilder_images | include "preserve-type" }}'
   os_images: '{{ .Values.os_images | include "preserve-type" }}'
+  monitoring:
+    thanos_receive_url: '{{ .Values.monitoring.thanos_receive_url }}'
+  logging:
+    loki_url: '{{ .Values.logging.loki_url }}'
 
 shared_workload_clusters_secret_values:
   cluster:
     capo: '{{ tuple (dict "clouds_yaml" (.Values.cluster | dig "capo" "clouds_yaml" dict)) (.Values.cluster | dig "capo" "clouds_yaml" dict) | include "set-only-if" }}'
+  _internal:
+    thanos_password: '{{ .Values._internal.thanos_password }}'
+    loki_password: '{{ .Values._internal.loki_password }}'
 
 snmp:
   devices: []
