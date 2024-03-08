@@ -208,6 +208,7 @@ unit_templates:
     kustomization_spec:
       path: ./kustomize-units/dummy/base
       wait: false
+      force: true
       postBuild:
         substitute:
           UNIT_NAME: '{{ .Values._unit_name_ }}'
