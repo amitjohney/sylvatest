@@ -1794,7 +1794,7 @@ units:
               patch: |
                 - op: replace
                   path: /spec/replicas
-                  value: '{{ .Values._internal.ha_cluster.mode | eq "ha" | ternary 2 1 | include "preserve-type" }}'
+                  value: {{ .Values._internal.ha_cluster.mode | eq "ha" | ternary 2 1 }}
 
   capi-providers-pivot-ready:
     info:
