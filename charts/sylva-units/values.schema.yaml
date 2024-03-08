@@ -142,6 +142,10 @@ $defs:
       - not:
           required: [ key ]
 
+  pub-key:
+    type: string
+    pattern: ^-----BEGIN PUBLIC KEY-----
+
 # lines with '# -------------------------------' correspond to keys in values.yaml
 # (the rest being the JSONSchema language itself)
 
@@ -807,6 +811,9 @@ properties:
         $ref: "#/$defs/cert-and-key"
       loki:  # -------------------------------
         $ref: "#/$defs/cert-and-key"
+
+  oci_registry_cosign_pub_key:  # -------------------------------
+    $ref: "#/$defs/pub-key"
 
   keycloak: # -------------------------------
     type: object
