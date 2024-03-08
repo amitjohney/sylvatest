@@ -20,6 +20,8 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/args/2
         value: --feature-gates=MachinePool=false,ClusterTopology=false
+      - op: remove
+        path: /spec/template/spec/containers/0/args/1
 # Add labels to enable clusterctl move to retrieve resources correponding to capd CRDs
 labels:
   - pairs:
