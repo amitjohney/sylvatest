@@ -172,6 +172,11 @@ spec: {{ $helm_repo_spec | toYaml | nindent 2 }}
       {{- $helmrelease_spec := dict "releaseName" $unit_name -}}
       {{- $helmrelease_spec := mergeOverwrite $helmrelease_spec (deepCopy $envAll.Values.unit_helmrelease_spec_default) (deepCopy $unit_def.helmrelease_spec) (deepCopy $helmrelease_spec_overrides) (dict "postRenderers" $post_renderers) -}}
 
+      {{/* take unit_def.suspend into account */}}
+      {{- if $unit_def | dig "suspend" false -}}
+        {{- $_ := set $helmrelease_spec "suspend" true -}}
+      {{- end -}}
+
       {{/* if the merge above resulted in setting kubeConfig or targetNamespace to null, remove them from the dict */}}
       {{- if hasKey $helmrelease_spec "kubeConfig" -}}
         {{- if $helmrelease_spec.kubeConfig | eq nil -}}
@@ -265,6 +270,17 @@ stringData:
 
     {{/* finalize the definition of the Kustomization spec by merging everything we have */}}
     {{- $kustomization_spec = mergeOverwrite $kustomization_spec (deepCopy $envAll.Values.unit_kustomization_spec_default) ($unit_def.kustomization_spec | default dict) $dependsOn $kustomization_spec_overrides (dict "patches" $patches) (dict "components" $components) -}}
+
+    {{/* take unit_def.suspend into account
+
+    we do this here only if the unit is not Helm-based
+    for Helm-based units, we do the suspension in helmrelease_spec (above in this file)
+    because we need the Kustomization to _not_ be suspended or else it won't reconcile
+    and would not be able to set the spec.suspend of the HelmRelease
+    */}}
+    {{- if (and (not (hasKey $unit_def "helmrelease_spec")) ($unit_def | dig "suspend" false)) -}}
+      {{- $_ := set $kustomization_spec "suspend" true -}}
+    {{- end -}}
 
     {{/* if the merge above resulted in setting kubeConfig or targetNamespace to null, remove them from the dict */}}
     {{- if hasKey $kustomization_spec "kubeConfig" -}}

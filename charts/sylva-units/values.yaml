@@ -236,6 +236,8 @@ units:
   #   ref_override: optional, if defined, this dict will be used for the GitRepository or OCIRepository overriding spec.ref (not used if some helm_repo_* is set)
   #   depends_on: dict defining the dependencies of this unit, keys are unit names, values are booleans
   #               (these dependencies are injected in the unit Kustomization via 'spec.dependsOn')
+  #   suspend: true/false # (optional) if set to true the spec.suspend will be set on the main Flux resource for the unit
+  #                       #  ie. the Kustomization for a pure-kustomize unit, or the HelmRelease for a Helm-based unit
   #   helmrelease_spec:  # optionnal, contains a partial spec for a FluxCD HelmRelease, all the
   #                      # key things are generated from unit_helmrelease_spec_default
   #                      # and from other fields in the unit definition

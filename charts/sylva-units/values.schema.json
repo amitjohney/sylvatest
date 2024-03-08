@@ -6741,6 +6741,9 @@
             "ref_override": {
               "type": "string"
             },
+            "suspend": {
+              "type": "boolean"
+            },
             "kustomization_spec": {
               "type": "object",
               "properties": {
