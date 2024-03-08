@@ -192,16 +192,19 @@ units:
         secretRef:
           name: '{{ .Values.cluster.name }}-kubeconfig'
 
-  namespace-defs:
+  management-namespace-defs:
+    info:
+      description: creates sylva-system namespace in management cluster
+      internal: true
     depends_on:
       cluster-reachable: true
+    unit_templates:
+    - base-deps
     repo: sylva-core
     kustomization_spec:
-      kubeConfig:
-        secretRef:
-          name: '{{ .Values.cluster.name }}-kubeconfig'
-    labels:
-      suspend-on-pivot: "yes"  # this unit must be suspended before pivot
+      path: ./kustomize-units/namespace-defs
+      wait: true
+      prune: false
 
   management-cluster-flux:
     info:
@@ -536,6 +539,7 @@ units_override_enabled:
   - cluster
   - cluster-reachable
   - namespace-defs
+  - management-namespace-defs
   - kyverno
   - kyverno-policies
   - calico-crd
