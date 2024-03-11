@@ -5715,8 +5715,11 @@ _internal:
   bootstrap_node_ip: '{{ lookup "v1" "ConfigMap" "sylva-system" "cluster-public-endpoint" | dig "data" "address" "not_found" | default "not_found" }}'
 
   k8s_version_map:
+    # renovate: k8s minor updates
     1.26: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.26.9+rke2r1" "v1.26.9" }}'
+    # renovate: k8s minor updates
     1.27: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.27.10+rke2r1" "v1.27.10" }}'
+    # renovate: k8s minor updates
     1.28: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.28.8+rke2r1" "v1.28.8" }}'
 
   # total number of nodes in this cluster
