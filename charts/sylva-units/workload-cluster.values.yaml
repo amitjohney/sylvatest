@@ -116,6 +116,9 @@ units:
     enabled: true
     unit_templates:
     - kustomization-deployed-on-mgmt-cluster
+    depends_on:
+      # this unit needs the storage class to be ready **in the mgmt cluster**
+      sylva-system/{{ .Values._internal.sylva_system_default_storage_class_unit }}: true
 
   cluster-bmh:
     enabled: true

@@ -587,6 +587,7 @@ units:
       namespace-defs: true
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
       harbor-init: '{{ tuple . "harbor-init" | include "unit-enabled" }}'
+      '{{ .Values._internal.default_storage_class_unit }}': true
     annotations:
       sylvactl/readyMessage: "Harbor UI can be reached at https://{{ .Values.external_hostnames.harbor }} ({{ .Values.external_hostnames.harbor }} must resolve to {{ .Values.display_external_ip }})"
     helm_repo_url: https://helm.goharbor.io
@@ -3691,6 +3692,7 @@ units:
       gitea-eso: true
       gitea-keycloak-resources: true
       gitea-secrets: true
+      '{{ .Values._internal.default_storage_class_unit }}': true
     helm_repo_url: https://charts.bitnami.com/bitnami
     helmrelease_spec:
       chart:
@@ -3721,6 +3723,7 @@ units:
       gitea-eso: true
       gitea-keycloak-resources: true
       gitea-secrets: true
+      '{{ .Values._internal.default_storage_class_unit }}': true
     helm_repo_url: https://charts.bitnami.com/bitnami
     helmrelease_spec:
       chart:
@@ -3756,6 +3759,7 @@ units:
       gitea-redis: true
       gitea-postgresql-ha: true
       namespace-defs: true
+      '{{ .Values._internal.default_storage_class_unit }}': true
     annotations:
       sylvactl/readyMessage: "Gitea can be reached at https://{{ .Values.external_hostnames.gitea }} ({{ .Values.external_hostnames.gitea }} must resolve to {{ .Values.display_external_ip }})"
     helm_repo_url: https://dl.gitea.com/charts/
@@ -4063,6 +4067,7 @@ units:
       minio-monitoring-tenant-init: true
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
       single-replica-storageclass: '{{ tuple . "single-replica-storageclass" | include "unit-enabled" }}'
+      '{{ .Values._internal.default_storage_class_unit }}': '{{ not (tuple . "single-replica-storageclass" | include "unit-enabled") }}'
     annotations:
       sylvactl/readyMessage: MinIO monitoring tenant console can be reached at https://{{ .Values.external_hostnames.minio_monitoring_tenant_console }} ({{ .Values.external_hostnames.minio_monitoring_tenant_console }} must resolve to {{ .Values.display_external_ip }})
     repo: minio-operator
@@ -5452,6 +5457,9 @@ shared_workload_clusters_values:
     thanos_receive_url: '{{ .Values.monitoring.thanos_receive_url }}'
   logging:
     loki_url: '{{ .Values.logging.loki_url }}'
+
+  _internal:
+    sylva_system_default_storage_class_unit: '{{ .Values._internal.default_storage_class_unit }}'
 
 shared_workload_clusters_secret_values:
   cluster:

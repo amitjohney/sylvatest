@@ -133,9 +133,12 @@ units:
     info:
       description: installs localpath CSI in bootstrap cluster
       internal: true
-    enabled_conditions:
-      - '{{ tuple . .Values._internal.metal3_unit | include "unit-enabled" }}'
     unit_templates: []
+    enabled_conditions:
+      - '{{
+         or (tuple . .Values._internal.metal3_unit | include "unit-enabled")
+            (.Values.cluster.capi_providers.infra_provider | eq "capo")
+         }}'
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/bootstrap-local-path
