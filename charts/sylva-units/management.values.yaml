@@ -41,6 +41,10 @@ units:
   cabpr:  # RKE2
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
 
+  get-openstack-images:
+    depends_on:
+      '{{ .Values._internal.default_storage_class_unit }}': true
+
   cluster-bmh:
     depends_on:
       '{{ .Values._internal.metal3_unit }}': '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
