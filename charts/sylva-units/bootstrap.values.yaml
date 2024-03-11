@@ -205,6 +205,9 @@ units:
       path: ./kustomize-units/namespace-defs
       wait: true
       prune: false
+      kubeConfig:
+        secretRef:
+          name: '{{ .Values.cluster.name }}-kubeconfig'
 
   management-cluster-flux:
     info:
