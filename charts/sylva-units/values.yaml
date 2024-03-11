@@ -1506,7 +1506,7 @@ units:
           httpsProxy: '{{ .Values.proxies.https_proxy }}'
           noProxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
     kustomization_substitute_secrets:
-      CREDENTIALS: '{{ printf "%s" (trimPrefix "map[credentials:" (toString .Values.cluster.capa)) | replace "]$" "" | b64enc }}'
+      CREDENTIALS: '{{ trimSuffix (printf "%s" (trimPrefix "map[credentials:" (toString .Values.cluster.capa))) "]" | b64enc }}'
       #CREDENTIALS: '{{ trimSuffix (printf "%s" (trimPrefix "map[credentials:" (toString .Values.cluster.capa))) "]" | b64enc }}'
 
 
