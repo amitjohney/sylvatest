@@ -3,7 +3,6 @@
   "extends": [
     "gitlab>sylva-projects/sylva-elements/renovate-config:default"
   ],
-  "prConcurrentLimit": 0,
   "labels": [
     "run-e2e-tests",
     "renovate"
