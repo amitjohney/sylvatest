@@ -819,8 +819,10 @@ properties:
   os_images: # -------------------------------
     type: object
     additionalProperties: false
+    propertyNames: # image name should be k8s object compatible and not be more than 52 chars long
+      pattern: "^[a-z0-9][a-z0-9-]{1,50}[a-z0-9]$"
     patternProperties:
-      "^[a-z0-9][a-z0-9-]{1,50}[a-z0-9]$":        # image name should be k8s object compatible and not be more than 52 chars long
+      ".*":
         type: object
         properties:
           uri:
