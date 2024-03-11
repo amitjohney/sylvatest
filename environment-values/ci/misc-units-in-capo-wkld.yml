@@ -2,3 +2,7 @@
 units:
   harbor:
     enabled: true
+  monitoring-crd:
+    enabled: true
+  monitoring:
+    enabled: true

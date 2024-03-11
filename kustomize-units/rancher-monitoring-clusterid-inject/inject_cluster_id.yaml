@@ -7,10 +7,9 @@ kind: ClusterPolicy
 metadata:
   name: set-monitoring-chart-cluster-id
 spec:
-  mutateExistingOnPolicyUpdate: true
-  schemaValidation: false
+  generateExisting: true
   rules:
-  - name: inject-cluster-id
+  - name: create-cluster-cm
     match:
       any:
       - resources:
@@ -19,15 +18,21 @@ spec:
           selector:
             matchLabels:
               capi-rancher-import.cluster-name: "*"
-    mutate:
-      targets:
-      - apiVersion: helm.toolkit.fluxcd.io/v2beta2
-        kind: HelmRelease
-        name: monitoring
-        namespace: "{{ request.object.metadata.namespace }}"
-      patchStrategicMerge:
-        spec:
-          values:
+    preconditions:
+      all:
+      - key: "{{ request.object.status.clusterName }}"
+        operator: NotEquals
+        value: ""
+    generate:
+      kind: ConfigMap
+      apiVersion: v1
+      name: "{{request.object.metadata.name}}-monitoring-info"
+      namespace: "{{ request.object.metadata.namespace }}"
+      data:
+        data:
+          values.yaml: |
             global:
               cattle:
-                clusterId: "{{ request.object.status.clusterName }}"
+                clusterId: {{ request.object.status.clusterName }}
+                clusterName: {{ request.object.metadata.name }}
+

@@ -216,6 +216,11 @@ units:
     depends_on:
       sylva-system/rancher-monitoring-clusterid-inject: '{{ tuple . "sylva-system/rancher-monitoring-clusterid-inject" | include "unit-enabled" }}'
       cluster-import: '{{ tuple . "cluster-import" | include "unit-enabled" }}'
+    helmrelease_spec:
+      valuesFrom:
+        - kind: ConfigMap
+          name: '{{ .Values.cluster.name }}-capi-monitoring-info'
+          optional: false
 
   kubevirt:
     # can be enabled at runtime if desired
