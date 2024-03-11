@@ -36,6 +36,12 @@ status_icon = {
     "canceled": "🛇",
     "skipped": "⏩",
     "running": "🔄",
+    "created": "𑀣",
+    "waiting_for_resource": "🔒",
+    "preparing": "👀",
+    "pending": "⏸️",
+    "manual": "⚙️",
+    "scheduled": "🕒",
 }
 
 def print_report(text):
@@ -93,7 +99,7 @@ def pipeline_summary(pipeline):
         if len(stage_jobs[stage]) == 1:
             stage_md = f" [{stage_text}]({stage_jobs[stage][0].web_url})"
         else:
-            stage_md = f" {stage_text}"
+            stage_md = f" [{stage_text}]({pipeline.web_url})"
 
         summary += stage_md
 
