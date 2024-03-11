@@ -88,10 +88,11 @@
 | **loki-init** | sets up Loki certificate<br/><br/>it generate certificate |  | True | Kustomize | N/A |
 | **management-cluster-configs** | copies configuration object in management cluster during bootstrap |  | True | Kustomize | N/A |
 | **management-cluster-flux** | installs flux in management cluster during bootstrap |  | True | Kustomize | N/A |
+| **management-namespace-defs** | creates sylva-system namespace in management cluster |  | True | Kustomize | N/A |
 | **management-sylva-units** | installs sylva-units in management cluster during bootstrap |  | True | Helm | N/A |
-| **metal3-init** | generates Metal3 random credentials |  | True | Kustomize | N/A |
+| **metal3-init** | generates Metal3 random credentials<br/><br/>(only for the sylva metal3 chart) |  | True | Kustomize | N/A |
 | **metal3-pdb** | add pdb to baremetal-operator pods |  | True | Kustomize | N/A |
-| **metal3-sync-secrets** | configures secrets for Metal3 components |  | True | Kustomize | N/A |
+| **metal3-sync-secrets** | configures secrets for Metal3 components<br/><br/>(only for the sylva metal3 chart) |  | True | Kustomize | N/A |
 | **minio-monitoring-tenant-init** | sets up MinIO certificate for minio-monitoring-tenant<br/><br/>it generate certificate |  | True | Kustomize | N/A |
 | **minio-operator-init** | sets up MinIO certificate for minio-operator<br/><br/>it generate certificate |  | True | Kustomize | N/A |
 | **multus-ready** | checks that Multus is ready<br/><br/>This unit only has dependencies, it does not create resources. It performs healthchecks outside of the multus unit, in order to properly target workload cluster when we deploy multus in it. |  | True | Kustomize | N/A |

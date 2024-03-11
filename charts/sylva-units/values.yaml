@@ -434,7 +434,7 @@ units:
       prune: false
       _components:
         - '{{ tuple "components/cinder-csi" (tuple . "cinder-csi" | include "unit-enabled") | include "set-only-if" }}'
-        - '{{ tuple "components/metal3" (tuple . "metal3" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/metal3" (tuple . .Values._internal.metal3_unit | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/longhorn" (tuple . "longhorn" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/keycloak" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/harbor" (tuple . "harbor" | include "unit-enabled") | include "set-only-if" }}'
@@ -1667,7 +1667,7 @@ units:
     unit_templates:
     - base-deps
     enabled_conditions:
-    - '{{ or (tuple . "metal3" | include "unit-enabled") (tuple . "metal3-suse" | include "unit-enabled") }}'
+    - '{{ tuple . .Values._internal.metal3_unit | include "unit-enabled" }}'
     - '{{ .Values._internal.ha_cluster.mode | eq "ha" }}'
     depends_on:
       namespace-defs: true
@@ -1680,6 +1680,7 @@ units:
   metal3-init:
     info:
       description: generates Metal3 random credentials
+      details: (only for the sylva metal3 chart)
       internal: true
     unit_templates:
     - base-deps
@@ -1696,6 +1697,7 @@ units:
   metal3-sync-secrets:
     info:
       description: configures secrets for Metal3 components
+      details: (only for the sylva metal3 chart)
       internal: true
     unit_templates:
     - base-deps
