@@ -58,6 +58,10 @@ units:
   kubevirt-test-vms:
     enabled: false
 
+  prometheus-flux:
+    depends_on:
+      monitoring-crd: true
+
   monitoring:
     helmrelease_spec:
       values:
