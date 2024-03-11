@@ -7736,6 +7736,34 @@
         },
         "neuvector_scanning_enabled": {
           "type": "boolean"
+        },
+        "sbom_operator": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "targets": {
+              "type": "string"
+            },
+            "dtrack_base_url": {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^(https?://.*|)$"
+            },
+            "dtrack_api_key": {
+              "type": "string"
+            },
+            "oci_registry": {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^oci://.*$"
+            },
+            "oci_user": {
+              "type": "string"
+            },
+            "oci_token": {
+              "type": "string"
+            }
+          }
         }
       }
     },
