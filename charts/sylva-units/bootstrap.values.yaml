@@ -253,7 +253,7 @@ units:
       internal: true
     depends_on:
       management-cluster-flux: true
-      namespace-defs: true
+      management-namespace-defs: true
     unit_templates: []
     repo: sylva-core
     kustomization_spec:
@@ -304,6 +304,7 @@ units:
       internal: true
     depends_on:
       management-cluster-configs: true
+      management-namespace-defs: true
     unit_templates:
     - sylva-units
     labels:
