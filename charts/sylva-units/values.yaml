@@ -2983,7 +2983,7 @@ units:
     helm_secret_values:
       extraInitContainers:
         - name: config-file-create
-          image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/sylva-toolbox:v0.3.11
+          image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/sylva-toolbox:v0.3.12
           command: ["/bin/sh"]
           args:
             - -c
