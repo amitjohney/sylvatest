@@ -1,0 +1,43 @@
+# yamllint configuration directives
+# https://yamllint.readthedocs.io/en/stable/configuration.html#extending-the-default-configuration
+---
+extends: default
+
+# Rules documentation: http://yamllint.readthedocs.io/en/latest/rules.html
+rules:
+
+  braces:
+    # Keeping 0 min-spaces to not error on empty collection definitions
+    min-spaces-inside: 0
+    # Allowing one space inside braces to improve code readability
+    max-spaces-inside: 1
+
+  brackets:
+    # Keeping 0 min-spaces to not error on empty collection definitions
+    min-spaces-inside: 0
+    # Allowing one space inside braces to improve code readability
+    max-spaces-inside: 1
+
+  commas: disable
+
+  comments-indentation: disable
+
+  comments:
+    require-starting-space: false
+    min-spaces-from-content: 1
+
+  document-start: disable
+
+  empty-lines: disable
+
+  line-length: disable
+
+  truthy: disable
+
+  indentation: disable  # don't be too picky about indentation
+
+  new-line-at-end-of-file: disable
+
+  key-duplicates: {}  # prevent duplicated keys
+
+  trailing-spaces: disable  # allow trailing spaces
