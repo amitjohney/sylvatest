@@ -280,6 +280,7 @@ capo-rke2-oci-suse-os:
 capm3-HA-ubuntu-rke2-virt-deploy:
   extends: .capm3-virt-equinix-deploy
   variables:
+    METAL3_PROVIDER: sylva
     MGMT_ADDITIONAL_VALUES: environment-values/rke2-capm3-virt/ha.yaml
     WC_ADDITIONAL_VALUES: environment-values/workload-clusters/rke2-capm3-virt/ha.yaml
     RUNNER_PLAN: m3.large.x86
