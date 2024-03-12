@@ -2859,6 +2859,11 @@ units:
                   enabled: true
         prometheus:
           prometheusSpec:
+            resources:
+              limits:
+                memory: 6Gi
+              request:
+                memory: 3Gi
             externalLabels:
               cluster: '{{ .Values.cluster.name }}'  # required for multi-cluster dashboards
             remoteWriteDashboards: true
