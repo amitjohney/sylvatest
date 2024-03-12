@@ -85,6 +85,27 @@ cluster:
 
 **Note:**<br/>
 
-for CAPO `image_name` is still available, but not recomended to be used. Either `image_key` or `image_name` can be specified under the same key, not both.<br/>
+- for CAPO, `image_name` is still available, but not recomended to be used. Either `image_key` or `image_name` can be specified under the same `capo` key, not both.
+- for CAPM3 the same applies for `machine_image_*`. Either `image_key` or `machine_image_url` can be specified under the same `capm3` key, not both.
 
-for CAPM3 the same applies for `machine_image_*`. Either `image_key` or `machine_image_url` can be specified under the same key, not both.
+## Using custom images distributed over HTTP instead of OCI (legacy)
+
+Custom images provided using a simple webserver can be used by specifying them under `os_images` key:
+
+```yaml
+os_images:
+  my-custom-image:
+    uri: http://192.168.130.1:8080/custom-image.raw
+    filename: custom-image.raw
+    md5: 4f9f1ef17cf8ecd580a682f8bb4577fa
+    sha256: 916afbbf52a177fec996ee20d980bcac7c62e475f389f172dd0b5d56b9da5c77
+    image-format: raw
+```
+
+**Note:** <br/>
+
+- `uri` and `filename` are always required fields;
+
+- `md5` is required for CAPO;
+
+- `sha256` and `image-format` are required for CAPM3.
