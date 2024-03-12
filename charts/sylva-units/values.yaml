@@ -4525,6 +4525,7 @@ units:
       install:
         createNamespace: false
       values:
+        systemdLogPath: "/var/log/journal/"
         additionalLoggingSources:
           rke2:
             enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | include "as-bool" }}'
