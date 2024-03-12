@@ -1,7 +1,6 @@
 ---
 include:
-  - local: .gitlab/ci/child-pipeline-default.yml
-  - local: .gitlab/ci/templates-deployments.yml
+  - local: .gitlab/ci/deployment-pipeline.yml
 
 # Default tag will be used for all deployments/updates jobs
 default:
@@ -59,54 +58,6 @@ create-runner:
         [[ $PIPELINE_STATUS == "success" ]] && break
         sleep 5
       done
-
-
-#----------------------------------------------------------
-
-deploy-management-cluster:
-  extends:
-    - .deploy-management
-  timeout: 2h
-
-#----------------------------------------------------------
-
-deploy-workload-cluster:
-  extends:
-    - .deploy-workload
-  timeout: 2h
-
-#----------------------------------------------------------
-
-update-management-cluster:
-  extends:
-    - .update-management
-  timeout: 2h
-
-#----------------------------------------------------------
-
-update-workload-cluster:
-  extends:
-    - .update-workload
-  timeout: 1h
-
-#----------------------------------------------------------
-
-test-sso+workload-kubeconfig:
-  extends:
-    - .test-sso+workload-kubeconfig
-    - .test-tags
-
-test-no-sso+workload-kubeconfig:
-  extends:
-    - .test-no-sso+workload-kubeconfig
-    - .test-tags
-
-test-login:
-  extends:
-    - .test-login
-    - .test-tags
-
-#----------------------------------------------------------
 
 clean-runner:
   stage: delete

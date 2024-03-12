@@ -1,79 +1,26 @@
 ---
 include:
-  - local: .gitlab/ci/child-pipeline-default.yml
-  - local: .gitlab/ci/templates-deployments.yml
+  - local: .gitlab/ci/deployment-pipeline.yml
 
-# ----------------------------------------------------------
-# Specific rules to run only
-# deploy-management-cluster & cleanup
-# used for eg by capo-fip-deploy, capo-misc-units-deploy
-
-.rules:skip-if-only-deploy-mgmt:
-  rules:
-    - if: $ONLY_DEPLOY_MGMT
-      when: never
-    - when: on_success
-
-.rules:run-if-only-deploy-mgmt:
-  rules:
-    - if: $ONLY_DEPLOY_MGMT
-
+# Default tag will be used for all deployments/updates jobs
 default:
+  tags:
+    - $CAPO_PLATFORM_TAG
+
+# test-tags will be used to run the tests jobs in a docker executor based runner
+.test-tags:
   tags:
     - $CAPO_PLATFORM_TAG
 
 # ----------------------------------------------------------
 
-deploy-management-cluster:
-  extends:
-    - .deploy-management
-
-# ----------------------------------------------------------
-
-deploy-workload-cluster:
-  extends:
-    - .deploy-workload
-    - .rules:skip-if-only-deploy-mgmt
-
-# ----------------------------------------------------------
-
-update-management-cluster:
-  extends:
-    - .update-management
-    - .rules:skip-if-only-deploy-mgmt
-
-# ----------------------------------------------------------
-
-update-workload-cluster:
-  extends:
-    - .update-workload
-    - .rules:skip-if-only-deploy-mgmt
-
-# ----------------------------------------------------------
-
-test-sso+workload-kubeconfig:
-  extends:
-    - .test-sso+workload-kubeconfig
-    - .rules:skip-if-only-deploy-mgmt
-
-test-no-sso+workload-kubeconfig:
-  extends:
-    - .test-no-sso+workload-kubeconfig
-    - .rules:skip-if-only-deploy-mgmt
-
-# ----------------------------------------------------------
-test-sso:
-  extends:
-    - .test-sso
-    - .rules:run-if-only-deploy-mgmt
-
-test-login:
-  extends:
-    - .test-login
-
-# ----------------------------------------------------------
-
 cleanup-openstack:
-  extends:
-    - .cleanup-capo
+  stage: delete
+  image:
+    name: $OPENSTACK_CLIENT_IMAGE
+  script:
+    - !reference [.common-deployment, os_cloud]
+    - ./tools/openstack-cleanup.sh capo_cloud "${CAPO_TAG}"
+  tags:
+    - $CAPO_PLATFORM_TAG
   when: always
