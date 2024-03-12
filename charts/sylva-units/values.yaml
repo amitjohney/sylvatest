@@ -434,7 +434,7 @@ units:
       prune: false
       _components:
         - '{{ tuple "components/cinder-csi" (tuple . "cinder-csi" | include "unit-enabled") | include "set-only-if" }}'
-        - '{{ tuple "components/metal3" (tuple . "metal3" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/metal3" (tuple . .Values._internal.metal3_unit | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/longhorn" (tuple . "longhorn" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/keycloak" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/harbor" (tuple . "harbor" | include "unit-enabled") | include "set-only-if" }}'
@@ -1614,6 +1614,7 @@ units:
                 capabilities:
                   drop:
                     - ALL
+
   metal3-suse:
     info:
       description: installs SUSE-maintained Metal3 operator
@@ -1622,6 +1623,7 @@ units:
     unit_templates:
     - base-deps
     depends_on:
+      namespace-defs: true
       cert-manager: true
       '{{ .Values._internal.default_storage_class_unit }}': true
       metal3-pdb: '{{ tuple . "metal3-pdb" | include "unit-enabled" }}'
@@ -1633,8 +1635,6 @@ units:
           chart: metal3
           version: 0.6.2
       timeout: 30m
-      install:
-        createNamespace: true
       targetNamespace: metal3-system
       values:
         global:
@@ -1667,9 +1667,10 @@ units:
     unit_templates:
     - base-deps
     enabled_conditions:
-    - '{{ or (tuple . "metal3" | include "unit-enabled") (tuple . "metal3-suse" | include "unit-enabled") }}'
+    - '{{ tuple . .Values._internal.metal3_unit | include "unit-enabled" }}'
     - '{{ .Values._internal.ha_cluster.mode | eq "ha" }}'
     depends_on:
+      namespace-defs: true
       kyverno: true
     repo: sylva-core
     kustomization_spec:
@@ -1679,6 +1680,7 @@ units:
   metal3-init:
     info:
       description: generates Metal3 random credentials
+      details: (only for the sylva metal3 chart)
       internal: true
     unit_templates:
     - base-deps
@@ -1695,6 +1697,7 @@ units:
   metal3-sync-secrets:
     info:
       description: configures secrets for Metal3 components
+      details: (only for the sylva metal3 chart)
       internal: true
     unit_templates:
     - base-deps
@@ -1717,6 +1720,7 @@ units:
     - base-deps
     depends_on:
       cert-manager: true
+      namespace-defs: true
       '{{ .Values._internal.default_storage_class_unit }}': true
       metal3-sync-secrets: true # make sure that the password secrets are ready to be consumed
       metal3-pdb: '{{ tuple . "metal3-pdb" | include "unit-enabled" }}'
