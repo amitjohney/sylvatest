@@ -49,11 +49,15 @@ units:
     depends_on:
       '{{ .Values._internal.metal3_unit }}': '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
       libvirt-metal: '{{ tuple . "libvirt-metal" | include "unit-enabled" }}'
+    labels:
+      suspend-on-pivot: "yes"  # must be suspended before pivot
 
   cluster:
     depends_on:
       kyverno-policies: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
       libvirt-metal: '{{ tuple . "libvirt-metal" | include "unit-enabled" }}'
+    labels:
+      suspend-on-pivot: "yes"  # must be suspended before pivot
 
   kyverno:
     enabled_conditions:

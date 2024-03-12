@@ -1873,8 +1873,6 @@ units:
     - '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
     #depends_on: the dependency on metal3 is handled in management.values.yaml
     #            and workload-cluster.values.yaml
-    labels:
-      suspend-on-pivot: "yes"  # must be suspended before pivot
     kustomization_spec:
       prune: '{{ not (eq .Release.Namespace "sylva-system") | include "preserve-type" }}'
     helmrelease_spec:
@@ -1903,8 +1901,6 @@ units:
       capo-cluster-resources: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
       get-openstack-images: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
       cluster-bmh: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
-    labels:
-      suspend-on-pivot: "yes"  # must be suspended before pivot
     kustomization_spec:
       prune: '{{ not (eq .Release.Namespace "sylva-system") | include "preserve-type" }}'
       # we wait on all important resources built by sylva-capi-cluster,
