@@ -51,7 +51,13 @@ units:
 
   cluster:
     depends_on:
+      # these dependencies are set here rather than in values.yaml, because slightly different ones
+      # need to be declared for workload clusters in workload-cluster.values.yaml
+      capi: true
+      '{{ .Values.cluster.capi_providers.infra_provider }}': true
+      '{{ .Values.cluster.capi_providers.bootstrap_provider }}': true
       kyverno-policies: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+      os-image-server: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
 
   os-image-server:
     enabled: '{{ tuple . .Values._internal.metal3_unit | include "unit-enabled" }}'
