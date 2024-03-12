@@ -97,8 +97,6 @@ units:
       metal3-sync-secrets: false ## override default set in values.yaml
       multus: '{{ not (empty (tuple . .Values.units.metal3.helmrelease_spec.values.ironicExtraNetworks | include "interpret-as-string")) }}'
     helmrelease_spec:
-      install:
-        createNamespace: true
       values:
         ironicExtraNetworks: '{{ tuple . (tuple . "libvirt-metal" | include "unit-enabled") .Values._internal.libvirt_metal_networks "" | include "interpret-ternary" }}'
         # ironicIPADownloaderBaseURI:
