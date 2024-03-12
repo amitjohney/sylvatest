@@ -201,6 +201,7 @@ See usage in units.yaml and sources.yaml
 {{ end }}
 
 
+
 {{/*
 
 k8s-version-match
@@ -221,3 +222,28 @@ Result (in sylva-units final rendering, where boolean typing will have been pres
   {{- $match := index . 1 -}}
   {{- semverCompare $match (tuple $envAll $envAll.Values.cluster.k8s_version | include "interpret-as-string") | include "preserve-type" -}}
 {{ end }}
+
+{{/*
+
+internalPersistentRandomPasswd
+
+This named template produces a random password that does not change when the sylva-units Helm release
+is updated. This is ensured by storing the password in the "sylva-units-values" Secret and looking
+up in this Secret if the password was already generated, before generating a fresh random one.
+
+usage (in values):
+
+  _internal:
+     my_password: '{{ include "persistentRandomPasswd" "my_password" }}
+
+NOTE WELL:
+* this can be done only under '_internal'
+* the named template parameter MUST MATCH the key used under _internal
+
+*/}}
+{{- define "internalPersistentRandomPasswd" -}}
+{{- $envAll := index . 0 -}}
+{{- $key := index . 1 -}}
+{{- lookup "v1" "Secret" $envAll.Release.Namespace "sylva-units-values" | dig "data" "values" "" | b64dec | fromYaml | dig "_internal" $key (randAlphaNum 64) -}}
+{{- end -}}
+
