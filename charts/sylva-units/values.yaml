@@ -2475,7 +2475,7 @@ units:
       chart:
         spec:
           chart: k8s-gateway
-          version: 2.3.0
+          version: 2.4.0
       targetNamespace: k8s-gateway
       install:
         createNamespace: true
