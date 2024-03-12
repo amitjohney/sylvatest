@@ -38,6 +38,12 @@ if ! python3 -c 'import yaml' &>/dev/null; then
     exit 1
 fi
 
+if ! python3 -c 'import yamllint' &>/dev/null; then
+    echo "yamllint python package is required to run this script, install it on your system and start over."
+    exit 1
+fi
+
+
 function _kustomize {
   kustomize build --load-restrictor LoadRestrictionsNone $1
 }
@@ -115,7 +121,7 @@ function check_pivot_has_ran() {
 
 function validate_input_values {
   echo_b "\U0001F50E Validate input files"
-  find $ENV_PATH -name "*.yaml" -exec yq --header-preprocess=false {} + 1> /dev/null
+  yamllint -c ${BASE_DIR}/tools/shell-lib/yamllint-validate.conf.yaml $ENV_PATH/*.y*ml
 }
 
 function retrieve_kubeconfig {
