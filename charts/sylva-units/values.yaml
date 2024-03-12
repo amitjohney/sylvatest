@@ -2937,19 +2937,17 @@ units:
         serviceMonitor:
           enabled: true
           namespace: snmp-exporter
-          relabelings:
-            - sourceLabels: [__param_module]
-              targetLabel: module
-            - sourceLabels: [__param_target]
-              targetLabel: instance
           params: |
             {{- $result := list -}}
+            {{- $groups := .Values.snmp.groups -}}
             {{- range $device := .Values.snmp.devices }}
             {{- $service_monitor := dict "name" (lower $device.name) -}}
-            {{- $module := list -}}
-            {{- $module := append $module $device.group -}}
+            {{- $module := list $device.group -}}
             {{- $_ := set $service_monitor "module" $module -}}
             {{- $_ := set $service_monitor "target" $device.ip -}}
+            {{- $_ := set $service_monitor "relabelings" (list (dict "action" "replace" "replacement" (dig $device.group "hw_type" "" $groups) "targetLabel" "module")
+                                                               (dict "action" "replace" "replacement" (lower $device.name) "targetLabel" "target")) -}}
+
             {{- $result = append $result $service_monitor -}}
             {{- end }}
             {{- $result | include "preserve-type" -}}
