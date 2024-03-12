@@ -1,4 +1,10 @@
 ---
+include:
+  - local: .gitlab/ci/templates-deployments.yml
+  - local: .gitlab/ci/tests/**/*.yml
+    rules:
+      - if: $SKIP_TESTS != 'true'
+
 workflow:
   name: "Deployment pipeline - $WORKFLOW_NAME"
   rules:
@@ -17,7 +23,14 @@ default:
     - gitlab-org-docker
   image: $CI_IMAGE
   before_script:
-    - |
+    - !reference [.deployment-information]
+  cache:
+    - key: toolbox  # cache share by all jobs
+      paths:
+        - ./bin/
+
+.deployment-information:
+  - |
       echo -e "[\\e[1;94mEnvironment INFO\\e[0m]"
       echo "  CAPO_TAG = $CAPO_TAG"
       echo "  OCI_TAG = ${OCI_TAG:-'N/A'}"
@@ -30,7 +43,7 @@ default:
       echo "  MANAGEMENT_CLUSTER_NAME = $MANAGEMENT_CLUSTER_NAME"
       echo "  MGMT_ADDITIONAL_VALUES = ${MGMT_ADDITIONAL_VALUES:-'N/A'}"
       echo "  MGMT_INITIAL_ADDITIONAL_VALUES = ${MGMT_INITIAL_ADDITIONAL_VALUES:-'N/A'}"
-      echo "  MGMT_UPDATE_ADDITIONAL_VALUES = ${MGMT_UPDATE_ADDITIONAL_VALUES}"
+      echo "  MGMT_UPDATE_ADDITIONAL_VALUES = ${MGMT_UPDATE_ADDITIONAL_VALUES:-'N/A'}"
       echo "  MGMT_INITIAL_REVISION = ${MGMT_INITIAL_REVISION:-'N/A'}"
       echo "  MGMT_UPDATE_REVISION = ${MGMT_UPDATE_REVISION:-'N/A'}"
       echo "  MGMT_WATCH_TIMEOUT_MIN = ${MGMT_WATCH_TIMEOUT_MIN}"
@@ -39,11 +52,50 @@ default:
       echo "  WORKLOAD_CLUSTER_NAME = $WORKLOAD_CLUSTER_NAME"
       echo "  WC_ADDITIONAL_VALUES = ${WC_ADDITIONAL_VALUES:-'N/A'}"
       echo "  WC_INITIAL_ADDITIONAL_VALUES = ${WC_INITIAL_ADDITIONAL_VALUES:-'N/A'}"
-      echo "  WC_UPDATE_ADDITIONAL_VALUES = ${WC_UPDATE_ADDITIONAL_VALUES}"
+      echo "  WC_UPDATE_ADDITIONAL_VALUES = ${WC_UPDATE_ADDITIONAL_VALUES:-'N/A'}"
       echo "  WC_INITIAL_REVISION = ${MGMT_INITIAL_REVISION:-'N/A'}"
       echo "  WC_UPDATE_REVISION = ${MGMT_UPDATE_REVISION:-'N/A'}"
       echo "  APPLY_WC_WATCH_TIMEOUT_MIN = ${APPLY_WC_WATCH_TIMEOUT_MIN}"
-  cache:
-    - key: toolbox  # cache share by all jobs
-      paths:
-        - ./bin/
+
+
+# ----------------------------------------------------------
+.test-tags:
+  tags:
+    - gitlab-org-docker
+
+.rules:skip-if-only-deploy-mgmt:
+  rules:
+    - if: $ONLY_DEPLOY_MGMT
+      when: never
+    - when: on_success
+
+.rules:run-if-only-deploy-mgmt:
+  rules:
+    - if: $ONLY_DEPLOY_MGMT
+
+# ----------------------------------------------------------
+
+deploy-management-cluster:
+  extends:
+    - .deploy-management
+
+# ----------------------------------------------------------
+
+deploy-workload-cluster:
+  extends:
+    - .deploy-workload
+    - .rules:skip-if-only-deploy-mgmt
+
+# ----------------------------------------------------------
+
+update-management-cluster:
+  extends:
+    - .update-management
+    - .rules:skip-if-only-deploy-mgmt
+
+# ----------------------------------------------------------
+
+update-workload-cluster:
+  extends:
+    - .update-workload
+    - .rules:skip-if-only-deploy-mgmt
