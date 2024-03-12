@@ -115,4 +115,3 @@ bootstrap_os_images_override_enabled:
 
 items of this array are same as the ones used in **`sylva_diskimagebuilder_images`** and **`os_images`**.
 
-**note** if you add a image name not existing in neither **`sylva_diskimagebuilder_images`** and **`os_images`**, it will be ignored.
