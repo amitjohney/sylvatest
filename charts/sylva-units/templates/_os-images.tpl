@@ -51,6 +51,22 @@
 {{- $images | toJson }}
 {{- end }}
 
+{{- define "check_all_images_override_exist" }}
+{{- /* verify all images defined in bootstrap_os_images_override_enabled correspond 
+to an image name defined in either .Values.os_images or .Values.diskimagebuilder 
+if successful return nothing else fails with a human understandable error message */}}
+{{- $errors := list }}
+{{- $bootstrap_images := .Values._internal._bootstrap_os_images_override_enabled | toStrings -}}
+{{- $sylva_dib_images := .Values.sylva_diskimagebuilder_images }}
+{{- $os_images := .Values.os_images }}
+  {{- range $bootstrap_images }}
+    {{- if and (not (hasKey $os_images . )) (not (hasKey $sylva_dib_images .)) }}
+      {{- $error := printf "OS image %s is not defined in neither .Values.sylva_diskimagebuilder_images nor .Values.os_images" .}}
+      {{- $errors = append $errors $error }}
+    {{- end }}
+  {{- end }}
+{{ dict "errors" $errors | toJson }}
+{{- end }}
 
 {{- define "generate-os-images" -}}
 {{- $bootstrap_images := .Values._internal._bootstrap_os_images_override_enabled | toStrings -}}
@@ -66,4 +82,11 @@ os_images:
   {{- if and (not $images_from_os_images) (not $images_from_diskimagebuilder) }}
 {{ dict | toYaml }}
   {{- end }}
+{{- $errors := include "check_all_images_override_exist" . | fromJson }}
+  {{- if (gt (get $errors "errors" | len ) 0) }}
+    {{- range (get $errors "errors")}}
+# error: {{.}}
+    {{- end }}
 {{- end }}
+{{- end }}
+
