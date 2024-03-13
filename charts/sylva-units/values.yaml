@@ -2995,7 +2995,7 @@ units:
     enabled_conditions:
     - '{{ tuple . "monitoring" | include "unit-enabled" }}'
     - '{{ .Values.snmp.devices | empty | not }}'
-    - '{{ .Values.snmp.groups | empty | not }}'
+    - '{{ .Values.snmp.auth | empty | not }}'
     unit_templates:
     - base-deps
     depends_on:
@@ -5584,7 +5584,7 @@ shared_workload_clusters_secret_values:
 
 snmp:
   devices: []
-  groups: {}
+  auth: {}
 
 # Sample snmp configuration as it needs to be added in the secrets.yaml file
 # snmp:
