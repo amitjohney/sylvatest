@@ -2157,8 +2157,8 @@ units:
       wait: true
       images:
         - name: controller
-          newName: registry.gitlab.com/sylva-projects/sylva-elements/workload-cluster-operator
-          newTag: 0.0.0-pre3
+          newName: quay.io/remi_letrocquer/tmp
+          newTag: wco1
 
   capo-cluster-resources:
     info:
