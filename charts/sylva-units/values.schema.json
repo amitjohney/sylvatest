@@ -7851,24 +7851,24 @@
                 },
                 "priv_password": {
                   "type": "string"
-                }
-              },
-              "if": {
-                "properties": {
-                  "version": {
-                    "const": 3
-                  }
                 },
-                "then": {
+                "if": {
                   "properties": {
-                    "required": [
-                      "security_level",
-                      "username",
-                      "password",
-                      "auth_protocol",
-                      "priv_protocol",
-                      "priv_password"
-                    ]
+                    "version": {
+                      "const": 3
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "required": [
+                        "security_level",
+                        "username",
+                        "password",
+                        "auth_protocol",
+                        "priv_protocol",
+                        "priv_password"
+                      ]
+                    }
                   }
                 }
               }
