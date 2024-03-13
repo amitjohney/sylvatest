@@ -1870,7 +1870,7 @@ units:
     unit_templates:
     - base-deps
     enabled_conditions:
-    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+    - '{{ tuple . "capm3" | include "unit-enabled" }}'
     #depends_on: the dependency on metal3 is handled in management.values.yaml
     #            and workload-cluster.values.yaml
     labels:
