@@ -1,0 +1,53 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: baremetalhosts-specs
+spec:
+  mutateExistingOnPolicyUpdate: true
+  rules:
+  - name: baremetalhosts-specs-add
+    match:
+      any:
+      - resources:
+          kinds:
+          - BareMetalHost
+          operations:
+          - CREATE
+          - UPDATE
+          selector:
+            matchLabels:
+              snmp-enabled: true
+    mutate:
+      targets:
+        - kind: ConfigMap
+          apiVersion: v1
+          name: baremetalhosts-specs
+          namespace: snmp-exporter
+      patchStrategicMerge:
+        data:
+          "{{request.object.metadata.name}}": |
+            bmc_address: "{{request.object.spec.bmc.address}}"
+            snmp_address: "{{request.object.metadata.labels.snmp-data/endpoint}}"
+            auth: "{{request.object.metadata.labels.snmp-data/auth}}"
+            hw_type: "{{request.object.metadata.labels.snmp-data/hardware-type}}"
+            alias: "{{request.object.metadata.labels.snmp-data/machine-name}}"
+            sylva-cluster: "{{request.object.metadata.labels.snmp-data/cluster-name}}"
+  - name: baremetalhosts-specs-delete
+    match:
+      any:
+      - resources:
+          kinds:
+          - BareMetalHost
+          operations:
+          - DELETE
+    mutate:
+      targets:
+        - kind: ConfigMap
+          apiVersion: v1
+          name: baremetalhosts-specs
+          namespace: snmp-exporter
+      patchesJson6902: |-
+        - path: "/data"
+          op: remove
+          value: "{{request.object.metadata.name}}"
+

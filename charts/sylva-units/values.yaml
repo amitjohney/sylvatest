@@ -449,6 +449,7 @@ units:
         - '{{ tuple "components/minio-monitoring-tenant" (tuple . "minio-monitoring-tenant" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/thanos" (tuple . "thanos" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/loki" (tuple . "loki" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/snmp-exporter" (tuple . "snmp-exporter" | include "unit-enabled") | include "set-only-if" }}'
 
 # Postgresql deployment for keycloak
   postgres-init:
@@ -2986,7 +2987,7 @@ units:
           chart: prometheus-snmp-exporter
           version: 1.8.1
       install:
-        createNamespace: true
+        createNamespace: false
       values:
         fullnameOverride: 'snmp-exporter'
         replicas: 3
