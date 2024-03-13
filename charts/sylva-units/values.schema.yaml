@@ -1071,15 +1071,19 @@ properties:
           type: object
           additionalProperties: false
           properties:
-            name:
+            alias:
               type: string
               format: hostname
-            ip:
+            target:
               type: string
-              format: ipv4
-            group:
+            module:
               type: string
-      groups:
+              pattern: "^(dell_idrac|hp_cpq)$"
+            auth:
+              type: string
+            sylva_cluster:
+              type: string
+      auth:
         type: object
         additionalProperties: false
         patternProperties:
@@ -1091,32 +1095,23 @@ properties:
                 type: integer
                 minimum: 2
                 maximum: 3
-              auth:
-                type: object
-                additionalProperties: false
-                properties:
-                  community:
-                    type: string
-                  security_level:
-                    type: string
-                    pattern: "^(noAuthNoPriv|authNoPriv|authPriv)$"
-                  username:
-                    type: string
-                  password:
-                    type: string
-                  auth_protocol:
-                    type: string
-                    pattern: "^(MD5|SHA|SHA224|SHA256|SHA384|SHA512)$"
-                  priv_protocol:
-                    type: string
-                    pattern: "^(AES|AES192|AES256)$"
-                  priv_password:
-                    type: string
-                required:
-                  - community
-              hw_type:
+              community:
                 type: string
-                pattern: "^(dell|hp)$"
+              security_level:
+                type: string
+                pattern: "^(noAuthNoPriv|authNoPriv|authPriv)$"
+              username:
+                type: string
+              password:
+                type: string
+              auth_protocol:
+                type: string
+                pattern: "^(MD5|SHA|SHA224|SHA256|SHA384|SHA512)$"
+              priv_protocol:
+                type: string
+                pattern: "^(AES|AES192|AES256)$"
+              priv_password:
+                type: string
             # auth credentials properties are required only for SNMP v3
             if:
               properties:
@@ -1124,14 +1119,13 @@ properties:
                   const: 3
               then:
                 properties:
-                  auth:
-                    required:
-                      - security_level
-                      - username
-                      - password
-                      - auth_protocol
-                      - priv_protocol
-                      - priv_password
+                  required:
+                    - security_level
+                    - username
+                    - password
+                    - auth_protocol
+                    - priv_protocol
+                    - priv_password
 
 allOf:
 

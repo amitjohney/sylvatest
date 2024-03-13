@@ -2925,7 +2925,30 @@ units:
               request:
                 memory: 3Gi
             externalLabels:
-              cluster: '{{ .Values.cluster.name }}'  # required for multi-cluster dashboards
+              monitor_cluster: '{{ .Values.cluster.name }}'  # required for multi-cluster dashboards
+            configMaps:
+              - prometheus-sd-files
+            additionalScrapeConfigs:
+              - job_name: 'snmp-exporter'
+                scrape_interval: 90s
+                scrape_timeout: 60s
+                file_sd_configs:
+                  - files: ['/etc/prometheus/configmaps/prometheus-sd-files/snmp_targets.yaml']
+                metrics_path: /snmp
+                params:
+                    module: ['if_mib']
+                    auth: ['public_v2']
+                relabel_configs:
+                - source_labels: [__address__]
+                  target_label: '__param_target'
+                - source_labels: ['__param_target']
+                  target_label: 'instance'
+                - source_labels: ['module']
+                  target_label: '__param_module'
+                - source_labels: ['auth']
+                  target_label: '__param_auth'
+                - target_label: '__address__'
+                  replacement: 'snmp-exporter.snmp-exporter:9116'  # The SNMP exporter's real hostname:port.
             remoteWriteDashboards: true
             remoteWrite:
               - url: '{{ .Values.monitoring.thanos_receive_url }}'
@@ -2984,33 +3007,18 @@ units:
       chart:
         spec:
           chart: prometheus-snmp-exporter
-          version: 1.8.1
+          version: 5.1.0
       install:
         createNamespace: true
       values:
         fullnameOverride: 'snmp-exporter'
-        replicas: 3
+        replicas: 1
         extraArgs:
           - "--config.file=/config/snmp.yaml"
         podAnnotations:
           sylva/snmp-values: '{{ .Values.snmp | toJson | sha256sum | trunc 8 }}'
         serviceMonitor:
-          enabled: true
-          namespace: snmp-exporter
-          params: |
-            {{- $result := list -}}
-            {{- $groups := .Values.snmp.groups -}}
-            {{- range $device := .Values.snmp.devices }}
-            {{- $service_monitor := dict "name" (lower $device.name) -}}
-            {{- $module := list $device.group -}}
-            {{- $_ := set $service_monitor "module" $module -}}
-            {{- $_ := set $service_monitor "target" $device.ip -}}
-            {{- $_ := set $service_monitor "relabelings" (list (dict "action" "replace" "replacement" (dig $device.group "hw_type" "" $groups) "targetLabel" "module")
-                                                               (dict "action" "replace" "replacement" (lower $device.name) "targetLabel" "target")) -}}
-
-            {{- $result = append $result $service_monitor -}}
-            {{- end }}
-            {{- $result | include "preserve-type" -}}
+          enabled: false
         securityContext:
           runAsNonRoot: true
           allowPrivilegeEscalation: false
