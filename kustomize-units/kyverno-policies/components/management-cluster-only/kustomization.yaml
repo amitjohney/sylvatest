@@ -4,4 +4,3 @@ kind: Component
 resources:
   - prevent-deletion.yaml
   - default-namespace.yaml
-  - snmp-bmh-configmap.yaml
