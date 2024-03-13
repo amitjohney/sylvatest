@@ -3,7 +3,7 @@
   bootstrap_os_images_override_enabled list match images defined in os_images dict
   else returns an empty dict */}}
 {{- $images := dict }}
-{{- $bootstrap_images := .Values._internal._bootstrap_os_images_override_enabled | toStrings -}}
+{{- $bootstrap_images := index (tuple . .Values._internal._bootstrap_os_images_override_enabled | include "interpret-inner-gotpl" | fromJson) "result" -}}
 {{- /*
 .Values._internal._bootstrap_os_images_override_enabled is seen has a slice, we cast it to list of strings
 */}}
@@ -23,7 +23,7 @@
   bootstrap_os_images_override_enabled list match images defined in sylva_diskimagebuilder_images
   else returns an empty dict */}}
 {{- $images := dict }}
-{{- $bootstrap_images := .Values._internal._bootstrap_os_images_override_enabled | toStrings -}}
+{{- $bootstrap_images := index (tuple . .Values._internal._bootstrap_os_images_override_enabled | include "interpret-inner-gotpl" | fromJson) "result" -}}
 {{- /*
 .Values._internal._bootstrap_os_images_override_enabled is seen has a slice, we cast it to list of strings
 */}}
@@ -56,7 +56,7 @@
 to an image name defined in either .Values.os_images or .Values.sylva_diskimagebuilder_images
 if successful return nothing else fails with a human understandable error message */}}
 {{- $errors := list }}
-{{- $bootstrap_images := .Values._internal._bootstrap_os_images_override_enabled | toStrings -}}
+{{- $bootstrap_images := index (tuple . .Values._internal._bootstrap_os_images_override_enabled | include "interpret-inner-gotpl" | fromJson) "result" -}}
 {{- $sylva_dib_images := .Values.sylva_diskimagebuilder_images }}
 {{- $os_images := .Values.os_images }}
   {{- range $bootstrap_images }}
@@ -69,7 +69,6 @@ if successful return nothing else fails with a human understandable error messag
 {{- end }}
 
 {{- define "generate-os-images" -}}
-{{- $bootstrap_images := .Values._internal._bootstrap_os_images_override_enabled | toStrings -}}
 os_images:
 {{- $images_from_os_images := include "images_from_os_images" . | fromJson }}
   {{- if $images_from_os_images }}
@@ -86,6 +85,7 @@ os_images:
   {{- if (gt (get $errors "errors" | len ) 0) }}
     {{- range (get $errors "errors")}}
 # error: {{.}}
+      {{ fail . }}
     {{- end }}
 {{- end }}
 {{- end }}
