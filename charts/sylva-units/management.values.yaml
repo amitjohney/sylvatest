@@ -71,6 +71,9 @@ units:
   kubevirt-test-vms:
     enabled: false
 
+  rancher-ui-plugin:
+    enabled: false
+
   prometheus-flux:
     depends_on:
       monitoring-crd: true

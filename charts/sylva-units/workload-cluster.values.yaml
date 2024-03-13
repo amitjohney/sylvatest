@@ -225,6 +225,9 @@ units:
   kubevirt-test-vms:
     enabled: false
 
+  rancher-ui-plugin:
+    enabled: false
+
   longhorn-crd:
     enabled: true
 

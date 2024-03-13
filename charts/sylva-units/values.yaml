@@ -78,6 +78,13 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: v0.0.24
 
+  rancher-ui-plugin:
+    kind: GitRepository
+    spec:
+      url: https://github.com/rancher/ui-plugin-operator.git
+      ref:
+        tag: v0.1.1
+
   sriov-resources:
     kind: GitRepository
     spec:
@@ -548,7 +555,7 @@ units:
     unit_templates:
     - base-deps
     depends_on:
-      capi-rancher-import: true
+      rancher-ui-plugin: true
     helm_repo_url: https://suse-edge.github.io/charts
     helmrelease_spec:
       chart:
@@ -556,8 +563,8 @@ units:
           chart: kubevirt-dashboard-extension
           version: 0.1.2
       targetNamespace: kubevirt
-      install:
-        createNamespace: true
+#      install:
+#        createNamespace: true
 
   kubevirt-test-vms:
     info:
@@ -1842,6 +1849,23 @@ units:
     # we copy the dependencies of the 'cluster' unit
     # (with the exception of "capo-cluster-resources" which we don't need, given how what it produces is consumed)
     depends_on: '{{ omit .Values.units.cluster.depends_on "capo-cluster-resources" "cluster-bmh" | include "preserve-type" }}'
+
+  rancher-ui-plugin:
+    info:
+      description: installs ui plugin required in kubevirt
+      maturity: beta
+    repo: rancher-ui-plugin
+    unit_templates:
+    - base-deps
+    depends_on:
+      capi-rancher-import: true
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: charts/ui-plugin-operator
+      targetNamespace: cattle-system
+      install:
+        createNamespace: true
 
   local-path-provisioner:
     info:
