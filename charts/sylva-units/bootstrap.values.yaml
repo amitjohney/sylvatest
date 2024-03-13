@@ -48,7 +48,7 @@ _internal:
       {{- end }}
     {{- end }}
     {{- $mylist = append $mylist (.Values.cluster.capo.image_key | default .Values.cluster.capm3.image_key) -}}
-    {{- $mylist | uniq | include "preserve-type" -}}
+    {{- without $mylist nil | uniq | include "preserve-type" -}}
 
 bootstrap_os_images_override_enabled: []
 
