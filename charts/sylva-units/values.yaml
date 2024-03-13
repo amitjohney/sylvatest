@@ -814,6 +814,8 @@ units:
           SERVICE_DNS: '{{ .Values.external_hostnames.vault }}'
           CERT: '{{ .Values.external_certificates.vault.cert | default "" | b64enc }}'
           CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
+          VO_VAULT_ACCESS_KEY: '{{ .Values.vault.access_key }}'
+          VO_VAULT_SECRET_KEY: '{{ .Values.vault.secret_key }}'
       _components:
         # generate certificate for external communitation
         - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.vault "cert") }}'
@@ -5633,6 +5635,9 @@ snmp:
   devices: []
   auth: {}
 
+vault:
+  access_key: ""
+  secret_key: ""
 # Sample snmp configuration as it needs to be added in the secrets.yaml file
 # snmp:
 #   devices:

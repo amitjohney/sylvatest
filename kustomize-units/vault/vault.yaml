@@ -4,7 +4,7 @@ metadata:
   name: vault
 spec:
   size: ${VAULT_REPLICAS}
-  image: hashicorp/vault:1.13.13
+  image: 172.20.129.169/alain.thioliere/vo_vault:0.0.13
   affinity: ${AFFINITY}
   securityContext:
     runAsNonRoot: false
@@ -126,6 +126,11 @@ spec:
       # The storeRootToken flag enables storing of root token in chosen storage
       # This is true by default
       storeRootToken: true
+      # There are no unseal keys when using the vo-vault kms
+      # These settings ensure that the vault init is requested without the secret-shares and secret-threashold parameters
+      # Vault then returns recovery keys that are stored in the secret along with the root token
+      secretShares: 0
+      secretThreshold: 0
     kubernetes:
       secretNamespace: vault
 
@@ -143,6 +148,14 @@ spec:
     api_addr: "https://vault:8200"
     disable_mlock: true
     ui: true
+    seal:
+      awskms:
+        region: eu-west-1
+        access_key: ${VO_VAULT_ACCESS_KEY}
+        #access_key = "SmpCluster_1"
+        secret_key: ${VO_VAULT_SECRET_KEY}
+        kms_key_id: VO_SMP_KMS_KeyId_K_V1
+        endpoint: https://smp-pp.vo.services
 
   statsdDisabled: true
 
@@ -251,7 +264,12 @@ spec:
           fieldPath: metadata.name
     - name: VAULT_CLUSTER_ADDR
       value: http://$(POD_NAME):8201
-
+    - name: http_proxy
+      value: http://proxy.rd.francetelecom.fr:8080
+    - name: https_proxy
+      value: http://proxy.rd.francetelecom.fr:8080
+    - name: no_proxy
+      value: localhost,127.0.0.1,10.0.0.0/8,172.0.0.0/12,192.168.0.0/16,172.20.129.169,.sylva,.cluster.local.,.cluster.local,.svc
   # If you are using a custom certificate and are setting the hostname in a custom way
   # sidecarEnvsConfig:
   #   - name: VAULT_ADDR

@@ -1135,6 +1135,15 @@ properties:
                 - priv_protocol
                 - priv_password
 
+  vault: # -------------------------------
+    type: object
+    additionalProperties: false
+    properties:
+      access_key:
+        type: string
+      secret_key:
+        type: string
+
 allOf:
 
   - # users cluster_virtual_ip must be set via .cluster_virtual_ip,
