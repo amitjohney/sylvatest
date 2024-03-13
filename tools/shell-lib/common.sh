@@ -202,8 +202,8 @@ function exit_trap() {
 
     # Call debug script if needed
     if [[ $EXIT_CODE -ne 0 && ${DEBUG_ON_EXIT:-"0"} -eq 1 ]] || [[ $IN_CI -eq 1 ]]; then
-        echo_b "gathering debugging logs in debug-on-exit.log file"
-        ${BASE_DIR}/tools/dump-sylva-state.sh 2>&1 | tee debug-on-exit.log
+        echo_b "gathering debugging logs in dump-sylva-state.log file"
+        ${BASE_DIR}/tools/dump-sylva-state.sh 2>&1 | tee dump-sylva-state.log
         if [[ $IN_CI -eq 1 ]]; then
           .gitlab/ci/scripts/units-reports.py --env-type=${CI_JOB_NAME_SLUG}:bootstrap --input ${CI_PROJECT_DIR}/bootstrap-cluster-dump/Kustomizations.yaml --output bootstrap-cluster-units-report.xml &> /dev/null
           .gitlab/ci/scripts/units-reports.py --env-type=${CI_JOB_NAME_SLUG}:management --input ${CI_PROJECT_DIR}/management-cluster-dump/Kustomizations.yaml --output management-cluster-units-report.xml &> /dev/null
@@ -333,7 +333,7 @@ function ci_remaining_minutes_and_at_most() {
     echo ${at_most}m
   else
     # the value we return is the number of seconds of runtime left for this job
-    # ... minus a safety margin to let debug-on-exit run
+    # ... minus a safety margin to let dump-sylva-state run
     # ... and we never return more than at_most seconds
     ci_job_started_at_epoch=$(date +%s --date=$CI_JOB_STARTED_AT)
     current_time_epoch=$(date +%s)

@@ -208,7 +208,7 @@ include:
     expire_in: 48 hour
     when: always
     paths:
-      - debug-on-exit.log
+      - dump-sylva-state.log
       - bootstrap-cluster-dump/
       - management-cluster-dump/
       - bootstrap-cluster-units-report.xml
@@ -250,7 +250,7 @@ include:
     expire_in: 48 hour
     when: always
     paths:
-      - debug-on-exit.log
+      - dump-sylva-state.log
       - management-cluster-dump/
       - workload-cluster-dump/
       - management-cluster-units-report.xml

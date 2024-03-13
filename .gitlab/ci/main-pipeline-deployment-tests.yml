@@ -153,7 +153,7 @@ capd-preview-deploy:
     when: on_failure
     expire_in: 1 hour
     paths:
-      - debug-on-exit.log
+      - dump-sylva-state.log
       - bootstrap-cluster-dump/
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
