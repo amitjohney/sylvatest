@@ -129,7 +129,7 @@ function cluster_info_dump() {
   kubectl get nodes --no-headers | awk '{print $1}' | xargs -I {} sh -c 'echo {} ; kubectl describe node {} | grep Allocated -A 5 | grep -ve Event -ve Allocated -ve percent -ve -- ; echo '
 }
 
-echo "Start debug-on-exit at: $(date -Iseconds)"
+echo "Start dump-sylva-state at: $(date -Iseconds)"
 
 echo -e "\nDocker containers"
 docker ps
