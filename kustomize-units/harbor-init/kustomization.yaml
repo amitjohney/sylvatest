@@ -6,3 +6,7 @@ resources:
   - harbor-config.yaml
   - eso-harbor-oidc.yaml
   - kyverno-harbor-clusterpolicies.yaml
+  - eso-harbor-postgres.yaml
+  - harbor-postgres-admin.yaml
+  - harbor-postgres-user.yaml
+  - harbor-postgres-replication.yaml

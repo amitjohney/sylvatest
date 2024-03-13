@@ -178,6 +178,9 @@ units:
   harbor-init:
     enabled: false
 
+  harbor-postgres:
+    enabled: true
+
   harbor:
     # can be enabled at runtime if desired
     enabled: false
