@@ -16,7 +16,7 @@ spec:
           - UPDATE
           selector:
             matchLabels:
-              snmp-enabled: true
+              snmp-enabled: "true"
     mutate:
       targets:
         - kind: ConfigMap
@@ -27,11 +27,11 @@ spec:
         data:
           "{{request.object.metadata.name}}": |
             bmc_address: "{{request.object.spec.bmc.address}}"
-            snmp_address: "{{request.object.metadata.labels.snmp-data/endpoint}}"
-            auth: "{{request.object.metadata.labels.snmp-data/auth}}"
-            hw_type: "{{request.object.metadata.labels.snmp-data/hardware-type}}"
-            alias: "{{request.object.metadata.labels.snmp-data/machine-name}}"
-            sylva-cluster: "{{request.object.metadata.labels.snmp-data/cluster-name}}"
+            snmp_address: "{{request.object.metadata.annotations.snmp-data/endpoint}}"
+            auth: "{{request.object.metadata.annotations.snmp-data/auth}}"
+            hw_type: "{{request.object.metadata.annotations.snmp-data/hardware-type}}"
+            alias: "{{request.object.metadata.annotations.snmp-data/machine-name}}"
+            sylva-cluster: "{{request.object.metadata.annotations.snmp-data/cluster-name}}"
   - name: baremetalhosts-specs-delete
     match:
       any:
