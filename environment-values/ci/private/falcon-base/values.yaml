@@ -1,4 +1,7 @@
 cluster:
+  additional_commands:
+    pre_bootstrap_commands:
+      - export INSTALL_RKE2_ARTIFACT_PATH=/opt/rke2-artifacts
   capo:
     ssh_key_name: caas_ci_key
     network_id: 489b1587-4aa4-49b2-be56-62af67efa68f
