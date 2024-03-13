@@ -62,6 +62,7 @@ create-runner:
 clean-runner:
   stage: delete
   extends: create-runner
+  dependencies: []
   variables:
     REQUEST: delete
   when: always
