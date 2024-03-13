@@ -587,6 +587,59 @@ units:
         - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.harbor "cert") }}'
         - "../tls-components/sylva-ca"
 
+  harbor-postgres:
+    info:
+      description: installs Postgresql for Harbor
+      maturity: stable
+    depends_on:
+      namespace-defs: true
+      harbor-init: true
+      '{{ .Values._internal.default_storage_class_unit }}': true
+    unit_templates:
+    - base-deps
+    enabled_conditions:
+      - '{{ tuple . "harbor" | include "unit-enabled" }}'
+    helm_repo_url: https://charts.bitnami.com/bitnami
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: postgresql
+          version: 14.0.5
+      targetNamespace: harbor
+      values:
+        global:
+          postgresql:
+            auth:
+              username: harbor
+              database: harbor
+              existingSecret: harbor-postgres-secrets
+              secretKeys:
+                adminPasswordKey: admin-password
+                userPasswordKey: password
+                replicationPasswordKey: replication-password
+        architecture: replication
+        nameOverride: postgres
+        serviceAccount:
+          create: true
+          name: postgresql
+        primary:
+          extendedConfiguration: |-
+            huge_pages = off
+          initdb:
+            args: "--set huge_pages=off"
+        readReplicas:
+          extendedConfiguration: |-
+            huge_pages = off
+          replicaCount: '{{ .Values._internal.ha_cluster.mode | eq "ha" | ternary 3 1 }}'
+          affinity:
+            podAntiAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchLabels:
+                      app.kubernetes.io/name: postgres
+                      app.kubernetes.io/component: read
+                  topologyKey: kubernetes.io/hostname
+
   harbor:
     info:
       description: installs Harbor
@@ -598,6 +651,7 @@ units:
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
       harbor-init: '{{ tuple . "harbor-init" | include "unit-enabled" }}'
       '{{ .Values._internal.default_storage_class_unit }}': true
+      harbor-postgres: true
     annotations:
       sylvactl/readyMessage: "Harbor UI can be reached at https://{{ .Values.external_hostnames.harbor }} ({{ .Values.external_hostnames.harbor }} must resolve to {{ .Values.display_external_ip }})"
     helm_repo_url: https://helm.goharbor.io
@@ -618,8 +672,6 @@ units:
             jobservice:
               storageClass: '{{ .Values._internal.default_storage_class }}'
               #size: 8Gi
-            database:
-              storageClass: '{{ .Values._internal.default_storage_class }}'
               #size: 8Gi
             redis:
               storageClass: '{{ .Values._internal.default_storage_class }}'
@@ -639,6 +691,14 @@ units:
             certSource: secret
             secret:
               secretName: harbor-tls
+        database:
+          type: external
+          external:
+            host: harbor-postgres-primary.harbor.svc.cluster.local
+            port: "5432"
+            username: "harbor"
+            coreDatabase: "harbor"
+            existingSecret: "harbor-postgres-secrets"
         notary:
           enabled: false
         trivy:
