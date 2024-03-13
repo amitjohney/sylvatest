@@ -17,6 +17,9 @@ from kubernetes.client.rest import ApiException
 import openstack
 import oras.client
 import oras.provider
+import requests
+import tempfile
+from urllib.parse import urlparse
 import logging
 import os
 import shutil
@@ -45,6 +48,18 @@ class MyProvider(oras.provider.Registry):
         except Exception as e:
             logger.error(f"upsie... {e}")
             return None
+
+def download_file(url, verify_ssl):
+    temp_dir = tempfile.mkdtemp()
+    filename = url.split('/')[-1]
+    file_path = os.path.join(temp_dir, filename)
+    # Use the verify_ssl parameter for the verify argument in requests.get
+    with requests.get(url, stream=True, verify=verify_ssl) as r:
+        r.raise_for_status()
+        with open(file_path, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
+    return file_path
 
 def cleanup_image(file_path):
     parent_dir = os.path.dirname(file_path)
@@ -182,30 +197,36 @@ except KeyError:
 conn = openstack.connect(cloud=cloud_name, verify=False)
 
 # Initialize oras class
-insecure_tls = strtobool(os.environ.get('ORAS_INSECURE_CLIENT','false'))
+insecure_tls = strtobool(os.environ.get('INSECURE_CLIENT','false'))
 oras_client = MyProvider(tls_verify=not insecure_tls)
 
 for os_name, os_image_info in os_images.items():
     artifact = os_image_info["uri"]
     md5_checksum = os_image_info['md5']
     image_format = os_image_info['image-format']
+    parsed_url = urlparse(artifact)
     logger.info(f"Working on image: {os_name} with MD5 checksum {md5_checksum}")
     existing_images = image_exists_in_glance(md5_checksum, os_name)
 
     if not existing_images:
         logger.info(f"image not in Glance: {os_name} / md5 {md5_checksum}" )
         logger.info(f"Pulling image: {os_name} from artifact uri: {artifact}")
-        oras_pull_path = oras_client.pull_image(artifact)
-
-        logger.info(f"Unzipping artifact...")
-        unzipped_image = unzip_artifact(oras_pull_path)
-
+        image_path = ''
+        if parsed_url.scheme in ['http', 'https']:
+            image_path = download_file(artifact, verify_ssl=not insecure_tls)
+        elif parsed_url.scheme == 'oci':
+            oras_pull_path = oras_client.pull_image(artifact)
+            logger.info(f"Unzipping artifact...")
+            image_path = unzip_artifact(oras_pull_path)
         try:
             logger.info("Pushing image to Glance...")
-            image = push_image_to_glance(unzipped_image, os_image_info, os_name, image_format)
+            image = push_image_to_glance(image_path, os_image_info, os_name, image_format)
             logger.info(f"Image pushed to glance with image ID {image['id']}")
             logger.info(f"Cleaning up files")
-            cleanup_image(oras_pull_path)
+            if parsed_url.scheme in ['http', 'https']:
+                cleanup_image(image_path)
+            else:
+                cleanup_image(oras_pull_path)
         except Exception as e:
             logger.warning(f"{e}")
             pass
@@ -222,7 +243,8 @@ for os_name, os_image_info in os_images.items():
         logger.info(f"Existing image details - Name: {image_to_update['name']}, UUID: {image_to_update['id']}")
 
         # Optional: Pull manifest to verify/update image properties
-        manifest = oras_client.get_oci_manifest(artifact)
+        if parsed_url.scheme == 'oci':
+            manifest = oras_client.get_oci_manifest(artifact)
 
         try:
             logger.info("Updating image properties in Glance...")

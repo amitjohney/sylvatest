@@ -4897,7 +4897,7 @@ units:
         substitute:
           JOB_NAME: get-openstack-images
           JOB_TARGET_NAMESPACE: '{{ .Release.Namespace }}'
-          JOB_ORAS_INSECURE_CLIENT: '{{ .Values.oci_registry_insecure | quote }}'
+          JOB_INSECURE_CLIENT: '{{ .Values.oci_registry_insecure | quote }}'
           JOB_CHECKSUM:
             '{{
             list
