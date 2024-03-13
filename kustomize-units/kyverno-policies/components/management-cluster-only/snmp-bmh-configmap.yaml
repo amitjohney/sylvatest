@@ -25,13 +25,13 @@ spec:
           namespace: snmp-exporter
       patchStrategicMerge:
         data:
-          "{{request.object.metadata.name}}": |
-            bmc_address: "{{request.object.spec.bmc.address}}"
-            snmp_address: "{{request.object.metadata.annotations.snmp-data/endpoint}}"
-            auth: "{{request.object.metadata.annotations.snmp-data/auth}}"
-            hw_type: "{{request.object.metadata.annotations.snmp-data/hardware-type}}"
-            alias: "{{request.object.metadata.annotations.snmp-data/machine-name}}"
-            sylva-cluster: "{{request.object.metadata.annotations.snmp-data/cluster-name}}"
+          '{{request.object.metadata.name}}': |
+            bmc_address: '{{request.object.spec.bmc.address}}'
+            snmp_address: '{{request.object.metadata.annotations."snmp-data/endpoint"}}'
+            auth: '{{request.object.metadata.annotations."snmp-data/auth"}}'
+            hw_type: '{{request.object.metadata.annotations."snmp-data/hardware-type"}}'
+            alias: '{{request.object.metadata.annotations."snmp-data/machine-name"}}'
+            sylva-cluster: '{{request.object.metadata.annotations."snmp-data/cluster-name"}}'
   - name: baremetalhosts-specs-delete
     match:
       any:
@@ -49,5 +49,5 @@ spec:
       patchesJson6902: |-
         - path: "/data"
           op: remove
-          value: "{{request.object.metadata.name}}"
+          value: '{{request.object.metadata.name}}'
 
