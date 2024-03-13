@@ -26,7 +26,7 @@ patches:
   - patch: |
       - op: add
         path: /spec/template/spec/containers/0/args/-
-        value: --feature-gates=OOMWatch=true,DetectDrift=true,CorrectDrift=true,MachinePool=true
+        value: --feature-gates=OOMWatch=true,DetectDrift=true,CorrectDrift=true
     target:
       kind: Deployment
       name: helm-controller
