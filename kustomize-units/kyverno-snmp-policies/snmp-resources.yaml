@@ -25,7 +25,7 @@ spec:
           namespace: cattle-monitoring-system
       patchStrategicMerge:
         data:
-          snmp_'{{request.object.metadata.annotations."sylva.org/snmp-cluster-name"}}'-'{{request.object.metadata.name}}'.yaml: |
+          snmp_{{request.object.metadata.annotations."sylva.org/snmp-cluster-name"}}-{{request.object.metadata.name}}.yaml: |
             - targets: ['{{request.object.metadata.annotations."sylva.org/snmp-endpoint"}}']
               labels:
                 auth: '{{request.object.metadata.annotations."sylva.org/snmp-auth"}}'
