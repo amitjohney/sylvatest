@@ -2925,7 +2925,7 @@ units:
               request:
                 memory: 3Gi
             externalLabels:
-              monitor_cluster: '{{ .Values.cluster.name }}'  # required for multi-cluster dashboards
+              cluster: '{{ .Values.cluster.name }}'  # required for multi-cluster dashboards
             remoteWriteDashboards: true
             remoteWrite:
               - url: '{{ .Values.monitoring.thanos_receive_url }}'
