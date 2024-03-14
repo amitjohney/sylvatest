@@ -3,6 +3,7 @@ kind: ClusterPolicy
 metadata:
   name: disallow-default-namespace
   annotations:
+    kustomize.toolkit.fluxcd.io/force: Enabled
     pod-policies.kyverno.io/autogen-controllers: none
     policies.kyverno.io/title: Disallow Default Namespace
     policies.kyverno.io/minversion: 1.6.0

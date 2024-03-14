@@ -5,6 +5,7 @@ metadata:
   name: patch-bond-policy
   namespace: sylva-system
   annotations:
+    kustomize.toolkit.fluxcd.io/force: Enabled
     policies.kyverno.io/title: Patch metal3 networkdata to add bond_miimon option
     policies.kyverno.io/minversion: 1.11.0
 spec:
