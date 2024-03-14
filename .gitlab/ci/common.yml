@@ -9,6 +9,7 @@ variables:
   OPENSTACK_CLIENT_IMAGE: registry.gitlab.com/sylva-projects/sylva-elements/container-images/openstack-client:v0.0.8
   # renovate: datasource=docker
   CI_IMAGE: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ci-image:v1.0.21
+  SYLVACTL_VERSION: 0.0.0-test-fe
 
 .docker-service:
   services:
