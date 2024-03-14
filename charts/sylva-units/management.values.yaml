@@ -79,7 +79,7 @@ units:
           cattle:
             clusterId: local
             clusterName: local
-        prometheus: 
+        prometheus:
           prometheusSpec:
             configMaps:
               - prometheus-sd-files
