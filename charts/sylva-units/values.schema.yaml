@@ -1113,19 +1113,18 @@ properties:
               priv_password:
                 type: string
             # auth credentials properties are required only for SNMP v3
-            #if:
-            #  properties:
-            #    version:
-            #      const: 3
-            #  then:
-            #    properties:
-            #      required:
-            #        - security_level
-            #        - username
-            #        - password
-            #        - auth_protocol
-            #        - priv_protocol
-            #        - priv_password
+            if:
+              properties:
+                version:
+                  const: 3
+            then:
+              required:
+                - security_level
+                - username
+                - password
+                - auth_protocol
+                - priv_protocol
+                - priv_password
 
 allOf:
 
