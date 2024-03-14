@@ -3044,11 +3044,11 @@ units:
           args:
             - -c
             - >-
-              echo -e '{{ ( dict "groups" .Values.snmp.groups ) | toJson }}' > /config/groups.json &&
+              echo -e '{{ .Values.snmp | toJson }}' > /config/snmp_values.json &&
               sylva_snmp_resources_source='{{ .Values.sylva_core_oci_registry }}/sylva-snmp-resources' &&
               sylva_snmp_resources_version='{{ .Values.source_templates | dig "sylva-snmp-resources" "spec" "ref" "tag" true }}' &&
               flux pull artifact $sylva_snmp_resources_source:$sylva_snmp_resources_version -o /config &&
-              helm template /config/sylva-snmp-resources --values /config/groups.json | yq .out > /config/snmp.yaml
+              helm template /config/sylva-snmp-resources --values /config/snmp_values.json | yq .out > /config/snmp.yaml
           env:
             - name: http_proxy
               value: '{{ .Values.proxies.http_proxy | default "" }}'
