@@ -2140,8 +2140,8 @@ units:
       wait: true
       images:
         - name: controller
-          newName: registry.gitlab.com/sylva-projects/sylva-elements/sylva-units-operator
-          newTag: 0.0.0-pre4
+          newName: quay.io/remi_letrocquer/tmp
+          newTag: suo1
 
   workload-cluster-operator:
     info:
@@ -2158,7 +2158,7 @@ units:
       images:
         - name: controller
           newName: quay.io/remi_letrocquer/tmp
-          newTag: wco1
+          newTag: wco2
 
   capo-cluster-resources:
     info:
@@ -5581,6 +5581,9 @@ shared_workload_clusters_values:
       network_id: '{{ .Values.cluster.capo.network_id | include "set-if-defined" }}'
     default_node_class: '{{ .Values.cluster.default_node_class }}'
     node_classes: '{{ .Values.cluster.node_classes | include "preserve-type" }}'
+
+  openstack:
+    storageClass: '{{ .Values.openstack.storageClass | include "set-if-defined" }}'
 
   units:
     cluster-import:
