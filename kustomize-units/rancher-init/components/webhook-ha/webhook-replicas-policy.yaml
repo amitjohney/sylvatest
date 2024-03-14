@@ -5,6 +5,7 @@ metadata:
   name: rancher-webhook-replicas
   namespace: sylva-system
   annotations:
+    kustomize.toolkit.fluxcd.io/force: Enabled
     policies.kyverno.io/title: increase the number of replicas of rancher-webhook deployment
     policies.kyverno.io/minversion: 1.11.0
 spec:

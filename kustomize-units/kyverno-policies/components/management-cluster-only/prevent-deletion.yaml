@@ -2,6 +2,8 @@ apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
   name: avoid-delete-mgmt-resources
+  annotations:
+    kustomize.toolkit.fluxcd.io/force: Enabled
 spec:
   background: true
   rules:
