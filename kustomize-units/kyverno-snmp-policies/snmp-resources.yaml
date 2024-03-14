@@ -21,17 +21,17 @@ spec:
       targets:
         - kind: ConfigMap
           apiVersion: v1
-          name: baremetalhosts-specs
-          namespace: snmp-exporter
+          name: prometheus-snmp-sd-files
+          namespace: cattle-monitoring-system
       patchStrategicMerge:
         data:
-          '{{request.object.metadata.name}}': |
-            bmc_address: '{{request.object.spec.bmc.address}}'
-            snmp_address: '{{request.object.metadata.annotations."snmp-data/endpoint"}}'
-            auth: '{{request.object.metadata.annotations."snmp-data/auth"}}'
-            hw_type: '{{request.object.metadata.annotations."snmp-data/hardware-type"}}'
-            alias: '{{request.object.metadata.annotations."snmp-data/machine-name"}}'
-            sylva-cluster: '{{request.object.metadata.annotations."snmp-data/cluster-name"}}'
+          snmp_'{{request.object.metadata.annotations."sylva.org/snmp-cluster-name"}}'-'{{request.object.metadata.name}}'.yaml: |
+            - targets: ['{{request.object.metadata.annotations."sylva.org/snmp-endpoint"}}']
+              labels:
+                auth: '{{request.object.metadata.annotations."sylva.org/snmp-auth"}}'
+                module: '{{request.object.metadata.annotations."sylva.org/snmp-hw-type"}}'
+                alias: '{{request.object.metadata.annotations."sylva.org/snmp-machine-name"}}'
+                sylva_cluster: '{{request.object.metadata.annotations."sylva.org/snmp-cluster-name"}}'
   - name: baremetalhosts-specs-delete
     match:
       any:
@@ -44,8 +44,8 @@ spec:
       targets:
         - kind: ConfigMap
           apiVersion: v1
-          name: baremetalhosts-specs
-          namespace: snmp-exporter
+          name: prometheus-snmp-sd-files
+          namespace: cattle-monitoring-system
       patchesJson6902: |-
         - path: "/data"
           op: remove
