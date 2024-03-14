@@ -1076,6 +1076,9 @@ properties:
               format: hostname
             target:
               type: string
+              anyOf:
+                - pattern: "^((tcp|udp)://.*|)$"
+                - format: hostname
             module:
               type: string
               pattern: "^(dell_idrac|hp_cpq)$"

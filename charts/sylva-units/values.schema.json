@@ -7800,7 +7800,15 @@
                 "format": "hostname"
               },
               "target": {
-                "type": "string"
+                "type": "string",
+                "anyOf": [
+                  {
+                    "pattern": "^((tcp|udp)://.*|)$"
+                  },
+                  {
+                    "format": "hostname"
+                  }
+                ]
               },
               "module": {
                 "type": "string",
