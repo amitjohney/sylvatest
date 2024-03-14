@@ -82,7 +82,7 @@ units:
         prometheus:
           prometheusSpec:
             configMaps:
-              - prometheus-sd-files
+              - prometheus-snmp-sd-files
             additionalScrapeConfigs:
               - job_name: 'snmp-exporter'
                 scrape_interval: 90s
