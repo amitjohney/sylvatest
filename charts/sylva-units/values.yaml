@@ -2926,29 +2926,6 @@ units:
                 memory: 3Gi
             externalLabels:
               monitor_cluster: '{{ .Values.cluster.name }}'  # required for multi-cluster dashboards
-            configMaps:
-              - prometheus-sd-files
-            additionalScrapeConfigs:
-              - job_name: 'snmp-exporter'
-                scrape_interval: 90s
-                scrape_timeout: 60s
-                file_sd_configs:
-                  - files: ['/etc/prometheus/configmaps/prometheus-sd-files/snmp_targets.yaml']
-                metrics_path: /snmp
-                params:
-                    module: ['if_mib']
-                    auth: ['public_v2']
-                relabel_configs:
-                - source_labels: [__address__]
-                  target_label: '__param_target'
-                - source_labels: ['__param_target']
-                  target_label: 'instance'
-                - source_labels: ['module']
-                  target_label: '__param_module'
-                - source_labels: ['auth']
-                  target_label: '__param_auth'
-                - target_label: '__address__'
-                  replacement: 'snmp-exporter.snmp-exporter:9116'  # The SNMP exporter's real hostname:port.
             remoteWriteDashboards: true
             remoteWrite:
               - url: '{{ .Values.monitoring.thanos_receive_url }}'
