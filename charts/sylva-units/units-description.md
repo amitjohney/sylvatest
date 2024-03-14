@@ -85,6 +85,7 @@
 | **keycloak-resources** | configures keycloak resources |  | True | Kustomize | N/A |
 | **kubevirt-test-vms** | deploys kubevirt VMs for testing |  | True | Kustomize | N/A |
 | **kyverno-policies** | configures Kyverno policies |  | True | Kustomize | N/A |
+| **kyverno-snmp-policies** | deploys a mutating policy for collecting bmh snmp values |  | True | Kustomize | N/A |
 | **logging-config** | Configures rancher-logging to ship logs to Loki |  | True | Kustomize | N/A |
 | **loki-init** | sets up Loki certificate<br/><br/>it generate certificate |  | True | Kustomize | N/A |
 | **management-cluster-configs** | copies configuration object in management cluster during bootstrap |  | True | Kustomize | N/A |
