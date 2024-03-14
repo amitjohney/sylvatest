@@ -88,7 +88,7 @@ units:
                 scrape_interval: 90s
                 scrape_timeout: 60s
                 file_sd_configs:
-                  - files: ['/etc/prometheus/configmaps/prometheus-sd-files/snmp_targets.yaml']
+                  - files: ['/etc/prometheus/configmaps/prometheus-sd-files/snmp_*.yaml']
                 metrics_path: /snmp
                 params:
                   module: ['if_mib']
