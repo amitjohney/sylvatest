@@ -341,8 +341,6 @@ capo-rke2-oci-suse:
   variables:
     ENV_NAME: rke2-capm3-virt
     DOCKER_HOST: ""
-    MGMT_ADDITIONAL_VALUES: environment-values/ci/enable-kubevirt.yml
-    WC_ADDITIONAL_VALUES: environment-values/ci/enable-kubevirt.yml
   trigger:
     include: .gitlab/ci/pipeline-deploy-capm3-virt-equinix.yml
     strategy: depend
