@@ -3,3 +3,4 @@ kind: Kustomization
 
 resources:
 - snmp-resources.yaml
+- baremetalhosts-specs-cm.yaml
