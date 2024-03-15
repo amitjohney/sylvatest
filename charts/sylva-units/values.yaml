@@ -2964,6 +2964,22 @@ units:
           data:
             username: thanos-user
             password: '{{ .Values._internal.thanos_password }}'  # value from management cluster, set via Secret/shared-workload-clusters-settings
+    kustomization_spec:
+      path: ./kustomize-units/monitoring
+      wait: true
+      postBuild:
+        substitute:
+          TARGETS: |
+            {{- $sylva_cluster := .Values.cluster.name }}
+            {{- range .Values.snmp.devices }}
+              - targets: ['{{ .target }}']
+                labels:
+                  module: '{{ .module }}'
+                  auth: '{{ .auth }}'
+                  alias: '{{ .alias }}'
+                  sylva_cluster: '{{ $sylva_cluster }}'
+            {{- end }}
+
 
   snmp-exporter:
     info:
