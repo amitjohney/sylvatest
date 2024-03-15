@@ -3020,7 +3020,6 @@ units:
         createNamespace: true
       values:
         fullnameOverride: 'snmp-exporter'
-        replicas: 3
         extraArgs:
           - "--config.file=/config/snmp.yaml"
         podAnnotations:
