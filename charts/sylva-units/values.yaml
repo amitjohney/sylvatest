@@ -1983,7 +1983,7 @@ units:
           httpsProxy: '{{ .Values.proxies.https_proxy }}'
           noProxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
           CLOUD: 'capo_cloud'
-          backoffLimit: 0
+          backoffLimit: '0'
       _patches:
         - patch: >-
             - op: add
