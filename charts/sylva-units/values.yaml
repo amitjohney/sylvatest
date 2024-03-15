@@ -2895,6 +2895,7 @@ units:
     depends_on:
       namespace-defs: true
       monitoring-crd: true
+      prometheus-snmp-resources: '{{ tuple . "snmp-exporter" | include "unit-enabled" }}'
     helm_repo_url: https://charts.rancher.io/
     helmrelease_spec:
       releaseName: rancher-monitoring
@@ -2947,6 +2948,9 @@ units:
         - kind: ConfigMap
           name: flux-custom-resource-state-config # this configmap is a byproduct of the prometheus-flux unit
           optional: '{{ not (tuple . "prometheus-flux" | include "unit-enabled") | include "as-bool"  }}'
+        - kind: ConfigMap
+          name: prometheus-snmp-values
+          optional: '{{ not (tuple . "snmp-exporter" | include "unit-enabled") }}'
       # Disable drift detection for rancher-monitoring webhooks
       _postRenderers:
         - kustomize:
@@ -2964,22 +2968,30 @@ units:
           data:
             username: thanos-user
             password: '{{ .Values._internal.thanos_password }}'  # value from management cluster, set via Secret/shared-workload-clusters-settings
+
+  prometheus-snmp-resources:
+    info:
+      description: Creates required configmaps and kyverno policies to enable snmp monitoring
+      internal: true
+    unit_templates:
+    - base-deps
+    enabled_conditions:
+      - '{{ tuple . "snmp-exporter" | include "unit-enabled" }}'
+    repo: sylva-core
     kustomization_spec:
-      path: ./kustomize-units/monitoring
+      path: ./kustomize-units/prometheus-snmp-resources
       wait: true
       postBuild:
         substitute:
-          TARGETS: |
-            {{- $sylva_cluster := .Values.cluster.name }}
-            {{- range .Values.snmp.devices }}
-              - targets: ['{{ .target }}']
-                labels:
-                  module: '{{ .module }}'
-                  auth: '{{ .auth }}'
-                  alias: '{{ .alias }}'
-                  sylva_cluster: '{{ $sylva_cluster }}'
-            {{- end }}
-
+          TARGETS: >
+            {{- $sylva_cluster := .Values.cluster.name -}}
+            {{- $result := list -}}
+            {{- range .Values.snmp.devices -}}
+              {{- $target := dict "targets" (list .target) -}}
+              {{- $_ := set $target "labels" (dict "module" .module "auth" .auth "alias" .alias "sylva_cluster" $sylva_cluster) -}}
+              {{- $result = append $result $target -}}
+            {{- end -}}
+            {{ $result | toJson }}
 
   snmp-exporter:
     info:
