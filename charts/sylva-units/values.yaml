@@ -1338,7 +1338,7 @@ units:
 
   keycloak-oidc-external-secrets:
     info:
-      description: configures OIDC secrets for Keycloack
+      description: configures OIDC secrets for Keycloak
       internal: true
     unit_templates:
     - base-deps
@@ -3954,7 +3954,7 @@ units:
             serviceMonitor:
               enabled: true
           oauth:
-            - name: "keycloack-sylva"
+            - name: "keycloak-sylva"
               provider: "openidConnect"
               existingSecret: gitea-keycloak-oidc-auth
               autoDiscoverUrl: 'https://{{ .Values.external_hostnames.keycloak }}/realms/sylva/.well-known/openid-configuration'
