@@ -205,8 +205,12 @@ for os_name, os_image_info in os_images.items():
     md5_checksum = os_image_info['md5']
     image_format = os_image_info['image-format']
     parsed_url = urlparse(artifact)
+    if os_image_info.get("commit-tag"):
+        _os_name = f'{os_name}-sylva-diskimage-builder-{os_image_info["commit-tag"]}'
+    else:
+        _os_name = os_name
     logger.info(f"Working on image: {os_name} with MD5 checksum {md5_checksum}")
-    existing_images = image_exists_in_glance(md5_checksum, os_name)
+    existing_images = image_exists_in_glance(md5_checksum, _os_name)
 
     if not existing_images:
         logger.info(f"image not in Glance: {os_name} / md5 {md5_checksum}" )
@@ -220,7 +224,7 @@ for os_name, os_image_info in os_images.items():
             image_path = unzip_artifact(oras_pull_path)
         try:
             logger.info("Pushing image to Glance...")
-            image = push_image_to_glance(image_path, os_image_info, os_name, image_format)
+            image = push_image_to_glance(image_path, os_image_info, _os_name, image_format)
             logger.info(f"Image pushed to glance with image ID {image['id']}")
             logger.info(f"Cleaning up files")
             if parsed_url.scheme in ['http', 'https']:
@@ -248,7 +252,7 @@ for os_name, os_image_info in os_images.items():
 
         try:
             logger.info("Updating image properties in Glance...")
-            updated_image = push_image_to_glance(None, os_image_info, os_name, image_format, update_only=True, existing_image=image_to_update)
+            updated_image = push_image_to_glance(None, os_image_info, _os_name, image_format, update_only=True, existing_image=image_to_update)
             if updated_image and 'id' in updated_image:
                 logger.info(f"Image properties updated for image ID {updated_image['id']}")
             else:
