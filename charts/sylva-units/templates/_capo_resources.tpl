@@ -1,6 +1,5 @@
 {{- define "required_capo_resources" -}}
-{{ /* 
-returns a dict containing:
+{{- /* returns a dict containing:
   - flavor name
   - replicas
 for:
