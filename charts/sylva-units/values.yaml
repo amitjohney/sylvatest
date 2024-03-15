@@ -5551,6 +5551,9 @@ shared_workload_clusters_values:
     default_node_class: '{{ .Values.cluster.default_node_class }}'
     node_classes: '{{ .Values.cluster.node_classes | include "preserve-type" }}'
 
+  openstack:
+    storageClass: '{{ .Values.openstack.storageClass | include "set-if-defined" }}'
+
   units:
     cluster-import:
       enabled: '{{ tuple . "rancher" | include "unit-enabled" }}'
