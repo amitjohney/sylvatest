@@ -136,6 +136,8 @@ units:
     enabled: true
   harbor-init:
     enabled: true
+  harbor-postgres:
+    enabled: true
   harbor:
     enabled: true
   shared-workload-clusters-settings:

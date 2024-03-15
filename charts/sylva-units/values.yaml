@@ -593,7 +593,7 @@ units:
       maturity: stable
     depends_on:
       namespace-defs: true
-      harbor-init: true
+      harbor-init: '{{ tuple . "harbor-init" | include "unit-enabled" }}'  # conditional, because in workload clusters harbor-init isn't used
       '{{ .Values._internal.default_storage_class_unit }}': true
     unit_templates:
     - base-deps
@@ -607,16 +607,14 @@ units:
           version: 14.0.5
       targetNamespace: harbor
       values:
-        global:
-          postgresql:
-            auth:
-              username: harbor
-              database: harbor
-              existingSecret: harbor-postgres-secrets
-              secretKeys:
-                adminPasswordKey: admin-password
-                userPasswordKey: password
-                replicationPasswordKey: replication-password
+        auth:
+          username: harbor
+          database: harbor
+          existingSecret: harbor-postgres-secrets
+          secretKeys:
+            adminPasswordKey: admin-password
+            userPasswordKey: password
+            replicationPasswordKey: replication-password
         architecture: replication
         nameOverride: postgres
         serviceAccount:

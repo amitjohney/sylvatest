@@ -1,5 +1,7 @@
 ---
 units:
+  harbor-postgres:
+    enabled: true
   harbor:
     enabled: true
   monitoring-crd:
