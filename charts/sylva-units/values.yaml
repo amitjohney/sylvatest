@@ -139,7 +139,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-snmp-resources.git
       ref:
-        tag: 0.0.3
+        tag: 0.0.5
 
   loki:
     kind: GitRepository
@@ -2924,6 +2924,7 @@ units:
     depends_on:
       namespace-defs: true
       monitoring-crd: true
+      prometheus-snmp-resources: '{{ tuple . "snmp-exporter" | include "unit-enabled" }}'
     helm_repo_url: https://charts.rancher.io/
     helmrelease_spec:
       releaseName: rancher-monitoring
@@ -2975,7 +2976,10 @@ units:
       valuesFrom:
         - kind: ConfigMap
           name: flux-custom-resource-state-config # this configmap is a byproduct of the prometheus-flux unit
-          optional: '{{ not (tuple . "prometheus-flux" | include "unit-enabled") | include "as-bool"  }}'
+          optional: '{{ not (tuple . "prometheus-flux" | include "unit-enabled") | include "as-bool" }}'
+        - kind: ConfigMap
+          name: prometheus-snmp-exporter-config-values # this configmap is a byproduct of the prometheus-snmp-resources unit
+          optional: '{{ not (tuple . "snmp-exporter" | include "unit-enabled") | include "as-bool" }}'
       # Disable drift detection for rancher-monitoring webhooks
       _postRenderers:
         - kustomize:
@@ -2994,6 +2998,31 @@ units:
             username: thanos-user
             password: '{{ .Values._internal.thanos_password }}'  # value from management cluster, set via Secret/shared-workload-clusters-settings
 
+  prometheus-snmp-resources:
+    info:
+      description: Creates required configmaps and kyverno policies to enable snmp monitoring
+      internal: true
+    unit_templates:
+    - base-deps
+    enabled_conditions:
+      - '{{ tuple . "snmp-exporter" | include "unit-enabled" }}'
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/prometheus-snmp-resources
+      force: true
+      wait: true
+      postBuild:
+        substitute:
+          TARGETS: >
+            {{- $sylva_cluster := .Values.cluster.name -}}
+            {{- $result := list -}}
+            {{- range .Values.snmp.devices -}}
+              {{- $target := dict "targets" (list .target) -}}
+              {{- $_ := set $target "labels" (dict "module" .module "auth" .auth "alias" .alias "cluster_name" (.cluster_name | default $sylva_cluster)) -}}
+              {{- $result = append $result $target -}}
+            {{- end -}}
+            {{ $result | toJson }}
+
   snmp-exporter:
     info:
       description: installs SNMP exporter
@@ -3001,7 +3030,7 @@ units:
     enabled_conditions:
     - '{{ tuple . "monitoring" | include "unit-enabled" }}'
     - '{{ .Values.snmp.devices | empty | not }}'
-    - '{{ .Values.snmp.groups | empty | not }}'
+    - '{{ .Values.snmp.auth | empty | not }}'
     unit_templates:
     - base-deps
     depends_on:
@@ -3013,33 +3042,18 @@ units:
       chart:
         spec:
           chart: prometheus-snmp-exporter
-          version: 1.8.1
+          version: 5.1.0
       install:
         createNamespace: true
       values:
         fullnameOverride: 'snmp-exporter'
-        replicas: 3
+        replicas: 1
         extraArgs:
           - "--config.file=/config/snmp.yaml"
         podAnnotations:
           sylva/snmp-values: '{{ .Values.snmp | toJson | sha256sum | trunc 8 }}'
         serviceMonitor:
-          enabled: true
-          namespace: snmp-exporter
-          params: |
-            {{- $result := list -}}
-            {{- $groups := .Values.snmp.groups -}}
-            {{- range $device := .Values.snmp.devices }}
-            {{- $service_monitor := dict "name" (lower $device.name) -}}
-            {{- $module := list $device.group -}}
-            {{- $_ := set $service_monitor "module" $module -}}
-            {{- $_ := set $service_monitor "target" $device.ip -}}
-            {{- $_ := set $service_monitor "relabelings" (list (dict "action" "replace" "replacement" (dig $device.group "hw_type" "" $groups) "targetLabel" "module")
-                                                               (dict "action" "replace" "replacement" (lower $device.name) "targetLabel" "target")) -}}
-
-            {{- $result = append $result $service_monitor -}}
-            {{- end }}
-            {{- $result | include "preserve-type" -}}
+          enabled: false
         securityContext:
           runAsNonRoot: true
           allowPrivilegeEscalation: false
@@ -3088,11 +3102,11 @@ units:
           args:
             - -c
             - >-
-              echo -e '{{ ( dict "groups" .Values.snmp.groups ) | toJson }}' > /config/groups.json &&
+              echo -e '{{ .Values.snmp | toJson }}' > /config/snmp_values.json &&
               sylva_snmp_resources_source='{{ .Values.sylva_core_oci_registry }}/sylva-snmp-resources' &&
               sylva_snmp_resources_version='{{ .Values.source_templates | dig "sylva-snmp-resources" "spec" "ref" "tag" true }}' &&
               flux pull artifact $sylva_snmp_resources_source:$sylva_snmp_resources_version -o /config &&
-              helm template /config/sylva-snmp-resources --values /config/groups.json | yq .out > /config/snmp.yaml
+              helm template /config/sylva-snmp-resources --values /config/snmp_values.json | yq .out > /config/snmp.yaml
           env:
             - name: http_proxy
               value: '{{ .Values.proxies.http_proxy | default "" }}'
@@ -5608,37 +5622,31 @@ shared_workload_clusters_secret_values:
 
 snmp:
   devices: []
-  groups: {}
+  auth: {}
 
 # Sample snmp configuration as it needs to be added in the secrets.yaml file
 # snmp:
 #   devices:
-#     - name: server1
-#       ip: 1.2.3.4
-#       group: dell1
-#     - name: server2
-#       ip: 5.6.7.8
-#       group: hp1
-#   groups:
-#     dell1:
+#     - alias: Server1
+#       target: 1.2.3.4
+#       module: dell_idrac
+#       auth: snmpv3
+#       cluster_name: 'Client1'
+#     - alias: Server2
+#       target: 2.3.4.5
+#       module: hp_cpq
+#       auth: snmpv2
+#       cluster_name: 'Client2'
+#   auth:
+#     snmpv3:
 #       version: 3
-#       auth:
-#         community: public
-#         security_level: authPriv
-#         username: snmp
-#         password: xxxxx
-#         auth_protocol: SHA256
-#         priv_protocol: AES
-#         priv_password: xxxxx
-#       hw_type: dell
-#     hp1:
-#       version: 3
-#       auth:
-#         community: public
-#         security_level: authPriv
-#         username: snmp
-#         password: xxxxx
-#         auth_protocol: SHA256
-#         priv_protocol: AES
-#         priv_password: xxxxx
-#       hw_type: hp
+#       community: public
+#       security_level: authPriv
+#       username: snmp
+#       password: xxxxx
+#       auth_protocol: SHA256
+#       priv_protocol: AES
+#       priv_password: xxxxx
+#     snmpv2:
+#       version: 2
+#       community: public
