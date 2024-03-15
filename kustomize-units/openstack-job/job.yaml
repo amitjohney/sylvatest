@@ -11,7 +11,7 @@ kind: Job
 metadata:
   name: ${JOB_NAME}-${JOB_TARGET_NAMESPACE:-sylva-system}
 spec:
-  backoffLimit: 5
+  backoffLimit: ${backoffLimit:5}
   activeDeadlineSeconds: 1800
   template:
     spec:
@@ -38,6 +38,8 @@ spec:
           value: ${httpsProxy}
         - name: no_proxy
           value: ${noProxy}
+        - name: CLOUD
+          value: ${CLOUD}
         volumeMounts:
         - name: script-volume
           mountPath: /opt/

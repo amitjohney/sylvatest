@@ -1982,16 +1982,10 @@ units:
           httpProxy: '{{ .Values.proxies.https_proxy }}'
           httpsProxy: '{{ .Values.proxies.https_proxy }}'
           noProxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
+          CLOUD: 'capo_cloud'
+          backoffLimit: 0
       _patches:
         - patch: >-
-            - op: replace
-              path: /spec/backoffLimit
-              value: 0
-            - op: add
-              path: /spec/template/spec/containers/0/env/-
-              value:
-                name: CLOUD
-                value: capo_cloud
             - op: add
               path: /spec/template/spec/containers/0/env/-
               value:
