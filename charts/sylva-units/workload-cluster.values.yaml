@@ -149,6 +149,14 @@ units:
     - kustomization-deployed-on-mgmt-cluster
     - dummy
 
+  cluster-ready:
+    enabled: true
+    unit_templates:
+    - kustomization-deployed-on-mgmt-cluster
+    - dummy
+    kustomization_spec:
+      targetNamespace: '{{ .Release.Namespace }}'
+
   namespace-defs:
     enabled: true
     depends_on:
