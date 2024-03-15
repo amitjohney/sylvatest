@@ -2048,6 +2048,11 @@ units:
               value:
                 name: restartPolicy
                 value: Never
+            - op: add
+              path: /spec/template/spec/containers/0/env/-
+              value:
+                name: TEST
+                value: {{ . | include "required_capo_resources" }}
           target:
             kind: Job
     kustomization_substitute_secrets:
