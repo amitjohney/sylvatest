@@ -4982,6 +4982,26 @@ units:
               path: /spec/template/spec/volumes/2/configMap/name
               value: {{ .Values._internal.os_images_info_configmap }}  # this configmap is a byproduct of the os-images-info unit
 
+  workload-cluster-init:
+    repo: workload-cluster-init
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: .
+      values:
+        workload_clusters: '{{ .Values.workload_clusters | include "preserve-type" }}'
+      _postRenderers:
+        - kustomize:
+            patches:
+              - target:
+                  kind: ConfigMap
+                patch: |
+                  - op: replace
+                    path: /data/values
+                    value: |
+                    {{ index (tuple . .Values.shared_workload_clusters_values | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | indent 4 }}
+    helm_secret_values: '{{ index (tuple . .Values.shared_workload_clusters_secret_values | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | b64enc }}'
+
 ##### stuff related to the 'cluster' unit #####
 #
 # all these values under 'cluster' are passed as values to sylva-capi-cluster chart
@@ -5610,3 +5630,8 @@ snmp:
 #         priv_protocol: AES
 #         priv_password: xxxxx
 #       hw_type: hp
+
+workload_clusters:
+  sample-workload-cluster:
+    gitRepo: ""
+    allowedUnits: ["multus","kubevirt","neuvector","harbor"]
