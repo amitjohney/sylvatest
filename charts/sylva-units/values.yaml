@@ -4591,7 +4591,26 @@ units:
           capabilities:
             drop: ["ALL"]
           seccompProfile:
-            type: RuntimeDefault
+            type: runAsNonRoot
+          runAsNonRoot: true
+        podSecurityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          fsGroup: 2000
+        logging:
+          fluentd:
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop: ["ALL"]
+              seccompProfile:
+                type: runAsNonRoot
+              runAsNonRoot: true
+            podSecurityContext:
+              runAsNonRoot: true
+              runAsUser: 1000
+              fsGroup: 2000
 
   logging-config:
     info:
