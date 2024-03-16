@@ -71,8 +71,8 @@ def order_stages(stages):
         yield s
 
 def pipeline_summary(pipeline):
-    if "id" not in pipeline:
-        return f"(no pipeline info for {pipeline})"
+    if not pipeline:
+        return f"(no pipeline info)"
 
     pipeline = project.pipelines.get(pipeline["id"])
 
