@@ -135,6 +135,10 @@ def create_report():
             for child in child_pipelines:
                 print(f"    processing child {child.name}")
 
+                if "id" not in child:
+                    print(f"      skipping, this child pipeline has no id ({child})")
+                    continue
+
                 if child.duration:
                     duration_text = f"{child.duration/60.0:.0f}min"
                 else:
