@@ -71,6 +71,9 @@ def order_stages(stages):
         yield s
 
 def pipeline_summary(pipeline):
+    if "id" not in pipeline:
+        return f"(no pipeline info for {pipeline})"
+
     pipeline = project.pipelines.get(pipeline["id"])
 
     stage_statuses = defaultdict(set)
@@ -134,10 +137,6 @@ def create_report():
             child_pipelines = project.pipelines.get(pipeline.id).bridges.list()
             for child in child_pipelines:
                 print(f"    processing child {child.name}")
-
-                if "id" not in child:
-                    print(f"      skipping, this child pipeline has no id ({child})")
-                    continue
 
                 if child.duration:
                     duration_text = f"{child.duration/60.0:.0f}min"
