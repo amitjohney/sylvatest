@@ -145,7 +145,7 @@ def create_report():
 
                 ds_pipeline_summary = pipeline_summary(child.downstream_pipeline)
 
-                child_pipeline_md = f"- [duration_text {get_status_icon(child.status)}]({child.web_url}) -<br/>{ds_pipeline_summary}"
+                child_pipeline_md = f"- [{duration_text} {get_status_icon(child.status)}]({child.web_url}) -<br/>{ds_pipeline_summary}"
                 pipeline_item[child.name] = child_pipeline_md
 
                 #commit_md = f"[{child.commit['short_id']} / { child.commit['committed_date'][:16]}]({child.commit['web_url']})"
