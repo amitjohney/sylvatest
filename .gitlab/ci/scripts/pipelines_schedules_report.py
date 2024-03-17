@@ -71,6 +71,9 @@ def order_stages(stages):
         yield s
 
 def pipeline_summary(pipeline):
+    if not pipeline:
+        return f"(no pipeline info)"
+
     pipeline = project.pipelines.get(pipeline["id"])
 
     stage_statuses = defaultdict(set)
@@ -135,10 +138,6 @@ def create_report():
             for child in child_pipelines:
                 print(f"    processing child {child.name}")
 
-                if "id" not in child:
-                    print(f"      skipping, this child pipeline has no id ({child})")
-                    continue
-
                 if child.duration:
                     duration_text = f"{child.duration/60.0:.0f}min"
                 else:
@@ -146,7 +145,7 @@ def create_report():
 
                 ds_pipeline_summary = pipeline_summary(child.downstream_pipeline)
 
-                child_pipeline_md = f"- [duration_text {get_status_icon(child.status)}]({child.web_url}) -<br/>{ds_pipeline_summary}"
+                child_pipeline_md = f"- [{duration_text} {get_status_icon(child.status)}]({child.web_url}) -<br/>{ds_pipeline_summary}"
                 pipeline_item[child.name] = child_pipeline_md
 
                 #commit_md = f"[{child.commit['short_id']} / { child.commit['committed_date'][:16]}]({child.commit['web_url']})"
