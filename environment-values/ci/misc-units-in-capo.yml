@@ -140,6 +140,10 @@ units:
     enabled: true
   harbor:
     enabled: true
+  sylva-units-operator:
+    enabled: true
+  sylva-units-release-template:
+    enabled: true
   shared-workload-clusters-settings:
     enabled: true
   capi-rancher-import:
