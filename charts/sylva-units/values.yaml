@@ -5580,7 +5580,7 @@ shared_workload_clusters_values:
   oci_registry_insecure: '{{ .Values.oci_registry_insecure | include "set-if-defined" }}'
 
   cluster:
-    air_gapped: '{{ .Values.air_gapped | include "set-if-defined" }}'
+    air_gapped: '{{ .Values.cluster.air_gapped | include "set-if-defined" }}'
     capi_providers: '{{ .Values.cluster.capi_providers | include "preserve-type" }}'
     mgmt_cluster_ip: '{{ .Values.display_external_ip }}'
     rancher_domain: '{{ .Values.cluster_domain }}'
