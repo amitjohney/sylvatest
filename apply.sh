@@ -31,10 +31,10 @@ check_management_kubeconfig
 ensure_flux
 
 echo_b "\U0001F50E Validate sylva-units values for management cluster"
-#validate_sylva_units
+validate_sylva_units
 
 echo_b "\U0001F5D1 Delete preview chart and namespace"
-#cleanup_preview
+cleanup_preview
 
 echo_b "\U0001F4DC Update sylva-units Helm release and associated resources"
 _kustomize ${ENV_PATH} | define_source | kubectl apply -f -
