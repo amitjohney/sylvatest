@@ -83,8 +83,6 @@ test-no-sso+workload-kubeconfig:
   extends:
     - .test-tags
     - .rules:skip-if-only-deploy-mgmt
-  before_script:
-    - apk add jq
   script:
     - !reference [.test_scripts, edit_hosts_file]
     - !reference [.test_scripts, test_no_sso]
