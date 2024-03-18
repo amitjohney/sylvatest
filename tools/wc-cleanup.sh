@@ -33,7 +33,7 @@ if [[ -f ${BASE_DIR}/management-cluster-kubeconfig ]]; then
     export KUBECONFIG=${BASE_DIR}/management-cluster-kubeconfig
 else
     echo "management-cluster-kubeconfig file is not present in ${BASE_DIR}"
-    exit -1
+    exit 1
 fi
 if [[ -f ${BASE_DIR}/bin/env ]]; then
     source ${BASE_DIR}/bin/env
