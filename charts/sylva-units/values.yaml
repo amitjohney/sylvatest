@@ -507,7 +507,7 @@ units:
         readReplicas:
           extendedConfiguration: |-
             huge_pages = off
-          replicaCount: '{{ int .Values.cluster.control_plane_replicas | gt 3 | ternary 1 3 }}'
+          replicaCount: 1 #'{{ int .Values.cluster.control_plane_replicas | gt 3 | ternary 1 3 }}'
           affinity:
             podAntiAffinity:
               requiredDuringSchedulingIgnoredDuringExecution:
