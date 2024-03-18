@@ -6,8 +6,6 @@
 nameOverride: ""
 fullnameOverride: ""
 
-  # dummy change for diff - baburciu
-
 # registry secrets
 registry_secret: {}
   # when using gitlab, git creds can be used as registry creds
