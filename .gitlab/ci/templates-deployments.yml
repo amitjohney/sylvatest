@@ -6,198 +6,160 @@
 include:
   - local: .gitlab/ci/common.yml
 
-.common-deployment:
-  setup_ci_values:
-    - |
-      function change_git_revision() {
-        echo "GIT_REVISION: $GIT_REVISION"
-          if git ls-remote --exit-code --tags https://gitlab.com/sylva-projects/sylva-core.git "${GIT_REVISION}" > /dev/null; then
-            echo "Provided GIT_REVISION: $GIT_REVISION is a known upstream tag. Using it as it"
-            if [ -n "${OCI_TAG}" ] ; then
-              OCI_TAG=${GIT_REVISION}
-            fi
-          elif git ls-remote --exit-code --heads https://gitlab.com/sylva-projects/sylva-core.git "${GIT_REVISION}" > /dev/null; then
-            echo "Provided GIT_REVISION: $GIT_REVISION is a known upstream branch. It will be used as reference for fetching sylva-core code"
-            GIT_REVISION=$(git ls-remote --exit-code --heads https://gitlab.com/sylva-projects/sylva-core.git "${GIT_REVISION}" | cut -f 1)
-            SHORT_ID=$(echo $GIT_REVISION | head -c 8)
-            if [ -n "${OCI_TAG}" ] ; then
-              OCI_TAG=0.0.0-git-$SHORT_ID
-            fi
-          else
-            echo "Provided GIT_REVISION: $GIT_REVISION, will try to use it as a commit id"
-            SHORT_ID=$(echo $GIT_REVISION | head -c 8)
-            if [ -n "${OCI_TAG}" ] ; then
-              OCI_TAG=0.0.0-git-$SHORT_ID
-            fi
+
+.function_change_git_revision:
+  # Function to change the git revision used during the deployment
+  - |
+    function change_git_revision() {
+      echo "GIT_REVISION: $GIT_REVISION"
+        if git ls-remote --exit-code --tags https://gitlab.com/sylva-projects/sylva-core.git "${GIT_REVISION}" > /dev/null; then
+          echo "Provided GIT_REVISION: $GIT_REVISION is a known upstream tag. Using it as it"
+          if [ -n "${OCI_TAG}" ] ; then
+            OCI_TAG=${GIT_REVISION}
           fi
-        if [ -n "${OCI_TAG}" ] ; then
-          echo "Sylva-units chart will use: $OCI_TAG reference"
-          echo "Checking if oci://registry.gitlab.com/sylva-projects/sylva-core/sylva-units:$OCI_TAG exist"
-          if helm pull oci://registry.gitlab.com/sylva-projects/sylva-core/sylva-units --version $OCI_TAG -d /tmp > /dev/null; then
-            echo "oci://registry.gitlab.com/sylva-projects/sylva-core/sylva-units:$OCI_TAG was sucessfully pulled"
-          else
-            echo "Failed to retrieve: oci://registry.gitlab.com/sylva-projects/sylva-core/sylva-units:$OCI_TAG"
-            echo "Ensure you are targeting a branch with an open MR and check if that OCI artifact was not removed by cleanup job"
+        elif git ls-remote --exit-code --heads https://gitlab.com/sylva-projects/sylva-core.git "${GIT_REVISION}" > /dev/null; then
+          echo "Provided GIT_REVISION: $GIT_REVISION is a known upstream branch. It will be used as reference for fetching sylva-core code"
+          GIT_REVISION=$(git ls-remote --exit-code --heads https://gitlab.com/sylva-projects/sylva-core.git "${GIT_REVISION}" | cut -f 1)
+          SHORT_ID=$(echo $GIT_REVISION | head -c 8)
+          if [ -n "${OCI_TAG}" ] ; then
+            OCI_TAG=0.0.0-git-$SHORT_ID
+          fi
+        else
+          echo "Provided GIT_REVISION: $GIT_REVISION, will try to use it as a commit id"
+          SHORT_ID=$(echo $GIT_REVISION | head -c 8)
+          if [ -n "${OCI_TAG}" ] ; then
+            OCI_TAG=0.0.0-git-$SHORT_ID
           fi
         fi
-        git fetch origin $GIT_REVISION
-        echo -e "Changing git revision to use \\e[1;94m$1\\e[0m"
-        git checkout $GIT_REVISION
-        git status
-        echo -e "Current revision: $(git rev-parse HEAD)"
-      }
-    - |
-      function update_values_file() {
-        echo -e "Applying values from \\e[1;94m$@\\e[0m to \\e[1;92m$values_file\\e[0m"
-        yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file $@
-        echo "Content of $values_file:"
-        cat $values_file
-      }
-    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_common[collapsed=true]\r\e[0KRunning common deployment steps\e[0m"
-    - |
-      if [ -n "${GIT_REVISION}" ] ; then
-        change_git_revision $GIT_REVISION
-      else
-        echo -e "Current revision: $(git rev-parse HEAD)"
-      fi
-    - |
-      if [[ ${CLUSTER_TYPE} == 'workload' ]]; then
-          ENV_SUB_PATH="environment-values/workload-clusters"
-          export OCI_COMPONENT_PATH="../../components/workload-cluster-oci-artifacts"
-          export CLUSTER_CI_NAME=${WORKLOAD_CLUSTER_NAME}
-      else
-          ENV_SUB_PATH="environment-values"
-          export OCI_COMPONENT_PATH="../components/oci-artifacts"
-          export CLUSTER_CI_NAME=${MANAGEMENT_CLUSTER_NAME}
-      fi
-    - export ENV_PATH=${ENV_SUB_PATH}/${ENV_NAME}
-    - values_file=$ENV_PATH/values.yaml
-    - |
-      if [ -n "$METAL3_PROVIDER" ]; then
-        yq -i ".metal3.provider = \"$METAL3_PROVIDER\"" $values_file
-      fi
-    - |
-      if [ -n "$DOCKER_HOST" ]; then
-        docker network create --attachable kind
-        export DOCKER_IP=$(getent ahostsv4 docker | awk '{print $1}' | sort -u)
-        KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
-        ip route add $KIND_PREFIX via $DOCKER_IP
-      fi
-    - |
-      if [ ${OCI_TAG} ]; then
-        echo -e "Applying OCI configuration for tag: ${OCI_TAG}"
-        if [ $(yq '.components | length' $ENV_PATH/kustomization.yaml) -eq "0" ]; then
-          yq -i '.components = []' $ENV_PATH/kustomization.yaml
+      if [ -n "${OCI_TAG}" ] ; then
+        echo "Sylva-units chart will use: $OCI_TAG reference"
+        echo "Checking if oci://registry.gitlab.com/sylva-projects/sylva-core/sylva-units:$OCI_TAG exist"
+        if helm pull oci://registry.gitlab.com/sylva-projects/sylva-core/sylva-units --version $OCI_TAG -d /tmp > /dev/null; then
+          echo "oci://registry.gitlab.com/sylva-projects/sylva-core/sylva-units:$OCI_TAG was sucessfully pulled"
+        else
+          echo "Failed to retrieve: oci://registry.gitlab.com/sylva-projects/sylva-core/sylva-units:$OCI_TAG"
+          echo "Ensure you are targeting a branch with an open MR and check if that OCI artifact was not removed by cleanup job"
         fi
-        yq -i '.components += strenv(OCI_COMPONENT_PATH)' $ENV_PATH/kustomization.yaml
-      cat <<EOF>> $ENV_PATH/kustomization.yaml
-      patches:
-      - target:
-          kind: HelmRelease
-          name: sylva-units
-        patch: |
-          - op: replace
-            path: /spec/chart/spec/version
-            value: ${OCI_TAG}
-      EOF
-        cat $ENV_PATH/kustomization.yaml
       fi
-    - yq -i '.cluster.name = strenv(CLUSTER_CI_NAME)' $values_file
-    - yq -i '.env_type = "ci"' $values_file
-    - |
-      if [ -n "${MGMT_ADDITIONAL_VALUES}" ] && [ "${CLUSTER_TYPE}" = "management" ]; then
-        update_values_file ${MGMT_ADDITIONAL_VALUES}
+      git fetch origin $GIT_REVISION
+      echo -e "Changing git revision to use \\e[1;94m$1\\e[0m"
+      git checkout $GIT_REVISION
+      git status
+      echo -e "Current revision: $(git rev-parse HEAD)"
+    }
+
+.function_update_values_file:
+  # Common function to update the deployment values file with the content of multiple yaml files
+  - |
+    function update_values_file() {
+    echo -e "Applying values from \\e[1;94m$@\\e[0m to \\e[1;92m$values_file\\e[0m"
+    yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file $@
+    echo "Content of $values_file:"
+    cat $values_file
+    }
+
+.setup_ci_values:
+  - !reference [.function_change_git_revision]
+  - !reference [.function_update_values_file]
+  - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_common[collapsed=true]\r\e[0KRunning common deployment steps\e[0m"
+  - |
+    if [ -n "${GIT_REVISION}" ] ; then
+      change_git_revision $GIT_REVISION
+    else
+      echo -e "Current revision: $(git rev-parse HEAD)"
+    fi
+  - |
+    if [[ ${CLUSTER_TYPE} == 'workload' ]]; then
+        ENV_SUB_PATH="environment-values/workload-clusters"
+        export OCI_COMPONENT_PATH="../../components/workload-cluster-oci-artifacts"
+        export CLUSTER_CI_NAME=${WORKLOAD_CLUSTER_NAME}
+    else
+        ENV_SUB_PATH="environment-values"
+        export OCI_COMPONENT_PATH="../components/oci-artifacts"
+        export CLUSTER_CI_NAME=${MANAGEMENT_CLUSTER_NAME}
+    fi
+  - export ENV_PATH=${ENV_SUB_PATH}/${ENV_NAME}
+  - values_file=$ENV_PATH/values.yaml
+  - |
+    if [ -n "$METAL3_PROVIDER" ]; then
+      yq -i ".metal3.provider = \"$METAL3_PROVIDER\"" $values_file
+    fi
+  - |
+    if [ -n "$DOCKER_HOST" ]; then
+      docker network create --attachable kind
+      export DOCKER_IP=$(getent ahostsv4 docker | awk '{print $1}' | sort -u)
+      KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
+      ip route add $KIND_PREFIX via $DOCKER_IP
+    fi
+  - |
+    if [ ${OCI_TAG} ]; then
+      echo -e "Applying OCI configuration for tag: ${OCI_TAG}"
+      if [ $(yq '.components | length' $ENV_PATH/kustomization.yaml) -eq "0" ]; then
+        yq -i '.components = []' $ENV_PATH/kustomization.yaml
       fi
-    - |
-      if [ -n "${WC_ADDITIONAL_VALUES}" ] && [ "${CLUSTER_TYPE}" = "workload" ]; then
-        update_values_file ${WC_ADDITIONAL_VALUES}
-      fi
-    - |
-      if [ -n "${REMOTE_VALUES}" ]; then
-        echo -e "This pipeline is a cross project pipeline."
-        echo "${REMOTE_VALUES}" > /tmp/remote_values.yaml
-        update_values_file /tmp/remote_values.yaml
-      fi
-    - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_common\r\e[0K"
-    - |
-      case "$ENV_NAME" in
-        *capd*)
-           echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capd[collapsed=true]\r\e[0KApplying specific capd configuration\e[0m"
-           export DOCKER_HOST=tcp://$DOCKER_IP:2375
-           yq -i '.capd_docker_host = strenv(DOCKER_HOST)' $values_file
-           export CLUSTER_IP=$(echo $KIND_PREFIX | awk -F"." '{print $1"."$2"."$3".100"}')
-           yq -i '.cluster_virtual_ip = strenv(CLUSTER_IP)' $values_file
-           echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capd\r\e[0K"
-        ;;
-        *capo*)
-          echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capo[collapsed=true]\r\e[0KApplying specific capo configuration\e[0m"
-          mkdir -p ~/.config/openstack
-      cat <<EOF>> ~/.config/openstack/clouds.yml
-      clouds:
-        capo_cloud:
-          auth:
-            auth_url: '${OS_AUTH_URL}'
-            user_domain_name: '${OS_USER_DOMAIN_ID}'
-            project_domain_name: '${OS_PROJECT_DOMAIN_ID}'
-            project_name: '${OS_TENANT_NAME}'
-            username: '${OS_USERNAME}'
-            password: '${OS_PASSWORD}'
-          region_name: '${OS_REGION_NAME}'
-          verify: false
-      EOF
-          if [[ ${CLUSTER_TYPE} == 'management' ]]; then
-            yq -i eval-all 'select(fileIndex==0).cluster.capo.clouds_yaml = select(fileIndex==1) | select(fileIndex==0)' $ENV_PATH/secrets.yaml ~/.config/openstack/clouds.yml
-          fi
-          yq -i '.cluster.capo.resources_tag = strenv(CAPO_TAG)' $values_file
+      yq -i '.components += strenv(OCI_COMPONENT_PATH)' $ENV_PATH/kustomization.yaml
+    cat <<EOF>> $ENV_PATH/kustomization.yaml
+    patches:
+    - target:
+        kind: HelmRelease
+        name: sylva-units
+      patch: |
+        - op: replace
+          path: /spec/chart/spec/version
+          value: ${OCI_TAG}
+    EOF
+      cat $ENV_PATH/kustomization.yaml
+    fi
+  - yq -i '.cluster.name = strenv(CLUSTER_CI_NAME)' $values_file
+  - yq -i '.env_type = "ci"' $values_file
+  - |
+    if [ -n "${MGMT_ADDITIONAL_VALUES}" ] && [ "${CLUSTER_TYPE}" = "management" ]; then
+      update_values_file ${MGMT_ADDITIONAL_VALUES}
+    fi
+  - |
+    if [ -n "${WC_ADDITIONAL_VALUES}" ] && [ "${CLUSTER_TYPE}" = "workload" ]; then
+      update_values_file ${WC_ADDITIONAL_VALUES}
+    fi
+  - |
+    if [ -n "${REMOTE_VALUES}" ]; then
+      echo -e "This pipeline is a cross project pipeline."
+      echo "${REMOTE_VALUES}" > /tmp/remote_values.yaml
+      update_values_file /tmp/remote_values.yaml
+    fi
+  - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_common\r\e[0K"
+  - !reference [.flavored-pre-deployment-configuration]
+  - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_update_values[collapsed=true]\r\e[0KApply specific values\e[0m"
+  - |
+    if [ -n "${SPECIFIC_VALUES_FILE}" ]; then
+      update_values_file $SPECIFIC_VALUES_FILE
+    else
+      echo -e "No specific values to apply"
+    fi
+  - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_update_values\r\e[0K"
 
-          # The PRIVATE variables below are set in the gitlab runner configuration
-          # and allow to enable extra values needed in the context of the platform on which this test actually runs
-          PRIVATE_RUNNER_CONTEXT=falcon   # Temporary: to be set at runner level
-          echo "Applying private $PRIVATE_RUNNER_CONTEXT values"
-          PRIVATE_RUNNER_VALUES_PATH=${CI_PROJECT_DIR}/environment-values/ci/private/${PRIVATE_RUNNER_CONTEXT}-base
+# By default we don't have specific configuration to apply
+.flavored-pre-deployment-configuration:
+  - []
 
-          # decypher falcon secret and apply them with values into extra kustomize component
-          sops -d ${PRIVATE_RUNNER_VALUES_PATH}/secrets.enc.yaml > ${PRIVATE_RUNNER_VALUES_PATH}/secrets.yaml
-          export EXTRA_COMPONENT="$(realpath ${PRIVATE_RUNNER_VALUES_PATH} --relative-to $ENV_PATH)"
-          echo EXTRA_COMPONENT=$EXTRA_COMPONENT
-          if [ $(yq '.components | length' $ENV_PATH/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' $ENV_PATH/kustomization.yaml; fi
-          yq -i '.components += strenv(EXTRA_COMPONENT)' $ENV_PATH/kustomization.yaml
-
-          if [[ ${CLUSTER_TYPE} == 'workload' ]]; then
-            yq -i '.namespace = "WORKLOAD_CLUSTER_NAMESPACE"' $ENV_PATH/kustomization.yaml
-          fi
-          echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capo\r\e[0K"
-        ;;
-      esac
-    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_update_values[collapsed=true]\r\e[0KApply specific values\e[0m"
-    - |
-      if [ -n "${SPECIFIC_VALUES_FILE}" ]; then
-        update_values_file $SPECIFIC_VALUES_FILE
-      else
-        echo -e "No specific values to apply"
-      fi
-
-    - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_update_values\r\e[0K"
-  os_cloud:
-    # the OS_* variables below are set in the gitlab runner configuration
-    # and contain information to connect to the OpenStack instance used
-    # by this test
-    - mkdir -p ~/.config/openstack
-    - |
-      cat <<EOF>> ~/.config/openstack/clouds.yml
-      clouds:
-        capo_cloud:
-          auth:
-            auth_url: '${OS_AUTH_URL}'
-            user_domain_name: '${OS_USER_DOMAIN_ID}'
-            project_domain_name: '${OS_PROJECT_DOMAIN_ID}'
-            project_name: '${OS_TENANT_NAME}'
-            username: '${OS_USERNAME}'
-            password: '${OS_PASSWORD}'
-          region_name: '${OS_REGION_NAME}'
-          verify: false
-      EOF
-
+.os_cloud:
+  # the OS_* variables below are set in the gitlab runner configuration
+  # and contain information to connect to the OpenStack instance used
+  # by this test
+  - mkdir -p ~/.config/openstack
+  - |
+    cat <<EOF>> ~/.config/openstack/clouds.yml
+    clouds:
+      capo_cloud:
+        auth:
+          auth_url: '${OS_AUTH_URL}'
+          user_domain_name: '${OS_USER_DOMAIN_ID}'
+          project_domain_name: '${OS_PROJECT_DOMAIN_ID}'
+          project_name: '${OS_TENANT_NAME}'
+          username: '${OS_USERNAME}'
+          password: '${OS_PASSWORD}'
+        region_name: '${OS_REGION_NAME}'
+        verify: false
+    EOF
 
 .management-base:
   extends: .docker-service
@@ -225,7 +187,7 @@ include:
   extends: .management-base
   stage: deploy
   script:
-    - !reference [.common-deployment, setup_ci_values]
+    - !reference [.setup_ci_values]
     - ./bootstrap.sh environment-values/${ENV_NAME}
   variables:
     SPECIFIC_VALUES_FILE: $MGMT_INITIAL_ADDITIONAL_VALUES
@@ -235,7 +197,7 @@ include:
   extends: .management-base
   stage: update
   script:
-    - !reference [.common-deployment, setup_ci_values]
+    - !reference [.setup_ci_values]
     - ./apply.sh environment-values/${ENV_NAME}
   variables:
     SPECIFIC_VALUES_FILE: $MGMT_UPDATE_ADDITIONAL_VALUES
@@ -264,7 +226,7 @@ include:
   stage: deploy-wc
   extends: .workload-base
   script:
-    - !reference [.common-deployment, setup_ci_values]
+    - !reference [.setup_ci_values]
     - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
   variables:
     SPECIFIC_VALUES_FILE: $WC_INITIAL_ADDITIONAL_VALUES
@@ -274,7 +236,7 @@ include:
   extends: .workload-base
   stage: update-wc
   script:
-    - !reference [.common-deployment, setup_ci_values]
+    - !reference [.setup_ci_values]
     - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
   variables:
     SPECIFIC_VALUES_FILE: $WC_UPDATE_ADDITIONAL_VALUES

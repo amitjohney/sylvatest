@@ -8,7 +8,7 @@ scheduled-cleanup-capo:
   image:
     name: $OPENSTACK_CLIENT_IMAGE
   script:
-    - !reference [.common-deployment, os_cloud]
+    - !reference [.os_cloud]
     - touch tags.txt exclude-tags.txt
     - |
       set -eo pipefail

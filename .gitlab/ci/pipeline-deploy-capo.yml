@@ -12,7 +12,30 @@ default:
   tags:
     - $CAPO_PLATFORM_TAG
 
-# ----------------------------------------------------------
+# This configuration is specific to capo deployments
+.flavored-pre-deployment-configuration:
+  - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capo[collapsed=true]\r\e[0KApplying specific capo configuration\e[0m"
+  - !reference [.os_cloud]
+  - |
+    if [[ ${CLUSTER_TYPE} == 'management' ]]; then
+      yq -i eval-all 'select(fileIndex==0).cluster.capo.clouds_yaml = select(fileIndex==1) | select(fileIndex==0)' $ENV_PATH/secrets.yaml ~/.config/openstack/clouds.yml
+    fi
+    yq -i '.cluster.capo.resources_tag = strenv(CAPO_TAG)' $values_file
+    # The PRIVATE variables below are set in the gitlab runner configuration
+    # and allow to enable extra values needed in the context of the platform on which this test actually runs
+    PRIVATE_RUNNER_CONTEXT=falcon   # Temporary: to be set at runner level
+    echo "Applying private $PRIVATE_RUNNER_CONTEXT values"
+    PRIVATE_RUNNER_VALUES_PATH=${CI_PROJECT_DIR}/environment-values/ci/private/${PRIVATE_RUNNER_CONTEXT}-base
+    # decypher falcon secret and apply them with values into extra kustomize component
+    sops -d ${PRIVATE_RUNNER_VALUES_PATH}/secrets.enc.yaml > ${PRIVATE_RUNNER_VALUES_PATH}/secrets.yaml
+    export EXTRA_COMPONENT="$(realpath ${PRIVATE_RUNNER_VALUES_PATH} --relative-to $ENV_PATH)"
+    echo EXTRA_COMPONENT=$EXTRA_COMPONENT
+    if [ $(yq '.components | length' $ENV_PATH/kustomization.yaml) -eq "0" ]; then yq -i '.components = []' $ENV_PATH/kustomization.yaml; fi
+    yq -i '.components += strenv(EXTRA_COMPONENT)' $ENV_PATH/kustomization.yaml
+    if [[ ${CLUSTER_TYPE} == 'workload' ]]; then
+      yq -i '.namespace = "WORKLOAD_CLUSTER_NAMESPACE"' $ENV_PATH/kustomization.yaml
+    fi
+    echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capo\r\e[0K"
 
 cleanup-openstack:
   stage: delete
@@ -20,7 +43,7 @@ cleanup-openstack:
     name: $OPENSTACK_CLIENT_IMAGE
   dependencies: []
   script:
-    - !reference [.common-deployment, os_cloud]
+    - !reference [.os_cloud]
     - ./tools/openstack-cleanup.sh capo_cloud "${CAPO_TAG}"
   tags:
     - $CAPO_PLATFORM_TAG

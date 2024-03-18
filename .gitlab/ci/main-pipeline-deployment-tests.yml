@@ -147,7 +147,7 @@ capd-preview-deploy:
     - .deploy-management
   timeout: 15min
   script:
-    - !reference [.common-deployment, setup_ci_values]
+    - !reference [.setup_ci_values]
     - ./preview.sh environment-values/${ENV_NAME}
   artifacts:
     when: on_failure
