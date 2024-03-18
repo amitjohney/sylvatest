@@ -39,7 +39,7 @@ if [[ -f ${BASE_DIR}/bin/env ]]; then
     source ${BASE_DIR}/bin/env
 else
     echo "bin/env is not present in ${BASE_DIR}"
-    exit -1
+    exit 1
 fi
 
 echo "Deleting workload cluster named \"$WORKLOAD_CLUSTER\" with cluster named \"$CLUSTER\""
