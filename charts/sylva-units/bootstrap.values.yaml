@@ -6,9 +6,9 @@ _internal:
   default_storage_class_unit: "bootstrap-local-path"
   libvirt_metal_networks: '[{"name": "provisioning", "namespace": "default",  "ips": ["192.168.10.123"]}, { "name": "management", "namespace": "default"}]'
   bootstrap_node_ip: |-
-      {{- $result := "not found" -}}
+      {{- $result := "not-found" -}}
       {{- range $address := lookup "v1" "Node" "" "" | dig "items" list | first | default dict |  dig "status" "addresses" list -}}
-        {{- if and (eq $address.type "InternalIP") (eq $result "not found") -}}
+        {{- if and (eq $address.type "InternalIP") (eq $result "not-found") -}}
           {{- $result = $address.address -}}
         {{- end -}}
       {{- end -}}
@@ -32,6 +32,25 @@ _internal:
     # the 0.0.0.0/32 values above are just here to let us use "helm template" with this
     # file without errors
 
+
+  _bootstrap_os_images_override_enabled: |-
+    {{- $mylist := .Values.bootstrap_os_images_override_enabled | default list -}}
+    {{- if and .Values.cluster.control_plane .Values.cluster.control_plane.capm3 .Values.cluster.control_plane.capm3.image_key }}
+      {{- $mylist = append $mylist .Values.cluster.control_plane.capm3.image_key }}
+    {{- else if and .Values.cluster.control_plane .Values.cluster.control_plane.capo .Values.cluster.control_plane.capo.image_key }}
+      {{- $mylist = append $mylist .Values.cluster.control_plane.capo.image_key }}
+    {{- end }}
+    {{- range $md, $config := .Values.cluster.machine_deployments }}
+      {{- if and $config.capo $config.capo.image_key }}
+          {{- $mylist = append $mylist $config.capo.image_key -}}
+      {{- else if and $config.capm3 $config.capm3.image_key }}
+          {{- $mylist = append $mylist $config.capm3.image_key -}}
+      {{- end }}
+    {{- end }}
+    {{- $mylist = append $mylist (.Values.cluster.capo.image_key | default .Values.cluster.capm3.image_key) -}}
+    {{- without $mylist nil | uniq | include "preserve-type" -}}
+
+bootstrap_os_images_override_enabled: []
 
 unit_templates:
   base-deps:
