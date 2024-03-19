@@ -1,11 +1,11 @@
-apiVersion: sriovnetwork.openshift.io/v1
-kind: SriovNetwork
-metadata:
-  name: sriov-net
-#  namespace: sriov-network-operator
-spec:
-  ipam: |
-    {}
-  networkNamespace: default
-  resourceName: sriov
-  spoofChk: "off"
+# apiVersion: sriovnetwork.openshift.io/v1
+# kind: SriovNetwork
+# metadata:
+#   name: sriov-net
+# #  namespace: sriov-network-operator
+# spec:
+#   ipam: |
+#     {}
+#   networkNamespace: default
+#   resourceName: sriov
+#   spoofChk: "off"
