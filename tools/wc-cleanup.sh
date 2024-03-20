@@ -3,22 +3,17 @@
 set -e
 export BASE_DIR="$(realpath $(dirname $0)/.. )"
 
-if [ "$#" -lt 1 ] || [ "$#" -gt 3 ]; then
-    echo "Usage: ./wc-cleanup.sh <Workload-cluster-name> <(optionally)cluster_object_name> <(optionally)IReallyWantToDelete>"
+if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
+    echo "Usage: ./wc-cleanup.sh <Workload-cluster-name> <(optionally)IReallyWantToDelete>"
     exit 1
 fi
 
 WORKLOAD_CLUSTER=$1
-if [[ -z "$2" ]]; then
-  CLUSTER="cluster"
-else
-  CLUSTER=$2
-fi
 
-if [ "$#" -eq 3 ]; then
-    CONFIRMATION=$3
+if [ "$#" -eq 2 ]; then
+    CONFIRMATION=$2
 else
-    echo "Are you sure you want to delete workload cluster named \"$WORKLOAD_CLUSTER\" with cluster named \"$CLUSTER\"? (Type 'IReallyWantToDelete' to confirm)"
+    echo "Are you sure you want to delete workload cluster named \"$WORKLOAD_CLUSTER\"? (Type 'IReallyWantToDelete' to confirm)"
     read -r CONFIRMATION
 fi
 
@@ -42,10 +37,10 @@ else
     exit 1
 fi
 
-echo "Deleting workload cluster named \"$WORKLOAD_CLUSTER\" with cluster named \"$CLUSTER\""
+echo "Deleting workload cluster named \"$WORKLOAD_CLUSTER\""
 flux suspend --all ks -n $WORKLOAD_CLUSTER
 flux suspend --all hr -n $WORKLOAD_CLUSTER
-kubectl delete --request-timeout 5m -n $WORKLOAD_CLUSTER hr $CLUSTER
+kubectl delete --request-timeout 5m -n $WORKLOAD_CLUSTER hr cluster
 if kubectl get -n $WORKLOAD_CLUSTER heatstacks &> /dev/null; then
     echo "Found heatstacks in namespace $WORKLOAD_CLUSTER, deleting..."
     kubectl delete --request-timeout 1m -n $WORKLOAD_CLUSTER heatstacks heatstack-capo-cluster-resources
@@ -53,4 +48,4 @@ else
     echo "No heatstacks found in namespace $WORKLOAD_CLUSTER, skipping deletion"
 fi
 kubectl delete --request-timeout 1m ns $WORKLOAD_CLUSTER
-echo "Successfully deleted workload cluster named \"$WORKLOAD_CLUSTER\" with cluster named \"$CLUSTER\""
+echo "Successfully deleted workload cluster named \"$WORKLOAD_CLUSTER\""
