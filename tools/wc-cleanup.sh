@@ -46,6 +46,11 @@ echo "Deleting workload cluster named \"$WORKLOAD_CLUSTER\" with cluster named \
 flux suspend --all ks -n $WORKLOAD_CLUSTER
 flux suspend --all hr -n $WORKLOAD_CLUSTER
 kubectl delete --request-timeout 5m -n $WORKLOAD_CLUSTER hr $CLUSTER
-kubectl delete --request-timeout 1m -n $WORKLOAD_CLUSTER heatstacks heatstack-capo-cluster-resources
+if kubectl get -n $WORKLOAD_CLUSTER heatstacks &> /dev/null; then
+    echo "Found heatstacks in namespace $WORKLOAD_CLUSTER, deleting..."
+    kubectl delete --request-timeout 1m -n $WORKLOAD_CLUSTER heatstacks heatstack-capo-cluster-resources
+else
+    echo "No heatstacks found in namespace $WORKLOAD_CLUSTER, skipping deletion"
+fi
 kubectl delete --request-timeout 1m ns $WORKLOAD_CLUSTER
 echo "Successfully deleted workload cluster named \"$WORKLOAD_CLUSTER\" with cluster named \"$CLUSTER\""
