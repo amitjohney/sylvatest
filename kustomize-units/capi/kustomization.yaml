@@ -13,7 +13,7 @@ patches:
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/args/3
-        value: --feature-gates=MachinePool=true,ClusterResourceSet=false,ClusterTopology=false
+        value: --feature-gates=EKS=true,EKSEnableIAM=true,EKSAllowAddRoles=true,EKSFargate=false,MachinePool=true,EventBridgeInstanceState=true,AutoControllerIdentityCreator=true,BootstrapFormatIgnition=false,ExternalResourceGC=false,AlternativeGCStrategy=false,TagUnmanagedNetworkResources=true
   - target:
       group: apiextensions.k8s.io
       version: v1
