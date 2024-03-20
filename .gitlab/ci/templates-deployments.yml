@@ -241,3 +241,9 @@ include:
   variables:
     SPECIFIC_VALUES_FILE: $WC_UPDATE_ADDITIONAL_VALUES
     GIT_REVISION: $WC_UPDATE_REVISION
+
+.delete-workload:
+  stage: delete-wc
+  extends: .workload-base
+  script:
+    - ./tools/wc-cleanup.sh ${ENV_NAME} IReallyWantToDelete

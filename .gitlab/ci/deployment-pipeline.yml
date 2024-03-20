@@ -100,3 +100,9 @@ update-workload-cluster:
   extends:
     - .update-workload
     - .rules:skip-if-only-deploy-mgmt
+
+# ----------------------------------------------------------
+
+delete-workload-cluster:
+  extends:
+    - .delete-workload
