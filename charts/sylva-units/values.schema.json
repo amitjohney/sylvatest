@@ -666,7 +666,8 @@
             "image_key": {
               "anyOf": [
                 {
-                  "type": "string"
+                  "type": "string",
+                  "pattern": "^[a-z0-9][a-z0-9.-]*[a-z0-9]$"
                 },
                 {
                   "$ref": "#/$defs/string-with-gotpl"
@@ -723,6 +724,32 @@
                       ]
                     }
                   }
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "os_distro": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "os_hardened": {
+              "anyOf": [
+                {
+                  "type": "boolean"
                 },
                 {
                   "$ref": "#/$defs/string-with-gotpl"
@@ -2328,6 +2355,32 @@
                 }
               ]
             },
+            "os_distro": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "os_hardened": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "capo": {
               "anyOf": [
                 {
@@ -2349,7 +2402,8 @@
                     "image_key": {
                       "anyOf": [
                         {
-                          "type": "string"
+                          "type": "string",
+                          "pattern": "^[a-z0-9][a-z0-9.-]*[a-z0-9]$"
                         },
                         {
                           "$ref": "#/$defs/string-with-gotpl"
@@ -2415,6 +2469,32 @@
                         }
                       ]
                     },
+                    "os_distro": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "$ref": "#/$defs/string-with-gotpl"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "os_hardened": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "$ref": "#/$defs/string-with-gotpl"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "failure_domain": {
                       "anyOf": [
                         {
@@ -2455,6 +2535,22 @@
                       ]
                     },
                     "security_group_names": {
+                      "anyOf": [
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "$ref": "#/$defs/string-with-gotpl"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "additional_security_group_names": {
                       "anyOf": [
                         {
                           "type": "array",
@@ -2894,6 +2990,32 @@
             }
           ]
         },
+        "os_distro": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "os_hardened": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "cis_profile": {
           "anyOf": [
             {
@@ -3167,7 +3289,8 @@
                 "image_key": {
                   "anyOf": [
                     {
-                      "type": "string"
+                      "type": "string",
+                      "pattern": "^[a-z0-9][a-z0-9.-]*[a-z0-9]$"
                     },
                     {
                       "$ref": "#/$defs/string-with-gotpl"
@@ -3224,6 +3347,32 @@
                           ]
                         }
                       }
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "os_distro": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "os_hardened": {
+                  "anyOf": [
+                    {
+                      "type": "boolean"
                     },
                     {
                       "$ref": "#/$defs/string-with-gotpl"
@@ -5028,7 +5177,8 @@
                         "image_key": {
                           "anyOf": [
                             {
-                              "type": "string"
+                              "type": "string",
+                              "pattern": "^[a-z0-9][a-z0-9.-]*[a-z0-9]$"
                             },
                             {
                               "$ref": "#/$defs/string-with-gotpl"
@@ -5094,6 +5244,32 @@
                             }
                           ]
                         },
+                        "os_distro": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "os_hardened": {
+                          "anyOf": [
+                            {
+                              "type": "boolean"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
                         "server_group_id": {
                           "anyOf": [
                             {
@@ -5122,8 +5298,50 @@
                               "type": "null"
                             }
                           ]
+                        },
+                        "additional_security_group_names": {
+                          "anyOf": [
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
                         }
                       }
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "os_distro": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "os_hardened": {
+                  "anyOf": [
+                    {
+                      "type": "boolean"
                     },
                     {
                       "$ref": "#/$defs/string-with-gotpl"
@@ -6426,6 +6644,9 @@
     "registry_mirrors"
   ],
   "properties": {
+    "helm-library-charts": {
+      "type": "object"
+    },
     "fullnameOverride": {
       "type": "string"
     },

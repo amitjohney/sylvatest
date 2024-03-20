@@ -168,6 +168,9 @@ required:
 
 properties:
 
+  helm-library-charts:
+    type: object
+    
   fullnameOverride:  # -------------------------------
     type: string
   nameOverride:  # -------------------------------
