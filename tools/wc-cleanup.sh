@@ -45,7 +45,7 @@ fi
 echo "Deleting workload cluster named \"$WORKLOAD_CLUSTER\" with cluster named \"$CLUSTER\""
 flux suspend --all ks -n $WORKLOAD_CLUSTER
 flux suspend --all hr -n $WORKLOAD_CLUSTER
-kubectl delete -n $WORKLOAD_CLUSTER hr $CLUSTER
-kubectl delete -n $WORKLOAD_CLUSTER heatstacks heatstack-capo-cluster-resources
-kubectl delete ns $WORKLOAD_CLUSTER
+kubectl delete --request-timeout 5m -n $WORKLOAD_CLUSTER hr $CLUSTER
+kubectl delete --request-timeout 1m -n $WORKLOAD_CLUSTER heatstacks heatstack-capo-cluster-resources
+kubectl delete --request-timeout 1m ns $WORKLOAD_CLUSTER
 echo "Successfully deleted workload cluster named \"$WORKLOAD_CLUSTER\" with cluster named \"$CLUSTER\""
