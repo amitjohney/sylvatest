@@ -666,7 +666,8 @@
             "image_key": {
               "anyOf": [
                 {
-                  "type": "string"
+                  "type": "string",
+                  "pattern": "^[a-z0-9][a-z0-9.-]*[a-z0-9]$"
                 },
                 {
                   "$ref": "#/$defs/string-with-gotpl"
@@ -2349,7 +2350,8 @@
                     "image_key": {
                       "anyOf": [
                         {
-                          "type": "string"
+                          "type": "string",
+                          "pattern": "^[a-z0-9][a-z0-9.-]*[a-z0-9]$"
                         },
                         {
                           "$ref": "#/$defs/string-with-gotpl"
@@ -2455,6 +2457,22 @@
                       ]
                     },
                     "security_group_names": {
+                      "anyOf": [
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "$ref": "#/$defs/string-with-gotpl"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "additional_security_group_names": {
                       "anyOf": [
                         {
                           "type": "array",
@@ -3167,7 +3185,8 @@
                 "image_key": {
                   "anyOf": [
                     {
-                      "type": "string"
+                      "type": "string",
+                      "pattern": "^[a-z0-9][a-z0-9.-]*[a-z0-9]$"
                     },
                     {
                       "$ref": "#/$defs/string-with-gotpl"
@@ -5028,7 +5047,8 @@
                         "image_key": {
                           "anyOf": [
                             {
-                              "type": "string"
+                              "type": "string",
+                              "pattern": "^[a-z0-9][a-z0-9.-]*[a-z0-9]$"
                             },
                             {
                               "$ref": "#/$defs/string-with-gotpl"
@@ -5108,6 +5128,22 @@
                           ]
                         },
                         "security_group_names": {
+                          "anyOf": [
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "additional_security_group_names": {
                           "anyOf": [
                             {
                               "type": "array",
