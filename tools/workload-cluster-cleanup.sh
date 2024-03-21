@@ -13,7 +13,7 @@ WORKLOAD_CLUSTER_NAMESPACE=$1
 if [ "$#" -eq 2 ]; then
     CONFIRMATION=$2
 else
-    echo "Are you sure you want to delete workload cluster named \"$WORKLOAD_CLUSTER_NAMESPACE\"? (Type 'IReallyWantToDelete' to confirm)"
+    echo "Are you sure you want to delete workload cluster in namespace \"$WORKLOAD_CLUSTER_NAMESPACE\"? (Type 'IReallyWantToDelete' to confirm)"
     read -r CONFIRMATION
 fi
 
@@ -50,4 +50,4 @@ else
     echo "No heatstacks found in namespace $WORKLOAD_CLUSTER_NAMESPACE, skipping deletion"
 fi
 kubectl delete --request-timeout 1m ns $WORKLOAD_CLUSTER_NAMESPACE
-echo "Successfully deleted workload cluster named \"$WORKLOAD_CLUSTER_NAMESPACE\""
+echo "Successfully deleted workload cluster in namespace \"$WORKLOAD_CLUSTER_NAMESPACE\""
