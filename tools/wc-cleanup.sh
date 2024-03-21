@@ -4,7 +4,7 @@ set -e
 export BASE_DIR="$(realpath $(dirname $0)/.. )"
 
 if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
-    echo "Usage: ./wc-cleanup.sh <Workload-cluster-namespace> <(optionally)IReallyWantToDelete>"
+    echo "Usage: ./wc-cleanup.sh <WORKLOAD_CLUSTER_NAMESPACE > <(optionally)IReallyWantToDelete>"
     exit 1
 fi
 
