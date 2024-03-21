@@ -2004,6 +2004,8 @@ units:
         | include "preserve-type"
         }}
     helmrelease_spec:
+      uninstall:
+        timeout: '{{ mul .Values.cluster.timeouts.cluster_delete_hook_job_timeout 1.2 }}s'
       targetNamespace: '{{ .Release.Namespace }}'
       chart:
         spec:
@@ -5155,6 +5157,9 @@ cluster:
     image_provisioning_host: '{{ .Values.display_external_ip }}'
 
   enable_longhorn: '{{ or (tuple . "longhorn" | include "unit-enabled") (tuple . .Values.units.longhorn.enabled | include "interpret-for-test") | include "as-bool" }}'
+
+  timeouts:
+    cluster_delete_hook_job_timeout: 300
 
   default_node_class: generic
   node_classes: {}
