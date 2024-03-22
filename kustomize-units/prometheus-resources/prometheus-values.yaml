@@ -1,7 +1,7 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: prometheus-snmp-exporter-config-values
+  name: prometheus-config-values
   namespace: sylva-system
 data:
   values.yaml: |

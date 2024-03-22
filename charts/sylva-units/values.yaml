@@ -2980,7 +2980,7 @@ units:
           name: flux-custom-resource-state-config # this configmap is a byproduct of the prometheus-flux unit
           optional: '{{ not (tuple . "prometheus-flux" | include "unit-enabled") | include "as-bool" }}'
         - kind: ConfigMap
-          name: prometheus-snmp-exporter-config-values # this configmap is a byproduct of the prometheus-resources unit
+          name: prometheus-config-values # this configmap is a byproduct of the prometheus-resources unit
           optional: '{{ not (tuple . "snmp-exporter" | include "unit-enabled") | include "as-bool" }}'
       # Disable drift detection for rancher-monitoring webhooks
       _postRenderers:

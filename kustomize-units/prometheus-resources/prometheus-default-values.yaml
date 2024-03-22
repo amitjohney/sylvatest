@@ -1,0 +1,5 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: prometheus-default-values
+  namespace: cattle-monitoring-system
