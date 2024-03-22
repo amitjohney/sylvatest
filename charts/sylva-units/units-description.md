@@ -46,7 +46,7 @@
 | **ceph-csi-cephfs** | Installs Ceph-CSI | beta |  | [Helm](https://ceph.github.io/csi-charts) | 3.10.2 |
 | **flux-webui-init** | initializes and configures flux-webui | beta | True | Kustomize | N/A |
 | **harbor** | installs Harbor | beta |  | [Helm](https://helm.goharbor.io) | 1.14.0 |
-| **kubevirt** | installs kubevirt | beta |  | [Helm](https://suse-edge.github.io/charts) | 0.2.1 |
+| **kubevirt** | installs kubevirt | beta |  | [Helm](https://suse-edge.github.io/charts) | 0.2.3 |
 | **logging** | installs Rancher Fluentbit/Fluentd logging stack, for log collecting and shipping | beta |  | [Helm](https://charts.rancher.io/) | 103.0.0+up3.17.10 |
 | **loki** | installs Loki log storage<br/><br/>installs Loki log storage in simple scalable mode | beta |  | Helm | v2.9.2 |
 | **metal3-suse** | installs SUSE-maintained Metal3 operator | beta |  | [Helm](https://suse-edge.github.io/charts) | 0.6.3 |
