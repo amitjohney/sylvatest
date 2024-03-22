@@ -162,3 +162,5 @@ cluster:
   control_plane_replicas: 3
   capo:
     flavor_name: "m1.xlarge"
+_internal:
+  default_storage_class: '{{ .Values.openstack.storageClass.name }}'
