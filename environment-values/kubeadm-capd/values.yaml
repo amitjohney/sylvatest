@@ -1,6 +1,5 @@
 ---
 cluster:
-  k8s_version: v1.27.3
   capi_providers:
     infra_provider: capd
     bootstrap_provider: cabpk
