@@ -490,10 +490,10 @@ units:
           version: 14.3.3
       targetNamespace: keycloak
       values:
-        global:
-          postgresql:
-            auth:
-              database: keycloak
+        auth:
+          database: keycloak
+          password: '{{ .Values._internal.postgres_user_password }}'
+          replicationPassword: '{{ .Values._internal.postgres_replication_password }}'
         architecture: replication
         nameOverride: postgres
         serviceAccount:
@@ -5480,6 +5480,10 @@ _internal:
 
   # loki password
   loki_password: '{{ include "internalPersistentRandomPasswd" (tuple . "loki_password") }}'
+
+  # postgres passwords
+  postgres_user_password: '{{ include "internalPersistentRandomPasswd" (tuple . "postgres_user_password") }}'
+  postgres_replication_password: '{{ include "internalPersistentRandomPasswd" (tuple . "postgres_replication_password") }}'
 
   default_password: '{{ include "internalPersistentRandomPasswd" (tuple . "default_password") }}'
 
