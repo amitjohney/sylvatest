@@ -3016,8 +3016,11 @@ units:
       postBuild:
         substitute:
           CONFIGMAPS: >
-            - prometheus-default-values
-            - '{{ tuple "prometheus-snmp-sd-files" (tuple . "snmp-exporter" | include "unit-enabled") | include "set-only-if" }}'
+            {{- $cm := list "prometheus-default-values" -}}
+            {{- if (tuple . "snmp-exporter" | include "unit-enabled") -}}
+            {{- $cm = append $cm "prometheus-snmp-sd-files" -}}
+            {{- end -}}
+            {{ $cm | toYaml }}
           TARGETS: >
             {{- $sylva_cluster := .Values.cluster.name -}}
             {{- $result := list -}}
