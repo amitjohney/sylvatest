@@ -429,7 +429,7 @@ For this to be possible, you **must** use some helpers, as illustrated by the fo
         x: '{{ not (tuple . .Values.xyz.baz.enabled | include "interpret-for-test") }}'
   ```
 
-* processing a value in a `ternary` statement  ("if `<condition>` then `<result>` else `<another result>`")
+* processing a value in a `ternary` statement  ("if `<condition>` then `<result>` else `<another_result>`")
 
   * the `ternary` from Sprig GoTPL library is not usable in some cases, because it badly interacts
     with the behavior of `and` and `or`, which do not always return a boolean, e.g. `and '' true` returns `''`
