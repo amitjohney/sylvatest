@@ -3015,12 +3015,12 @@ units:
       wait: true
       postBuild:
         substitute:
-          CONFIGMAPS: >
+          CONFIGMAPS: '
             {{- $cm := list "prometheus-default-values" -}}
             {{- if (tuple . "snmp-exporter" | include "unit-enabled") -}}
             {{- $cm = append $cm "prometheus-snmp-sd-files" -}}
             {{- end -}}
-            {{ $cm | toYaml }}
+            {{ $cm | toJson }}'
           TARGETS: >
             {{- $sylva_cluster := .Values.cluster.name -}}
             {{- $result := list -}}
