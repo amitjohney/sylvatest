@@ -75,6 +75,14 @@ spec:
             port: ['5050', '6180', '6385', '9999']
             protocol: [tcp, tcp, tcp, tcp]
             remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
+        dummy_update_trigger:
+          type: string
+          description: >-
+            not actually used, just here to ensure we can artificially update the Heat Stack
+            whenever the sylva-units Helm release is updated, which we only do so that
+            the updated_time field of the stack reflect the last time the sylva-units HelmRelease
+            was updated
+          default: "unspecified"
 
       conditions:
         external_network_cond:
@@ -185,6 +193,7 @@ spec:
         worker_security_group_name: "${WORKER_SECURITY_GROUP_NAME}"
         create_ironic_security_group: ${CAPO_CREATE_IRONIC_SECURITY_GROUP}
         common_security_group_name: "${COMMON_SECURITY_GROUP_NAME}"
+        dummy_update_trigger: "${DUMMY_UPDATE_TRIGGER}"
   outputConfigMap:
     name: capo-cluster-resources
     labels:
