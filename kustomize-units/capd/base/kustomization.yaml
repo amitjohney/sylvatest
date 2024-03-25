@@ -20,6 +20,11 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/args/2
         value: --feature-gates=MachinePool=false,ClusterTopology=false
+
+images:
+  - name: gcr.io/k8s-staging-cluster-api/capd-manager
+    newTag: v1.6.3
+
 # Add labels to enable clusterctl move to retrieve resources correponding to capd CRDs
 labels:
   - pairs:
