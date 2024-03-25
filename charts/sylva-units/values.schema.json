@@ -677,6 +677,32 @@
                 }
               ]
             },
+            "os_distro": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "os_hardened": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "flavor_name": {
               "anyOf": [
                 {
@@ -724,32 +750,6 @@
                       ]
                     }
                   }
-                },
-                {
-                  "$ref": "#/$defs/string-with-gotpl"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            },
-            "os_distro": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "$ref": "#/$defs/string-with-gotpl"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            },
-            "os_hardened": {
-              "anyOf": [
-                {
-                  "type": "boolean"
                 },
                 {
                   "$ref": "#/$defs/string-with-gotpl"
@@ -1016,6 +1016,32 @@
                 }
               ]
             },
+            "os_distro": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "os_hardened": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "machine_image_url": {
               "type": "string",
               "anyOf": [
@@ -1262,6 +1288,32 @@
                 {
                   "type": "string",
                   "pattern": "^[a-z0-9][a-z0-9.-]*[a-z0-9]$"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "os_distro": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "os_hardened": {
+              "anyOf": [
+                {
+                  "type": "boolean"
                 },
                 {
                   "$ref": "#/$defs/string-with-gotpl"
@@ -2413,6 +2465,32 @@
                         }
                       ]
                     },
+                    "os_distro": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "$ref": "#/$defs/string-with-gotpl"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "os_hardened": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "$ref": "#/$defs/string-with-gotpl"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "flavor_name": {
                       "anyOf": [
                         {
@@ -2460,32 +2538,6 @@
                               ]
                             }
                           }
-                        },
-                        {
-                          "$ref": "#/$defs/string-with-gotpl"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
-                    "os_distro": {
-                      "anyOf": [
-                        {
-                          "type": "string"
-                        },
-                        {
-                          "$ref": "#/$defs/string-with-gotpl"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
-                    "os_hardened": {
-                      "anyOf": [
-                        {
-                          "type": "boolean"
                         },
                         {
                           "$ref": "#/$defs/string-with-gotpl"
@@ -2941,6 +2993,19 @@
         "cluster_pods_cidrs"
       ],
       "properties": {
+        "sylva-library": {
+          "anyOf": [
+            {
+              "type": "object"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "name": {
           "anyOf": [
             {
@@ -3300,6 +3365,32 @@
                     }
                   ]
                 },
+                "os_distro": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "os_hardened": {
+                  "anyOf": [
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
                 "flavor_name": {
                   "anyOf": [
                     {
@@ -3347,32 +3438,6 @@
                           ]
                         }
                       }
-                    },
-                    {
-                      "$ref": "#/$defs/string-with-gotpl"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "os_distro": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "$ref": "#/$defs/string-with-gotpl"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "os_hardened": {
-                  "anyOf": [
-                    {
-                      "type": "boolean"
                     },
                     {
                       "$ref": "#/$defs/string-with-gotpl"
@@ -3841,6 +3906,32 @@
                     {
                       "type": "string",
                       "pattern": "^[a-z0-9][a-z0-9.-]*[a-z0-9]$"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "os_distro": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "os_hardened": {
+                  "anyOf": [
+                    {
+                      "type": "boolean"
                     },
                     {
                       "$ref": "#/$defs/string-with-gotpl"
@@ -5188,6 +5279,32 @@
                             }
                           ]
                         },
+                        "os_distro": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "os_hardened": {
+                          "anyOf": [
+                            {
+                              "type": "boolean"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
                         "flavor_name": {
                           "anyOf": [
                             {
@@ -5235,32 +5352,6 @@
                                   ]
                                 }
                               }
-                            },
-                            {
-                              "$ref": "#/$defs/string-with-gotpl"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                        },
-                        "os_distro": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "$ref": "#/$defs/string-with-gotpl"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                        },
-                        "os_hardened": {
-                          "anyOf": [
-                            {
-                              "type": "boolean"
                             },
                             {
                               "$ref": "#/$defs/string-with-gotpl"
@@ -6121,6 +6212,12 @@
                         "required": [
                           "image_key"
                         ]
+                      },
+                      {
+                        "required": [
+                          "os_distro",
+                          "os_hardened"
+                        ]
                       }
                     ]
                   },
@@ -6248,6 +6345,12 @@
                       {
                         "required": [
                           "machine_image_url"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "os_distro",
+                          "os_hardened"
                         ]
                       }
                     ]
@@ -6644,7 +6747,7 @@
     "registry_mirrors"
   ],
   "properties": {
-    "helm-library-charts": {
+    "sylva-library": {
       "type": "object"
     },
     "fullnameOverride": {
