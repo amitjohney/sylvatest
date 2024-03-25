@@ -36,6 +36,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     kind: GitRepository
     spec:
       url: https://gitlab.com/sylva-projects/sylva-core.git
+      recurseSubmodules: true
       ref:
         # this is provided only for reference
         # in practice the sylva-core framework will always override this ref so that the
