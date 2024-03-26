@@ -26,3 +26,20 @@ patches:
       - op: add
         path: /spec/template/metadata/labels/app
         value: ipam-controller-manager
+
+# Patch for forcing leader election
+# Related to issue https://gitlab.com/sylva-projects/sylva-core/-/issues/1103
+  - target:
+      kind: Deployment
+      name: capm3-controller-manager
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --leader-elect
+  - target:
+      kind: Deployment
+      name: ipam-controller-manager
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --leader-elect
