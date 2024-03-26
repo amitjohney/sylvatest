@@ -26,3 +26,4 @@ test-values
 values.schema.yaml
 # sylva-library
 templates/sylva-library/Readme.md
+templates/sylva-library/.git
