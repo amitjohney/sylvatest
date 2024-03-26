@@ -32,7 +32,7 @@
 | **local-path-provisioner** | installs local-path CSI | stable |  | [Helm](https://github.com/rancher/local-path-provisioner.git) | v0.0.24 |
 | **longhorn** | installs Longhorn CSI | stable |  | [Helm](https://charts.rancher.io/) | 103.2.2+up1.5.4 |
 | **metal3** | install Metal3 operator | stable |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3.git) | 0.7.3 |
-| **metallb** | installs MetalLB operator | stable |  | [Helm](https://metallb.github.io/metallb) | 0.14.3 |
+| **metallb** | installs MetalLB operator | stable |  | [Helm](https://metallb.github.io/metallb) | 0.14.4 |
 | **monitoring** | installs monitoring stack | stable |  | [Helm](https://charts.rancher.io/) | 103.0.3+up45.31.1 |
 | **multus** | installs Multus | stable |  | [Helm](https://rke2-charts.rancher.io/) | v3.9.3-build2023010901 |
 | **os-image-server** | Deploys a web server on management cluster which serves OS images for baremetal clusters. | stable |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/os-image-server.git) | 2.0.0 |
