@@ -36,18 +36,19 @@ class MyProvider(oras.provider.Registry):
             container = self.get_container(artifact_url)
             manifest = self.get_manifest(container)
             return manifest
-        except Exception as e:
-            logger.error(f"upsie... {e}")
-            return None
+        except Exception:
+            logger.exception("Failed to get OCI manifest.")
+            raise
+
     def pull_image(self, artifact_uri):
         try:
             res = self.pull(target=artifact_uri)
             if len(res) > 1:
                 raise ValueError("Expected only one file, but multiple files were found.")
             return res[0]
-        except Exception as e:
-            logger.error(f"upsie... {e}")
-            return None
+        except Exception:
+            logger.exception("Failed to pull image.")
+            raise
 
 def download_file(url, verify_ssl):
     temp_dir = tempfile.mkdtemp()
@@ -122,26 +123,30 @@ def image_exists_in_glance(checksum, _image_name):
         if _image_name in [i['name'] for i in matching_images]:
             logger.warning(f"Image with name '{_image_name}' already exists.")
         return matching_images
-    except Exception as e:
-        logger.warning(f"Following exception occurred: {e}")
-        return []
+    except openstack.exceptions.HttpException:
+        logger.exception("HTTP error occurred while checking images.")
+        raise
+    except openstack.exceptions.SDKException:
+        logger.exception("SDK error occurred while checking images.")
+        raise
+    except Exception:
+        logger.exception("Unexpected error occurred while checking images.")
+        raise
 
 
 def push_image_to_glance(file, manifest, image_name, image_format, update_only=False, existing_image=None):
     _checksum = manifest['md5']
     tag = f"sylva-md5-{_checksum}"
 
-    # Update the image with custom properties if it's an update_only operation
     if update_only:
         if not existing_image or 'id' not in existing_image:
             logger.error("Existing image details are required for updating.")
-            return None
+            raise Exception("Existing image details are required for updating image information.")
         image_id = existing_image['id']
         logger.info(f"Updating image properties for image ID {image_id} with tag {tag}...")
     else:
-        # Create an image resource without custom properties if it's not an update_only operation
-        with open(file, 'rb') as image_data:
-            try:
+        try:
+            with open(file, 'rb') as image_data:
                 logger.info(f"{image_name}: creating image with tag {tag}")
                 image = conn.image.create_image(
                     name=image_name,
@@ -152,21 +157,35 @@ def push_image_to_glance(file, manifest, image_name, image_format, update_only=F
                     allow_duplicates=True
                 )
                 logger.info(f"Image UUID: {image.id}")
-                image_id = image.id  # Use the new image's ID for updating properties
-            except Exception as e:
-                logger.error(f"Error creating image: {e}")
-                raise
+                image_id = image.id
+        except openstack.exceptions.HttpException:
+            logger.exception("HTTP error during image creation.")
+            raise
+        except openstack.exceptions.SDKException:
+            logger.exception("OpenStack SDK error during image creation.")
+            raise
+        except Exception:
+            logger.exception("Unexpected error during image creation.")
+            raise
 
-    # Common block for updating image properties
+    # Common block for updating image properties, applicable in both cases
     try:
-        logger.info("Updating image properties...")
-        image_properties = {f"sylva/{k}": v for k, v in manifest.items()}
-        logger.info(f"Image properties to update: {image_properties}")
-        updated_image = conn.image.update_image(image_id, properties=image_properties)
-        return updated_image
-    except Exception as e:
-        logger.error(f"Error updating image properties: {e}")
-        pass
+        _image_data = conn.image.find_image(image_id)
+        if openstack_user_project_id == _image_data.owner:
+            logger.info("Updating image properties...")
+            image_properties = {f"sylva/{k}": v for k, v in manifest.items()}
+            logger.info(f"Image properties to update: {image_properties}")
+            updated_image = conn.image.update_image(image_id, properties=image_properties)
+            return updated_image
+    except openstack.exceptions.ForbiddenException:
+        logger.exception("Forbidden error while updating image properties.")
+        raise
+    except openstack.exceptions.HttpException:
+        logger.exception("HTTP error while updating image properties.")
+        raise
+    except Exception:
+        logger.exception("Unexpected error while updating image properties.")
+        raise
 
 
 # Set namspace var
@@ -195,6 +214,7 @@ try:
 except KeyError:
     raise Exception("no OS_CLOUD environment variable specified")
 conn = openstack.connect(cloud=cloud_name, verify=False)
+openstack_user_project_id = conn.current_project_id
 
 # Initialize oras class
 insecure_tls = strtobool(os.environ.get('INSECURE_CLIENT','false'))
@@ -231,9 +251,9 @@ for os_name, os_image_info in os_images.items():
                 cleanup_image(image_path)
             else:
                 cleanup_image(oras_pull_path)
-        except Exception as e:
-            logger.warning(f"{e}")
-            pass
+        except Exception:
+            logger.exception("exception while pushing image to glance")
+            raise
 
         if image and 'id' in image:
             logger.info("Updating configmap")
@@ -257,9 +277,9 @@ for os_name, os_image_info in os_images.items():
                 logger.info(f"Image properties updated for image ID {updated_image['id']}")
             else:
                 logger.warning("Image properties could not be updated")
-        except Exception as e:
-            logger.warning(f"Error updating image properties: {e}")
-            pass
+        except Exception:
+            logger.exception(f"Error updating image properties.")
+            raise
 
         # Update configmap with the existing image's UUID
         configmap.update({os_name: {'openstack_glance_uuid': image_to_update['id']}})
@@ -306,11 +326,15 @@ def create_or_update_configmap(api_instance, namespace, body):
     except ApiException as e:
         if e.status == 404:
             # If not exists, create the ConfigMap
-            api_response = api_instance.create_namespaced_config_map(namespace=namespace, body=body)
-            logger.info(f"ConfigMap created. Name: {api_response.metadata.name}")
+            try:
+                api_response = api_instance.create_namespaced_config_map(namespace=namespace, body=body)
+                logger.info(f"ConfigMap created. Name: {api_response.metadata.name}")
+            except ApiException:
+                logger.exception("Failed to create ConfigMap after not finding an existing one.")
+                raise
         else:
             # Handle other exceptions
-            logger.error(f"Exception occurred: {e}")
+            logger.exception("Exception occurred while updating or creating ConfigMap.")
             raise
 
 # Create the ConfigMap in the specified namespace
