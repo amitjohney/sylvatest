@@ -25,6 +25,7 @@ additional_resources="
   Services
   Ingresses
   HeatStacks
+  ExternalSecrets
   Clusters.*cluster.x-k8s.io
   MachineDeployments
   Machines
