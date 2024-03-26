@@ -1727,7 +1727,7 @@ units:
       targetNamespace: metal3-system
       values:
         global:
-          ironicIP: '{{ .Values.cluster_virtual_ip }}'
+          ironicIP: '{{ .Values.display_external_ip }}'
           provisioningInterface: eth0
         metal3-ironic:
           service:
