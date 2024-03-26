@@ -5,6 +5,6 @@ my_test:
 print-something:
     stage: my_global_test
     script:
-        -  echo "Running my_test..."
+        - echo "Running my_test..."
         - my_test
 
