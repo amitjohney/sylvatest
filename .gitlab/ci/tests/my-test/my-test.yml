@@ -1,0 +1,9 @@
+
+my_test:
+    - echo -e "ok"
+
+print-something:
+  stage: my_global_test
+  script:
+    - !reference [my_test]
+
