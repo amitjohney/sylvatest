@@ -26,3 +26,19 @@ patches:
       - op: add
         path: /spec/template/metadata/labels/app
         value: ipam-controller-manager
+  - target:
+      kind: Deployment
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --leader-elect
+  - target:
+      kind: Role
+      name: ipam-leader-election-role
+    patch: |-
+      - op: add
+        path: /rules/-
+        value:
+          apiGroups: ["coordination.k8s.io"]
+          resources: ["leases"]
+          verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
