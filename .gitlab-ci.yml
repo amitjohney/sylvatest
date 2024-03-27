@@ -1,6 +1,6 @@
 ---
 variables:
-    GIT_SUBMODULE_STRATEGY: recursive
+  GIT_SUBMODULE_STRATEGY: recursive
 include:
   - project: "to-be-continuous/gitleaks"
     ref: 2.4.1
