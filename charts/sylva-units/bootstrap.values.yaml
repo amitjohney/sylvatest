@@ -69,17 +69,11 @@ _internal:
     {{- end }}
     {{- /* Default images */ -}}
     {{- if .Values.cluster.capo }}
-      {{- if .Values.cluster.capo.image_key }}
-        {{- $mylist = append $mylist .Values.cluster.capo.image_key }}
-      {{- else }}
-        {{- $mylist = append $mylist (include "get-image-name-core" (tuple .  (deepCopy .Values.cluster.capo) $k8sVersion)) }}
-      {{- end }}
+      {{- $mylist = append $mylist (.Values.cluster.capo.image_key | default nil) }}
+      {{- $mylist = append $mylist (include "get-image-name-core" (tuple .  (deepCopy .Values.cluster.capo) $k8sVersion)) }}
     {{- else if .Values.cluster.capm3 }}
-      {{- if .Values.cluster.capm3.image_key }}
-        {{- $mylist = append $mylist .Values.cluster.capm3.image_key }}
-      {{- else }}
-        {{- $mylist = append $mylist (include "get-image-name-core" (tuple .  (deepCopy .Values.cluster.capm3) $k8sVersion)) }}
-      {{- end }}
+      {{- $mylist = append $mylist (.Values.cluster.capm3.image_key | default nil) }}
+      {{- $mylist = append $mylist (include "get-image-name-core" (tuple .  (deepCopy .Values.cluster.capm3) $k8sVersion)) }}
     {{- end }}
     {{- without $mylist nil | uniq | include "preserve-type" -}}
 
