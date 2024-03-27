@@ -107,6 +107,10 @@ units:
                   protocol: [tcp, tcp, tcp, udp]
                   remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
 
+  sandbox-privileged-namespace:
+    kustomization_spec:
+      targetNamespace: sandbox # because this is set for sylva-system in workload-clusters
+
   os-images-info:
     enabled: true
     unit_templates:
