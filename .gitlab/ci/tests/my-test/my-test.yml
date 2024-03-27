@@ -4,12 +4,8 @@
     - echo -e "ok"
 
 print-something:
-    stage: test
-    rules:
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event' ||  $CI_PIPELINE_SOURCE == 'pipeline'
-      changes:
-        - .gitlab/ci/**/*
-    script:
-        - echo "Running my_test..."
-        - !reference [.my_test]
+  stage: test
+  script:
+    - echo "Running my_test..."
+    - !reference [.my_test]
 
