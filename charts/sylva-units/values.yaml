@@ -3063,6 +3063,14 @@ units:
       values:
         grafana:
           adminPassword: '{{ .Values._internal.grafana_admin_password }}'
+          grafana.ini:
+            auth.anonymous:
+              enabled: false
+          adminPassword: '{{ .Values._internal.grafana_admin_password }}'
+          ingress:
+            enabled: true
+            hosts:
+              - grafana.{{ .Values.cluster_domain }}
           sidecar:
             dashboards:
               enabled: true
