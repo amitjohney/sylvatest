@@ -55,7 +55,7 @@
 | **neuvector** | installs Neuvector | beta |  | [Helm](https://neuvector.github.io/neuvector-helm) | 2.6.6 |
 | **rancher-init** | initializes and configures Rancher | beta | True | Kustomize | N/A |
 | **snmp-exporter** | installs SNMP exporter | beta |  | [Helm](https://prometheus-community.github.io/helm-charts) | 5.1.0 |
-| **sylva-prometheus-rules** | installs prometheus rules using external helm chart & rules git repo | beta |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-prometheus-rules.git) | 0.0.7 |
+| **sylva-prometheus-rules** | installs prometheus rules using external helm chart & rules git repo | beta |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-prometheus-rules.git) | 0.0.8 |
 | **sylva-units-operator** | installs sylva-units operator | experimental |  | [Kustomize](https://gitlab.com/sylva-projects/sylva-elements/sylva-units-operator.git/config/default?ref=0.1.1) | 0.1.1 |
 | **sylva-units-release-template** | create the default sylva-units-release-template used by workload-cluster CR | experimental | True | Kustomize | N/A |
 | **thanos** | installs Thanos | beta |  | [Helm](https://charts.bitnami.com/bitnami) | 12.16.1 |
@@ -112,7 +112,7 @@
 | **single-replica-storageclass** | Create a longhorn storage class with a single replica |  | True | Kustomize | N/A |
 | **sriov-resources** | configures SRIOV resources |  | True | Helm | N/A |
 | **sylva-ca** | provides a Certificate Authority for units of the Sylva stack |  | True | Kustomize | N/A |
-| **sylva-dashboards** | adds Sylva-specific Grafana dashboards |  |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-dashboards.git) | 0.0.5 |
+| **sylva-dashboards** | adds Sylva-specific Grafana dashboards |  |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-dashboards.git) | 0.0.6 |
 | **synchronize-secrets** | allows secrets from Vault to be consumed other units, relies on ExternalSecrets |  | True | Kustomize | N/A |
 | **thanos-init** | sets up thanos certificate<br/><br/>it generates a multiple CN certificate for all Thanos components |  | True | Kustomize | N/A |
 | **tigera-clusterrole** | is here to allow for upgrading Calico chart when upgrading cluster<br/><br/>For v1.25.x to v1.26.x, see https://gitlab.com/sylva-projects/sylva-core/-/issues/664 |  | True | Kustomize | N/A |
