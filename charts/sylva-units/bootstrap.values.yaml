@@ -63,7 +63,9 @@ _internal:
       {{- $mylist = append $mylist (.Values.cluster.capm3.image_key | default nil) }}
       {{- $mylist = append $mylist (include "get-image-name-core" (tuple (deepCopy .Values.cluster.capm3) $k8sVersion)) }}
     {{- end }}
-    {{- without $mylist nil | uniq | include "preserve-type" -}}
+    {{- $result := without $mylist nil | uniq -}}
+    {{ without $result "" | include "preserve-type" }}
+
 
 bootstrap_os_images_override_enabled: []
 
