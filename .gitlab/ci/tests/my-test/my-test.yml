@@ -4,7 +4,7 @@
     - echo -e "ok"
 
 print-something:
-    stage: deployment-test
+    stage: test
     script:
         - echo "Running my_test..."
         - !reference [.my_test]
