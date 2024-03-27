@@ -4,6 +4,7 @@ cluster:
     bootstrap_provider: cabpk
   control_plane_replicas: 1
   capo:
+    image_key: ubuntu-jammy-plain-kubeadm-1-26-9
     ssh_key_name: # put the name of your nova SSH keypair here
   machine_deployments:
     md0:
