@@ -29,6 +29,9 @@ cluster:
 #  "kustomization-deployed-on-mgmt-cluster" or "helmrelease-deployed-on-mgmt-cluster"
 #  unit templates)
 unit_kustomization_spec_default:
+  depends_on:
+    mgmt-cluster-ready: true  # all units in this file should depend on mgmt-cluster-ready,
+                              # which reflects the readiness of the mgmt cluster
   kubeConfig:
     secretRef:
       name: '{{ .Values.cluster.name }}-kubeconfig'
@@ -82,6 +85,23 @@ unit_templates:
 
 # here we select which units we want to enable for a workload cluster
 units:
+
+  mgmt-cluster-ready:
+    enabled: on
+    info:
+      description: (workload cluster) this unit reflects the readiness of the mgmt cluster
+    depends_on:
+      mgmt-cluster-ready: false  # cancel this dependency inherited via unit_kustomization_spec_default
+    unit_templates:
+    - dummy
+    - kustomization-deployed-on-mgmt-cluster
+    kustomization_spec:
+      healthChecks:
+        - apiVersion: v1
+          kind: ConfigMap
+          name: sylva-units-status
+          namespace: sylva-system
+
   capo-cluster-resources:
     enabled: on
     unit_templates:
