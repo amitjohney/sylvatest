@@ -32,22 +32,55 @@ _internal:
     # the 0.0.0.0/32 values above are just here to let us use "helm template" with this
     # file without errors
 
-
   _bootstrap_os_images_override_enabled: |-
+    {{- $k8sVersion := index (tuple . .Values.cluster.k8s_version | include "interpret-inner-gotpl" | fromJson) "result"}}
     {{- $mylist := .Values.bootstrap_os_images_override_enabled | default list -}}
-    {{- if and .Values.cluster.control_plane .Values.cluster.control_plane.capm3 .Values.cluster.control_plane.capm3.image_key }}
-      {{- $mylist = append $mylist .Values.cluster.control_plane.capm3.image_key }}
-    {{- else if and .Values.cluster.control_plane .Values.cluster.control_plane.capo .Values.cluster.control_plane.capo.image_key }}
-      {{- $mylist = append $mylist .Values.cluster.control_plane.capo.image_key }}
-    {{- end }}
-    {{- range $md, $config := .Values.cluster.machine_deployments }}
-      {{- if and $config.capo $config.capo.image_key }}
-          {{- $mylist = append $mylist $config.capo.image_key -}}
-      {{- else if and $config.capm3 $config.capm3.image_key }}
-          {{- $mylist = append $mylist $config.capm3.image_key -}}
+    {{- /* Control plane image */ -}}
+    {{- if and .Values.cluster.control_plane .Values.cluster.control_plane.capm3}}
+      {{- if .Values.cluster.control_plane.capm3.image_key }}
+        {{- $mylist = append $mylist .Values.cluster.control_plane.capm3.image_key }}
+      {{- else }}
+        {{- $mylist = append $mylist (include "get-image-name-core" (tuple .  (mergeOverwrite (deepCopy .Values.cluster.capm3) (deepCopy .Values.cluster.control_plane.capm3)) $k8sVersion)) }}
+      {{- end }}
+    {{- else if and .Values.cluster.control_plane .Values.cluster.control_plane.capo }}
+      {{- if .Values.cluster.control_plane.capo.image_key }}
+        {{- $mylist = append $mylist .Values.cluster.control_plane.capo.image_key }}
+      {{- else }}
+        {{- $mylist = append $mylist (include "get-image-name-core" (tuple .  (mergeOverwrite (deepCopy .Values.cluster.capo) (deepCopy .Values.cluster.control_plane.capo)) $k8sVersion)) }}
       {{- end }}
     {{- end }}
-    {{- $mylist = append $mylist (.Values.cluster.capo.image_key | default .Values.cluster.capm3.image_key) -}}
+    {{- $capo_md_default := index (tuple . .Values.cluster.machine_deployment_default.capo | include "interpret-inner-gotpl" | fromJson) "result"}}
+    {{- $capm3_md_default := index (tuple . .Values.cluster.machine_deployment_default.capm3 | include "interpret-inner-gotpl" | fromJson) "result"}}
+    {{- range $md, $config := .Values.cluster.machine_deployments }}
+      {{- /* Machine Deployments images */ -}}
+      {{- if $config.capo }}
+        {{- if $config.capo.image_key }}
+          {{- $mylist = append $mylist $config.capo.image_key -}}
+        {{- else }}
+          {{- $mylist = append $mylist (include "get-image-name-core" (tuple .  (mergeOverwrite (deepCopy $config.capo) $capo_md_default) $k8sVersion)) -}}
+        {{- end }}
+      {{- else if $config.capm3 }}
+        {{- if $config.capm3.image_key }}
+          {{- $mylist = append $mylist $config.capm3.image_key -}}
+        {{- else }}
+          {{- $mylist = append $mylist (include "get-image-name-core" (tuple .  (mergeOverwrite (deepCopy $config.capm3) $capm3_md_default) $k8sVersion)) -}}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+    {{- /* Default images */ -}}
+    {{- if .Values.cluster.capo }}
+      {{- if .Values.cluster.capo.image_key }}
+        {{- $mylist = append $mylist .Values.cluster.capo.image_key }}
+      {{- else }}
+        {{- $mylist = append $mylist (include "get-image-name-core" (tuple .  (deepCopy .Values.cluster.capo) $k8sVersion)) }}
+      {{- end }}
+    {{- else if .Values.cluster.capm3 }}
+      {{- if .Values.cluster.capm3.image_key }}
+        {{- $mylist = append $mylist .Values.cluster.capm3.image_key }}
+      {{- else }}
+        {{- $mylist = append $mylist (include "get-image-name-core" (tuple .  (deepCopy .Values.cluster.capm3) $k8sVersion)) }}
+      {{- end }}
+    {{- end }}
     {{- without $mylist nil | uniq | include "preserve-type" -}}
 
 bootstrap_os_images_override_enabled: []
