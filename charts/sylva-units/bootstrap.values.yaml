@@ -38,10 +38,10 @@ _internal:
     {{- /* Control plane image */ -}}
     {{- if and .Values.cluster.control_plane .Values.cluster.control_plane.capm3}}
       {{- $mylist = append $mylist (.Values.cluster.control_plane.capm3.image_key | default nil) }}
-      {{- $mylist = append $mylist (include "get-image-name-core" (tuple .  (mergeOverwrite (deepCopy .Values.cluster.capm3) (deepCopy .Values.cluster.control_plane.capm3)) $k8sVersion)) }}
+      {{- $mylist = append $mylist (include "get-image-name-core" (tuple (mergeOverwrite (deepCopy .Values.cluster.capm3) (deepCopy .Values.cluster.control_plane.capm3)) $k8sVersion)) }}
     {{- else if and .Values.cluster.control_plane .Values.cluster.control_plane.capo }}
       {{- $mylist = append $mylist (.Values.cluster.control_plane.capo.image_key | default nil) }}
-      {{- $mylist = append $mylist (include "get-image-name-core" (tuple .  (mergeOverwrite (deepCopy .Values.cluster.capo) (deepCopy .Values.cluster.control_plane.capo)) $k8sVersion)) }}
+      {{- $mylist = append $mylist (include "get-image-name-core" (tuple (mergeOverwrite (deepCopy .Values.cluster.capo) (deepCopy .Values.cluster.control_plane.capo)) $k8sVersion)) }}
     {{- end }}
     {{- $capo_md_default := index (tuple . .Values.cluster.machine_deployment_default.capo | include "interpret-inner-gotpl" | fromJson) "result"}}
     {{- $capm3_md_default := index (tuple . .Values.cluster.machine_deployment_default.capm3 | include "interpret-inner-gotpl" | fromJson) "result"}}
@@ -49,19 +49,19 @@ _internal:
       {{- /* Machine Deployments images */ -}}
       {{- if $config.capo }}
           {{- $mylist = append $mylist ($config.capo.image_key | default nil) -}}
-          {{- $mylist = append $mylist (include "get-image-name-core" (tuple .  (mergeOverwrite (deepCopy $config.capo) $capo_md_default) $k8sVersion)) -}}
+          {{- $mylist = append $mylist (include "get-image-name-core" (tuple (mergeOverwrite (deepCopy $config.capo) $capo_md_default) $k8sVersion)) -}}
       {{- else if $config.capm3 }}
           {{- $mylist = append $mylist ($config.capm3.image_key | default nil) -}}
-          {{- $mylist = append $mylist (include "get-image-name-core" (tuple .  (mergeOverwrite (deepCopy $config.capm3) $capm3_md_default) $k8sVersion)) -}}
+          {{- $mylist = append $mylist (include "get-image-name-core" (tuple (mergeOverwrite (deepCopy $config.capm3) $capm3_md_default) $k8sVersion)) -}}
       {{- end }}
     {{- end }}
     {{- /* Default images */ -}}
     {{- if .Values.cluster.capo }}
       {{- $mylist = append $mylist (.Values.cluster.capo.image_key | default nil) }}
-      {{- $mylist = append $mylist (include "get-image-name-core" (tuple .  (deepCopy .Values.cluster.capo) $k8sVersion)) }}
+      {{- $mylist = append $mylist (include "get-image-name-core" (tuple (deepCopy .Values.cluster.capo) $k8sVersion)) }}
     {{- else if .Values.cluster.capm3 }}
       {{- $mylist = append $mylist (.Values.cluster.capm3.image_key | default nil) }}
-      {{- $mylist = append $mylist (include "get-image-name-core" (tuple .  (deepCopy .Values.cluster.capm3) $k8sVersion)) }}
+      {{- $mylist = append $mylist (include "get-image-name-core" (tuple (deepCopy .Values.cluster.capm3) $k8sVersion)) }}
     {{- end }}
     {{- without $mylist nil | uniq | include "preserve-type" -}}
 
