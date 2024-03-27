@@ -1,9 +1,10 @@
+---
 
 .my_test:
     - echo -e "ok"
 
 print-something:
-    stage: my_global_test
+    stage: deployment-test
     script:
         - echo "Running my_test..."
         - !reference [.my_test]
