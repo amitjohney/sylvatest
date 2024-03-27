@@ -167,6 +167,12 @@ function process_chart_in_git {
 
   TMPD=$(mktemp -d)
   if (git clone -q --depth 1 --branch $revision $git_repo $TMPD > /dev/null 2>&1); then
+    # Init and update git submodules
+    CURD=$(pwd)
+    cd $TMPD
+    git submodule init
+    git submodule update
+    cd $CURD
     # Build locally Helm chart
     helm dep update $TMPD/$chart_path
 
