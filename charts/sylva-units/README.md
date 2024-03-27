@@ -1,5 +1,5 @@
 ---
-editUrl: https://gitlab.com/sylva-projects/sylva-core/-/edit/main/charts/sylva-units/README.md
+custom_edit_url: https://gitlab.com/sylva-projects/sylva-core/-/edit/main/charts/sylva-units/README.md
 ---
 
 # `sylva-units` Helm chart
