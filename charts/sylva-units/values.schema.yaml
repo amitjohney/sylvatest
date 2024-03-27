@@ -170,7 +170,7 @@ properties:
 
   sylva-library:
     type: object
-    
+
   fullnameOverride:  # -------------------------------
     type: string
   nameOverride:  # -------------------------------
