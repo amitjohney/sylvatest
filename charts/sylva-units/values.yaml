@@ -3029,6 +3029,7 @@ units:
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/grafana-init
+      wait: true
       postBuild:
         substitute:
           SERVICE: rancher-monitoring-grafana
@@ -3070,7 +3071,11 @@ units:
           ingress:
             enabled: true
             hosts:
-              - grafana.{{ .Values.cluster_domain }}
+              - '{{ .Values.external_hostnames.grafana }}'
+            tls:
+              - secretName: grafana-general-tls
+                hosts:
+                  - '{{ .Values.external_hostnames.grafana }}'
           sidecar:
             dashboards:
               enabled: true
