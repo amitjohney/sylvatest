@@ -1177,13 +1177,26 @@ units:
         substituteFrom:
         - kind: ConfigMap
           name: proxy-env-vars
-      healthChecks:  # cannot use __wait: true__ here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/144
+      healthChecks:  # using only "wait: true" would not give us visibility on the status of the StatefulSet
         # the Keycloak StatefulSet set is produced, by the combination of Keycloak operator
         # and a Keycloak custom resource, it relies on the postgres DB also deployed by this unit
         # hence, checking for the health of this component can be done by checking this StatefulSet
         - apiVersion: apps/v1
           kind: StatefulSet
           name: keycloak
+          namespace: keycloak
+        # the rest are objects created by the Kustomization
+        - apiVersion: k8s.keycloak.org/v2alpha1
+          kind: Keycloak
+          name: keycloak
+          namespace: keycloak
+        - apiVersion: cert-manager.io/v1
+          kind: Certificate
+          name: keycloak-internal-certificate
+          namespace: keycloak
+        - apiVersion: networking.k8s.io/v1
+          kind: Ingress
+          name: keycloak-ingress
           namespace: keycloak
       _components:
         - '{{ tuple "components/keycloak-operator-proxies" (.Values.proxies.https_proxy) | include "set-only-if" }}'
