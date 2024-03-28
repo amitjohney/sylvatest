@@ -3029,7 +3029,6 @@ units:
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/grafana-init
-      wait: true
       postBuild:
         substitute:
           SERVICE: rancher-monitoring-grafana
@@ -3067,7 +3066,6 @@ units:
           grafana.ini:
             auth.anonymous:
               enabled: false
-          adminPassword: '{{ .Values._internal.grafana_admin_password }}'
           ingress:
             enabled: true
             hosts:
