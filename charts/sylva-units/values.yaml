@@ -5621,6 +5621,14 @@ shared_workload_clusters_values:
 
   _internal:
     sylva_system_default_storage_class_unit: '{{ .Values._internal.default_storage_class_unit }}'
+    sylva_mgmt_enabled_units: >-
+      {{- $units := dict -}}
+      {{- range $unit_name, $unit_def := .Values.units -}}
+        {{- if include "unit-enabled" (tuple $ $unit_name) -}}
+          {{- $_ := set $units $unit_name true -}}
+        {{- end -}}
+      {{- end -}}
+      {{- $units | include "preserve-type" -}}
 
 shared_workload_clusters_secret_values:
   cluster:

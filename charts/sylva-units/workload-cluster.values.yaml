@@ -29,6 +29,9 @@ cluster:
 #  "kustomization-deployed-on-mgmt-cluster" or "helmrelease-deployed-on-mgmt-cluster"
 #  unit templates)
 unit_kustomization_spec_default:
+  depends_on:
+    mgmt-cluster-ready: true  # all units in this file should depend on mgmt-cluster-ready,
+                              # which reflects the readiness of the mgmt cluster
   kubeConfig:
     secretRef:
       name: '{{ .Values.cluster.name }}-kubeconfig'
@@ -82,6 +85,23 @@ unit_templates:
 
 # here we select which units we want to enable for a workload cluster
 units:
+
+  mgmt-cluster-ready:
+    enabled: on
+    info:
+      description: (workload cluster) this unit reflects the readiness of the mgmt cluster
+    depends_on:
+      mgmt-cluster-ready: false  # cancel this dependency inherited via unit_kustomization_spec_default
+    unit_templates:
+    - dummy
+    - kustomization-deployed-on-mgmt-cluster
+    kustomization_spec:
+      healthChecks:
+        - apiVersion: v1
+          kind: ConfigMap
+          name: sylva-units-status
+          namespace: sylva-system
+
   capo-cluster-resources:
     enabled: on
     unit_templates:
@@ -89,7 +109,6 @@ units:
     depends_on:
       # the heat-operator that we depend on is not in the per-cluster namespace
       heat-operator: false
-      sylva-system/heat-operator: true
     kustomization_spec:
       # heatstack parameters specific to workload clusters:
       _patches:
@@ -120,32 +139,16 @@ units:
     enabled: true
     unit_templates:
     - kustomization-deployed-on-mgmt-cluster
-    depends_on:
-      # this unit needs the storage class to be ready **in the mgmt cluster**
-      sylva-system/{{ .Values._internal.sylva_system_default_storage_class_unit }}: true
 
   cluster-bmh:
     enabled: true
     unit_templates:
     - helmrelease-deployed-on-mgmt-cluster
-    depends_on:
-      # contrarily to what we have in mgmt values, we don't
-      # depend on CAPI-related units deployed by _this_ sylva-units Helm release
-      # (because this release only deploys manifests for a given workload cluster)
-      # we need to wait for the metal3 units from the main sylva-units release
-      sylva-system/{{ .Values._internal.metal3_unit }}: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
 
   cluster:
     enabled: true
     unit_templates:
     - helmrelease-deployed-on-mgmt-cluster
-    depends_on:
-      # we need to wait for the CAPI-related units **from the main sylva-units release**
-      sylva-system/capi: true
-      sylva-system/{{ .Values.cluster.capi_providers.infra_provider }}: true
-      sylva-system/{{ .Values.cluster.capi_providers.bootstrap_provider }}: true
-      sylva-system/kyverno-policies: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
-      sylva-system/os-image-server: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
 
   cluster-reachable:
     enabled: true
@@ -250,12 +253,11 @@ units:
   monitoring:
     enabled: true
     depends_on:
-      sylva-system/rancher-monitoring-clusterid-inject: '{{ tuple . "sylva-system/rancher-monitoring-clusterid-inject" | include "unit-enabled" }}'
       cluster-import: '{{ tuple . "cluster-import" | include "unit-enabled" }}'
     helmrelease_spec:
       valuesFrom:
         - kind: ConfigMap
-          name: '{{ .Values.cluster.name }}-capi-monitoring-info'
+          name: '{{ .Values.cluster.name }}-capi-monitoring-info'  # this configmap is produced by a kyverno policy defined by the "rancher-monitoring-clusterid-inject" mgmt unit
           optional: false
 
   kubevirt:
@@ -310,11 +312,6 @@ units:
     unit_templates:
     - base-deps
     - kustomization-deployed-on-mgmt-cluster
-    depends_on:
-      sylva-system/rancher: true  # depends on rancher unit in sylva-system ns
-      sylva-system/capi-rancher-import: true  # depends on capi-rancher-import unit in sylva-system ns
-      sylva-system/cluster-creator-login: true
-      sylva-system/cluster-creator-policy: true
     repo: sylva-core
     kustomization_spec:
       # this Kustomization lives in the mgmt cluster
@@ -332,7 +329,7 @@ units:
           CLUSTER_NAME: '{{ .Values.cluster.name }}'
         substituteFrom:
           - kind: Secret
-            name: cluster-creator-kubeconfig
+            name: cluster-creator-kubeconfig  # this secret is created by a Kyverno policy defined by cluster-creator-login/cluster-creator-policy mgmt units
       healthChecks:
         # this resource is created by capi-rancher-import based on the existence of
         # the Cluster.provisioning.cattle.io produced by the kustomization
@@ -350,10 +347,6 @@ units:
   vsphere-cpi:
     enabled: true
     # setting the same dependencies of the capv cluster unit in order to run in parallel
-    depends_on:
-      sylva-system/capi: true
-      sylva-system/capv: true
-      'sylva-system/{{ .Values.cluster.capi_providers.bootstrap_provider }}': true
 
   vsphere-csi-driver:
     enabled: true
@@ -366,8 +359,6 @@ units:
 
   logging-config:
     enabled: true
-    depends_on:
-      sylva-system/loki: true
     kustomization_spec:
       targetNamespace: "cattle-logging-system"
 
@@ -383,3 +374,19 @@ _internal:
   harbor_postgres_admin_password: '{{ include "internalPersistentRandomPasswd" (tuple . "harbor_postgres_admin_password") }}'
   harbor_postgres_user_password: '{{ include "internalPersistentRandomPasswd" (tuple . "harbor_postgres_user_password") }}'
   harbor_postgres_replication_password: '{{ include "internalPersistentRandomPasswd" (tuple . "harbor_postgres_replication_password") }}'
+
+  checks:
+    # checks that the selected infra/bootstrap providers are supported
+    # by the management cluster
+    capi_infra_provider: >-
+      {{
+      .Values._internal.sylva_mgmt_enabled_units
+         | dig .Values.cluster.capi_providers.infra_provider ""
+         | required (printf "CAPI infra provider '%s' isn't enabled in Sylva management cluster" .Values.cluster.capi_providers.infra_provider)
+      }}
+    capi_bootstrap_provider: >-
+      {{
+      .Values._internal.sylva_mgmt_enabled_units
+         | dig .Values.cluster.capi_providers.bootstrap_provider ""
+         | required (printf "CAPI bootstrap provider '%s' isn't enabled in Sylva management cluster" .Values.cluster.capi_providers.bootstrap_provider)
+      }}

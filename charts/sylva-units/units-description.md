@@ -95,6 +95,7 @@
 | **metal3-init** | generates Metal3 random credentials<br/><br/>(only for the sylva metal3 chart) |  | True | Kustomize | N/A |
 | **metal3-pdb** | add pdb to baremetal-operator pods |  | True | Kustomize | N/A |
 | **metal3-sync-secrets** | configures secrets for Metal3 components<br/><br/>(only for the sylva metal3 chart) |  | True | Kustomize | N/A |
+| **mgmt-cluster-ready** | (workload cluster) this unit reflects the readiness of the mgmt cluster |  |  | Kustomize |  |
 | **minio-monitoring-tenant-init** | sets up MinIO certificate for minio-monitoring-tenant<br/><br/>it generate certificate |  | True | Kustomize | N/A |
 | **minio-operator-init** | sets up MinIO certificate for minio-operator<br/><br/>it generate certificate |  | True | Kustomize | N/A |
 | **multus-ready** | checks that Multus is ready<br/><br/>This unit only has dependencies, it does not create resources. It performs healthchecks outside of the multus unit, in order to properly target workload cluster when we deploy multus in it. |  | True | Kustomize | N/A |
