@@ -13,6 +13,10 @@ spec:
       creationPolicy: Orphan
       name: keycloak-initial-admin
       template:
+         metadata:
+            labels:
+               app: keycloak
+               app.kubernetes.io/managed-by: keycloak-operator
          type: kubernetes.io/basic-auth
          data:
             username: admin
