@@ -2159,6 +2159,103 @@ units:
           newName: registry.gitlab.com/sylva-projects/sylva-elements/workload-cluster-operator
           newTag: 0.1.1
 
+  capo-check-resources:
+    info:
+      description: Trigger a job to verify if available OpenStack resources are enough for deployment
+      internal: true
+    unit_templates:
+    - base-deps
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/openstack-job
+      targetNamespace: '{{ .Release.Namespace }}'
+      wait: true
+      postBuild:
+        substitute:
+          JOB_NAME: capo-check-resources
+          JOB_TARGET_NAMESPACE: '{{ .Release.Namespace }}'
+          httpProxy: '{{ .Values.proxies.https_proxy }}'
+          httpsProxy: '{{ .Values.proxies.https_proxy }}'
+          noProxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
+          CLOUD: 'capo_cloud'
+          backoffLimit: '0'
+      _patches:
+        - patch: >-
+            - op: add
+              path: /spec/template/spec/containers/0/env/-
+              value:
+                name: CONTROL_PLANE_REPLICAS
+                value: '{{ .Values.cluster.control_plane_replicas }}'
+            - op: add
+              path: /spec/template/spec/containers/0/env/-
+              value:
+                name: FLAVOR_NAME
+                value: '{{ .Values.cluster.capo.flavor_name | default "m1.large" }}'
+            - op: add
+              path: /spec/template/spec/containers/0/env/-
+              value:
+                name: ROOT_DISK_SIZE
+                value: '{{ .Values.cluster | dig "capo" "rootVolume" "diskSize" "" }}'
+            - op: add
+              path: /spec/template/spec/containers/0/env/-
+              value:
+                name: TOTAL_MD_REPLICAS
+                value: {{ $replicas := int 0 }}
+                  {{- range $md, $config := .Values.cluster.machine_deployments -}}
+                  {{- $replicas = add $replicas ($config.replicas | int) -}}
+                  {{- end -}}
+                  {{ $replicas | quote }}
+            - op: add
+              path: /spec/template/spec/containers/0/env/-
+              value:
+                name: TOTAL_MD
+                value: {{ $mds := int 0 }}
+                  {{- range $md, $config := .Values.cluster.machine_deployments -}}
+                  {{- $mds = add1 $mds -}}
+                  {{- end -}}
+                  {{ $mds | quote }}
+            - op: add
+              path: /spec/template/spec/containers/0/env/-
+              value:
+                name: EXTERNAL_NETWORK_ID
+                value: '{{ .Values.openstack.external_network_id | default "none" }}'
+            - op: add
+              path: /spec/template/spec/containers/0/env/-
+              value:
+                name: EXISTING_CP_SERVER_GROUP_ID
+                value: '{{ .Values.cluster.control_plane.capo.server_group_id | default "none" }}'
+            - op: add
+              path: /spec/template/spec/containers/0/env/-
+              value:
+                name: EXISTING_MD_SERVER_GROUPS
+                value: {{ $mds_server_groups_count := int 0 }}
+                  {{ $mds_server_groups_dict := dict  }}
+                  {{- range $md, $config := .Values.cluster.machine_deployments -}}
+                    {{- $md_def := mergeOverwrite (deepCopy ($.Values.cluster.machine_deployment_default | default dict)) $config -}}
+                    {{- if (dig "capo" "server_group_id" "" $md_def) -}}
+                      {{- $_ := set $mds_server_groups_dict $md_def.capo.server_group_id $md -}}
+                    {{- end -}}
+                  {{- end -}}
+                  {{ $mds_server_groups_count = len (keys $mds_server_groups_dict) }}
+                  {{ $mds_server_groups_count | quote }}
+            - op: add
+              path: /spec/template/spec/
+              value:
+                name: restartPolicy
+                value: Never
+            - op: add
+              path: /spec/template/spec/containers/0/env/-
+              value:
+                name: TEST
+                value: {{ . | include "required_capo_resources" }}
+          target:
+            kind: Job
+    kustomization_substitute_secrets:
+      CAPO_CLOUD_YAML: '{{ .Values.cluster.capo.clouds_yaml  | toYaml | b64enc }}'
+      CAPO_CACERT: '{{ (.Values.cluster.capo.cacert|default "") | b64enc }}'
+
   capo-cluster-resources:
     info:
       description: installs OpenStack Heat stack for CAPO cluster prerequisites

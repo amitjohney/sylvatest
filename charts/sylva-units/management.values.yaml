@@ -144,6 +144,13 @@ units:
                                   key: CONFIG_OVERWRITE_JSON
                                   name: "harbor-oidc"
 
+  capo-check-resources:
+    enabled: false
+
+  capo-cluster-resources:
+    depends_on:
+      heat-operator: true
+
 keycloak:
   keycloak_expire_password_days: 30
 

@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - job.yaml
+generatorOptions:
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+configMapGenerator:
+  - name: openstack-job-script
+    namespace: ${JOB_TARGET_NAMESPACE}
+    behavior: create
+    files:
+      - script=./openstack_quota.sh
+    options:
+      disableNameSuffixHash: true
