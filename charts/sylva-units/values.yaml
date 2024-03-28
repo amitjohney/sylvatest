@@ -3023,7 +3023,6 @@ units:
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/grafana-init
-      wait: true
       postBuild:
         substitute:
           SERVICE: rancher-monitoring-grafana
@@ -3033,7 +3032,6 @@ units:
           kind: Secret
           name: grafana-general-tls
           namespace: cattle-monitoring-system
-
 
   monitoring:
     info:
@@ -3062,7 +3060,6 @@ units:
           grafana.ini:
             auth.anonymous:
               enabled: false
-          adminPassword: '{{ .Values._internal.grafana_admin_password }}'
           ingress:
             enabled: true
             hosts:
