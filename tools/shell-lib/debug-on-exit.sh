@@ -112,6 +112,9 @@ function cluster_info_dump() {
 
   dump_additional_resources $dump_dir $additional_resources
 
+  # dump pods
+  kubectl get pods -o wide -A | tee $dump_dir/pods.txt
+
   # dump CAPI secrets
   kubectl get secret -A --field-selector=type=cluster.x-k8s.io/secret &&\
   kubectl get secret -A --field-selector=type=infrastructure.cluster.x-k8s.io/secret                               > $dump_dir/Secrets-capi.summary.txt
@@ -149,9 +152,6 @@ if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
 
     echo -e "\nGet nodes in management cluster"
     kubectl --request-timeout=3s get nodes
-
-    echo -e "\nGet pods in management cluster"
-    kubectl --request-timeout=3s get pods -A
 
     cluster_info_dump management
 
