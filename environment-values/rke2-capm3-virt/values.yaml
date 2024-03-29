@@ -88,6 +88,12 @@ cluster:
 
 
 units:
+  metal3-suse:
+    helmrelease_spec:
+      values:
+        global:
+          # Add console access to IPA - useful for debuging purposes
+          ironicKernelParams: 'console=ttyS0 suse.autologin=ttyS0 rootpwd="$$1$$DAhhpomu$$YqNcZc3ce5H7uswK4skCZ."'  # "secret"
 
   longhorn:
     # this setting can be overridden to true to enable Longhorn
@@ -97,7 +103,7 @@ units:
         persistence:
           defaultClassReplicaCount: 1   # don't enable data replication (this is a single node setup)
 
-  minio-monitoring-tenant:
+  monitoring:
     enabled_conditions:
       - '{{ ternary true false (.Values.env_type | eq "ci") | include "preserve-type" }}'
 
