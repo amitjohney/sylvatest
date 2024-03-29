@@ -201,6 +201,24 @@ unit_templates:
     kustomization_spec:
       path: ./kustomize-units/
 
+  workload-team:
+    repo: workload-team
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: .
+      _postRenderers:
+        - kustomize:
+            patches:
+              - target:
+                  kind: ConfigMap
+                patch: |
+                  - op: replace
+                    path: /data/values
+                    value: |
+                    {{ index (tuple . .Values.shared_workload_clusters_values | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | indent 4 }}
+    helm_secret_values: '{{ index (tuple . .Values.shared_workload_clusters_secret_values | include "interpret-inner-gotpl" | fromJson) "result" | toYaml | b64enc }}'
+
   # dummy unit template is used to have a Kustomization
   # to add dependencies
   dummy:
@@ -5039,6 +5057,15 @@ units:
             - op: replace
               path: /spec/template/spec/volumes/2/configMap/name
               value: {{ .Values._internal.os_images_info_configmap }}  # this configmap is a byproduct of the os-images-info unit
+
+
+  wc-team-sample:
+    unit_template: workload-team   # <<= this unit template will have the basics common to all instantiations of the chart
+    helmrelease_spec:
+      targetNamespace: wc-team-sample
+      values:
+        name: '{{ .Values._unit_name_ }}'
+        gitRepo: ""
 
 ##### stuff related to the 'cluster' unit #####
 #
