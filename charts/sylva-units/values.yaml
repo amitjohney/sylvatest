@@ -2170,7 +2170,7 @@ units:
       images:
         - name: controller
           newName: registry.gitlab.com/sylva-projects/sylva-elements/workload-cluster-operator
-          newTag: 0.1.1
+          newTag: 0.1.2
 
   capo-cluster-resources:
     info:
