@@ -45,6 +45,4 @@ cleanup-openstack:
   script:
     - !reference [.os_cloud]
     - ./tools/openstack-cleanup.sh capo_cloud "${CAPO_TAG}"
-  tags:
-    - $CAPO_PLATFORM_TAG
   when: always
