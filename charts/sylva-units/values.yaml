@@ -2953,6 +2953,7 @@ units:
         createNamespace: true
       values:
         grafana:
+          adminPassword: '{{ .Values._internal.grafana_admin_password }}'
           sidecar:
             dashboards:
               enabled: true
@@ -5502,6 +5503,9 @@ _internal:
   # postgres passwords
   postgres_user_password: '{{ include "internalPersistentRandomPasswd" (tuple . "postgres_user_password") }}'
   postgres_replication_password: '{{ include "internalPersistentRandomPasswd" (tuple . "postgres_replication_password") }}'
+
+  # Grafana password
+  grafana_admin_password: '{{ include "internalPersistentRandomPasswd" (tuple . "grafana_admin_password") }}'
 
   default_password: '{{ include "internalPersistentRandomPasswd" (tuple . "default_password") }}'
 
