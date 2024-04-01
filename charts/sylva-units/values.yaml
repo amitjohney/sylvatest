@@ -4602,7 +4602,7 @@ units:
       chart:
         spec:
           chart: rancher-logging-crd
-          version: 103.0.0+up3.17.10
+          version: 103.0.1+up3.17.10
       install:
         createNamespace: false
 
@@ -4622,7 +4622,7 @@ units:
       chart:
         spec:
           chart: rancher-logging
-          version: 103.0.0+up3.17.10
+          version: 103.0.1+up3.17.10
       install:
         createNamespace: false
       values:
