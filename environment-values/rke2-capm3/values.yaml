@@ -52,16 +52,22 @@ cluster:
 
     network_interfaces:
       # for CAPM3 folowing are used and mapped to Metal3Data.spec.template.spec.networkData.links
+      # WARNING:
+      #  By default we use the SuSE version of Metal3 Chart. The IPA provided by this chart uses
+      #  interface scheme naming based on PCI location, not SLOT location. So it means the
+      #  interfaces are under the template enpXXXsXfX instead of ensXfX. However if you switch
+      #  back to Sylva Metal3 Chart, the SLOT location must be used.
+      #  More details at https://www.freedesktop.org/software/systemd/man/latest/systemd.net-naming-scheme.html
       bond0:
         type: bond
         interfaces:
-          - ens1f0
-          - ens1f1
+          - enpXXXs1f0
+          - enpXXXs1f1
         vlans:
           - id: 13
-      ens1f0:
+      enpXXXs1f0:
         type: phy
-      ens1f1:
+      enpXXXs1f1:
         type: phy
 
   machine_deployment_default:  # tweak as needed
@@ -77,17 +83,23 @@ cluster:
   machine_deployments:
     md0:
       replicas: 1
+      # WARNING:
+      #  By default we use the SuSE version of Metal3 Chart. The IPA provided by this chart uses
+      #  interface scheme naming based on PCI location, not SLOT location. So it means the
+      #  interfaces are under the template enpXXXsXfX instead of ensXfX. However if you switch
+      #  back to Sylva Metal3 Chart, the SLOT location must be used.
+      #  More details at https://www.freedesktop.org/software/systemd/man/latest/systemd.net-naming-scheme.html
       network_interfaces:
         bond0:
           type: bond
           interfaces:
-            - ens2f0
-            - ens2f1
+            - enpXXXs2f0
+            - enpXXXs2f1
           vlans:
             - id: 13
-        ens2f0:
+        enpXXXs2f0:
           type: phy
-        ens2f1:
+        enpXXXs2f1:
           type: phy
 
   baremetal_host_default:
