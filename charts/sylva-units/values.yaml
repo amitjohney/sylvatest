@@ -5407,7 +5407,7 @@ k8s_version_short: "1.27"
 
 # Renovate Bot needs additional information to detect sylva diskimage-builder version
 # renovate: depName=sylva-projects/sylva-elements/diskimage-builder
-sylva_diskimagebuilder_version: 0.2.0
+sylva_diskimagebuilder_version: 0.2.5
 
 sylva_diskimagebuilder_images:
   ubuntu-jammy-plain-rke2-1-27-10:
@@ -5436,7 +5436,7 @@ additional_sylva_units_status_info: {}
 #
 # this needs to be set to ~25Gi for hardened images
 #    (until https://gitlab.com/sylva-projects/sylva-elements/diskimage-builder/-/issues/57 is addressed)
-os_images_default_download_storage_space: 10Gi
+os_images_default_download_storage_space: 30Gi
 
 get_openstack_images_per_image_timeout_minutes: 20
 
