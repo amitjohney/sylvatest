@@ -76,7 +76,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://github.com/rancher/local-path-provisioner.git
       ref:
-        tag: v0.0.24
+        tag: v0.0.26
 
   sriov-resources:
     kind: GitRepository
@@ -1947,20 +1947,6 @@ units:
         helperImage:
           repository: docker.io/library/busybox
           tag: 1.36.1
-      _postRenderers:
-        - kustomize:
-            patchesStrategicMerge:
-              - kind: Deployment
-                apiVersion: apps/v1
-                metadata:
-                  name: local-path-provisioner
-                spec:
-                  template:
-                    spec:
-                      containers:
-                      - name: local-path-provisioner
-                        securityContext:
-                          runAsUser: 10000
 
   cluster-bmh:
     info:
