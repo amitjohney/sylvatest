@@ -3063,17 +3063,6 @@ units:
       values:
         grafana:
           adminPassword: '{{ .Values._internal.grafana_admin_password }}'
-          grafana.ini:
-            auth.anonymous:
-              enabled: false
-          ingress:
-            enabled: true
-            hosts:
-              - '{{ .Values.external_hostnames.grafana }}'
-            tls:
-              - secretName: grafana-general-tls
-                hosts:
-                  - '{{ .Values.external_hostnames.grafana }}'
           sidecar:
             dashboards:
               enabled: true
