@@ -4,12 +4,12 @@
     - echo -e "ok"
 
 test-after-deployment:
-  stage: deployment-test
+    stage: deployment-test
   extends:
-    - .test-tags
+      - .test-tags
   script:
-    - echo "Running my_test..."
-    - !reference [.my_test]
+      - echo "Running my_test..."
+      - !reference [.my_test]
   rules:
     - when: never
     
