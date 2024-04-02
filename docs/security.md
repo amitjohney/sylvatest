@@ -235,7 +235,6 @@ Finally, you can check that the ACME challenge can be solved by requesting the c
 ```shell
 curl http://sylva.example.com/.well-known/acme-challenge/FZHwkeNRjcev0dpiX2EV007SEBCzKZJ-lR99d6R34b0
 hLzB851b4fAxM.....
-```
 
 ## Password Management
 
