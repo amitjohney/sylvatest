@@ -18,28 +18,21 @@
 # - git
 # - cosign
 
+source $(dirname $0)/common.sh
+
 set -eu
 set -o pipefail
 
 SECONDS=0
 
 BASE_DIR="$(realpath $(dirname $0)/../..)"
-OCI_REGISTRY="${1:-oci://registry.gitlab.com/sylva-projects/sylva-core/}"
-REGISTRY_URI="${OCI_REGISTRY/oci:\/\//}"
 LOG_ERROR_FILE=$(mktemp)
 VALUES_FILE="$BASE_DIR/charts/sylva-units/values.yaml"
-FORCE_HELM_CHART_PROCESSING=${FORCE_HELM_CHART_PROCESSING:-false}  # can be set to "true" to force OCI artifact sign&push even it they already exist
 
 # if we run in a gitlab CI job, then we use the credentials provided by gitlab job environment
 if [[ -n ${CI_REGISTRY_USER:-} ]]; then
   creds="--creds $CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD"
 fi
-
-function error {
-  echo "[ERROR]"
-  echo "The chart $1 has not been pushed to $OCI_REGISTRY" >> $LOG_ERROR_FILE
-  echo $2 >> $LOG_ERROR_FILE
-}
 
 function check_invalid_semver_tag {
 
@@ -142,7 +135,7 @@ function process_chart_in_helm_repo {
       fi
 
       # Push Helm chart to OCI, then sign if signing material is available
-      push_and_sign $tgz_file $artifact_name $version_to_check
+      push_and_sign $tgz_file $artifact_name $version_to_check helm
       rm -f $tgz_file
     else
       if ls $chart_name*tgz >/dev/null 2>&1; then
@@ -176,7 +169,7 @@ function process_chart_in_git {
     helm package --version $revision $TMPD/$chart_path
     if [[ -e $tgz_file ]]; then
       # Push Helm chart to OCI, then sign if signing material is available
-      push_and_sign $tgz_file $chart_name $revision
+      push_and_sign $tgz_file $chart_name $revision helm
       #flux push artifact $OCI_REGISTRY/$chart_name:$git_revision --path=$chart_path --source=$git_repo --revision=$git_revision ${creds:-}
     else
       error $chart_name "The $tgz_file is not present after the 'helm package' operation, check that the chart version is correct"
@@ -197,54 +190,9 @@ function show_status {
   fi
 }
 
-function can_skip_artifact_push {
-  # if the environment variable FORCE_HELM_CHART_PROCESSING is set to true, the helm chart is processed even if it exists
-  if [[ $FORCE_HELM_CHART_PROCESSING == "true" ]]; then
-          echo "Force processing artifact $1 ..."
-          return 1
-  fi
-
-  echo "Checking if artifact $1 exists..."
-
-  if (flux pull artifact $1 -o /tmp); then
-    # artifact exists
-     if [[ -v COSIGN_PRIVATE_KEY ]] && [[ -v COSIGN_PASSWORD ]]; then
-       artifact_uri=$(echo $1 | sed 's/oci:\/\///')
-       echo "Check if artifact $artifact_uri is signed with the correct key"
-       if cosign verify --insecure-ignore-tlog=true --key env://COSIGN_PUBLIC_KEY $artifact_uri; then
-         echo "Artifact $artifact_uri exists and is already signed with the correct key, skipping it"
-         # Don't process the artifact if it exists and properly signed
-         return 0
-       else
-         echo "Artifact $artifact_uri exists and needs to be signed"
-         return 1
-       fi
-     fi
-     # artifact exists and no signing material available
-     return 0
-  else
-    # artifact does no exist
-    return 1
-  fi
-
-}
-
-
 ### Helm registry login with credentials of Gitlab job environment
 if [[ -n ${CI_REGISTRY_USER:-} ]]; then
     echo "$CI_REGISTRY_PASSWORD" | helm registry login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
-fi
-
-if ! [[ -v COSIGN_PRIVATE_KEY ]]; then
-   echo "[WARNING] Unable to sign the Helm Charts, the private key is not set"
-else
-   # cosign uploads a new tag to the registry, so:
-   docker login registry.gitlab.com -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
-fi
-
-
-if ! [[ -v COSIGN_PASSWORD ]]; then
-   echo "[WARNING] Unable to sign the Helm Charts, the private key password is not available"
 fi
 
 ### Parse values file ###
