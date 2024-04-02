@@ -5,11 +5,10 @@
 
 test-after-deployment:
     stage: deployment-test
-  extends:
+    extends:
       - .test-tags
   script:
       - echo "Running my_test..."
       - !reference [.my_test]
   rules:
-    - when: never
-    
+      - when: never
