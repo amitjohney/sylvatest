@@ -1361,6 +1361,7 @@ units:
         - '{{ tuple "components/harbor" (tuple . "harbor" | include "unit-enabled") | include "set-only-if" }}'
       postBuild:
         substitute:
+          GRAFANA_DNS: '{{ .Values.external_hostnames.grafana }}'
           RANCHER_DNS: '{{ .Values.external_hostnames.rancher }}'
           FLUX_WEBUI_DNS: '{{ .Values.external_hostnames.flux }}'
           HARBOR_DNS: '{{ .Values.external_hostnames.harbor }}'
@@ -3015,6 +3016,7 @@ units:
       internal: true
     enabled_conditions:
       - '{{ tuple . "monitoring" | include "unit-enabled" }}'
+      - '{{ tuple . "keycloak" | include "unit-enabled" }}'
     unit_templates:
     - base-deps
     depends_on:
@@ -3057,17 +3059,6 @@ units:
       values:
         grafana:
           adminPassword: '{{ .Values._internal.grafana_admin_password }}'
-          grafana.ini:
-            auth.anonymous:
-              enabled: false
-          ingress:
-            enabled: true
-            hosts:
-              - '{{ .Values.external_hostnames.grafana }}'
-            tls:
-              - secretName: grafana-general-tls
-                hosts:
-                  - '{{ .Values.external_hostnames.grafana }}'
           sidecar:
             dashboards:
               enabled: true
