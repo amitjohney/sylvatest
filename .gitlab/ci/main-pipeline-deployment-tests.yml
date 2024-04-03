@@ -183,25 +183,53 @@ capd-preview-oci-deploy:
 capd-kubeadm-deploy:
   extends: .default-trigger
   variables:
+    CAPD_RUNNER_TAG: gitlab-org-docker
     E2E_JOB_MR_PARITY: even
     ENV_NAME: kubeadm-capd
     ONLY_DEPLOY_MGMT: "true"
     SKIP_TESTS: "true"
     MGMT_ADDITIONAL_VALUES: environment-values/ci/lightweight-disable-some-units.yml
   trigger:
-    include: .gitlab/ci/pipeline-deploy-kubeadm-capd.yml
+    include: .gitlab/ci/pipeline-deploy-capd.yml
+    strategy: depend
+
+capd-rke2-deploy:
+  extends: .default-trigger
+  variables:
+    CAPD_RUNNER_TAG: saas-linux-medium-amd64
+    E2E_JOB_MR_PARITY: even
+    ENV_NAME: rke2-capd
+    ONLY_DEPLOY_MGMT: "true"
+    SKIP_TESTS: "true"
+    MGMT_ADDITIONAL_VALUES: environment-values/ci/lightweight-disable-some-units.yml
+  trigger:
+    include: .gitlab/ci/pipeline-deploy-capd.yml
     strategy: depend
 
 capd-kubeadm-oci-deploy:
   extends: .default-trigger-oci
   variables:
+    CAPD_RUNNER_TAG: gitlab-org-docker
     E2E_JOB_MR_PARITY: odd
     ENV_NAME: kubeadm-capd
     ONLY_DEPLOY_MGMT: "true"
     SKIP_TESTS: "true"
     MGMT_ADDITIONAL_VALUES: environment-values/ci/lightweight-disable-some-units.yml
   trigger:
-    include: .gitlab/ci/pipeline-deploy-kubeadm-capd.yml
+    include: .gitlab/ci/pipeline-deploy-capd.yml
+    strategy: depend
+
+capd-rke2-oci-deploy:
+  extends: .default-trigger-oci
+  variables:
+    CAPD_RUNNER_TAG: saas-linux-medium-amd64
+    E2E_JOB_MR_PARITY: odd
+    ENV_NAME: rke2-capd
+    ONLY_DEPLOY_MGMT: "true"
+    SKIP_TESTS: "true"
+    MGMT_ADDITIONAL_VALUES: environment-values/ci/lightweight-disable-some-units.yml
+  trigger:
+    include: .gitlab/ci/pipeline-deploy-capd.yml
     strategy: depend
 
 capo-kubeadm-deploy:

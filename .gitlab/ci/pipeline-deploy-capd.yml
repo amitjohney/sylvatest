@@ -1,4 +1,8 @@
 ---
+default:
+  tags:
+    - $CAPD_RUNNER_TAG
+
 include:
   - local: .gitlab/ci/deployment-pipeline.yml
 
