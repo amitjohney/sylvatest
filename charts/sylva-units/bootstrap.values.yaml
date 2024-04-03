@@ -339,6 +339,7 @@ units:
         {{- $chartValues := lookup "helm.toolkit.fluxcd.io/v2beta2" "HelmRelease" "sylva-system" "sylva-units" | dig "spec" "values" dict -}}
         {{- $disableCluster := dict "units" (dict "cluster"     (dict "enabled" false)
                                                   "cluster-bmh" (dict "enabled" false)
+                                                  "os-image-server" (dict "enabled" false)
                                             )
         -}}
         {{- mergeOverwrite $chartValues $disableCluster | include "preserve-type" -}}'
@@ -444,7 +445,7 @@ units:
 
               echo "-- Patch the mgmt cluster sylva-units HelmRelease to enable 'cluster' unit in the management cluster"
               kubectl -n $TARGET_NAMESPACE --kubeconfig /tmp/management-cluster-kubeconfig \
-                  patch helmrelease sylva-units --type=json --patch='[{"op":"remove","path":"/spec/values/units/cluster/enabled"},{"op":"remove","path":"/spec/values/units/cluster-bmh/enabled"}]'
+                  patch helmrelease sylva-units --type=json --patch='[{"op":"remove","path":"/spec/values/units/cluster/enabled"},{"op":"remove","path":"/spec/values/units/cluster-bmh/enabled"},{"op":"remove","path":"/spec/values/units/os-image-server/enabled"}]]'
 
               # NOTE: here we could add a reference to another valueFile that would deploy units specific to the management cluster
               # '[{"op":"add","path":"/spec/chart/spec/valuesFiles/-","value":"charts/sylva-units/management.values.yaml"}]'
