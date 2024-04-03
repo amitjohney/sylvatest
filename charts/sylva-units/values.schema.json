@@ -87,6 +87,34 @@
         }
       ]
     },
+    "dict-with-strings": {
+      "anyOf": [
+        {
+          "type": "object",
+          "patternProperties": {
+            ".*": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/string-with-gotpl"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "openstack-uuid": {
       "anyOf": [
         {
@@ -354,7 +382,7 @@
             "nodeLabels": {
               "anyOf": [
                 {
-                  "type": "object"
+                  "$ref": "#/$defs/dict-with-strings"
                 },
                 {
                   "$ref": "#/$defs/string-with-gotpl"
@@ -367,7 +395,7 @@
             "nodeAnnotations": {
               "anyOf": [
                 {
-                  "type": "object"
+                  "$ref": "#/$defs/dict-with-strings"
                 },
                 {
                   "$ref": "#/$defs/string-with-gotpl"
@@ -634,6 +662,47 @@
                   "type": "null"
                 }
               ]
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/string-with-gotpl"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "metallb_address_pools": {
+      "anyOf": [
+        {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "addresses"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "addresses": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/ipv4-cidr-full"
+                    },
+                    {
+                      "$ref": "#/$defs/ipv4-range"
+                    }
+                  ]
+                }
+              }
             }
           }
         },
@@ -1793,7 +1862,7 @@
                     "labels": {
                       "anyOf": [
                         {
-                          "type": "object"
+                          "$ref": "#/$defs/dict-with-strings"
                         },
                         {
                           "$ref": "#/$defs/string-with-gotpl"
@@ -1806,7 +1875,7 @@
                     "annotations": {
                       "anyOf": [
                         {
-                          "type": "object"
+                          "$ref": "#/$defs/dict-with-strings"
                         },
                         {
                           "$ref": "#/$defs/string-with-gotpl"
@@ -2231,7 +2300,7 @@
                     "labels": {
                       "anyOf": [
                         {
-                          "type": "object"
+                          "$ref": "#/$defs/dict-with-strings"
                         },
                         {
                           "$ref": "#/$defs/string-with-gotpl"
@@ -2244,7 +2313,7 @@
                     "annotations": {
                       "anyOf": [
                         {
-                          "type": "object"
+                          "$ref": "#/$defs/dict-with-strings"
                         },
                         {
                           "$ref": "#/$defs/string-with-gotpl"
@@ -2754,7 +2823,7 @@
             "nodeLabels": {
               "anyOf": [
                 {
-                  "type": "object"
+                  "$ref": "#/$defs/dict-with-strings"
                 },
                 {
                   "$ref": "#/$defs/string-with-gotpl"
@@ -2767,7 +2836,7 @@
             "nodeAnnotations": {
               "anyOf": [
                 {
-                  "type": "object"
+                  "$ref": "#/$defs/dict-with-strings"
                 },
                 {
                   "$ref": "#/$defs/string-with-gotpl"
@@ -4540,13 +4609,13 @@
             }
           ]
         },
-        "bgp_lbs": {
+        "kube_vip": {
           "anyOf": [
             {
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "kube_vip": {
+                "bgp_lbs": {
                   "anyOf": [
                     {
                       "type": "object",
@@ -4654,8 +4723,24 @@
                       "type": "null"
                     }
                   ]
-                },
-                "metallb": {
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "metallb": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "l2_lbs": {
                   "anyOf": [
                     {
                       "type": "object",
@@ -4664,35 +4749,79 @@
                         "address_pools": {
                           "anyOf": [
                             {
-                              "type": "array",
-                              "minItems": 1,
-                              "items": {
-                                "type": "object",
-                                "additionalProperties": false,
-                                "required": [
-                                  "name",
-                                  "addresses"
-                                ],
-                                "properties": {
-                                  "name": {
-                                    "type": "string"
-                                  },
-                                  "addresses": {
-                                    "type": "array",
-                                    "minItems": 1,
-                                    "items": {
-                                      "anyOf": [
-                                        {
-                                          "$ref": "#/$defs/ipv4-cidr-full"
-                                        },
-                                        {
-                                          "$ref": "#/$defs/ipv4-range"
+                              "$ref": "#/$defs/metallb_address_pools"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "l2_options": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "advertisements": {
+                                  "anyOf": [
+                                    {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "node_selectors": {
+                                            "type": "array"
+                                          },
+                                          "interface": {
+                                            "type": "string"
+                                          },
+                                          "advertised_pools": {
+                                            "type": "array"
+                                          }
                                         }
-                                      ]
+                                      }
+                                    },
+                                    {
+                                      "$ref": "#/$defs/string-with-gotpl"
+                                    },
+                                    {
+                                      "type": "null"
                                     }
-                                  }
+                                  ]
                                 }
                               }
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "bgp_lbs": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "address_pools": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/$defs/metallb_address_pools"
                             },
                             {
                               "$ref": "#/$defs/string-with-gotpl"
@@ -4888,6 +5017,35 @@
               "type": "object",
               "additionalProperties": false,
               "properties": {
+                "capd": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "image_name": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
                 "kubelet_extra_args": {
                   "anyOf": [
                     {
