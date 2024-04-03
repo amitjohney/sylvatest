@@ -309,6 +309,180 @@ It can be interesting to configure Keycloak to rely on an external identity prov
 
 ![keycloak-idps](./img/security/keycloak-idp.png)
 
+#### User federation
+
+It can be interesting to configure Keycloak to rely on an user federation provider, for example `OpenLDAP` as shown below, or even your own company's LDAP.
+
+##### Configure Keycloak with a self-signed certificate for LDAPS
+
+As Keycloak is a Java based application, a truststore file must be provided to the Java application in order to validate server certificates.
+
+On Sylva, we create automatically this truststore and add the accurate configuration on Keycloak to use it.
+
+Server certificate chain can be provided in your `values.yaml` file using this key:
+
+```yaml
+external_certificates:
+  cacert: |
+    # Add your certificate chain here
+    -----BEGIN CERTIFICATE-----
+    MIIC...
+    -----END CERTIFICATE-----
+```
+
+#### Configure Keycloak User federation with LDAP
+
+Find below an example of configuration for an OpenLDAP server using TLS:
+
+![keycloak-user-federation-ldaps-config](./img/security/keycloak-user-federation-ldaps-config.png)
+
+When truststore is configured accordingly to the LDAPS certificate, user synchronization can be done:
+
+![keycloak-ldaps-sync](./img/security/keycloak-ldaps-sync.png)
+
+Keycloak server logs:
+
+```bash
+2024-01-31 16:55:25,466 INFO  [org.keycloak.storage.ldap.LDAPStorageProviderFactory] (executor-thread-41) Sync all users from LDAP to local store: realm: sylva, federation provider: ldap
+2024-01-31 16:55:25,577 WARN  [org.keycloak.storage.ldap.LDAPStorageProvider] (executor-thread-41) Kerberos principal attribute not found on LDAP user [uid=adam,ou=people,dc=keycloak,dc=org]. Configured kerberos principal attribute name is [krb5PrincipalName]
+2024-01-31 16:55:25,596 INFO  [org.keycloak.storage.ldap.LDAPStorageProviderFactory] (executor-thread-41) Sync all users finished: 1 imported users, 0 updated users
+```
+
+OpenLDAP server logs:
+
+```bash
+65ba7b7d conn=1022 fd=12 ACCEPT from IP=100.72.149.198:46550 (IP=0.0.0.0:636)
+65ba7b7d conn=1022 fd=12 TLS established tls_ssf=256 ssf=256
+65ba7b7d conn=1022 op=0 BIND dn="cn=admin,dc=keycloak,dc=org" method=128
+65ba7b7d conn=1022 op=0 BIND dn="cn=admin,dc=keycloak,dc=org" mech=SIMPLE ssf=0
+65ba7b7d conn=1022 op=0 RESULT tag=97 err=0 text=
+65ba7b7d conn=1022 op=1 SRCH base="ou=people,dc=keycloak,dc=org" scope=2 deref=3 filter="(&(objectClass=posixAccount)(objectClass=account))"
+65ba7b7d conn=1022 op=1 SRCH attr=entryUUID uid mail sn cn objectclass krb5PrincipalName modifyTimestamp createTimestamp
+65ba7b7d conn=1022 op=1 SEARCH RESULT tag=101 err=0 nentries=1 text=
+65ba7b7d conn=1022 op=2 UNBIND
+65ba7b7d conn=1022 fd=12 closed
+```
+
+##### Example of light LDAPS deployment
+
+To test user federation with a LDAPS server you can use the following resources:
+
+`deployment.yaml`
+
+```yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: openldap
+spec:
+  replicas: 1
+  serviceName: openldap
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: openldap
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: openldap
+    spec:
+      hostname: openldap
+      containers:
+        - name: openldap
+          image: osixia/openldap:1.5.0
+          imagePullPolicy: "Always"
+          env:
+            - name: LDAP_ORGANISATION
+              value: "keycloak"
+            - name: LDAP_DOMAIN
+              value: "keycloak.org"
+            - name: LDAP_ENABLE_TLS
+              value: "yes"
+            - name: LDAP_TLS_VERIFY_CLIENT
+              value: "never"
+            - name: LDAP_ADMIN_USERNAME
+              value: "admin"
+            - name: LDAP_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: adminpassword
+                  name: openldap
+            - name: LDAP_USERS
+              valueFrom:
+                secretKeyRef:
+                  key: users
+                  name: openldap
+            - name: LDAP_PASSWORDS
+              valueFrom:
+                secretKeyRef:
+                  key: passwords
+                  name: openldap
+          ports:
+            - name: tcp-ldaps
+              containerPort: 636
+```
+
+`svc.yaml`
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: openldap-0
+  labels:
+    app.kubernetes.io/name: openldap
+spec:
+  type: ClusterIP
+  ports:
+    - name: tcp-ldaps
+      port: 636
+      targetPort: tcp-ldaps
+  selector:
+    app.kubernetes.io/name: openldap
+```
+
+Create a secret for OpenLDAP admin user and then apply files:
+
+```bash
+kubectl --kubeconfig management-cluster-kubeconfig -n keycloak create secret generic openldap --from-literal=adminpassword=adminpassword --from-literal=users=user01,user02 --from-literal=passwords=password01,password02
+
+kubectl --kubeconfig management-cluster-kubeconfig -n keycloak apply -f deployment.yaml
+
+kubectl --kubeconfig management-cluster-kubeconfig -n keycloak apply -f svc.yaml
+```
+
+Add an organizational unit on the deployed OpenLdap server:
+
+```bash
+cat people.ldif
+dn: ou=people,dc=keycloak,dc=org
+objectClass: top
+objectClass: organizationalUnit
+ou: people
+root@openldap-0:/# ldapadd -x -D "cn=admin,dc=keycloak,dc=org" -w <yourpassword> -H ldap://127.0.0.1 -f people.ldif
+```
+
+Add a user on the organisational unit created previously:
+
+```bash
+cat adam.ldif
+dn: uid=adam,ou=people,dc=keycloak,dc=org
+objectClass: top
+objectClass: account
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: adam
+uid: adam
+uidNumber: 16859
+gidNumber: 100
+homeDirectory: /home/adam
+loginShell: /bin/bash
+gecos: adam
+userPassword: {crypt}x
+shadowLastChange: 0
+shadowMax: 0
+root@openldap-0:/# ldapadd -x -D "cn=admin,dc=keycloak,dc=org" -w <yourpassword> -H ldap://127.0.0.1 -f adam.ldif
+```
+
 ### Access Control to workload Clusters
 
 If `Keycloak` plays a key role in access control to the workload cluster, it must be clear that `Keycloak` only manages the authentication of the users. The authorization part (i.e. define who can do what) is configured at the OIDC client (i.e. `Rancher`) side. For example, the following picture shows Rancher binding the admin role to the group infra-admins:

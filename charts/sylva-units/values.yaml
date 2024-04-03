@@ -1157,6 +1157,7 @@ units:
     depends_on:
       sylva-ca: true
       ingress-nginx: '{{ tuple . "ingress-nginx" | include "unit-enabled" }}'
+      keycloak-add-truststore: '{{ tuple . "keycloak-add-truststore" | include "unit-enabled" }}'
       postgres: true
       synchronize-secrets: true # make sure that the secret keycloak-initial-admin is ready to be consummed
     annotations:
@@ -1201,6 +1202,7 @@ units:
       _components:
         - '{{ tuple "components/keycloak-operator-proxies" (.Values.proxies.https_proxy) | include "set-only-if" }}'
         - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.keycloak "cert") }}'
+        - '{{ tuple "components/keycloak-truststore" (hasKey .Values.external_certificates "cacert") | include "set-only-if" }}'
       _patches:
         - patch: |
             - op: replace
@@ -1348,6 +1350,55 @@ units:
             path: /data/kube-job.sh
             value: |
           {{ .Files.Get "scripts/keycloak-add-client-scope.sh" | indent 4 }}
+
+
+  keycloak-add-truststore:
+    info:
+      description: configures Keycloak truststore
+      details: >
+        a job to manually add a truststore to Keycloak instance, e.h. to enable LDAPS protocol when using user federation)
+      internal: true
+    unit_templates:
+    - base-deps
+    enabled_conditions:
+    - '{{ tuple . "keycloak" | include "unit-enabled" }}'
+    - '{{ hasKey .Values.external_certificates "cacert" }}'
+    depends_on:
+      vault: true
+      namespace-defs: true
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/kube-job
+      wait: true
+      force: true
+      postBuild:
+        substitute:
+          JOB_NAME: keycloak-add-truststore-job
+          JOB_TARGET_NAMESPACE: keycloak
+          CERTIFICATE_NAMESPACE: keycloak
+      _components:
+        - "../tls-components/sylva-ca"
+      _patches:
+      - target:
+          kind: Job
+        patch: |
+          - op: replace
+            path: /spec/template/spec/containers/0/image
+            value: registry.gitlab.com/sylva-projects/sylva-elements/container-images/keytool-image:0.1.0
+          - op: replace
+            path: /spec/backoffLimit
+            value: 15
+      - target:
+          kind: ConfigMap
+        patch: |
+          - op: replace
+            path: /metadata/name
+            value: keycloak-add-truststore-job-keycloak-cm
+          - op: replace
+            path: /data/kube-job.sh
+            value: |
+          {{ .Files.Get "scripts/keycloak-add-truststore.sh" | indent 4 }}
+
 
   keycloak-oidc-external-secrets:
     info:
