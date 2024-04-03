@@ -8,6 +8,8 @@ The results are summarized by the following table:
 
 | Date                      | Management Cluster CAPI Providers | Sylva-Core main commit ID        | Management cluster result                    | Workload cluster result              | Test logs (only for failed tests) |
 |---------------------------|-----------------------------------|----------------------------------|----------------------------------------------|--------------------------------------|-----------------------------------|
+|2024-04-03 01:57|rke2-capv|e783a82c76eddb0804151504feecac6a7b116d85|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/8ac7f3174e1421737ceb6a0aa321b8f2/capv-logs.gz)|
+|2024-04-03 01:57|kubeadm-capv|e783a82c76eddb0804151504feecac6a7b116d85|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/8ac7f3174e1421737ceb6a0aa321b8f2/capv-logs.gz)|
 |2024-03-30 01:39|rke2-capv|690dc7591718a292799661f06a6c10ec9ba09820|:white_check_mark:|:white_check_mark:||
 |2024-03-30 01:38|kubeadm-capv|690dc7591718a292799661f06a6c10ec9ba09820|:white_check_mark:|:white_check_mark:||
 |2024-03-30 01:38|kubeadm-capv|690dc7591718a292799661f06a6c10ec9ba09820|:white_check_mark:|:white_check_mark:||
@@ -27,8 +29,6 @@ The results are summarized by the following table:
 |2024-03-23 01:33|rke2-capv|ca60555d817ed53586e1b9a4e5f75ef9ed9200ac|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/8e0502d734e1a3e2211380b336b3a171/capv-logs.gz)|
 |2024-03-23 01:33|rke2-capv|ca60555d817ed53586e1b9a4e5f75ef9ed9200ac|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/279441c956ee0c13a6685c20d6a00921/capv-logs.gz)|
 |2024-03-23 01:30|kubeadm-capv|ca60555d817ed53586e1b9a4e5f75ef9ed9200ac|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/279441c956ee0c13a6685c20d6a00921/capv-logs.gz)|
-|2024-03-22 01:33|rke2-capv|57363590a43c89a2abb50af120fc1fced7ad0770|:white_check_mark:|:white_check_mark:||
-|2024-03-22 01:33|kubeadm-capv|57363590a43c89a2abb50af120fc1fced7ad0770|:white_check_mark:|:white_check_mark:||
 
 Old layout table:
 
