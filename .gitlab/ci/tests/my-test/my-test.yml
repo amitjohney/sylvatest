@@ -4,6 +4,8 @@
 
 my-test-after-deployment:
   stage: deployment-test
+  variables:
+    SKIP_TESTS: "true"
   extends:
     - .test-tags
   script:

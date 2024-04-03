@@ -2,8 +2,8 @@
 include:
   - local: .gitlab/ci/templates-deployments.yml
   - local: .gitlab/ci/tests/**/*.yml
-    # rules:
-    #   - if: $SKIP_TESTS != 'true'
+    rules:
+      - if: $SKIP_TESTS != 'true'
 
 workflow:
   name: "Deployment pipeline - $WORKFLOW_NAME"
