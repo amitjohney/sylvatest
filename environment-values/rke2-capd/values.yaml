@@ -12,16 +12,16 @@ units:
     enabled: false
   capi-rancher-import:
     enabled: false
-  kyverno:
-    enabled: false
   shared-workload-clusters-settings:
     enabled: false
   harbor:
     enabled: false
+  minio-monitoring-tenant:
+    enabled: false
 
 cluster:
   capd:
-    image_name: registry.gitlab.com/sylva-projects/sylva-elements/container-images/rke2-in-docker:v1-24-12-rke2r1
+    image_name: registry.gitlab.com/sylva-projects/sylva-elements/container-images/rke2-in-docker:v1-27-10-rke2r1
   capi_providers:
     infra_provider: capd
     bootstrap_provider: cabpr

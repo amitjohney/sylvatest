@@ -1614,14 +1614,13 @@ units:
     info:
       description: installs Docker CAPI infra provider
       maturity: core-component
-      kustomization_path: ./kustomize-units/capd/base
     repo: sylva-core
     unit_templates:
     - base-deps
     depends_on:
       cert-manager: true
     kustomization_spec:
-      path: '{{ ternary "./kustomize-units/capd/base" "./kustomize-units/capd/rke2" (eq .Values.cluster.capi_providers.bootstrap_provider "cabpk") }}'
+      path: ./kustomize-units/capd
       postBuild:
         substitute:
           CAPD_DOCKER_HOST: '{{ .Values.capd_docker_host }}'
