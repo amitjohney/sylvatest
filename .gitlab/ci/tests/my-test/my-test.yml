@@ -2,7 +2,7 @@
 .my_test:
   - echo -e "ok"
 
-test-after-deployment:
+my-test-after-deployment:
   stage: deployment-test
   extends:
     - .test-tags
