@@ -10,4 +10,4 @@ test-after-deployment:
     - echo "Running my_test..."
     - !reference [.my_test]
   rules:
-    when : always  
+  when : always
