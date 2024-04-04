@@ -12,6 +12,7 @@ spec:
   generateExisting: true
   rules:
   - name: create-cluster-cm
+    skipBackgroundRequests: false
     match:
       any:
       - resources:
