@@ -1,0 +1,8 @@
+_internal:
+  test_preserve_type: >-
+    {{ $l := dict "key1" "value1" "key2" "value2" }}
+      {{ $l | include "preserve-type" }}
+
+third_party:  # (note that this is guaranteed to be interpreted after _internal)
+  assert_test_preserve_type: '{{ .Values._internal.test_preserve_type | dig "key1" "" | required "failed test_preserve_type assertion, _internal.test_preserve_type is not dict"}}'
+
