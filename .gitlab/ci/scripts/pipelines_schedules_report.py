@@ -20,7 +20,7 @@ gitlab_url = "https://gitlab.com"
 private_token = os.getenv('PRIVATE_TOKEN')
 gl = gitlab.Gitlab(gitlab_url, private_token=private_token)
 project_id = 42451983
-pipeline_schedule_name="Nightly"
+pipeline_schedule_name = os.getenv('PIPELINE_SCHEDULE_NAME_SELECTOR', default = "Nightly")
 project = gl.projects.get(project_id)
 print("retrieving pipeline schedules")
 pipeline_schedules = project.pipelineschedules.list()
