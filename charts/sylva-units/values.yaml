@@ -2750,6 +2750,9 @@ units:
         spec:
           chart: rke2-ingress-nginx
           version: "" # will be defined by helm_chart_versions
+      upgrade:
+        remediation:
+          retries: 2
       values:
         fullnameOverride: rke2-ingress-nginx
         controller:
