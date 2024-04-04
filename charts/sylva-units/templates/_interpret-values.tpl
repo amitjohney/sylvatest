@@ -260,10 +260,10 @@ Note well that there are a few limitations:
     {{ $kind := kindOf $data }}
     {{ $result := 0 }}
     {{ if (eq $kind "string") }}
-        {{ if regexMatch ".*{{(.|\n)+}}.*" $data }}
+        {{ if regexMatch "(.|\n)*{{(.|\n)+}}(.|\n)*" $data }}
             {{/* This is where we actually trigger GoTPL interpretation */}}
             {{ $tpl_res := tpl $data $envAll }}
-            {{ if (hasPrefix "{\"encapsulated-result\":" $tpl_res) }}
+            {{ if (regexMatch "^( |\n)*{\"encapsulated-result\":" $tpl_res) }}
                 {{ $result = index (fromJson $tpl_res) "encapsulated-result" }}
             {{ else }}
                 {{ $result = $tpl_res }}
@@ -279,7 +279,7 @@ Note well that there are a few limitations:
         {{ range $data }}
             {{ $tpl_item := index (tuple $envAll . | include "interpret-inner-gotpl" | fromJson) "result" }}
             {{ if (eq (kindOf $tpl_item) "string") }}
-                {{ if (hasPrefix "{\"encapsulated-result\":" $tpl_item) }}
+                {{ if (regexMatch "^( |\n)*{\"encapsulated-result\":" $tpl_item) }}
                     {{ $result = append $result (index (fromJson $tpl_item) "encapsulated-result") }}
                 {{ else if (ne $tpl_item "skip-as-set-only-if-result-was-false") }}
                     {{ $result = append $result $tpl_item }}
@@ -295,7 +295,7 @@ Note well that there are a few limitations:
             {{ $tpl_key := index (tuple $envAll $key | include "interpret-inner-gotpl" | fromJson) "result" }}
             {{ $tpl_value := index (tuple $envAll $value | include "interpret-inner-gotpl" | fromJson) "result" }}
             {{ if (eq (kindOf $tpl_value) "string") }}
-                {{ if (hasPrefix "{\"encapsulated-result\":" $tpl_value) }}
+                {{ if (regexMatch "^( |\n)*{\"encapsulated-result\":" $tpl_value) }}
                     {{ $_ := set $result $tpl_key (index (fromJson $tpl_value) "encapsulated-result") }}
                 {{ else if (ne $tpl_value "skip-as-set-only-if-result-was-false") }}
                     {{ $_ := set $result $tpl_key $tpl_value }}
@@ -310,7 +310,6 @@ Note well that there are a few limitations:
 
 {{ dict "result" $result | toJson }}
 {{ end }}
-
 
 {{/*
 
