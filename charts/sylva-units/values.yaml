@@ -120,13 +120,6 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: v1.26.2
 
-  sylva-dashboards:
-    kind: GitRepository
-    spec:
-      url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-dashboards.git
-      ref:
-        tag: 0.0.6
-
   minio-operator:
     kind: GitRepository
     spec:
@@ -134,12 +127,12 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: v5.0.13
 
-  sylva-snmp-resources:
+  sylva-monitoring-resources:
     kind: GitRepository
     spec:
-      url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-snmp-resources.git
+      url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-monitoring-resources.git
       ref:
-        tag: 0.0.6
+        tag: 0.0.1
 
   loki:
     kind: GitRepository
@@ -147,13 +140,6 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       url: https://github.com/grafana/loki.git
       ref:
         tag: v2.9.3
-
-  sylva-prometheus-rules:
-    kind: GitRepository
-    spec:
-      url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-prometheus-rules.git
-      ref:
-        tag: 0.0.8
 
 helm_repo_spec_default:
   interval: 60m0s
@@ -3199,12 +3185,12 @@ units:
     enabled_conditions:
       - false
     unit_templates: []  # see above, this isn't a real unit
-    repo: sylva-snmp-resources
+    repo: sylva-monitoring-resources
     helm_chart_artifact_name: sylva-snmp-resources
     helmrelease_spec:
       chart:
         spec:
-          chart: .
+          chart: ./sylva-snmp-resources
 
   sylva-dashboards:
     info:
@@ -3215,12 +3201,12 @@ units:
     - base-deps
     depends_on:
       monitoring: true
-    repo: sylva-dashboards
+    repo: sylva-monitoring-resources
     helm_chart_artifact_name: sylva-dashboards
     helmrelease_spec:
       chart:
         spec:
-          chart: .
+          chart: ./sylva-dashboards
       targetNamespace: sylva-dashboards
       install:
         createNamespace: true
@@ -5022,13 +5008,13 @@ units:
       monitoring: true
     enabled_conditions:
       - '{{ tuple . "monitoring" | include "unit-enabled" }}'
-    repo: sylva-prometheus-rules
+    repo: sylva-monitoring-resources
     helmrelease_spec:
       releaseName: sylva-prometheus-rules
       targetNamespace: sylva-prometheus-rules
       chart:
         spec:
-          chart: prometheus-rules
+          chart: ./sylva-prometheus-rules
       install:
         createNamespace: true
       values:
