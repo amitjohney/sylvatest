@@ -2,6 +2,20 @@
 include:
   - local: .gitlab/ci/deployment-pipeline.yml
 
+# This configuration is specific to capm3-virt deployments
+.flavored-pre-deployment-configuration:
+  - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_capm3_virt[collapsed=true]\r\e[0KApplying specific capm3-virt configuration\e[0m"
+  - echo "Using https://dashboard.stablebuild.com/organizations/sylvaproject/dockermirror as DockerHub registry_mirror"
+  - |
+    # The variable STABLE_BUILD_API_KEY below is set in gitlab CI/CD variables
+    cat <<EOF>> /tmp/public_docker_registry_mirror.yml
+    hosts_config:
+      docker.io:
+        - mirror_url: https://sylvaproject-${STABLE_BUILD_API_KEY}.dockermirror.stablebuild.com
+    EOF
+  - yq -i eval-all 'select(fileIndex==0).registry_mirrors = select(fileIndex==1) | select(fileIndex==0)' $ENV_PATH/values.yaml /tmp/public_docker_registry_mirror.yml
+  - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capm3_virt\r\e[0K"
+
 # Default tag will be used for all deployments/updates jobs
 default:
   tags:
