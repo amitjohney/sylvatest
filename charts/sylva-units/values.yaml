@@ -2255,7 +2255,8 @@ units:
     helm_chart_versions:
       v3.25.001: '{{ include "k8s-version-match" (tuple . "<1.26")  }}'
       v3.26.101: '{{ include "k8s-version-match" (tuple . ">=1.26.6,<=1.27.6") }}'
-      v3.26.300: '{{ include "k8s-version-match" (tuple . ">=1.27.10") }}'
+      v3.26.300: '{{ include "k8s-version-match" (tuple . ">=1.27.10,<1.28.8") }}'
+      v3.27.002: '{{ include "k8s-version-match" (tuple . ">=1.28.8") }}'
     helmrelease_spec:
       releaseName: rke2-calico-crd
       targetNamespace: kube-system
@@ -2294,7 +2295,8 @@ units:
     helm_chart_versions:
       v3.25.001: '{{ include "k8s-version-match" (tuple . "<1.26") }}'
       v3.26.101: '{{ include "k8s-version-match" (tuple . ">=1.26.6,<=1.27.6") }}'
-      v3.26.300: '{{ include "k8s-version-match" (tuple . ">=1.27.10") }}'
+      v3.26.300: '{{ include "k8s-version-match" (tuple . ">=1.27.10,<1.28.8") }}'
+      v3.27.200: '{{ include "k8s-version-match" (tuple . ">=1.28.8") }}'
     helmrelease_spec:
       chart:
         spec:
@@ -5442,26 +5444,26 @@ os_images_oci_registries:
     url: '{{ .Values.sylva_base_oci_registry }}/sylva-elements/diskimage-builder'
     tag: '{{ .Values.sylva_diskimagebuilder_version }}'
 
-k8s_version_short: "1.27"
+k8s_version_short: "1.28"
 
 # Renovate Bot needs additional information to detect sylva diskimage-builder version
 # renovate: depName=sylva-projects/sylva-elements/diskimage-builder
 sylva_diskimagebuilder_version: 0.2.5
 
 sylva_diskimagebuilder_images:
-  ubuntu-jammy-plain-rke2-1-27-10:
+  ubuntu-jammy-plain-rke2-1-28-8:
     default_enabled: true
+  ubuntu-jammy-plain-rke2-1-27-10: {}
   ubuntu-jammy-plain-rke2-1-26-9: {}
-  ubuntu-jammy-plain-rke2-1-25-14: {}
+  ubuntu-jammy-hardened-rke2-1-28-8: {}
   ubuntu-jammy-hardened-rke2-1-27-10: {}
   ubuntu-jammy-hardened-rke2-1-26-9: {}
-  ubuntu-jammy-hardened-rke2-1-25-14: {}
+  opensuse-15-5-plain-rke2-1-28-8: {}
   opensuse-15-5-plain-rke2-1-27-10: {}
   opensuse-15-5-plain-rke2-1-26-9: {}
-  opensuse-15-5-plain-rke2-1-25-14: {}
+  opensuse-15-5-hardened-rke2-1-28-8: {}
   opensuse-15-5-hardened-rke2-1-27-10: {}
   opensuse-15-5-hardened-rke2-1-26-9: {}
-  opensuse-15-5-hardened-rke2-1-25-14: {}
 
 # this dict can be enriched at deployment time to feed additional information
 # into the sylva-units-status ConfigMap
@@ -5477,7 +5479,7 @@ additional_sylva_units_status_info: {}
 #    (until https://gitlab.com/sylva-projects/sylva-elements/diskimage-builder/-/issues/57 is addressed)
 os_images_default_download_storage_space: 30Gi
 
-get_openstack_images_per_image_timeout_minutes: 20
+get_openstack_images_per_image_timeout_minutes: 30
 
 security:
   calico_wireguard_enabled: false  # disable wireguard by default
@@ -5607,9 +5609,9 @@ _internal:
   metal3_unit: '{{ .Values.metal3.provider | eq "suse" | ternary "metal3-suse" "metal3" }}'
 
   k8s_version_map:
-    1.25: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.25.14+rke2r1" "v1.25.14" }}'
     1.26: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.26.9+rke2r1" "v1.26.9" }}'
     1.27: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.27.10+rke2r1" "v1.27.10" }}'
+    1.28: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.28.8+rke2r1" "v1.28.8" }}'
 
   # total number of nodes in this cluster
   node_count:

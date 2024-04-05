@@ -109,8 +109,8 @@ variables:
       MGMT_INITIAL_ADDITIONAL_VALUES: environment-values/ci/control-plane-replicas-3.yml
       MGMT_UPDATE_ADDITIONAL_VALUES: environment-values/ci/dummy-rolling-update-trigger.yml
       APPLY_WATCH_TIMEOUT_MIN: 40
-      WC_INITIAL_ADDITIONAL_VALUES: environment-values/ci/k8s-1.26.yml
-      WC_UPDATE_ADDITIONAL_VALUES: environment-values/ci/k8s-1.27.yml
+      WC_INITIAL_ADDITIONAL_VALUES: environment-values/ci/k8s-1.27.yml
+      WC_UPDATE_ADDITIONAL_VALUES: environment-values/ci/k8s-1.28.yml
       APPLY_WC_WATCH_TIMEOUT_MIN: 40
   - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_DEPLOYMENTS && $CI_JOB_NAME =~ $DEPLOYMENT_FLAVOR && $ENV_NAME =~ /.*kubeadm.*/'
     variables:
