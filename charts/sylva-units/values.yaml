@@ -3089,6 +3089,8 @@ units:
               {{- $result = append $result $target -}}
             {{- end -}}
             {{ $result | toJson }}
+      _components:
+        - '{{ tuple "components/kyverno-snmp-bmh-policy" (tuple . .Values._internal.metal3_unit | include "unit-enabled") | include "set-only-if" }}'
 
   snmp-exporter:
     info:
@@ -3096,7 +3098,6 @@ units:
       maturity: beta
     enabled_conditions:
     - '{{ tuple . "monitoring" | include "unit-enabled" }}'
-    - '{{ .Values.snmp.devices | empty | not }}'
     - '{{ .Values.snmp.auth | empty | not }}'
     unit_templates:
     - base-deps

@@ -4,4 +4,3 @@ resources:
   - prometheus-sd-files.yaml
   - prometheus-config-values.yaml
   - prometheus-sd-files-bmh.yaml
-  - prometheus-bmh-clusterpolicy.yaml
