@@ -1,14 +1,13 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: prometheus-snmp-exporter-config-values
+  name: prometheus-config-values
   namespace: sylva-system
 data:
   values.yaml: |
     prometheus:
       prometheusSpec:
-        configMaps:
-          - prometheus-snmp-sd-files
+        configMaps: ${CONFIGMAPS}
         additionalScrapeConfigs:
           - job_name: 'snmp-exporter'
             scrape_interval: 90s
@@ -16,6 +15,8 @@ data:
             file_sd_configs:
               - files: ['/etc/prometheus/configmaps/prometheus-snmp-sd-files/snmp_*.json']
               - files: ['/etc/prometheus/configmaps/prometheus-snmp-sd-files/snmp_*.yaml']
+              - files: ['/etc/prometheus/configmaps/prometheus-snmp-sd-files-bmh/snmp_*.json']
+              - files: ['/etc/prometheus/configmaps/prometheus-snmp-sd-files-bmh/snmp_*.yaml']
             metrics_path: /snmp
             params:
               module: ['if_mib']

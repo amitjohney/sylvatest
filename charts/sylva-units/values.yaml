@@ -2978,7 +2978,7 @@ units:
     depends_on:
       namespace-defs: true
       monitoring-crd: true
-      prometheus-snmp-resources: '{{ tuple . "snmp-exporter" | include "unit-enabled" }}'
+      prometheus-resources: '{{ tuple . "prometheus-resources" | include "unit-enabled" }}'
     helm_repo_url: https://charts.rancher.io/
     helmrelease_spec:
       releaseName: rancher-monitoring
@@ -2989,7 +2989,7 @@ units:
           chart: rancher-monitoring
           version: 103.0.3+up45.31.1
       install:
-        createNamespace: true
+        createNamespace: false
       values:
         grafana:
           adminPassword: '{{ .Values._internal.grafana_admin_password }}'
@@ -3033,8 +3033,8 @@ units:
           name: flux-custom-resource-state-config # this configmap is a byproduct of the prometheus-flux unit
           optional: '{{ not (tuple . "prometheus-flux" | include "unit-enabled") | include "as-bool" }}'
         - kind: ConfigMap
-          name: prometheus-snmp-exporter-config-values # this configmap is a byproduct of the prometheus-snmp-resources unit
-          optional: '{{ not (tuple . "snmp-exporter" | include "unit-enabled") | include "as-bool" }}'
+          name: prometheus-config-values # this configmap is a byproduct of the prometheus-resources unit
+          optional: '{{ not (tuple . "prometheus-resources" | include "unit-enabled") | include "as-bool" }}'
       # Disable drift detection for rancher-monitoring webhooks
       _postRenderers:
         - kustomize:
@@ -3053,21 +3053,31 @@ units:
             username: thanos-user
             password: '{{ .Values._internal.thanos_password }}'  # value from management cluster, set via Secret/shared-workload-clusters-settings
 
-  prometheus-snmp-resources:
+  prometheus-resources:
     info:
-      description: Creates required configmaps and kyverno policies to enable snmp monitoring
+      description: Creates required ConfigMaps and Kyverno policies to enable SNMP monitoring by Prometheus
       internal: true
     unit_templates:
     - base-deps
+    depends_on:
+      namespace-defs: true
+      '{{ .Values._internal.metal3_unit }}': '{{ tuple . .Values._internal.metal3_unit | include "unit-enabled" }}'
     enabled_conditions:
-      - '{{ tuple . "snmp-exporter" | include "unit-enabled" }}'
+      - '{{ tuple . "monitoring" | include "unit-enabled" }}'
     repo: sylva-core
     kustomization_spec:
-      path: ./kustomize-units/prometheus-snmp-resources
+      path: ./kustomize-units/prometheus-resources
       force: true
       wait: true
       postBuild:
         substitute:
+          CONFIGMAPS: '
+            {{- $cm := list -}}
+            {{- if (tuple . "snmp-exporter" | include "unit-enabled") -}}
+            {{- $cm = append $cm "prometheus-snmp-sd-files" -}}
+            {{- $cm = append $cm "prometheus-snmp-sd-files-bmh" -}}
+            {{- end -}}
+            {{ $cm | toJson }}'
           TARGETS: >
             {{- $sylva_cluster := .Values.cluster.name -}}
             {{- $result := list -}}
