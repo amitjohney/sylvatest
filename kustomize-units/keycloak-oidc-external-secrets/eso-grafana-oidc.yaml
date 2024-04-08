@@ -18,5 +18,5 @@ spec:
   data:
     - secretKey: clientSecret
       remoteRef:
-        key: keycloak-client-secret-grafana-client  # this secret is a byproduct of the flux-webui-client KeycloakClient resource
+        key: keycloak-client-secret-grafana-client  # this secret is a byproduct of the grafana-client KeycloakClient resource
         property: CLIENT_SECRET
