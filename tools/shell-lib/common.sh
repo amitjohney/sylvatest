@@ -82,7 +82,7 @@ function check_apply_kustomizations() {
   fi
 }
 
-export CURRENT_COMMIT=${CI_COMMIT_SHA:-$(git rev-parse HEAD)}
+export CURRENT_COMMIT=$(git rev-parse HEAD)
 export SYLVA_CORE_REPO=${SYLVA_CORE_REPO:-$(git remote get-url origin | sed 's|^git@\([^:]\+\):|https://\1/|')}
 
 echo_b() {
