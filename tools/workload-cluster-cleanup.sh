@@ -42,7 +42,7 @@ WORKLOAD_CLUSTER_NAME=$(kubectl -n $WORKLOAD_CLUSTER_NAMESPACE get cluster -o na
 echo "Deleting workload cluster named \"$WORKLOAD_CLUSTER_NAME\" in namespace \"$WORKLOAD_CLUSTER_NAMESPACE\""
 flux suspend --all ks -n $WORKLOAD_CLUSTER_NAMESPACE
 flux suspend --all hr -n $WORKLOAD_CLUSTER_NAMESPACE
-kubectl delete --request-timeout 5m -n $WORKLOAD_CLUSTER_NAMESPACE hr cluster
+kubectl delete -n $WORKLOAD_CLUSTER_NAMESPACE clusters.cluster.x-k8s.io $WORKLOAD_CLUSTER_NAME
 if kubectl get -n $WORKLOAD_CLUSTER_NAMESPACE heatstacks &> /dev/null; then
     echo "Found heatstacks in namespace $WORKLOAD_CLUSTER_NAMESPACE, deleting..."
     kubectl delete --request-timeout 1m -n $WORKLOAD_CLUSTER_NAMESPACE heatstacks heatstack-capo-cluster-resources
