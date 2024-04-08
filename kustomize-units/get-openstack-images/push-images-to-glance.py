@@ -221,6 +221,7 @@ for os_name, os_image_info in os_images.items():
     md5_checksum = os_image_info['md5']
     image_format = os_image_info['image-format']
     insecure_tls = os_image_info['insecure']
+    os_image_info.pop('insecure', None)
     parsed_url = urlparse(artifact)
     if os_image_info.get("commit-tag"):
         _os_name = f'{os_name}-sylva-diskimage-builder-{os_image_info["commit-tag"]}'
