@@ -4628,6 +4628,8 @@ units:
           ingress:
             enabled: true
             ingressClassName: "nginx"
+            annotations:
+              nginx.ingress.kubernetes.io/client-body-buffer-size: 1m
             hostname: '{{ .Values.external_hostnames.thanos_receive }}'
             extraTls:
               - hosts:
@@ -4969,7 +4971,8 @@ units:
             enabled: true
             ingressClassName: "nginx"
             annotations:
-              nginx.ingress.kubernetes.io/proxy-body-size: "0"
+              nginx.ingress.kubernetes.io/proxy-body-size: "4096m"
+              nginx.ingress.kubernetes.io/client-body-buffer-size: 10m
             hosts:
               - host: '{{ .Values.external_hostnames.loki }}'
                 paths:
