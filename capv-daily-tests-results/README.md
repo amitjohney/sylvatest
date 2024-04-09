@@ -8,6 +8,8 @@ The results are summarized by the following table:
 
 | Date                      | Management Cluster CAPI Providers | Sylva-Core main commit ID        | Management cluster result                    | Workload cluster result              | Test logs (only for failed tests) |
 |---------------------------|-----------------------------------|----------------------------------|----------------------------------------------|--------------------------------------|-----------------------------------|
+|2024-04-09 02:57|rke2-capv|62f45274e7200a95594c77ba61cb0a2ce5d3e673|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/93302f05a95fd7771ad91a85640d7f21/capv-logs.gz)|
+|2024-04-09 02:57|kubeadm-capv|62f45274e7200a95594c77ba61cb0a2ce5d3e673|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/93302f05a95fd7771ad91a85640d7f21/capv-logs.gz)|
 |2024-04-06 02:56|kubeadm-capv|967bf4222ce4e898fa075569eca266bee96eea90|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/35843afc86432e40a559e3a04f434c2a/capv-logs.gz)|
 |2024-04-06 02:49|rke2-capv|967bf4222ce4e898fa075569eca266bee96eea90|:white_check_mark:|:white_check_mark:|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/b8ee6c198d6ba3b574035d765e57ab9c/capv-logs.gz)|
 |2024-04-06 02:49|rke2-capv|967bf4222ce4e898fa075569eca266bee96eea90|:white_check_mark:|:white_check_mark:|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/4258945ffa97dba400326ab1b3dde301/capv-logs.gz)|
@@ -27,7 +29,6 @@ The results are summarized by the following table:
 |2024-03-29 01:33|rke2-capv|60c09b59d9cb407507f40d22e63b06a15cc9fbf5|:white_check_mark:|:white_check_mark:||
 |2024-03-29 01:34|kubeadm-capv|60c09b59d9cb407507f40d22e63b06a15cc9fbf5|:white_check_mark:|:white_check_mark:||
 |2024-03-28 01:43|rke2-capv|3e6bdaef0198bb8f4c2aa6ca8c5b7c439d49824b|:white_check_mark:|:white_check_mark:||
-|2024-03-28 01:43|kubeadm-capv|3e6bdaef0198bb8f4c2aa6ca8c5b7c439d49824b|:white_check_mark:|:white_check_mark:||
 
 Old layout table:
 
