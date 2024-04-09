@@ -73,6 +73,11 @@ Wait for infra provider Cluster
     "name" $cluster.name
     "namespace" $ns
 ) -}}
+
+{{/* Workaround for https://gitlab.com/sylva-projects/sylva-core/-/issues/959; we drop the last element (Metal3Cluster) */}}
+{{- if $cluster.capi_providers.infra_provider | eq "capm3" -}}
+  {{- $result = initial $result -}}
+{{- end }}
 {{/*
 
 We determine which control plane object to look at depending
