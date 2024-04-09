@@ -4150,7 +4150,7 @@ units:
       chart:
         spec:
           chart: helm/operator
-          version: v5.0.11
+          version: v5.0.13
       install:
         createNamespace: false
       values:
@@ -4236,6 +4236,9 @@ units:
     depends_on:
       namespace-defs: true
       sylva-ca: true
+      vault: true
+      vault-config-operator: true
+      eso-secret-stores: true
     repo: sylva-core
     kustomization_substitute_secrets:
       KEY: '{{ .Values.external_certificates.minio_monitoring_tenant.key | default "" | b64enc }}'
@@ -4277,18 +4280,20 @@ units:
       chart:
         spec:
           chart: helm/tenant
-          version: v5.0.11
+          version: v5.0.13
       install:
         createNamespace: false
       values:
         secrets:
-          # we need existingSecret to be empty in order to have unit create Secret/minio-root-account out of .accessKey & .secretKey
-          existingSecret: {}
-          name: minio-root-account
+          existingSecret: minio-monitoring-root
         tenant:
           name: monitoring
+          # The Kubernetes secret name that contains MinIO environment variable configurations:
           configuration:
-            name: minio-root-account
+            name: minio-monitoring-root
+          # Array of Kubernetes secrets from which the Operator generates MinIO users during tenant provisioning:
+          users:
+            - name: minio-monitoring-user
           pools:
             - servers: 2
               name: pool-0
@@ -4318,11 +4323,6 @@ units:
           features:
             bucketDNS: false
             enableSFTP: false
-          users:
-            # Secrets having as contents
-            # - CONSOLE_ACCESS_KEY - The "Username" for the MinIO user
-            # - CONSOLE_SECRET_KEY - The "Password" for the MinIO user
-            - name: storage-user
           buckets:
             - name: "thanos"
               region: "monitoring-cluster"
@@ -4372,20 +4372,6 @@ units:
               - hosts:
                   - '{{ .Values.external_hostnames.minio_monitoring_tenant_console }}'
                 secretName: minio-monitoring-tenant-tls
-    helm_secret_values:
-      secrets:
-        accessKey: minio
-        secretKey: '{{ .Values._internal.minio_monitoring_root_password }}'
-      extraResources:
-        - |
-          apiVersion: v1
-          kind: Secret
-          type: Opaque
-          metadata:
-            name: storage-user
-          stringData:
-            CONSOLE_ACCESS_KEY: console
-            CONSOLE_SECRET_KEY: '{{ .Values._internal.minio_monitoring_user_password }}'
     kustomization_spec:
       # these healthChecks are added so that MinIO backend setup
       # for tenant.minio.min.io/monitoring created by this unit is ready
@@ -4411,6 +4397,7 @@ units:
     depends_on:
       namespace-defs: true
       sylva-ca: true
+      eso-secret-stores: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/thanos-init
@@ -4635,17 +4622,26 @@ units:
               - hosts:
                   - '{{ .Values.external_hostnames.thanos_receive }}'
                 secretName: thanos-tls
+      valuesFrom:
+        - kind: Secret
+          name: thanos-minio-root
+          valuesKey: MINIO_ROOT_USER
+          targetPath: objstoreConfig.config.access_key
+          optional: false
+        - kind: Secret
+          name: thanos-minio-root
+          valuesKey: MINIO_ROOT_PASSWORD
+          targetPath: objstoreConfig.config.secret_key
+          optional: false
     helm_secret_values:
       auth:
         basicAuthUsers:
           thanos-user: '{{ .Values._internal.thanos_password }}'
-      objstoreConfig: |-
+      objstoreConfig:
         type: "S3"
         config:
           bucket: "thanos"
           endpoint: minio.minio-monitoring-tenant.svc.cluster.local
-          access_key: "minio"
-          secret_key: '{{ .Values._internal.minio_monitoring_root_password }}'
           insecure: false
           http_config:
             tls_config:
@@ -4741,6 +4737,7 @@ units:
     depends_on:
       namespace-defs: true
       sylva-ca: true
+      eso-secret-stores: true
     repo: sylva-core
     kustomization_substitute_secrets:
       KEY: '{{ .Values.external_certificates.loki.key | default "" | b64enc }}'
@@ -4988,16 +4985,22 @@ units:
           containerSecurityContext:
             seccompProfile:
               type: RuntimeDefault
+      valuesFrom:
+        - kind: Secret
+          name: loki-minio-user
+          valuesKey: CONSOLE_ACCESS_KEY
+          targetPath: loki.storage.s3.accessKeyId
+          optional: false
+        - kind: Secret
+          name: loki-minio-user
+          valuesKey: CONSOLE_SECRET_KEY
+          targetPath: loki.storage.s3.secretAccessKey
+          optional: false
     helm_secret_values:
       gateway:
         basicAuth:
           username: loki-user
           password: '{{ .Values._internal.loki_password }}'
-      loki:
-        storage:
-          s3:
-            accessKeyId: "console"
-            secretAccessKey: '{{ .Values._internal.minio_monitoring_user_password }}'
 
   single-replica-storageclass:
     info:
@@ -5542,12 +5545,6 @@ _internal:
 
   # default replica number computed from the ha_cluster.mode value
   default_replicas: '{{ tuple . .Values._internal.ha_cluster.mode | include "interpret-as-string" | eq "ha" | ternary 3 1 | include "preserve-type" }}'
-
-  # minio bucket root password
-  minio_monitoring_root_password: '{{ include "internalPersistentRandomPasswd" (tuple . "minio_monitoring_root_password") }}'
-
-  # minio console password
-  minio_monitoring_user_password: '{{ include "internalPersistentRandomPasswd" (tuple . "minio_monitoring_user_password") }}'
 
   # thanos password
   thanos_password: '{{ include "internalPersistentRandomPasswd" (tuple . "thanos_password") }}'
