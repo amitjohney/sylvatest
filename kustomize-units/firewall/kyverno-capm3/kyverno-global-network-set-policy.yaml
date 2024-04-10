@@ -14,7 +14,7 @@ metadata:
 spec:
   generateExisting: true
   rules:
-  - name: globalnetworkset-for-metal3
+  - name: globalnetworkset-for-metal3-workload-cluster
     match:
       any:
       - resources:
@@ -27,11 +27,34 @@ spec:
       - resources:
           namespaces:
           - default
+          - sylva-system
     generate:
       synchronize: true
       apiVersion: crd.projectcalico.org/v1
       kind: GlobalNetworkSet
-      name: "{{request.object.metadata.name}}"
+      name: "{{request.namespace}}-cluster-gns"
+      data:
+        kind: GlobalNetworkSet
+        metadata:
+          labels:
+            role: workload-cluster-node
+        spec:
+          nets: "{{request.object.status.indexes | items(@, 'key', 'value') | [*].value }}"
+  - name: globalnetworkset-for-metal3-management-cluster
+    match:
+      any:
+      - resources:
+          kinds:
+          - ipam.metal3.io/v1alpha1/IPPool
+          names:
+          - "*-public-pool"
+          namespaces:
+          - sylva-system
+    generate:
+      synchronize: true
+      apiVersion: crd.projectcalico.org/v1
+      kind: GlobalNetworkSet
+      name: "{{request.namespace}}-cluster-gns"
       data:
         kind: GlobalNetworkSet
         metadata:
