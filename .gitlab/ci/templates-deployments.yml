@@ -14,6 +14,7 @@ include:
       echo "GIT_REVISION: $GIT_REVISION"
         if git ls-remote --exit-code --tags https://gitlab.com/sylva-projects/sylva-core.git "${GIT_REVISION}" > /dev/null; then
           echo "Provided GIT_REVISION: $GIT_REVISION is a known upstream tag. Using it as it"
+          git fetch origin tag ${GIT_REVISION}
           if [ -n "${OCI_TAG}" ] ; then
             OCI_TAG=${GIT_REVISION}
           fi
@@ -45,6 +46,8 @@ include:
       echo -e "Changing git revision to use \\e[1;94m$1\\e[0m"
       git checkout $GIT_REVISION
       git status
+      # This is required as old version of Sylva rely on $CI_COMMIT_SHA to determine the ref to use for flux
+      export CI_COMMIT_SHA=$(git rev-parse HEAD)
       echo -e "Current revision: $(git rev-parse HEAD)"
     }
 
