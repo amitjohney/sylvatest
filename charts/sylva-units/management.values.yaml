@@ -121,6 +121,7 @@ units:
       kyverno: true
       vault: true
       vault-config-operator: true
+      eso-secret-stores: true
       keycloak-add-client-scope: true
 
   harbor:
