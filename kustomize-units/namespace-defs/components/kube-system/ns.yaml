@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kube-system
+  annotations:
+    # these annotations are added as a workaround for issue https://gitlab.com/sylva-projects/sylva-core/-/issues/1155
+    np.rke2.io: resolved
+    np.rke2.io/dns: resolved
+    np.rke2.io/ingress: resolved
+    np.rke2.io/ingress-webhook: resolved
+    np.rke2.io/metrics-server: resolved
+    np.rke2.io/snapshot-validation-webhook: resolved
