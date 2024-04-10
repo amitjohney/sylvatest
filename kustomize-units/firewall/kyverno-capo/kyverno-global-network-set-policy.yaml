@@ -32,18 +32,23 @@ spec:
         - key: "{{ request.object.status.addresses[?type=='InternalIP'] || `[]` | length(@) }}"
           operator: GreaterThanOrEquals
           value: 1
+    context:
+      - name: osmachines
+        apiCall:
+          urlPath: "/apis/infrastructure.cluster.x-k8s.io/v1alpha8/namespaces/{{ request.namespace }}/openstackmachines/"
+          jmesPath: "items[*].status.addresses[?type=='InternalIP'].address[]"
     generate:
       synchronize: true
       apiVersion: crd.projectcalico.org/v1
       kind: GlobalNetworkSet
-      name: "{{request.object.metadata.name}}"
+      name: "{{request.namespace}}-cluster-gns"
       data:
         kind: GlobalNetworkSet
         metadata:
           labels:
             role: workload-cluster-node
         spec:
-          nets: "{{request.object.status.addresses[?type=='InternalIP'].address}}"
+          nets: "{{ osmachines }}"
   - name: globalnetworkset-for-management-cluster
     match:
       any:
@@ -58,15 +63,20 @@ spec:
         - key: "{{ request.object.status.addresses[?type=='InternalIP'] || `[]` | length(@) }}"
           operator: GreaterThanOrEquals
           value: 1
+    context:
+      - name: osmachines
+        apiCall:
+          urlPath: "/apis/infrastructure.cluster.x-k8s.io/v1alpha8/namespaces/{{ request.namespace }}/openstackmachines/"
+          jmesPath: "items[*].status.addresses[?type=='InternalIP'].address[]"
     generate:
       synchronize: true
       apiVersion: crd.projectcalico.org/v1
       kind: GlobalNetworkSet
-      name: "{{request.object.metadata.name}}"
+      name: "{{request.namespace}}-cluster-gns"
       data:
         kind: GlobalNetworkSet
         metadata:
           labels:
             role: management-cluster-node
         spec:
-          nets: "{{request.object.status.addresses[?type=='InternalIP'].address}}"
+          nets: "{{ osmachines }}"
