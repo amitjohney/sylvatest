@@ -10,3 +10,4 @@ resources:
 - cluster-fip-drop.yaml
 - allow-to-pods.yaml
 - allow-from-pods.yaml
+- coredns-to-fip.yaml

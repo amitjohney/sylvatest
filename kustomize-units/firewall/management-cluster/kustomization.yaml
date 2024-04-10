@@ -7,3 +7,10 @@ resources:
 - allow-to-ingress.yaml
 - allow-to-k8s-gateway.yaml
 - allow-to-ironic.yaml
+- prometheus-to-fip.yaml
+- rancher-to-fip.yaml
+- ironic-to-fip.yaml
+- kustomize-to-fip.yaml
+- fleet-to-fip.yaml
+- vault-to-fip.yaml
+- fluentd-to-fip.yaml
