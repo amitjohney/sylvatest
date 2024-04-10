@@ -26,6 +26,8 @@ if ! (kubectl get nodes > /dev/null); then
     exit -1
 fi
 
+check_management_kubeconfig
+
 if ! (kubectl -n sylva-system get cm sylva-units-status > /dev/null); then
    echo_b "The sylva-units-status configmap doesn't exist. Please check the status of the management-cluster"
    exit -1

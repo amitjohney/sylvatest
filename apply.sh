@@ -26,6 +26,8 @@ if ! (kubectl get nodes > /dev/null); then
     exit -1
 fi
 
+check_management_kubeconfig
+
 ensure_flux
 
 echo_b "\U0001F50E Validate sylva-units values for management cluster"

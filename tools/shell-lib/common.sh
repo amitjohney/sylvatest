@@ -139,6 +139,13 @@ function retrieve_kubeconfig {
     umask $orig_umask
 }
 
+function check_management_kubeconfig() {
+    if ! kubectl get -n sylva-system secret $(kubectl get -n sylva-system cluster.cluster.x-k8s.io -o jsonpath='{ $.items[*].metadata.name}' 2>/dev/null)-kubeconfig &>/dev/null; then
+        echo_b "\U000026A0 Provided kubeconfig ($KUBECONFIG) does not seem to target management cluster, aborting."
+        exit 1
+    fi
+}
+
 function ensure_flux {
     if ! kubectl get namespace flux-system &>/dev/null; then
         echo_b "\U0001F503 Install flux"
