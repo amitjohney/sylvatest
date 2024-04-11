@@ -218,9 +218,14 @@ unit_templates:
 
   # this unit template gather depends_on common
   # to most units
-  base-deps: {}
+  base-deps:
     # the actual dependencies aren't the same for bootstrap/management and workload-cluster
-    # se the actual content is found in values files specific to each
+    # the actual content is found in values files specific to each
+
+    # this ensures that, on an upgrade, units inheriting from "base-deps" (ie most of them)
+    # will not be reconciled before any needed CAPI rolling update is finished
+    depends_on:
+      cluster-machines-ready: '{{ and (.Release.Upgrade) (tuple . "cluster-machines-ready" | include "unit-enabled") }}'
 
 # this defines Flux HelmRelease objects, and for each  # FIXME
 # a corresponding GitRepository or OCIRepository (and Secret, TODO: the Secret don't need to be generated for each unit)
@@ -2165,6 +2170,78 @@ units:
       kubeConfig:
         secretRef:
           name: '{{ .Values.cluster.name }}-kubeconfig'
+
+  cluster-machines-ready:
+    info:
+      description: unit used to wait for all CAPI resources to be ready
+      details: |
+        This unit is here so that activity on all units is held off until all the CAPI resources are ready.
+        This is a distinct unit from 'cluster-ready' because the readiness criteria is different: here
+        we not only want the cluster to be ready to host some workload (which only requires some CAPI resources
+        to be ready) we want all CAPI resources to be ready.
+      internal: true
+    enabled_conditions:
+    - '{{ tuple . "cluster" | include "unit-enabled" }}'
+    depends_on:
+      cluster: true
+      cluster-ready: true  # no need to start waiting for anything until
+    unit_templates: []
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/kube-job
+      wait: true
+      force: true
+      postBuild:
+        substitute:
+          JOB_NAME: cluster-machines-ready
+          JOB_TARGET_NAMESPACE: '{{ .Release.Namespace }}'
+          JOB_CHECKSUM: '{{ .Values | toJson | sha256sum }}'
+      _patches:
+      - target:
+          kind: Job
+        patch: |
+          - op: add
+            path: /spec/template/spec/containers/0/env/-
+            value:
+              name: WAIT_TIMEOUT
+              value: {{ .Values.cluster_machines_ready.wait_timeout }}
+          - op: add
+            path: /spec/template/spec/containers/0/env/-
+            value:
+              name: CONTROL_PLANE
+              value: {{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | ternary "KubeadmControlPlane" "RKE2ControlPlane" }}
+      - target:
+          kind: ConfigMap
+        patch: |
+          - op: replace
+            path: /metadata/name
+            value: cluster-machines-ready-{{ .Release.Namespace }}-cm
+          - op: replace
+            path: /data/kube-job.sh
+            value: |
+              #!/bin/bash
+              set -e
+
+              function exit_trap() {
+                echo "--- summary of resources"
+                kubectl -n $TARGET_NAMESPACE get $CONTROL_PLANE -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }}
+                kubectl -n $TARGET_NAMESPACE get Machines -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }}
+              }
+              trap exit_trap EXIT
+
+              echo "--- waiting for control plane to be Ready..."
+              kubectl -n $TARGET_NAMESPACE wait $CONTROL_PLANE -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }} --for condition=Ready --timeout $WAIT_TIMEOUT
+              MD=$(kubectl -n $TARGET_NAMESPACE get MachineDeployment -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }}  -o json | jq '.items|length')
+              if [ $MD -gt 0 ]; then
+                echo "waiting for machinedeployments to be Ready..."
+                kubectl -n $TARGET_NAMESPACE wait MachineDeployment -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }} --for condition=Ready --timeout $WAIT_TIMEOUT
+              fi
+
+              echo "--- waiting for all machines to be Ready..."
+              kubectl -n $TARGET_NAMESPACE wait Machine -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }} --for condition=Ready --timeout $WAIT_TIMEOUT
+
+              echo "--- waiting for all machines to have a provider id (reflects the fact that the Node has joined the cluster)..."
+              kubectl -n $TARGET_NAMESPACE wait Machine -l cluster.x-k8s.io/cluster-name={{ .Values.cluster.name }} --for=jsonpath='{.spec.providerID}' --timeout $WAIT_TIMEOUT
 
   heat-operator:
     info:
@@ -5256,6 +5333,9 @@ cluster:
     #   additional_commands:
     #     pre_bootstrap_commands: []
     #     post_bootstrap_commands: []
+
+cluster_machines_ready:
+  wait_timeout: 600s
 
 capd_docker_host: unix:///var/run/docker.sock
 
