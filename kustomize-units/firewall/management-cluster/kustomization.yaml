@@ -17,3 +17,5 @@ resources:
 - cluster-creator-to-fip.yaml
 - flux-webui-to-fip.yaml
 - neuvector-to-fip.yaml
+- cluster-api-to-fip.yaml
+- rke2-control-plane-to-fip.yaml
