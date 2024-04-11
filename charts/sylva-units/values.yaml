@@ -3474,6 +3474,7 @@ units:
           createDefaultDiskLabeledNodes: true
           allowVolumeCreationWithDegradedAvailability: false
           storageMinimalAvailablePercentage: 10
+          replicaReplenishmentWaitInterval: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" | ternary 3600 600 | include "preserve-type" }}'
 
   cluster-creator-login:
     info:
