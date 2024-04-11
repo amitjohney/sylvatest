@@ -14,7 +14,7 @@ spec:
     namePrefix: "${STACK_NAME_PREFIX}"
     tag: ${CAPO_TAG}
     template:
-      heat_template_version: "2018-08-31"
+      heat_template_version: "2017-09-01"
 
       parameters:
         network:
