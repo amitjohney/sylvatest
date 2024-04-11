@@ -573,6 +573,14 @@ properties:
     # https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster
     $ref: "#/$defs/sylva-capi-cluster-values"
 
+  cluster_machines_ready:
+    type: object
+    additionalProperties: false
+    properties:
+      wait_timeout:
+        type: string
+        pattern: '^[0-9]+[smh]'
+
   openstack:  # -------------------------------
     type: object
     # actual constraints are later in this file under '# additional constraints for .openstack'
