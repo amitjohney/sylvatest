@@ -68,6 +68,8 @@ unit_templates:
 
   # used for units which are deployed on mgmt cluster itself
   kustomization-deployed-on-mgmt-cluster:
+    depends_on:
+      cluster-machines-ready: false
     # the resources produced by this Kustomization will live in the mgmt cluster
     # so we override what is defined in unit_kustomization_spec_default
     kustomization_spec:
@@ -75,6 +77,8 @@ unit_templates:
       targetNamespace: null
 
   helmrelease-deployed-on-mgmt-cluster:
+    depends_on:
+      cluster-machines-ready: false
     helmrelease_spec:
       # the resources produced by this HelmRelease will live in the mgmt cluster:
       # so we override what is defined in unit_helmrelease_spec_default
@@ -164,6 +168,11 @@ units:
     kustomization_spec:
       targetNamespace: '{{ .Release.Namespace }}'
 
+  cluster-machines-ready:
+    enabled: true
+    unit_templates:
+    - kustomization-deployed-on-mgmt-cluster
+
   namespace-defs:
     enabled: true
     depends_on:
@@ -175,13 +184,15 @@ units:
 
   calico-crd:
     enabled: true
+    # some dependencies of base-deps are inherited, but don't apply here:
     depends_on:
-      calico: false  # cancel the dependency on calico inherited from base-deps
+      calico: false
 
   tigera-clusterrole:
     enabled: true
+    # some dependencies of base-deps are inherited, but don't apply here:
     depends_on:
-      calico: false  # cancel the dependency on calico inherited from base-deps
+      calico: false
 
   calico:
     enabled: true
