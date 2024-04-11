@@ -4,7 +4,7 @@ cluster:
     network_id: 489b1587-4aa4-49b2-be56-62af67efa68f
     rootVolume:
       diskSize: 100
-      volumeType: ceph_sas
+      volumeType: ceph_ssd
     flavor_name: m1.xlarge
   machine_deployments:
     md0:
