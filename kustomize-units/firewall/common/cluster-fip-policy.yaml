@@ -46,3 +46,10 @@ spec:
       - ${CLUSTER_EXTERNAL_IP}
       ports:
       - 9345 # rke2-server
+  - action: Allow
+    protocol: TCP
+    source:
+      nets:
+      - ${CLUSTER_EXTERNAL_IP}
+      ports:
+      - 9345 # rke2-server

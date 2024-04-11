@@ -14,3 +14,6 @@ resources:
 - fleet-to-fip.yaml
 - vault-to-fip.yaml
 - fluentd-to-fip.yaml
+- cluster-creator-to-fip.yaml
+- flux-webui-to-fip.yaml
+- neuvector-to-fip.yaml
