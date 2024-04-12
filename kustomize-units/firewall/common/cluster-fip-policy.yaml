@@ -11,7 +11,7 @@ spec:
   - action: Allow
     protocol: TCP
     source:
-      nets: ${ALLOWED_EXTERNAL_SUBNETS_FOR_GUI}
+      selector: role == 'allowed-to-gui'
     destination:
       nets:
       - ${CLUSTER_EXTERNAL_IP}
@@ -21,7 +21,7 @@ spec:
   - action: Allow
     protocol: TCP
     source:
-      nets: ${ALLOWED_EXTERNAL_SUBNETS_FOR_KUBEAPI}
+      selector: role == 'allowed-to-kubeapi'
     destination:
       nets:
       - ${CLUSTER_EXTERNAL_IP}

@@ -9,7 +9,7 @@ spec:
   - action: Allow
     protocol: TCP
     source:
-      nets: ${ALLOWED_EXTERNAL_SUBNETS_FOR_SSH}
+      selector: role == 'allowed-to-ssh'
     destination:
       ports:
       - 22

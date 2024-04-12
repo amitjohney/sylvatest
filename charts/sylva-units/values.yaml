@@ -5045,9 +5045,9 @@ units:
           # Substitute with the cluster_virtual_ip value if it is defined to another value than the default, mandatory with capm3
           # Otherwise, the value is substituted from the capo-cluster-resources when using capo
           CLUSTER_EXTERNAL_IP: '{{ .Values.cluster_virtual_ip | eq "55.55.55.55" | ternary nil .Values.cluster_virtual_ip | include "set-if-defined" }}'
-          ALLOWED_EXTERNAL_SUBNETS_FOR_GUI: '{{ printf "[%s]" (join "," (.Values.allowed_public_subnets_for_gui | default .Values.allowed_public_subnets)) }}'
-          ALLOWED_EXTERNAL_SUBNETS_FOR_KUBEAPI: '{{ printf "[%s]" (join "," (.Values.allowed_public_subnets_for_kubeapi | default .Values.allowed_public_subnets)) }}'
-          ALLOWED_EXTERNAL_SUBNETS_FOR_SSH: '{{ printf "[%s]" (join "," (.Values.allowed_public_subnets_for_ssh | default .Values.allowed_public_subnets)) }}'
+          ALLOWED_PUBLIC_SUBNETS_TO_GUI: '{{ printf "[%s]" (join "," (.Values.allowed_public_subnets_for_gui | default .Values.allowed_public_subnets)) }}'
+          ALLOWED_PUBLIC_SUBNETS_TO_KUBEAPI: '{{ printf "[%s]" (join "," (.Values.allowed_public_subnets_for_kubeapi | default .Values.allowed_public_subnets)) }}'
+          ALLOWED_PUBLIC_SUBNETS_TO_SSH: '{{ printf "[%s]" (join "," (.Values.allowed_public_subnets_for_ssh | default .Values.allowed_public_subnets)) }}'
           DEFAULT_POLICY: '{{ .Values.default_policy }}'
           NTP_SERVERS: '{{ printf "[%s]" (join "," .Values.ntp.servers) }}'
           CLUSTER_PODS_CIDR: '{{ printf "[%s]" (join "," .Values.cluster.cluster_pods_cidrs) }}'

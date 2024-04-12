@@ -12,3 +12,6 @@ resources:
 - allow-from-pods.yaml
 - coredns-to-fip.yaml
 - management-cluster-gns.yaml
+- public-to-gui-gns.yaml
+- public-to-ssh-gns.yaml
+- public-to-kubeapi-gns.yaml
