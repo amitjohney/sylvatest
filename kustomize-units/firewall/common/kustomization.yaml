@@ -11,3 +11,4 @@ resources:
 - allow-to-pods.yaml
 - allow-from-pods.yaml
 - coredns-to-fip.yaml
+- management-cluster-gns.yaml

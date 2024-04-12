@@ -19,3 +19,4 @@ resources:
 - neuvector-to-fip.yaml
 - cluster-api-to-fip.yaml
 - rke2-control-plane-to-fip.yaml
+- kyverno-sync-management-cluster-addresses.yaml

@@ -5055,6 +5055,8 @@ units:
         - kind: ConfigMap
           name: capo-cluster-resources
           optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
+        - kind: ConfigMap
+          name: management-cluster-addresses
 
   firewall-management-cluster:
     info:
@@ -5097,8 +5099,6 @@ units:
         - kind: ConfigMap
           name: capo-cluster-resources
           optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
-        - kind: ConfigMap
-          name: sylva-system-cluster-cm
 
   # only on the management cluster with capo enabled
   firewall-kyverno-capo:
