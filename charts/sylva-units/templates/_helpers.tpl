@@ -159,12 +159,9 @@ This named template takes a unit name and
 provides the full definition of the unit *taking into account what is inherited from unit_templates*
 via the declarations of *unit.xxx.unit_templates*
 
-It also takes $origUnitTemplate as a parameter (because we need the pre-intepretation templates
-to interpret _unit_name_)
-
 Usage:
 
-{{ $unit_def := include "unit-def-from-templates" (tuple $envAll "my-unit" $origUnitTemplate) | fromJson }}
+  {{ $unit_def := include "unit-def-from-templates" (tuple $envAll "my-unit") | fromJson }}
 
 See usage in units.yaml and sources.yaml
 
@@ -172,7 +169,6 @@ See usage in units.yaml and sources.yaml
 {{ define "unit-def-from-templates" }}
   {{- $envAll := index . 0 -}}
   {{- $unit_name := index . 1 -}}
-  {{- $origUnitTemplates := index . 2 -}}
 
   {{- $unit_def := index $envAll.Values.units $unit_name -}}
 
@@ -184,7 +180,7 @@ See usage in units.yaml and sources.yaml
     {{- end -}}
     {{/* interpret _unit_name_ in unit template */}}
     {{- $_ := set $envAll.Values "_unit_name_" $unit_name -}}
-    {{- $unit_template := deepCopy (index $origUnitTemplates $template_name) -}}
+    {{- $unit_template := deepCopy (index $envAll.Values.unit_templates $template_name) -}}
     {{- $unit_template := index (tuple $envAll $unit_template | include "interpret-inner-gotpl" | fromJson) "result" -}}
     {{/* merge the unit template with the others*/}}
     {{- $merged_unit_templates = mergeOverwrite $merged_unit_templates $unit_template -}}

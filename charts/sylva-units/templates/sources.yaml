@@ -1,13 +1,12 @@
 {{/* This template generates GitRepository or OCIRepository from .Values.source_templates
      along with any corresponding Secret
 */}}
-{{- $origUnitTemplates := deepCopy .Values.unit_templates -}}{{/* we need to preserve this, to defer template computation of _unit_name_ */}}
 {{- $envAll := set . "Values" (include "interpret-values-gotpl" . | fromJson) -}}
 
 {{- $used_repos := list -}}
 {{- range $unit_name, $unit_def := $envAll.Values.units -}}
   {{/* inherit settings from any template specified in unit.<this unit>.unit_templates */}}
-  {{- $unit_def := include "unit-def-from-templates" (tuple $envAll $unit_name $origUnitTemplates) | fromJson -}}
+  {{- $unit_def := include "unit-def-from-templates" (tuple $envAll $unit_name) | fromJson -}}
 
   {{- if and (include "unit-enabled" (tuple $envAll $unit_name))
              (not (hasKey $unit_def "helm_repo_url"))            -}}
