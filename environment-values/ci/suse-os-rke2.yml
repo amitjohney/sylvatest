@@ -11,3 +11,4 @@ cluster:
     image_key: opensuse-15-5-plain-rke2-1-28-8
   capo:
     image_key: opensuse-15-5-plain-rke2-1-28-8
+
