@@ -50,6 +50,13 @@ additional_resources="
   Metal3Machines
   Metal3DataTemplates
   BaremetalHosts
+  Nodes.*longhorn.io
+  Replicas.*longhorn.io
+  Volumes.*longhorn.io
+  VolumeAttachments.*longhorn.io
+  Settings.*longhorn.io
+  Engines.*longhorn.io
+  InstanceManagers.*longhorn.io
 "
 
 function dump_additional_resources() {
@@ -58,9 +65,9 @@ function dump_additional_resources() {
     for cr in $@; do
       echo "Dumping resources $cr in the whole cluster"
       if kubectl api-resources | grep -qi $cr ; then
-        base_filename=$cluster_dir/${cr/.\**/}
         kind=${cr/\*/}  # transform the .* used for matching kubectl api-resource, into a plain '.'
                         # (see Clusters.*cluster.x-k8s.io above)
+        base_filename=$cluster_dir/${kind}
 
         if [[ $kind == HelmReleases || $kind == Kustomizations ]]; then
             flux get ${kind,,} -A > $base_filename.summary.txt
@@ -113,7 +120,7 @@ function cluster_info_dump() {
   dump_additional_resources $dump_dir $additional_resources
 
   # dump pods
-  kubectl get pods -o wide -A | tee $dump_dir/pods.txt
+  kubectl get pods -o wide -A | tee $dump_dir/pods.summary.txt
 
   # dump CAPI secrets
   kubectl get secret -A --field-selector=type=cluster.x-k8s.io/secret &&\
