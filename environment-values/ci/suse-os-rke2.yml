@@ -5,7 +5,6 @@ sylva_diskimagebuilder_images:
   opensuse-15-5-plain-rke2-1-28-8:
     default_enabled: true
 
-
 cluster:
   # following are needed to override the Ubuntu based image for capm3-rke2-virt CIs
   capm3:
