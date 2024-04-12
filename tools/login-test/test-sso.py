@@ -59,6 +59,24 @@ def rancher_sso(endpoint, username, password, workload_name):
   browser.find_element(By.ID,"password").send_keys(password)
   browser.find_element(By.ID,"kc-login").click()
   print(browser.current_url)
+  retry = 0
+  while(retry < 7):
+    try:
+      retry += 1
+      local_cluster = browser.find_element(By.LINK_TEXT, "local").is_displayed()
+      print(local_cluster)
+      if local_cluster == True:
+        break
+      else:
+        print("didn't find local cluster link text yet (but no was exception raised), retrying..." + str(retry))
+    except:
+       print("didn't find local cluster link text yet, retrying..." + str(retry))
+       actual_url = browser.current_url
+       if "login?err" in actual_url:
+         print("An error occurs during SSO auth:" + actual_url)
+         break 
+       else:
+         browser.get(actual_url)
   print("Waiting to be redirect towards rancher UI home page")
   try:
     mgmt_present = EC.presence_of_element_located((By.XPATH, '//a[@href="/dashboard/c/local/explorer"]'))
@@ -321,3 +339,4 @@ vault_sso( vault_url, user, password )
 flux_sso( flux_url, user, password )
 harbor_sso( harbor_url, user, password )
 neuvector_sso( neuvector_url, user, password )
+
