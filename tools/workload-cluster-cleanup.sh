@@ -48,4 +48,5 @@ if kubectl get -n $WORKLOAD_CLUSTER_NAMESPACE heatstacks &> /dev/null; then
     kubectl delete --timeout 1m -n $WORKLOAD_CLUSTER_NAMESPACE heatstacks heatstack-capo-cluster-resources
 fi
 kubectl delete --timeout 1m ns $WORKLOAD_CLUSTER_NAMESPACE
+kubectl delete -n kube-job job create-image-info-$WORKLOAD_CLUSTER_NAME
 echo "Successfully deleted workload cluster in namespace \"$WORKLOAD_CLUSTER_NAMESPACE\""
