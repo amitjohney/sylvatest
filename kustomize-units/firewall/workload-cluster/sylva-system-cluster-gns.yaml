@@ -1,0 +1,8 @@
+apiVersion: crd.projectcalico.org/v1
+kind: GlobalNetworkSet
+metadata:
+  labels:
+    role: management-cluster-node
+  name: sylva-system-cluster-gns
+spec:
+  nets: ${management-cluster-addresses}

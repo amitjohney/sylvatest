@@ -5077,6 +5077,29 @@ units:
           name: capo-cluster-resources
           optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
 
+  firewall-workload-cluster:
+    info:
+      description: >
+        configures global network policies applying
+        only on the management cluster
+      internal: true
+    unit_templates:
+    - base-deps
+    enabled: false
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/firewall/workload-cluster
+      wait: true
+      postBuild:
+        substitute:
+          CLUSTER_EXTERNAL_IP: '{{ .Values.cluster_virtual_ip | eq "55.55.55.55" | ternary nil .Values.cluster_virtual_ip | include "set-if-defined" }}'
+        substituteFrom:
+        - kind: ConfigMap
+          name: capo-cluster-resources
+          optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
+        - kind: ConfigMap
+          name: sylva-system-cluster-cm
+
   # only on the management cluster with capo enabled
   firewall-kyverno-capo:
     info:
