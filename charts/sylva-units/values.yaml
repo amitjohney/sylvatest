@@ -2705,7 +2705,8 @@ units:
                 metadata:
                   name: k8s-gateway
                 spec:
-                  loadBalancerClass: '{{ .Values.cluster.loadBalancerClass }}'
+                  type: LoadBalancer
+                  loadBalancerClass: '{{ tuple (.Values.cluster.loadBalancerClass) .Values.cluster.loadBalancerClass | include "set-only-if" }}'
               - kind: Deployment
                 apiVersion: apps/v1
                 metadata:
@@ -2816,7 +2817,7 @@ units:
             use-forwarded-headers: true
           kind: DaemonSet
           service:
-            loadBalancerClass: '{{ .Values.cluster.loadBalancerClass }}'
+            loadBalancerClass: '{{ tuple (.Values.cluster.loadBalancerClass) .Values.cluster.loadBalancerClass | include "set-only-if" }}'
             enabled: true
             externalIPs:
             - '{{ .Values.cluster_virtual_ip }}'
@@ -5332,7 +5333,7 @@ cluster:
   metallb_helm_version: '{{ .Values.units.metallb.helmrelease_spec.chart.spec.version }}'
   metallb_helm_extra_ca_certs: ""  # for an OCI-based deployment this is overridden in use-oci-artifacts.values.yaml
 
-  loadBalancerClass: '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" | ternary "" .Values._internal.loadBalancerClass }}'
+  loadBalancerClass: '{{ tuple (.Values._internal.loadBalancerClass ) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
 
   capv:
     # image_name: # vSphere image name
