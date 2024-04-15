@@ -9,6 +9,7 @@ scheduled-cleanup-capo:
     name: $OPENSTACK_CLIENT_IMAGE
   script:
     - !reference [.os_cloud]
+    - CAPO_TAG_PATTERN=${CAPO_TAG_PATTERN:-"capo"}
     - touch tags.txt exclude-tags.txt
     - |
       set -eo pipefail
@@ -17,21 +18,22 @@ scheduled-cleanup-capo:
         THIS_TIME=$(date +%s)
         # deduce pipeline ID from stack tag
         # we'll only consider for cleanup tags for which the corresponding gitlab pipeline status is not running
-        STACK_TAG=$(openstack stack show ${STACK} -c tags -f json  | jq '.tags[0]' -r)
+        STACK_TAG=$(openstack stack show ${STACK} -c tags -f json  | jq '.tags[] | select(contains(env.CAPO_TAG_PATTERN))' -r)
         STACK_PIPELINE_ID=${STACK_TAG/-*/}
         echo "Checking if stack with tag $STACK_TAG still have some job running in pipeline $STACK_PIPELINE_ID"
         if curl -s -f ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/pipelines/${STACK_PIPELINE_ID} | jq -e '.status != "running"'; then
-            # and we'll delay the cleanup for tags of stacks where second tag is "please-delay-cleanup"; patched with `openstack stack update --existing --tag sylva-foo.bar,please-delay-cleanup ${STACK}
+            # and we'll delay the cleanup for tags of stacks which have "please-delay-cleanup" in their tags
+            # this can be patched with: openstack stack update --existing --tag sylva-foo.bar,please-delay-cleanup ${STACK}
             if openstack stack show ${STACK} -c tags -f json | jq .tags[] -r | grep -xq "please-delay-cleanup"; then
                 # but only for an period of 12 hours after its creation
                 if [ $((THIS_TIME-STACK_TIME)) -lt 43200 ]; then
-                    echo -e "The cleanup of the $(openstack stack show ${STACK} -c tags -f json | jq .tags[0] -r) tag is delayed for $(((STACK_TIME+43200-THIS_TIME)/60)) minutes"
-                    openstack stack show ${STACK} -c tags -f json | jq .tags[0] -r >> exclude-tags.txt
+                    echo -e "The cleanup of the $(openstack stack show ${STACK} -c tags -f json | jq '.tags[] | select(contains(env.CAPO_TAG_PATTERN))' -r) tag is delayed for $(((STACK_TIME+43200-THIS_TIME)/60)) minutes"
+                    openstack stack show ${STACK} -c tags -f json | jq '.tags[] | select(contains(env.CAPO_TAG_PATTERN))' -r -r >> exclude-tags.txt
                 fi
             fi
-            openstack stack show ${STACK} -c tags -f json | jq .tags[] -r >> tags.txt
+            openstack stack show ${STACK} -c tags -f json | jq '.tags[] | select(contains(env.CAPO_TAG_PATTERN))' -r  >> tags.txt
         else
-            openstack stack show ${STACK} -c tags -f json | jq .tags[] -r >> exclude-tags.txt
+            openstack stack show ${STACK} -c tags -f json | jq '.tags[] | select(contains(env.CAPO_TAG_PATTERN))' -r >> exclude-tags.txt
         fi
       done
     - |
