@@ -62,7 +62,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.2.18
+        tag: 0.2.14-lbclass
 
   local-path-provisioner:
     kind: GitRepository
@@ -1871,6 +1871,7 @@ units:
           ironicIP: '{{ .Values.display_external_ip }}'
           provisioningInterface: eth0
         metal3-ironic:
+          fullnameOverride: metal3-ironic
           service:
             type: LoadBalancer
             externalIPs:
@@ -1889,6 +1890,15 @@ units:
         metal3-mariadb:
           persistence:
             storageClass: '{{ .Values._internal.default_storage_class }}'
+      _postRenderers:
+        - kustomize:
+            patchesStrategicMerge:
+              - kind: Service
+                apiVersion: v1
+                metadata:
+                  name: metal3-ironic
+                spec:
+                  loadBalancerClass: '{{ .Values.cluster.loadBalancerClass }}'
 
   metal3-pdb:
     info:
@@ -2690,6 +2700,12 @@ units:
       _postRenderers:
         - kustomize:
             patchesStrategicMerge:
+              - kind: Service
+                apiVersion: v1
+                metadata:
+                  name: k8s-gateway
+                spec:
+                  loadBalancerClass: '{{ .Values._internal.loadBalancerClass }}'
               - kind: Deployment
                 apiVersion: apps/v1
                 metadata:
@@ -2800,6 +2816,7 @@ units:
             use-forwarded-headers: true
           kind: DaemonSet
           service:
+            loadBalancerClass: '{{ .Values._internal.loadBalancerClass }}'
             enabled: true
             externalIPs:
             - '{{ .Values.cluster_virtual_ip }}'
@@ -5315,6 +5332,8 @@ cluster:
   metallb_helm_version: '{{ .Values.units.metallb.helmrelease_spec.chart.spec.version }}'
   metallb_helm_extra_ca_certs: ""  # for an OCI-based deployment this is overridden in use-oci-artifacts.values.yaml
 
+  loadBalancerClass: '{{ .Values._internal.loadBalancerClass }}'
+
   capv:
     # image_name: # vSphere image name
     # username: ""
@@ -5768,6 +5787,9 @@ _internal:
           topologyKey: kubernetes.io/hostname
 
   vault_no_affinity: {}
+
+  # loadBalancerClass to be used in order to limit the services served by metallb/kube-vip and allow multiple lb to run in parallel
+  loadBalancerClass: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "sylva.org/metallb-class" "kube-vip.io/kube-vip-class" }}'
 
   # this is used in use-oci-artifacts.values.yaml
   # and in a few other places
