@@ -1,11 +1,10 @@
-{{- $origUnitTemplates := deepCopy .Values.unit_templates -}}{{/* we need to preserve this, to defer template computation of _unit_name_ */}}
 {{- $envAll := set . "Values" (include "interpret-values-gotpl" . | fromJson) -}}
 {{ range $unit_name, $unit_def := .Values.units }}
 
   {{- if include "unit-enabled" (tuple $envAll $unit_name) -}}
 
     {{/* inherit settings from any template specified in unit.<this unit>.unit_templates */}}
-    {{- $unit_def := include "unit-def-from-templates" (tuple $envAll $unit_name $origUnitTemplates) | fromJson -}}
+    {{- $unit_def := include "unit-def-from-templates" (tuple $envAll $unit_name) | fromJson -}}
 
     {{- if not (or (hasKey $unit_def "kustomization_spec") (hasKey $unit_def "helmrelease_spec")) -}}
       {{- fail (printf "unit %s has neither kustomization_spec or helmrelease_spec:\n%s" $unit_name ($unit_def | toYaml)) -}}
