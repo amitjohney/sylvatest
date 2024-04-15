@@ -51,13 +51,13 @@ cluster:
         matchLabels:
           cluster-role: control-plane
 
-      provisioning_pool_interface: ens4
-      primary_pool_interface: ens5
+      provisioning_pool_interface: enp0s4
+      primary_pool_interface: enp0s5
 
     network_interfaces:
-      ens4:
+      enp0s4:
         type: phy
-      ens5:
+      enp0s5:
         type: phy
 
   baremetal_host_default:
@@ -121,6 +121,7 @@ units:
 
 libvirt_metal:
   #image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/libvirt-metal:0.1.4  # customize if wanted
+  bootMode: legacy
   nodes:
     management-cp-0:
       redfishPort: 8000

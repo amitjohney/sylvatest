@@ -31,6 +31,24 @@
         }
       ]
     },
+    "bootMode": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "legacy",
+            "uefi",
+            "secureboot"
+          ]
+        },
+        {
+          "$ref": "#/$defs/string-with-gotpl"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "port": {
       "anyOf": [
         {
@@ -6433,6 +6451,19 @@
             }
           ]
         },
+        "bootMode": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/bootMode"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "nodes": {
           "anyOf": [
             {
@@ -6479,6 +6510,19 @@
                           "anyOf": [
                             {
                               "$ref": "#/$defs/numCPUs"
+                            },
+                            {
+                              "$ref": "#/$defs/string-with-gotpl"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "bootMode": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/$defs/bootMode"
                             },
                             {
                               "$ref": "#/$defs/string-with-gotpl"
