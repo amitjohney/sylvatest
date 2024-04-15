@@ -1,0 +1,55 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: node-dump
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/enforce-version: latest
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-dump
+  namespace: node-dump
+  labels:
+    app: node-dump
+spec:
+  selector:
+    matchLabels:
+      app: node-dump
+  template:
+    metadata:
+      name: node-dump
+      namespace: node-dump
+      labels:
+        app: node-dump
+    spec:
+      volumes:
+        - name: host-root
+          hostPath:
+            path: /
+      containers:
+        - name: node-explorer
+          image: alpine:3
+          command:
+            - sh
+            - -c
+            - |
+              mkdir -p /tmp/dump
+              cp -f /host/var/log/*.log /tmp/dump
+              cp -f /host/var/log/syslog /tmp/dump
+              cp -f /host/var/log/dmesg /tmp/dump
+              cp -fr /host/var/log/calico /tmp/dump
+              echo "dump done" > /tmp/dump_ok.txt
+              sleep infinity
+          readinessProbe:
+            exec:
+              command: ["ls", "/tmp/dump_ok.txt"]
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+          volumeMounts:
+            - name: host-root
+              mountPath: /host
+      terminationGracePeriodSeconds: 0
