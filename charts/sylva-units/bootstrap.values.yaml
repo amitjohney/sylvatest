@@ -383,6 +383,7 @@ units:
     enabled: yes
     depends_on:
       management-sylva-units: true
+      cluster-machines-ready: true
     unit_templates: []
     repo: sylva-core
     kustomization_spec:
@@ -564,6 +565,8 @@ units_override_enabled:
   - os-image-server
   - cluster-bmh
   - cluster
+  - cluster-ready
+  - cluster-machines-ready
   - cluster-reachable
   - namespace-defs
   - management-namespace-defs
