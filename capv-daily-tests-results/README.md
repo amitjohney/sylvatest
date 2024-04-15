@@ -8,6 +8,7 @@ The results are summarized by the following table:
 
 | Date                      | Management Cluster CAPI Providers | Sylva-Core main commit ID        | Management cluster result                    | Workload cluster result              | Test logs (only for failed tests) |
 |---------------------------|-----------------------------------|----------------------------------|----------------------------------------------|--------------------------------------|-----------------------------------|
+|2024-04-13 02:29|kubeadm-capv|2850a47fb5d2c760db5f91b842ec8a96ecde5a4c|:white_check_mark:|:white_check_mark:||
 |2024-04-13 02:37|rke2-capv|2850a47fb5d2c760db5f91b842ec8a96ecde5a4c|:white_check_mark:|:white_check_mark:||
 |2024-04-13 02:37|rke2-capv|2850a47fb5d2c760db5f91b842ec8a96ecde5a4c|:white_check_mark:|:white_check_mark:||
 |2024-04-13 02:29|kubeadm-capv|2850a47fb5d2c760db5f91b842ec8a96ecde5a4c|:white_check_mark:|:white_check_mark:||
@@ -27,8 +28,6 @@ The results are summarized by the following table:
 |2024-04-05 01:57|kubeadm-capv|5f6dcc73780338773caf35dc10f7f38a712a871d|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/3135e5c3975e411569008056681c31cc/capv-logs.gz)|
 |2024-04-04 01:57|rke2-capv|c0335a739c938225d1633278ab30380732b194cf|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/ccb515add349cf06683823c11091183e/capv-logs.gz)|
 |2024-04-04 01:57|kubeadm-capv|c0335a739c938225d1633278ab30380732b194cf|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/ccb515add349cf06683823c11091183e/capv-logs.gz)|
-|2024-04-03 01:57|rke2-capv|e783a82c76eddb0804151504feecac6a7b116d85|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/8ac7f3174e1421737ceb6a0aa321b8f2/capv-logs.gz)|
-|2024-04-03 01:57|kubeadm-capv|e783a82c76eddb0804151504feecac6a7b116d85|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/8ac7f3174e1421737ceb6a0aa321b8f2/capv-logs.gz)|
 
 Old layout table:
 
