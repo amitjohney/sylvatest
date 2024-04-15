@@ -59,6 +59,23 @@ units:
       kyverno-policies: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
       os-image-server: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
 
+  kyverno-policy-prevent-mgmt-cluster-delete:
+    info:
+      description: Kyverno policies to prevent deletion of critical resources for mgmt cluster
+      internal: true
+    depends_on:
+      kyverno: true
+      capi: true
+    unit_templates:
+    - base-deps
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/kyverno-policies/prevent-mgmt-cluster-delete
+      wait: true
+      postBuild:
+        substitute:
+          CLUSTER_NAME: '{{ .Values.cluster.name }}'
+
   os-image-server:
     enabled: '{{ tuple . .Values._internal.metal3_unit | include "unit-enabled" }}'
 
