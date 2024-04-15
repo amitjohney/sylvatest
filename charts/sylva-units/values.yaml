@@ -1521,7 +1521,7 @@ units:
       kyverno: true
     repo: sylva-core
     kustomization_spec:
-      path: ./kustomize-units/kyverno-policies
+      path: ./kustomize-units/kyverno-policies/generic
       wait: true
       postBuild:
         substitute:
