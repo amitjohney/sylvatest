@@ -5,7 +5,7 @@ cluster:
   kubelet_extra_args:
     file-check-frequency: 21s
 
-  control_plane:   # tweak network configuration as needed ...
+  control_plane:
     rolloutStrategy:
       rollingUpdate:
         maxSurge: 0
