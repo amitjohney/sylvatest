@@ -7,10 +7,3 @@ cluster:
 
   capm3:
     automatedCleaningMode: disabled
-
-  control_plane:   # tweak network configuration as needed ...
-    rolloutStrategy:
-      rollingUpdate:
-        maxSurge: 0
-        maxUnavailable: 1
-      type: RollingUpdate

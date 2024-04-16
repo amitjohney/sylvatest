@@ -323,9 +323,7 @@ capm3-HA-ubuntu-rke2-virt-deploy:
   extends: .capm3-virt-equinix-deploy
   variables:
     MGMT_ADDITIONAL_VALUES: environment-values/rke2-capm3-virt/ha.yaml
-    MGMT_UPDATE_ADDITIONAL_VALUES: environment-values/ci/dummy-rolling-update-trigger.yml
     WC_ADDITIONAL_VALUES: environment-values/workload-clusters/rke2-capm3-virt/ha.yaml
-    WC_UPDATE_ADDITIONAL_VALUES: environment-values/ci/dummy-rolling-update-trigger.yml
     RUNNER_PLAN: m3.large.x86
 
 capm3-ubuntu-rke2-virt-deploy:
