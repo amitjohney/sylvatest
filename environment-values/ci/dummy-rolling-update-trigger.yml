@@ -4,3 +4,5 @@ cluster:
   # trigger a rolling update
   kubelet_extra_args:
     file-check-frequency: 21s
+  capm3:
+    automatedCleaningMode: disabled # set this to reuse  the longhorn disks on the node
