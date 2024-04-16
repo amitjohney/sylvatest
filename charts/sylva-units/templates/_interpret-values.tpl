@@ -33,7 +33,8 @@ preserved: '{{ dict "foo" "bar" | include "preserve-type" }}'
 
 {{- $_ := set . "Values" (include "interpret-values-gotpl" . | fromJson) -}}
 sample-value: {{ .Values.sample }}
-preserved-value: {{ .Values.preserved }}
+preserved-value:
+{{ .Values.preserved | toYaml | indent 2 }}
 
 # result:
 
@@ -60,7 +61,7 @@ sample_dict:
 # template:
 
 {{- $_ := set . "Values" (include "interpret-values-gotpl" . | fromJson)  -}}
-{{ .Values }}
+{{ .Values | toYaml }}
 
 # result:
 
@@ -87,9 +88,12 @@ Note well that there are a few limitations:
 * templates that use "preserve-type" must define the whole key or value field, it can't be compound inline with a string:
   (this wouldn't make sense anyway, as you can't concaternate a string with another type)
 
+
+To recap what happens when `preserve-type` is used in values.yaml and the result rendered in the final manifest:
+
 value: prefix-{{ 42 | include "preserve-type" }}            -> will produce prefix-{"encapsulated-result":42}
-value: '{{ print "prefix-" 42 | include "preserve-type" }}' -> will produce prefix-42
-value: "prefix-{{ 42 }}"                                    -> will also produce prefix-42
+value: '{{ print "prefix-" 42 | include "preserve-type" }}' -> will produce {"encapsulated-result":"prefix-42"}
+value: "prefix-{{ 42 }}"                                    -> will also produce "prefix-42"
 
 */}}
 
@@ -127,7 +131,7 @@ test: 42
 # template:
 {{ tpl "{{ .Values.test | include \"preserve-type\" }}" . }}
 # result:
-"{\"encapsulated-result\":4}"
+"{\"encapsulated-result\":42}"
 
 The result is still a string, but we'll be able to match its signature and deserialize properly its content in interpret-inner-gotpl
 */}}
