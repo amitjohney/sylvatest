@@ -3,7 +3,7 @@ cluster:
 
   machine_deployments:
     md0:
-      replicas: 0
+      replicas: 1
 
       capm3:
         hostSelector:
