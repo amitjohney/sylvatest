@@ -57,8 +57,11 @@ include:
     function update_values_file() {
     echo -e "Applying values from \\e[1;94m$@\\e[0m to \\e[1;92m$values_file\\e[0m"
     yq -i eval-all '. as $item ireduce ({}; . * $item )' $values_file $@
-    echo "Content of $values_file:"
-    cat $values_file
+
+    if [[ ${DISPLAY:-true} == "true" ]]; then
+      echo "Content of $values_file:"
+      cat $values_file
+    fi
     }
 
 .function_download_artifact:
@@ -77,6 +80,16 @@ include:
   - !reference [.function_change_git_revision]
   - !reference [.function_update_values_file]
   - !reference [.function_download_artifact]
+
+.setup_docker:
+  - |
+    # Configure docker for bootstrap cluster
+    if [ -n "$DOCKER_HOST" ]; then
+      docker network create --attachable kind || true
+      export DOCKER_IP=$(getent ahostsv4 docker | awk '{print $1}' | sort -u)
+      KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
+      ip route add $KIND_PREFIX via $DOCKER_IP
+    fi
 
 .setup_ci_values:
   - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_common[collapsed=true]\r\e[0KRunning common deployment steps\e[0m"
@@ -101,12 +114,8 @@ include:
   - export ENV_PATH=${ENV_SUB_PATH}/${ENV_NAME}
   - values_file=$ENV_PATH/values.yaml
   - |
-    if [ -n "$DOCKER_HOST" ]; then
-      docker network create --attachable kind
-      export DOCKER_IP=$(getent ahostsv4 docker | awk '{print $1}' | sort -u)
-      KIND_PREFIX=$(docker network inspect kind -f '{{ (index .IPAM.Config 0).Subnet }}')
-      ip route add $KIND_PREFIX via $DOCKER_IP
-    fi
+    # Force intialization of an http server for log collection in cluster on capm3/capo
+    DISPLAY="false" update_values_file environment-values/ci/run_http_server_for_log_collect.yaml
   - |
     if [ ${OCI_TAG} ]; then
       echo -e "Applying OCI configuration for tag: ${OCI_TAG}"
@@ -199,10 +208,14 @@ include:
       - bootstrap-cluster-units-report.xml
       - management-cluster-units-report.xml
     # expose_as: $CI_JOB_NAME  # not allowed https://gitlab.com/gitlab-org/gitlab/-/issues/427149
+  after_script:
+    - !reference [.setup_docker]  # needed to access bootstrap clustger and/or capd mgmt clustger
+    - .gitlab/ci/scripts/dump_machine_logs.sh management || true
 
 .deploy-management:
   extends: .management-base
   script:
+    - !reference [.setup_docker]
     - !reference [.setup_ci_values]
     - ./bootstrap.sh environment-values/${ENV_NAME}
   variables:
@@ -212,6 +225,7 @@ include:
 .update-management:
   extends: .management-base
   script:
+    - !reference [.setup_docker]
     - !reference [.setup_ci_values]
     - ./apply.sh environment-values/${ENV_NAME}
   variables:
@@ -237,10 +251,13 @@ include:
     reports:
       junit:
       - management-cluster-units-report.xml
+  after_script:
+    - .gitlab/ci/scripts/dump_machine_logs.sh workload || true
 
 .deploy-workload:
   extends: .workload-base
   script:
+    - !reference [.setup_docker]
     - !reference [.setup_ci_values]
     - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
   variables:
@@ -250,6 +267,7 @@ include:
 .update-workload:
   extends: .workload-base
   script:
+    - !reference [.setup_docker]
     - !reference [.setup_ci_values]
     - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
   variables:

@@ -19,6 +19,7 @@ include:
 deploy-management-cluster:
   timeout: 15min
   script:
+    - !reference [.setup_docker]
     - !reference [.setup_ci_values]
     - ./preview.sh environment-values/${ENV_NAME}
   artifacts:
@@ -28,6 +29,3 @@ deploy-management-cluster:
       - debug-on-exit.log
       - bootstrap-cluster-dump/
     reports: null
-
-
-
