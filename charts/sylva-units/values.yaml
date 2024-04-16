@@ -222,10 +222,19 @@ unit_templates:
     # the actual dependencies aren't the same for bootstrap/management and workload-cluster
     # the actual content is found in values files specific to each
 
-    # this ensures that, on an upgrade, units inheriting from "base-deps" (ie most of them)
-    # will not be reconciled before any needed CAPI rolling update is finished
+    # this, below, ensures that on an upgrade, we avoid having units being updated in paralell
+    # with a CAPI rolling update:
+    # - the units that the 'cluster' unit depends on, directly or indirectly, will reconcile first
+    # - the 'cluster' unit will reconcile
+    # - the units on which the 'cluster' unit does not depend on, directly or indirectly, will
+    #   reconcile after the "cluster-machines-ready" unit is ready
     depends_on:
-      cluster-machines-ready: '{{ and (.Release.Upgrade) (tuple . "cluster-machines-ready" | include "unit-enabled") }}'
+      cluster-machines-ready: >-
+        {{
+        and (.Release.IsUpgrade)
+            (tuple . "cluster-machines-ready" | include "unit-enabled")
+            (not (.Values._internal.cluster_unit_deps | has .Values._unit_name_))
+        }}
 
 # this defines Flux HelmRelease objects, and for each  # FIXME
 # a corresponding GitRepository or OCIRepository (and Secret, TODO: the Secret don't need to be generated for each unit)
@@ -2041,8 +2050,7 @@ units:
       description: holds the Cluster API definition for the cluster
       maturity: core-component
     repo: sylva-capi-cluster
-    unit_templates:
-    - base-deps
+    unit_templates: []
     helm_chart_artifact_name: sylva-capi-cluster
     depends_on:
       # see management.values.yaml and workload-cluster.values.yaml to see how
@@ -5598,6 +5606,12 @@ logging:
   loki_url: "https://{{ .Values.external_hostnames.loki }}"  # for workload clusters, this is overridden via shared_workload_clusters_values to point to the mgmt cluster Loki
 
 _internal:
+
+  # 'cluster_unit_deps' contains all the dependencies of the 'cluster' unit, direct and indirect,
+  # except the ones set due to depending on cluster-machines-ready.
+  # (this is used by unit_templates.base-deps)
+  # cluster_unit_deps:   # to avoid a circular references loop between interpret variables, this is computed directly in units.yaml
+
   ha_cluster:
 
     # immutable ha_cluster.mode : keep track of first install mode HA or non-HA
