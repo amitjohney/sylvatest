@@ -1,5 +1,11 @@
 # Sylva Security
 
+
+>[!warning]
+>The security documentation has been migrated to the ["Sylva Documentation"](https://gitlab.com/sylva-projects/sylva-projects.gitlab.io) project. Any further modifications should be made on this project.
+>You can find latest documentation on the [portal](https://sylva-projects.gitlab.io)
+
+
 ## X509 Certificate Management
 
 ### Internal PKI
