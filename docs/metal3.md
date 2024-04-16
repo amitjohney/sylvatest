@@ -50,7 +50,7 @@ The most important CRD is the [BareMetalHost](https://github.com/metal3-io/barem
 
 Ironic is a project initially developed to work inside Open Stack but it is deployed as standalone component within metal3.
 
-Ironic is the component that actually interacts with the baremetal servers to be managed while the baremetal-operator is mostly a Kubernetes interface (actually a set of controllers) towords Ironic.
+Ironic is the component that actually interacts with the baremetal servers to be managed while the baremetal-operator is mostly a Kubernetes interface (actually a set of controllers) towards Ironic.
 
 It is capable of interacting with a wide set of vendor's BMC through many protocols such as `IPMI`, `redfish`, `iDRAC`, `iLO` etc. .
 
@@ -140,7 +140,7 @@ The cluster-api (CAPI) and cluster-api-provider-metal3 (CAPM3) controllers start
 Basically there are some CRDs describing the cluster topology: `KubeADMControlPlane` defines the number of control plane nodes while `MachineDeployment` defines the number of worker nodes.
 
 Each kind of node (control plane and worker) is associated to a `Metal3MachineTemplate` which in turn contains in its `spec` the field `hostSelector`.
-The `hostSelector` defines a criteria for matchine labels on `BareMetalHost` objects so it is the way to decide what servers to consume for the cluster as control plane or worker nodes.
+The `hostSelector` defines a criteria for matching labels on `BareMetalHost` objects so it is the way to decide what servers to consume for the cluster as control plane or worker nodes.
 
 So the CAPM3 controller processes the `hostSelector` spec, selects the `BareMetalHosts` to be consumed and updates their spec with an OS `image`, `userData` and `networkData` so that metal3 can start the provisioning process for each of them.
 
