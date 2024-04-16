@@ -96,7 +96,6 @@ cluster:
       externallyProvisioned: false
       bmc:
         disableCertificateVerification: true
-      automatedCleaningMode: metadata
       bootMode: legacy
       rootDeviceHints:  # https://github.com/metal3-io/baremetal-operator/blob/main/docs/api.md#rootdevicehints
         deviceName: /dev/sda

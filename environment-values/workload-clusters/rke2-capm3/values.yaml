@@ -107,7 +107,6 @@ cluster:
         bmc:
           address: redfish-virtualmedia://66.66.66.66/redfish/v1/Systems/1   # put the real BMC address here!
           disableCertificateVerification: true
-        automatedCleaningMode: metadata
         bootMACAddress: ba:ad:00:c0:ff:ee    # put the real address here!
         bootMode: legacy
         rootDeviceHints:
@@ -126,7 +125,6 @@ cluster:
         bmc:
           address: redfish-virtualmedia://66.66.66.67/redfish/v1/Systems/1   # put the real BMC address here ()
           disableCertificateVerification: true
-        automatedCleaningMode: metadata
         bootMACAddress: ba:ad:00:c0:ff:ef    # put the real address here!
         bootMode: legacy
         rootDeviceHints:
