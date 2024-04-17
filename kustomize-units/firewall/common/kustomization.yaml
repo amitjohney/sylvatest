@@ -15,4 +15,4 @@ resources:
 - public-to-gui-gns.yaml
 - public-to-ssh-gns.yaml
 - public-to-kubeapi-gns.yaml
-- to-kubernetes-svc-policy.yaml
+- cluster-provisioning-addresses.yaml

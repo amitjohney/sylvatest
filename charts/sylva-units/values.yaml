@@ -5057,6 +5057,9 @@ units:
           optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capo") | include "as-bool" }}'
         - kind: ConfigMap
           name: management-cluster-addresses
+        - kind: ConfigMap
+          name: cluster-provisioning-addresses
+          optional: '{{ not (.Values.cluster.capi_providers.infra_provider | eq "capm3") | include "as-bool" }}'
 
   firewall-management-cluster:
     info:

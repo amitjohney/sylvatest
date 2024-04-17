@@ -14,7 +14,8 @@ metadata:
 spec:
   generateExisting: true
   rules:
-  - name: globalnetworkset-for-metal3-workload-cluster
+  # The public addresses of a workload cluster are used to create a GlobalNetworkSet used by some GlobalNetworkPolicies of the management cluster
+  - name: globalnetworkset-of-metal3-workload-cluster-public-addresses
     match:
       any:
       - resources:
@@ -40,7 +41,37 @@ spec:
             role: workload-cluster-node
         spec:
           nets: "{{request.object.status.indexes | items(@, 'key', 'value') | [*].value }}"
-  - name: globalnetworkset-for-metal3-management-cluster
+            
+  # The provisioning addresses of the workload clusters are stored in a configmap that is used to create a GlobalNetworkSet in the target workload cluster
+  # It is then used by GlobalNetworkPolicies in the workload cluster
+  - name: provisioning-addresses-of-workload-cluster
+    match:
+      any:
+      - resources:
+          kinds:
+          - ipam.metal3.io/v1alpha1/IPPool
+          names:
+          - "*-provisioning-pool"
+    exclude:
+      any:
+      - resources:
+          namespaces:
+          - default
+          - sylva-system
+    generate:
+      synchronize: true
+      apiVersion: v1
+      kind: ConfigMap
+      name: cluster-provisioning-addresses
+      namespace: "{{request.namespace}}"
+      data:
+        kind: ConfigMap
+        data:
+          cluster_provisioning_addresses: "[{{request.object.status.indexes | items(@, 'key', 'value') | [*].value | join(',', @) }}]"
+
+  # The public addresses are stored in a configmap that is used to create a GlobalNetworkSet in all the workload clusters
+  # A similar configmap is also created by the kyverno-capo policy
+  - name: public-addresses-of-management-cluster
     match:
       any:
       - resources:
@@ -52,13 +83,36 @@ spec:
           - sylva-system
     generate:
       synchronize: true
+      apiVersion: v1
+      kind: ConfigMap
+      name: management-cluster-addresses
+      namespace: "{{ request.namespace}}"
+      data:
+        kind: ConfigMap
+        data:
+          management_cluster_addresses: "[{{request.object.status.indexes | items(@, 'key', 'value') | [*].value | join(',', @) }}]"
+
+  # The provisioning addresses are used to create a GlobalNetworkSet used by some GlobalNetworkPolicies of the management cluster
+  - name: globalnetworkset-of-management-cluster-provisioning-addresses
+    match:
+      any:
+      - resources:
+          kinds:
+          - ipam.metal3.io/v1alpha1/IPPool
+          names:
+          - "*-provisioning-pool"
+          namespaces:
+          - sylva-system
+    generate:
+      synchronize: true
       apiVersion: crd.projectcalico.org/v1
       kind: GlobalNetworkSet
-      name: "{{request.namespace}}-cluster-gns"
+      name: "{{request.namespace}}-cluster-provisioning-addresses"
       data:
         kind: GlobalNetworkSet
         metadata:
           labels:
-            role: workload-cluster-node
+            role: management-cluster-node
+            node.kubernetes.io/instance-type: provisioning
         spec:
           nets: "{{request.object.status.indexes | items(@, 'key', 'value') | [*].value }}"
