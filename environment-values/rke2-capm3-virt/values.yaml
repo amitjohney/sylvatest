@@ -92,7 +92,7 @@ cluster:
 
 
 units:
-  metal3-suse:
+  metal3:
     helmrelease_spec:
       values:
         global:

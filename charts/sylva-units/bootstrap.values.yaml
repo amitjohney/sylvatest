@@ -66,7 +66,7 @@ unit_helmrelease_spec_default:
 units:
   cluster-bmh:
     depends_on:
-      '{{ .Values._internal.metal3_unit }}': '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+      metal3: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
       libvirt-metal: '{{ tuple . "libvirt-metal" | include "unit-enabled" }}'
     labels:
       suspend-on-pivot: "yes"  # must be suspended before pivot
@@ -88,7 +88,7 @@ units:
     kustomization_spec:
       _components: []
 
-  metal3-suse:
+  metal3:
     enabled_conditions:
       - '{{ tuple . "capm3" | include "unit-enabled" }}'
     depends_on:
@@ -113,43 +113,6 @@ units:
     labels:
       suspend-on-pivot: "yes"
 
-  metal3:
-    enabled_conditions:
-      - '{{ tuple . "capm3" | include "unit-enabled" }}'
-    depends_on:
-      metal3-sync-secrets: false ## override default set in values.yaml
-      multus: '{{ not (empty (tuple . .Values.units.metal3.helmrelease_spec.values.ironicExtraNetworks | include "interpret-as-string")) }}'
-    helmrelease_spec:
-      values:
-        ironicExtraNetworks: '{{ tuple . (tuple . "libvirt-metal" | include "unit-enabled") .Values._internal.libvirt_metal_networks "" | include "interpret-ternary" }}'
-        # ironicIPADownloaderBaseURI:
-        services:
-          ironic:
-            # Address of the host, that will be reachable from the outside
-            ironicIP: >-
-              {{- if (tuple . "capm3" | include "unit-enabled") -}}
-                {{- if .Values._internal.ironic_ip -}}
-                  {{- .Values._internal.ironic_ip -}}
-                {{- else -}}
-                  {{- fail "to bootstrap a baremetal management cluster, you need to set metal3.bootstrap_ip or metal3.external_bootstrap_ip" -}}
-                {{- end -}}
-              {{- end -}}
-            # Address of kind container/node, that will be used to bind ironic service
-            externalIPs:
-              - '{{ .Values._internal.bootstrap_node_ip }}'
-      valuesFrom: []  # override the valuesFrom from default values.yaml which is based on Vault/ExternalSecret
-    helm_secret_values:  # on bootstrap we don't have Vault/ExternalSecret, so we rely on Helm-generated random passwords
-      mariadb:
-        auth:
-          rootPassword: '{{ .Values._internal.default_password | trunc 32 }}'
-          replicationPassword: '{{ .Values._internal.default_password | trunc -32 }}'
-          ironicPassword: '{{ .Values._internal.default_password }}'
-      auth:
-        ironicPassword: '{{ .Values._internal.default_password }}'
-        ironicInspectorPassword: '{{ .Values._internal.default_password }}'
-    labels:
-      suspend-on-pivot: "yes"  # this unit must be suspended before pivot
-
   bootstrap-local-path:
     info:
       description: installs localpath CSI in bootstrap cluster
@@ -157,7 +120,7 @@ units:
     unit_templates: []
     enabled_conditions:
       - '{{
-         or (tuple . .Values._internal.metal3_unit | include "unit-enabled")
+         or (tuple . "metal3" | include "unit-enabled")
             (.Values.cluster.capi_providers.infra_provider | eq "capo")
          }}'
     repo: sylva-core
@@ -558,7 +521,7 @@ units_override_enabled:
   - capi
   - '{{ .Values.cluster.capi_providers.infra_provider }}'
   - '{{ .Values.cluster.capi_providers.bootstrap_provider }}'
-  - '{{ .Values._internal.metal3_unit }}'
+  - metal3
   - bootstrap-local-path
   - ingress-nginx
   - os-images-info

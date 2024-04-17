@@ -329,11 +329,6 @@ capm3-HA-ubuntu-rke2-virt-deploy:
 capm3-ubuntu-rke2-virt-deploy:
   extends: .capm3-virt-equinix-deploy
 
-capm3-m3sylva-ubuntu-rke2-virt-deploy:
-  extends: .capm3-virt-equinix-deploy
-  variables:
-    METAL3_PROVIDER: sylva
-
 capm3-suse-rke2-virt-deploy:
   extends: .capm3-virt-equinix-deploy
   variables:

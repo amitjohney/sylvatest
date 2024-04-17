@@ -27,10 +27,7 @@ units:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
 
   metal3:
-    enabled: '{{ (and (tuple . "capm3" | include "unit-enabled") (.Values.metal3.provider | eq "sylva")) }}'
-
-  metal3-suse:
-    enabled: '{{ (and (tuple . "capm3" | include "unit-enabled") (.Values.metal3.provider | eq "suse")) }}'
+    enabled: '{{ tuple . "capm3" | include "unit-enabled" }}'
 
   capv:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capv" }}'
@@ -47,7 +44,7 @@ units:
 
   cluster-bmh:
     depends_on:
-      '{{ .Values._internal.metal3_unit }}': '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+      metal3: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
 
   cluster:
     depends_on:
@@ -79,7 +76,7 @@ units:
           CLUSTER_NAME: '{{ .Values.cluster.name }}'
 
   os-image-server:
-    enabled: '{{ tuple . .Values._internal.metal3_unit | include "unit-enabled" }}'
+    enabled: '{{ tuple . "metal3" | include "unit-enabled" }}'
 
   kubevirt:
     enabled: false
