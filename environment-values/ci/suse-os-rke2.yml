@@ -11,3 +11,6 @@ cluster:
     image_key: opensuse-15-5-plain-rke2-1-28-8
   capo:
     image_key: opensuse-15-5-plain-rke2-1-28-8
+  additional_commands:
+    pre_bootstrap_commands:
+      - export INSTALL_RKE2_ARTIFACT_PATH=/opt/rke2-artifacts

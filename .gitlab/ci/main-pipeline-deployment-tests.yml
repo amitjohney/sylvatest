@@ -348,8 +348,8 @@ capo-rke2-oci-suse-os:
 capm3-HA-ubuntu-rke2-virt-deploy:
   extends: .capm3-virt-equinix-deploy
   variables:
-    MGMT_ADDITIONAL_VALUES: environment-values/rke2-capm3-virt/ha.yaml
-    WC_ADDITIONAL_VALUES: environment-values/workload-clusters/rke2-capm3-virt/ha.yaml
+    MGMT_ADDITIONAL_VALUES: "environment-values/rke2-capm3-virt/ha.yaml environment-values/ci/rke2-use-artifacts.yaml"
+    WC_ADDITIONAL_VALUES: "environment-values/workload-clusters/rke2-capm3-virt/ha.yaml environment-values/ci/rke2-use-artifacts.yaml"
     RUNNER_PLAN: m3.large.x86
 
 capm3-ubuntu-rke2-virt-deploy:

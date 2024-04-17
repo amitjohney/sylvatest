@@ -1,0 +1,4 @@
+cluster:
+  additional_commands:
+    pre_bootstrap_commands:
+      - export INSTALL_RKE2_ARTIFACT_PATH=/opt/rke2-artifacts
