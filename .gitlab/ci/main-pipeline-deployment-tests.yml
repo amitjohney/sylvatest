@@ -319,6 +319,16 @@ capo-rke2-oci-suse-os:
     include: .gitlab/ci/pipeline-deploy-rke2-capm3-virt-equinix.yml
     strategy: depend
 
+capm3-HA-ubuntu-rke2-virt-deploy-upgrade-from-1.1.0:
+  extends: .capm3-virt-equinix-deploy
+  variables:
+    MGMT_ADDITIONAL_VALUES: environment-values/rke2-capm3-virt/ha.yaml
+    WC_ADDITIONAL_VALUES: environment-values/workload-clusters/rke2-capm3-virt/ha.yaml
+    RUNNER_PLAN: m3.large.x86
+    MGMT_INITIAL_REVISION: 1.1.0
+    WC_INITIAL_REVISION: 1.1.0
+
+
 capm3-HA-ubuntu-rke2-virt-deploy:
   extends: .capm3-virt-equinix-deploy
   variables:
