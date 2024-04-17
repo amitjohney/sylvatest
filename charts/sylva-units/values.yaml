@@ -5600,7 +5600,11 @@ security:
   neuvector_scanning_enabled: false # disable Neuvector scanning capability by default
 
 monitoring:
-  thanos_receive_url: https://{{ .Values.external_hostnames.thanos_receive }}:443/api/v1/receive  # for workload clusters, this is overridden via shared_workload_clusters_values to point to the mgmt cluster Thanos
+  # thanos_receive_url:
+  # - for mgmt cluster, the local thanos k8s service is used (the URL below)
+  # - for workload clusters, this is overridden via shared_workload_clusters_values.monitoring.thanos_receive_url
+  #   to point to the mgmt cluster Thanos receive ingress
+  thanos_receive_url: http://thanos-receive.thanos.svc.cluster.local:19291/api/v1/receive
 
 logging:
   loki_url: "https://{{ .Values.external_hostnames.loki }}"  # for workload clusters, this is overridden via shared_workload_clusters_values to point to the mgmt cluster Loki
@@ -5787,7 +5791,7 @@ shared_workload_clusters_values:
   sylva_diskimagebuilder_images: '{{ .Values.sylva_diskimagebuilder_images | include "preserve-type" }}'
   os_images: '{{ .Values.os_images | include "preserve-type" }}'
   monitoring:
-    thanos_receive_url: '{{ .Values.monitoring.thanos_receive_url }}'
+    thanos_receive_url: https://{{ .Values.external_hostnames.thanos_receive }}/api/v1/receive
   logging:
     loki_url: '{{ .Values.logging.loki_url }}'
 
