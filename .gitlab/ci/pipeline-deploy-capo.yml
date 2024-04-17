@@ -37,12 +37,39 @@ default:
     fi
     echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capo\r\e[0K"
 
-cleanup-openstack:
+.cleanup-openstack:
   stage: delete
   image:
     name: $OPENSTACK_CLIENT_IMAGE
-  dependencies: []
   script:
     - !reference [.os_cloud]
-    - ./tools/openstack-cleanup.sh capo_cloud "${CAPO_TAG}"
-  when: always
+    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:capo_cleanup[collapsed=true]\r\e[0KRunning capo cleanup\e[0m"
+    - |
+      if [[ ${DELAY_CAPO_CLEANUP} == 'true' ]]; then
+        echo "This MR was flagged with delay-capo-ci-cleanup-on-failure label. The CAPO cleanup will be delayed for 12h."
+        for ns in sylva-system $ENV_NAME; do
+          # Try to suspend the capo-cluster-resources kustomiozation or the operator will remove the tag during the next reconciliation
+          kubectl --kubeconfig ${MGMT_KUBECONFIG:-management-cluster-kubeconfig} -n $ns patch Kustomization capo-cluster-resources --type=merge -p '{"spec":{"suspend":true}}' || true
+          kubectl --kubeconfig ${MGMT_KUBECONFIG:-management-cluster-kubeconfig} -n $ns delete secret cluster-cloud-config || true
+        done
+        openstack stack list --insecure --tags ${CAPO_TAG} -f value -c ID | xargs -tr openstack stack update --insecure --existing --tag ${CAPO_TAG},please-delay-cleanup
+      else
+        ./tools/openstack-cleanup.sh capo_cloud "${CAPO_TAG}"
+      fi
+    - echo -e "\e[0Ksection_end:`date +%s`:capo_cleanup\r\e[0K"
+
+deployment-success:cleanup:
+  dependencies: []
+  extends: .cleanup-openstack
+  rules:
+    - when: on_success
+
+deployment-failure:cleanup:
+  extends: .cleanup-openstack
+  before_script:
+    - |
+      if [[ ${CI_MERGE_REQUEST_LABELS} =~ "delay-capo-ci-cleanup-on-failure" ]]; then
+        DELAY_CAPO_CLEANUP="true"
+      fi
+  rules:
+    - when: on_failure
