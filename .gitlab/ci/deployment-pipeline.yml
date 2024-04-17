@@ -12,9 +12,6 @@ workflow:
 
 stages:
   - deploy
-  - deploy-wc
-  - update
-  - update-wc
   - deployment-test
   - delete
 
@@ -76,12 +73,17 @@ default:
 # ----------------------------------------------------------
 
 deploy-management-cluster:
+  needs:
+    - job: create-runner
+      optional: true
   extends:
     - .deploy-management
 
 # ----------------------------------------------------------
 
 deploy-workload-cluster:
+  needs:
+    - deploy-management-cluster
   extends:
     - .deploy-workload
     - .rules:skip-if-only-deploy-mgmt
@@ -89,6 +91,9 @@ deploy-workload-cluster:
 # ----------------------------------------------------------
 
 update-management-cluster:
+  needs:
+    - deploy-management-cluster
+    - deploy-workload-cluster
   extends:
     - .update-management
     - .rules:skip-if-only-deploy-mgmt
@@ -96,6 +101,9 @@ update-management-cluster:
 # ----------------------------------------------------------
 
 update-workload-cluster:
+  needs:
+    - deploy-workload-cluster
+    - update-management-cluster
   extends:
     - .update-workload
     - .rules:skip-if-only-deploy-mgmt

@@ -19,7 +19,7 @@ default:
 #----------------------------------------------------------
 
 create-runner:
-  stage: .pre
+  stage: deploy
   timeout: 15min
   id_tokens:
     JOB_ID_TOKEN:

@@ -169,6 +169,7 @@ include:
   variables:
     CLUSTER_TYPE: management
   timeout: 60min
+  stage: deploy
   artifacts:
     expire_in: 48 hour
     when: always
@@ -188,7 +189,6 @@ include:
 
 .deploy-management:
   extends: .management-base
-  stage: deploy
   script:
     - !reference [.setup_ci_values]
     - ./bootstrap.sh environment-values/${ENV_NAME}
@@ -198,7 +198,6 @@ include:
 
 .update-management:
   extends: .management-base
-  stage: update
   script:
     - !reference [.setup_ci_values]
     - ./apply.sh environment-values/${ENV_NAME}
@@ -211,6 +210,7 @@ include:
   variables:
     CLUSTER_TYPE: workload
   timeout: 60min
+  stage: deploy
   artifacts:
     expire_in: 48 hour
     when: always
@@ -226,7 +226,6 @@ include:
       - management-cluster-units-report.xml
 
 .deploy-workload:
-  stage: deploy-wc
   extends: .workload-base
   script:
     - !reference [.setup_ci_values]
@@ -237,7 +236,6 @@ include:
 
 .update-workload:
   extends: .workload-base
-  stage: update-wc
   script:
     - !reference [.setup_ci_values]
     - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
