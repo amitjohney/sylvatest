@@ -57,13 +57,6 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: v0.38.0
 
-  metal3:
-    kind: GitRepository
-    spec:
-      url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3.git
-      ref:
-        tag: 0.7.3
-
   sylva-capi-cluster:
     kind: GitRepository
     spec:
@@ -451,7 +444,7 @@ units:
       prune: false
       _components:
         - '{{ tuple "components/cinder-csi" (tuple . "cinder-csi" | include "unit-enabled") | include "set-only-if" }}'
-        - '{{ tuple "components/metal3" (tuple . .Values._internal.metal3_unit | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/metal3" (tuple . "metal3" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/longhorn" (tuple . "longhorn" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/keycloak" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
         - '{{ tuple "components/harbor" (tuple . "harbor" | include "unit-enabled") | include "set-only-if" }}'
@@ -1688,7 +1681,7 @@ units:
     - base-deps
     depends_on:
       cert-manager: true
-      '{{ .Values._internal.metal3_unit }}': true
+      metal3: true
     kustomization_spec:
       path: ./kustomize-units/capm3
       postBuild:
@@ -1785,10 +1778,10 @@ units:
                   drop:
                     - ALL
 
-  metal3-suse:
+  metal3:
     info:
       description: installs SUSE-maintained Metal3 operator
-      maturity: beta
+      maturity: stable
     enabled: false
     unit_templates:
     - base-deps
@@ -1798,7 +1791,7 @@ units:
       '{{ .Values._internal.default_storage_class_unit }}': true
       metal3-pdb: '{{ tuple . "metal3-pdb" | include "unit-enabled" }}'
     helm_repo_url: https://suse-edge.github.io/charts
-    helm_chart_artifact_name: metal3-suse
+    helm_chart_artifact_name: metal3
     helmrelease_spec:
       chart:
         spec:
@@ -1836,7 +1829,7 @@ units:
     unit_templates:
     - base-deps
     enabled_conditions:
-    - '{{ tuple . .Values._internal.metal3_unit | include "unit-enabled" }}'
+    - '{{ tuple . "metal3" | include "unit-enabled" }}'
     - '{{ .Values._internal.ha_cluster.mode | eq "ha" }}'
     depends_on:
       namespace-defs: true
@@ -1845,140 +1838,6 @@ units:
     kustomization_spec:
       path: ./kustomize-units/metal3-pdb
       wait: true
-
-  metal3-init:
-    info:
-      description: generates Metal3 random credentials
-      details: (only for the sylva metal3 chart)
-      internal: true
-    unit_templates:
-    - base-deps
-    enabled_conditions:
-    - '{{ tuple . "metal3" | include "unit-enabled" }}'
-    depends_on:
-      vault: true
-      vault-config-operator: true
-    repo: sylva-core
-    kustomization_spec:
-      path: ./kustomize-units/metal3-init
-      wait: true
-
-  metal3-sync-secrets:
-    info:
-      description: configures secrets for Metal3 components
-      details: (only for the sylva metal3 chart)
-      internal: true
-    unit_templates:
-    - base-deps
-    enabled_conditions:
-    - '{{ tuple . "metal3" | include "unit-enabled" }}'
-    depends_on:
-      metal3-init: true
-      eso-secret-stores: true
-    repo: sylva-core
-    kustomization_spec:
-      path: ./kustomize-units/metal3-sync-secrets
-      wait: true
-
-  metal3:
-    info:
-      description: install Metal3 operator
-      maturity: stable
-    enabled: false
-    unit_templates:
-    - base-deps
-    depends_on:
-      cert-manager: true
-      namespace-defs: true
-      '{{ .Values._internal.default_storage_class_unit }}': true
-      metal3-sync-secrets: true # make sure that the password secrets are ready to be consumed
-      metal3-pdb: '{{ tuple . "metal3-pdb" | include "unit-enabled" }}'
-    kustomization_spec:
-      postBuild:
-        substitute:
-          # Force substitution in order to be consistent with what is done in bootstrap,
-          # See https://gitlab.com/sylva-projects/sylva-core/-/issues/659
-          var_substitution_enabled: "true"
-    repo: metal3
-    helm_chart_artifact_name: metal3-sylva
-    helmrelease_spec:
-      timeout: 30m
-      chart:
-        spec:
-          chart: .
-      install:
-        createNamespace: false
-      targetNamespace: metal3-system
-      values:  # see https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3/-/blob/main/values.yaml
-        global:
-          storageClass: '{{ .Values._internal.default_storage_class }}'
-        # ironicIPADownloaderBaseURI:
-        noProxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
-        images:
-          baremetalOperator:
-            repository: quay.io/metal3-io/baremetal-operator
-            tag: "v0.5.0"
-          ironic:
-            repository: quay.io/metal3-io/ironic
-            tag: "capm3-v1.5.2"
-          ironicIPADownloader:
-            repository: registry.gitlab.com/sylva-projects/sylva-elements/container-images/ironic-ipa-downloader/ipa
-            tag: "0.2.0"
-        persistence:
-          ironic:
-            size: "10Gi"
-            accessMode: "ReadWriteOnce"
-        services:
-          ironic:
-            # Specify the IP address used by Ironic service
-            ironicIP: '{{ .Values.display_external_ip }}'
-            annotations:
-              metallb.universe.tf/allow-shared-ip: cluster-external-ip
-        mariadb:
-          persistence:
-            storageClass: '{{ .Values._internal.default_storage_class }}'
-        podSecurityContext:
-          runAsNonRoot: true
-          runAsUser: 10000
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: 10000
-      valuesFrom:
-        - kind: Secret
-          name: metal3-secrets
-          valuesKey: metal3-mariadb-root-secret
-          targetPath: mariadb.auth.rootPassword
-          optional: false
-        - kind: Secret
-          name: metal3-secrets
-          valuesKey: metal3-mariadb-replication-secret
-          targetPath: mariadb.auth.replicationPassword
-          optional: false
-        - kind: Secret
-          name: metal3-secrets
-          valuesKey: metal3-ironic-secret
-          targetPath: mariadb.auth.ironicPassword
-          optional: false
-        - kind: Secret
-          name: metal3-secrets
-          valuesKey: metal3-ironic-secret
-          targetPath: auth.ironicPassword
-          optional: false
-        - kind: Secret
-          name: metal3-secrets
-          valuesKey: metal3-ironic-inspector-secret
-          targetPath: auth.ironicInspectorPassword
-          optional: false
-      _postRenderers:
-        - kustomize:
-            patches:
-            - target:
-                kind: Deployment
-                name: baremetal-operator-controller-manager
-              patch: |
-                - op: replace
-                  path: /spec/replicas
-                  value: {{ .Values._internal.ha_cluster.mode | eq "ha" | ternary 2 1 }}
 
   capi-providers-pivot-ready:
     info:
@@ -2331,7 +2190,7 @@ units:
           CAPO_EXTERNAL_NETWORK_ID: '{{ tuple .Values.openstack.external_network_id .Values.openstack.external_network_id | include "set-only-if" }}'
           CONTROL_PLANE_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.name }}-security-group-ctrl-plane-{{ .Values.cluster.capo.resources_tag }}'
           WORKER_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}'
-          CAPO_CREATE_IRONIC_SECURITY_GROUP: '{{ tuple . (and (tuple . .Values._internal.metal3_unit | include "unit-enabled") (.Values.cluster.capi_providers.infra_provider | eq "capo")) "true" "false" | include "interpret-ternary" }}'
+          CAPO_CREATE_IRONIC_SECURITY_GROUP: '{{ tuple . (and (tuple . "metal3" | include "unit-enabled") (.Values.cluster.capi_providers.infra_provider | eq "capo")) "true" "false" | include "interpret-ternary" }}'
           COMMON_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}'
           DUMMY_UPDATE_TRIGGER: 'helm-release-revision/{{ .Release.Revision }},sylva-units-version/{{ .Chart.Version }}'
     kustomization_substitute_secrets:
@@ -3155,7 +3014,7 @@ units:
     - base-deps
     depends_on:
       namespace-defs: true
-      '{{ .Values._internal.metal3_unit }}': '{{ tuple . .Values._internal.metal3_unit | include "unit-enabled" }}'
+      metal3: '{{ tuple . "metal3" | include "unit-enabled" }}'
     enabled_conditions:
       - '{{ tuple . "monitoring" | include "unit-enabled" }}'
     repo: sylva-core
@@ -3182,7 +3041,7 @@ units:
             {{- end -}}
             {{ $result | toJson }}
       _components:
-        - '{{ tuple "components/kyverno-snmp-bmh-policy" (tuple . .Values._internal.metal3_unit | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/kyverno-snmp-bmh-policy" (tuple . "metal3" | include "unit-enabled") | include "set-only-if" }}'
 
   snmp-exporter:
     info:
@@ -3698,7 +3557,7 @@ units:
         which serves OS images for baremetal clusters.
       maturity: stable
     enabled_conditions:
-      - '{{ tuple . .Values._internal.metal3_unit | include "unit-enabled" }}'
+      - '{{ tuple . "metal3" | include "unit-enabled" }}'
     unit_templates:
     - base-deps
     depends_on:
@@ -5720,8 +5579,6 @@ _internal:
   # We need to retrieve bootstrap_node_ip in management-cluster while using libvirt-metal emulation, it is stored in a ConfigMap by libvirt-metal unit in that case
   bootstrap_node_ip: '{{ lookup "v1" "ConfigMap" "sylva-system" "cluster-public-endpoint" | dig "data" "address" "not_found" | default "not_found" }}'
 
-  metal3_unit: '{{ .Values.metal3.provider | eq "suse" | ternary "metal3-suse" "metal3" }}'
-
   k8s_version_map:
     1.26: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.26.9+rke2r1" "v1.26.9" }}'
     1.27: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.27.10+rke2r1" "v1.27.10" }}'
@@ -5781,8 +5638,6 @@ shared_workload_clusters_values:
   units:
     cluster-import:
       enabled: '{{ tuple . "rancher" | include "unit-enabled" }}'
-  metal3:
-    provider: '{{ .Values.metal3.provider }}'
   sylva_diskimagebuilder_version: '{{ .Values.sylva_diskimagebuilder_version }}'
   sylva_diskimagebuilder_images: '{{ .Values.sylva_diskimagebuilder_images | include "preserve-type" }}'
   os_images: '{{ .Values.os_images | include "preserve-type" }}'

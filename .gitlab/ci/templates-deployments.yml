@@ -84,10 +84,6 @@ include:
   - export ENV_PATH=${ENV_SUB_PATH}/${ENV_NAME}
   - values_file=$ENV_PATH/values.yaml
   - |
-    if [ -n "$METAL3_PROVIDER" ]; then
-      yq -i ".metal3.provider = \"$METAL3_PROVIDER\"" $values_file
-    fi
-  - |
     if [ -n "$DOCKER_HOST" ]; then
       docker network create --attachable kind
       export DOCKER_IP=$(getent ahostsv4 docker | awk '{print $1}' | sort -u)
