@@ -65,6 +65,7 @@ include:
   - !reference [.function_change_git_revision]
   - !reference [.function_update_values_file]
   - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_common[collapsed=true]\r\e[0KRunning common deployment steps\e[0m"
+  - !reference [.cleanup-artifacts-dump]
   - |
     if [ -n "${GIT_REVISION}" ] ; then
       change_git_revision $GIT_REVISION
@@ -135,6 +136,10 @@ include:
       echo -e "No specific values to apply"
     fi
   - echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_update_values\r\e[0K"
+
+# This is used to clean artifacts produce by debug-on-exit from previous jobs/stages
+.cleanup-artifacts-dump:
+  - rm -rf debug-on-exit.log *-timeline.html *-report.xml *-dump
 
 # By default we don't have specific configuration to apply
 .flavored-pre-deployment-configuration:
