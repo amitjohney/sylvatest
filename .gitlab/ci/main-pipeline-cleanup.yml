@@ -9,7 +9,7 @@ scheduled-cleanup-capo:
     name: $OPENSTACK_CLIENT_IMAGE
   script:
     - !reference [.os_cloud]
-    - CAPO_TAG_PATTERN=${CAPO_TAG_PATTERN:-"capo"}
+    - export CAPO_TAG_PATTERN=${CAPO_TAG_PATTERN:-"capo"}
     - touch tags.txt exclude-tags.txt
     - |
       set -eo pipefail
