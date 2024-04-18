@@ -5221,8 +5221,7 @@ openstack:
 
 oci_registry_insecure: false
 
-metal3:
-  provider: suse # sylva or suse
+metal3: {}
   # external_bootstrap_ip:
   # bootstrap_ip:
 

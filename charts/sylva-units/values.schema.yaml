@@ -1235,10 +1235,6 @@ allOf:
           additionalProperties: false
           properties:
 
-            provider: # -------------------------------
-              type: string
-              pattern: "^(sylva|suse)$"
-
             bootstrap_ip:  # -------------------------------
               type: string
               format: ipv4
