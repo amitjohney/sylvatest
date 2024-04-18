@@ -101,7 +101,7 @@ units:
 
   longhorn:
     # this setting can be overridden to true to enable Longhorn
-    enabled: '{{ .Values.env_type | eq "ci" }}'
+    enabled: true
     helmrelease_spec:
       values:
         persistence:
