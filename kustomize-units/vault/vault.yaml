@@ -105,10 +105,22 @@ spec:
         resources:
           requests:
             storage: 1Gi
-
+    - metadata:
+        name: vault-smp
+      spec:
+        # https://kubernetes.io/docs/concepts/storage/persistent-volumes/#class-1
+        # storageClassName: ""
+        accessModes:
+          - ReadWriteOnce
+        volumeMode: Filesystem
+        resources:
+          requests:
+            storage: 1Gi
   volumeMounts:
     - name: vault-raft
       mountPath: /vault/file
+    - name: vault-smp
+      mountPath: /vault/smp
     - name: keycloak-ca          # mount the keycloak root ca cerftificate to verify the oidc_discovery_url
       mountPath: /etc/ssl/certs
 
