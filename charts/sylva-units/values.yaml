@@ -5629,8 +5629,6 @@ shared_workload_clusters_values:
     capm3:
       image_provisioning_host: '{{ .Values.display_external_ip }}'
     capo:
-      image_name: '{{ .Values.cluster.capo.image_name | include "set-if-defined" }}'
-      image_key: '{{ .Values.cluster.capo.image_key | include "set-if-defined" }}'
       network_id: '{{ .Values.cluster.capo.network_id | include "set-if-defined" }}'
     default_node_class: '{{ .Values.cluster.default_node_class }}'
     node_classes: '{{ .Values.cluster.node_classes | include "preserve-type" }}'
