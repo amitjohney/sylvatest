@@ -15,6 +15,18 @@ cluster:
       capo:
         failure_domain: region0
 
+# We can define users if needed (.cluster.kubeadm.users[])
+  #kubeadm:
+  #  users:
+  #    - name: sylva-user
+  #      passwd: "put your password hash here"  # (copy pasted from /etc/shadow or created with "mkpasswd --method=SHA-512 --stdin")
+  #      groups: users
+  #      sudo: ALL=(ALL) NOPASSWD:ALL
+  #      shell: /bin/bash
+  #      lockPassword: false
+  #      sshAuthorizedKeys:
+  #        - ssh-rsa AAAA...... YOUR KEY HERE ....UqnQ==
+
 sylva_diskimagebuilder_images:
   ubuntu-jammy-plain-rke2-1-28-8:
     default_enabled: false
