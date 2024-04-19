@@ -229,8 +229,8 @@ unit_templates:
             (not (.Values._internal.cluster_unit_deps | has .Values._unit_name_))
         }}
 
-# this defines Flux HelmRelease objects, and for each  # FIXME
-# a corresponding GitRepository or OCIRepository (and Secret, TODO: the Secret don't need to be generated for each unit)
+# this defines Flux Kustomizations and the related ConfigMaps and Secrets
+# for Helm-based unit, the Kustomization will produce a Flux HelmRelease
 units:
   # <unit-name>:
   #   info: # unit metadata mainly for documentation purpose
