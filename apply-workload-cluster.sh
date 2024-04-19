@@ -9,6 +9,8 @@ source $(dirname $0)/tools/shell-lib/common.sh
 
 check_args
 
+wc_namespace=$(basename ${ENV_PATH})
+
 validate_input_values
 
 check_apply_kustomizations
@@ -39,13 +41,13 @@ validate_sylva_units
 echo_b "\U0001F5D1 Delete preview chart and namespace"
 cleanup_preview
 
-echo_b "\U0001F4DC Install a sylva-units Helm release for workload cluster $(basename ${ENV_PATH})"
+echo_b "\U0001F4DC Install a sylva-units Helm release for workload cluster $wc_namespace"
 _kustomize ${ENV_PATH} | define_source | set_wc_namespace | kubectl apply -f -
 
 echo_b "\U0001F3AF Trigger reconciliation of units"
 
 # this is just to force-refresh on refreshed parameters
-force_reconcile helmrelease sylva-units $(basename ${ENV_PATH})
+force_reconcile helmrelease sylva-units $wc_namespace
 
 echo_b "\U000023F3 Wait for units to be ready"
 sylvactl watch \
@@ -53,6 +55,7 @@ sylvactl watch \
   --reconcile \
   --timeout $(ci_remaining_minutes_and_at_most ${APPLY_WC_WATCH_TIMEOUT_MIN:-30}) \
   ${SYLVACTL_SAVE:+--save apply-workload-cluster-timeline.html} \
-  -n $(basename ${ENV_PATH})
+  -n $wc_namespace \
+  Kustomization/sylva-system/sylva-units-status
 
 display_final_messages

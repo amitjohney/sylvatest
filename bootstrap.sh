@@ -51,6 +51,7 @@ sylvactl watch \
   --reconcile \
   --timeout $(ci_remaining_minutes_and_at_most ${BOOTSTRAP_WATCH_TIMEOUT_MIN:-30}) \
   ${SYLVACTL_SAVE:+--save bootstrap-timeline.html} \
+  -n sylva-system \
   Kustomization/sylva-system/management-sylva-units
 
 if kill $KUBECONFIG_PID &>/dev/null; then
@@ -63,6 +64,8 @@ sylvactl watch \
   --reconcile \
   --kubeconfig management-cluster-kubeconfig \
   --timeout $(ci_remaining_minutes_and_at_most ${MGMT_WATCH_TIMEOUT_MIN:-45}) \
-  ${SYLVACTL_SAVE:+--save management-cluster-timeline.html}
+  ${SYLVACTL_SAVE:+--save management-cluster-timeline.html} \
+  -n sylva-system \
+  Kustomization/sylva-system/sylva-units-status
 
 display_final_messages
