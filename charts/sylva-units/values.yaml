@@ -1898,7 +1898,8 @@ units:
                 metadata:
                   name: metal3-ironic
                 spec:
-                  loadBalancerClass: '{{ .Values.cluster.loadBalancerClass }}'
+                  type: LoadBalancer
+                  loadBalancerClass: '{{ tuple (.Values.cluster.loadBalancerClass) .Values.cluster.loadBalancerClass | include "set-only-if" }}'
 
   metal3-pdb:
     info:
@@ -5333,7 +5334,8 @@ cluster:
   metallb_helm_version: '{{ .Values.units.metallb.helmrelease_spec.chart.spec.version }}'
   metallb_helm_extra_ca_certs: ""  # for an OCI-based deployment this is overridden in use-oci-artifacts.values.yaml
 
-  loadBalancerClass: '{{ tuple (.Values._internal.loadBalancerClass ) (not (eq .Values.cluster.capi_providers.infra_provider "capd")) | include "set-only-if" }}'
+  set_loadBalancerClass: false  # set default loadBalancerClass on the lb controller and Sylva services
+  loadBalancerClass: '{{ tuple (.Values._internal.loadBalancerClass ) (and .Values.cluster.set_loadBalancerClass (not (eq .Values.cluster.capi_providers.infra_provider "capd"))) | include "set-only-if" }}'
 
   capv:
     # image_name: # vSphere image name
