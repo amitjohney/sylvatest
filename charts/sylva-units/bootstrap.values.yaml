@@ -209,6 +209,7 @@ units:
       # cluster readyness will actually be ensured by the retries on installations of this kustomization for now.
       # maybe cluster CRD is not compatible with kstatus? (see https://fluxcd.io/flux/units/kustomize/kustomization/#health-assessment)
       calico: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
+      cluster-machines-ready: true
     unit_templates: []
     repo: sylva-core
     kustomization_spec:
