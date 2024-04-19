@@ -63,7 +63,6 @@ except IOError:
     ts = TestSuite(env_type + ":" + "sylva-unit-validation", test_cases)
 
 
-
 ts = TestSuite(env_type + ":" + "sylva-unit-validation", test_cases)
 
 report = open(output_filename, "w")

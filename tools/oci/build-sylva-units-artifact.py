@@ -31,8 +31,6 @@ import atexit
 # yaml = YAML()
 # data = yaml.load(file) instead of safe_load
 
-
-
 # Set up environment and variables
 script_dir = Path(__file__).parent
 base_dir = script_dir.parent.parent
@@ -42,7 +40,7 @@ base_dir = script_dir.parent.parent
 # - the gitlab CI registry, $CI_REGISTRY (if applicable)
 # - default value is oci://registry.gitlab.com/sylva-projects/sylva-core
 oci_registry = os.getenv('OCI_REGISTRY', 'oci://registry.gitlab.com/sylva-projects/sylva-core')
-helm_chart_version = os.getenv('HELM_CHART_VERSION', f"0.0.0-git-{subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode().strip()[0:8]}")
+helm_chart_version = os.getenv('HELM_CHART_VERSION', f"0.0.0-git-{subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode().strip()[0:8]}")  # noqa: E501
 print('helm_chart_version: ', helm_chart_version)
 
 # Create a temporary directory for the artifact
@@ -66,20 +64,24 @@ with open(oci_values_yaml_path, 'r') as original_file:
 with open(backup_file_path, 'w') as backup_file:
     backup_file.write(content)
 
+
 # Function to load YAML data from a file
 def load_yaml(file_path):
     with open(file_path, 'r') as file:
         return yaml.safe_load(file)
+
 
 # Function to save YAML data to a file
 def save_yaml(data, file_path):
     with open(file_path, 'w') as file:
         yaml.dump(data, file)
 
+
 def modify_chart_yaml(chart_yaml_path, version):
     chart_data = load_yaml(chart_yaml_path)
     chart_data['version'] = version
     save_yaml(chart_data, chart_yaml_path)
+
 
 def merge_dictionaries(original, to_merge):
     for key, value in to_merge.items():
@@ -91,8 +93,10 @@ def merge_dictionaries(original, to_merge):
         else:
             original[key] = value
 
-############################### package charts/sylva-units #########################################################
+# ############################## package charts/sylva-units #########################################################
 # Modify Chart.yaml
+
+
 print("Preparing chart...")
 chart_yaml_path = chart_dest_dir / 'Chart.yaml'
 modify_chart_yaml(chart_yaml_path, helm_chart_version)
@@ -102,7 +106,7 @@ oci_values_data = load_yaml(oci_values_yaml_path)
 
 default_values_units = default_values_data['units']
 
-############################### sylva-units overrides to consume Helm charts from OCI artifacts ####################
+# ############################## sylva-units overrides to consume Helm charts from OCI artifacts ####################
 
 print("Preparing use-oci-artifacts.values.yaml values override file...")
 
@@ -158,20 +162,24 @@ replacement_pattern = r"\1.\2.9\3\4+\1.\2.\3\4"
 for unit in default_values_units:
     if 'helm_repo_url' in default_values_units[unit]:
         # Extract the version string
-        version = default_values_units[unit].get('helmrelease_spec', {}).get('chart', {}).get('spec', {}).get('version', '')
+        version = default_values_units[unit].get('helmrelease_spec', {}).get('chart', {}).get('spec', {}).get('version', '')  # noqa: E501
         # Check if the version matches the pattern
         if re.search(version_pattern, version):
             new_version = re.sub(sub_pattern, replacement_pattern, version)
-            regexp_overrides.update({unit: {'helm_repo_url': '{{ .Values.sylva_core_oci_registry }}', 'helmrelease_spec':{'chart':{'spec':{'version': new_version}}}}})
+            regexp_overrides.update({unit: {'helm_repo_url': '{{ .Values.sylva_core_oci_registry }}',
+                                            'helmrelease_spec': {'chart': {'spec': {'version': new_version}}}}})
         if 'helm_chart_versions' in default_values_units[unit]:
             new_chart_versions = {}
             for version_key, version_value in default_values_units[unit]['helm_chart_versions'].items():
                 if re.search(version_pattern, version_key):
                     new_version = re.sub(sub_pattern, replacement_pattern, version_key)
-                    new_chart_versions.update({new_version: version_value, version_key: None}) # We hardcode the old version to null to avoid being parsed and failed by the rules in templates/units.yaml
+                    # We hardcode the old version to null to avoid being parsed
+                    # and failed by the rules in templates/units.yaml
+                    new_chart_versions.update({new_version: version_value, version_key: None})
                 else:
                     new_chart_versions.update({version_key: version_value})
-            regexp_overrides.update({unit: {'helm_repo_url': '{{ .Values.sylva_core_oci_registry }}', 'helm_chart_versions': new_chart_versions}})
+            regexp_overrides.update({unit: {'helm_repo_url': '{{ .Values.sylva_core_oci_registry }}',
+                                            'helm_chart_versions': new_chart_versions}})
 
 # ********* Helm-based units relying on 'repo' *********
 
@@ -219,15 +227,18 @@ default_values_source_templates = default_values_data['source_templates']
 repo_overrides = {}
 for unit in default_values_units:
     if 'repo' in default_values_units[unit] and 'helmrelease_spec' in default_values_units[unit]:
-        repo_overrides.update({unit: {'repo': None, 'helm_repo_url': "{{ .Values.sylva_core_oci_registry }}", 'helmrelease_spec':{'chart': {'spec': {'version':default_values_source_templates[default_values_units[unit]['repo']]['spec']['ref']['tag']}}} }})
+        repo_overrides.update({unit: {'repo': None, 'helm_repo_url': "{{ .Values.sylva_core_oci_registry }}", 'helmrelease_spec':{'chart': {'spec': {'version':default_values_source_templates[default_values_units[unit]['repo']]['spec']['ref']['tag']}}}}})  # noqa: E501, E231
+
 
 # Ensure the temporary directory is cleaned up
 def cleanup():
     shutil.rmtree(artifact_dir)
+
+
 atexit.register(cleanup)
 
 
-###################### update oci_values_data and write changes to file #############################
+# ##################### update oci_values_data and write changes to file #############################
 merge_dictionaries(oci_values_data['units'], helm_repo_url_overriden_units)
 merge_dictionaries(oci_values_data['units'], regexp_overrides)
 merge_dictionaries(oci_values_data['units'], repo_overrides)
@@ -239,12 +250,12 @@ test_values_dir = chart_dest_dir / 'test-values'
 if test_values_dir.exists():
     shutil.rmtree(test_values_dir)
 
-############################### wrap up Helm packaging  #######################################
+# ############################## wrap up Helm packaging  #######################################
 os.chdir(chart_dest_dir)  # Ensure we are in the correct directory
 subprocess.run(['helm', 'dependency', 'update'], check=True)
 subprocess.run(['helm', 'package', '--version', helm_chart_version, str(chart_dest_dir)], check=True)
 
-############################### pushing the artifact to registry ###################################################
+# ############################## pushing the artifact to registry ###################################################
 print("\nPushing sylva-units artifact to OCI registry...")
 
 ci_registry = os.getenv('CI_REGISTRY')
@@ -252,6 +263,6 @@ ci_registry = os.getenv('CI_REGISTRY')
 if ci_registry:
     ci_registry_user = os.getenv('CI_REGISTRY_USER')
     ci_registry_password = os.getenv('CI_REGISTRY_PASSWORD')
-    subprocess.run(f"echo '{ci_registry_password}' | helm registry login -u '{ci_registry_user}' '{ci_registry}' --password-stdin", shell=True)
+    subprocess.run(f"echo '{ci_registry_password}' | helm registry login -u '{ci_registry_user}' '{ci_registry}' --password-stdin", shell=True)  # noqa: E501
 
 subprocess.run(['helm', 'push', f'sylva-units-{helm_chart_version}.tgz', oci_registry], check=True)
