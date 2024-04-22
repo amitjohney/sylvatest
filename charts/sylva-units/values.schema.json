@@ -3179,6 +3179,92 @@
             }
           ]
         },
+        "calico_autodetection_method": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kubernetes": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "NodeInternalIP"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "cidrs": {
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/$defs/ipv4-cidr"
+                      }
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "canReach": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "ipv4"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "interface": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "skipInterface": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "capd": {
           "anyOf": [
             {
@@ -6304,6 +6390,58 @@
             "required": [
               "cis_profile"
             ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "calico_autodetection_method": {
+                "minProperties": 1
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "calico_autodetection_method": {
+                "anyOf": [
+                  {
+                    "oneOf": [
+                      {
+                        "required": [
+                          "kubernetes"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "cidrs"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "canReach"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "interface"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "skipInterface"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "$ref": "#/$defs/string-with-gotpl"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
           }
         }
       ]
