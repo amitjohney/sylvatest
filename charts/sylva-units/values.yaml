@@ -2804,6 +2804,10 @@ units:
               metallb.universe.tf/allow-shared-ip: cluster-external-ip
           publishService:
             enabled: true
+        installation:
+          calicoNetwork:
+            nodeAddressAutodetectionV4:
+              {{ .Values.cluster.calico_autodetection_method .Values.calico_autodetection_method ( }} 
     kustomization_spec:
       healthChecks:
         - apiVersion: apps/v1
@@ -5298,6 +5302,8 @@ cluster:
   cluster_pods_cidrs:
     - 100.72.0.0/16
   calico_wireguard_enabled: '{{ .Values.security.calico_wireguard_enabled | include "preserve-type" }}'
+
+  calico_autodetection_method: {}
 
   use_custom_rancher_dns_resolver: false
   ntp: '{{ .Values.ntp | include "preserve-type" }}'
