@@ -39,18 +39,18 @@ create-runner:
     - glab config set -g check_update false
     - >
       curl -Ss -X POST --fail
-      --form "token=$RUNNER_AAS_TOKEN"
+      --form "token=$TEMPORARY_RUNNER_AAS_TRIGGER_TOKEN"
       --form ref=main
       --form "variables[TARGET_REF]=$RUNNER_AAS_TARGET_REF"
       --form "variables[REQUEST]=$REQUEST"
       --form "variables[SOURCE_JWT_TOKEN]=$JOB_ID_TOKEN"
       --form "variables[RUNNER_PLAN]=$RUNNER_PLAN"
-      "$CI_API_V4_URL/projects/51177405/trigger/pipeline" > pipeline.json
+      "$CI_API_V4_URL/projects/50678040/trigger/pipeline" > pipeline.json
     - PIPELINE_ID=$(cat pipeline.json | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')
     - echo "Pipeline triggered = $(cat pipeline.json | python3 -c 'import json,sys;print(json.load(sys.stdin)["web_url"])')"
     - >
       while true; do
-        PIPELINE=$(glab api projects/51177405/pipelines/$PIPELINE_ID)
+        PIPELINE=$(glab api projects/50678040/pipelines/$PIPELINE_ID)
         PIPELINE_STATUS=$(echo $PIPELINE | python3 -c 'import json,sys;print(json.load(sys.stdin)["status"])')
         echo "PIPELINE_STATUS = $PIPELINE_STATUS"
         [[ $PIPELINE_STATUS == "" ]] && exit 1
