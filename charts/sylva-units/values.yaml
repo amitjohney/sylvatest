@@ -2350,6 +2350,8 @@ units:
         installation:
           calicoNetwork:
             bgp: Enabled
+            nodeAddressAutodetectionV4:
+              '{{ .Values.cluster.calico_autodetection_method | empty | ternary .Values._internal.default_calico_autodetection_method .Values.cluster.calico_autodetection_method | include "preserve-type"}}'
           registry: UseDefault
         felixConfiguration:
           wireguardEnabled: '{{ .Values.security.calico_wireguard_enabled | include "preserve-type" }}'
@@ -2804,10 +2806,6 @@ units:
               metallb.universe.tf/allow-shared-ip: cluster-external-ip
           publishService:
             enabled: true
-        installation:
-          calicoNetwork:
-            nodeAddressAutodetectionV4:
-              {{ .Values.cluster.calico_autodetection_method .Values.calico_autodetection_method ( }} 
     kustomization_spec:
       healthChecks:
         - apiVersion: apps/v1
@@ -5813,6 +5811,9 @@ _internal:
     }}'
   default_os_images_info_configmap: os-images-info-{{ tuple . .Values._internal.os_images_info_input_hash | include "interpret-as-string" }}
   os_images_info_configmap: '{{ .Values._internal.default_os_images_info_configmap }}'  # overridden in workload-cluster.values.yaml
+
+  default_calico_autodetection_method:
+    canReach: '{{ not (empty .Values.cluster.mgmt_cluster_ip) | ternary .Values.cluster.mgmt_cluster_ip .Values.cluster.cluster_virtual_ip }}'
 
 shared_workload_clusters_values:
   ntp: '{{ .Values.ntp | include "set-if-defined" }}'
