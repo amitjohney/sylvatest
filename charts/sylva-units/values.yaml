@@ -146,7 +146,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-prometheus-rules.git
       ref:
-        tag: 0.0.8
+        tag: 0.0.9
 
 helm_repo_spec_default:
   interval: 60m0s
@@ -4995,12 +4995,13 @@ units:
     enabled_conditions:
       - '{{ tuple . "monitoring" | include "unit-enabled" }}'
     repo: sylva-prometheus-rules
+    helm_chart_artifact_name: sylva-prometheus-rules
     helmrelease_spec:
       releaseName: sylva-prometheus-rules
       targetNamespace: sylva-prometheus-rules
       chart:
         spec:
-          chart: prometheus-rules
+          chart: .
       install:
         createNamespace: true
       values:
