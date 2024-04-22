@@ -91,6 +91,7 @@ units:
   monitoring:
     depends_on:
       keycloak-oidc-external-secrets: true
+      grafana-init: true
     helmrelease_spec:
       values:
         grafana:
