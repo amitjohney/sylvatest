@@ -62,7 +62,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.2.16
+        tag: 0.2.16-calico
 
   local-path-provisioner:
     kind: GitRepository
@@ -2723,8 +2723,7 @@ units:
             enabled: true
         installation:
           calicoNetwork:
-            nodeAddressAutodetectionV4:
-              {{ .Values.cluster.calico_autodetection_method .Values.calico_autodetection_method ( }} 
+            nodeAddressAutodetectionV4: '{{ tuple . .Values.cluster.calico_autodetection_method .Values.calico_autodetection_method "" | include "interpret-ternary" | toYaml }}'
     kustomization_spec:
       healthChecks:
         - apiVersion: apps/v1
