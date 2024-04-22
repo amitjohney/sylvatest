@@ -2267,6 +2267,14 @@ units:
           registry: UseDefault
         felixConfiguration:
           wireguardEnabled: '{{ .Values.security.calico_wireguard_enabled | include "preserve-type" }}'
+        installation:
+          calicoNetwork:
+            nodeAddressAutodetectionV4: |
+              {{- if .Values.cluster.calico_autodetection_method }}
+              {{ .Values.cluster.calico_autodetection_method | toYaml }}
+              {{ else }}
+              canReach: {{ not (empty .Values.cluster.mgmt_cluster_ip) | ternary .Values.cluster.mgmt_cluster_ip .Values.cluster_virtual_ip }}
+              {{- end }}
 
   metallb:
     info:
@@ -2721,9 +2729,6 @@ units:
               metallb.universe.tf/allow-shared-ip: cluster-external-ip
           publishService:
             enabled: true
-        installation:
-          calicoNetwork:
-            nodeAddressAutodetectionV4: '{{ tuple . .Values.cluster.calico_autodetection_method .Values.calico_autodetection_method "" | include "interpret-ternary" | toYaml }}'
     kustomization_spec:
       healthChecks:
         - apiVersion: apps/v1
