@@ -426,13 +426,60 @@
                   "type": "array",
                   "items": {
                     "type": "object",
+                    "additionalProperties": false,
                     "required": [
-                      "name",
-                      "groups",
-                      "sudo",
-                      "shell",
-                      "sshAuthorizedKeys"
-                    ]
+                      "name"
+                    ],
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "gecos": {
+                        "type": "string"
+                      },
+                      "groups": {
+                        "type": "string"
+                      },
+                      "homeDir": {
+                        "type": "string"
+                      },
+                      "inactive": {
+                        "type": "boolean"
+                      },
+                      "shell": {
+                        "type": "string"
+                      },
+                      "passwd": {
+                        "type": "string"
+                      },
+                      "passwdFrom": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "secret"
+                        ],
+                        "properties": {
+                          "secret": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "primaryGroup": {
+                        "type": "string"
+                      },
+                      "lockPassword": {
+                        "type": "boolean"
+                      },
+                      "sudo": {
+                        "type": "string"
+                      },
+                      "sshAuthorizedKeys": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
                   }
                 },
                 {
@@ -855,6 +902,89 @@
                             "accelerator-direct-physical",
                             "vdpa"
                           ]
+                        },
+                        {
+                          "$ref": "#/$defs/string-with-gotpl"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "allowed_address_pairs": {
+                      "anyOf": [
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "ipAddress": {
+                                "type": "string",
+                                "format": "ipv4"
+                              },
+                              "macAddress": {
+                                "type": "string",
+                                "format": "mac"
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "$ref": "#/$defs/string-with-gotpl"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "disable_port_security": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "$ref": "#/$defs/string-with-gotpl"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "security_group_filters": {
+                      "anyOf": [
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "description": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "notTags": {
+                                "type": "string"
+                              },
+                              "notTagsAny": {
+                                "type": "string"
+                              },
+                              "projectId": {
+                                "type": "string"
+                              },
+                              "tags": {
+                                "type": "string"
+                              },
+                              "tagsAny": {
+                                "type": "string"
+                              }
+                            }
+                          }
                         },
                         {
                           "$ref": "#/$defs/string-with-gotpl"
@@ -3170,6 +3300,92 @@
           "anyOf": [
             {
               "type": "boolean"
+            },
+            {
+              "$ref": "#/$defs/string-with-gotpl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "calico_autodetection_method": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kubernetes": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "NodeInternalIP"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "cidrs": {
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/$defs/ipv4-cidr"
+                      }
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "canReach": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "ipv4"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "interface": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "skipInterface": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "$ref": "#/$defs/string-with-gotpl"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
             },
             {
               "$ref": "#/$defs/string-with-gotpl"
@@ -6304,6 +6520,58 @@
             "required": [
               "cis_profile"
             ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "calico_autodetection_method": {
+                "minProperties": 1
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "calico_autodetection_method": {
+                "anyOf": [
+                  {
+                    "oneOf": [
+                      {
+                        "required": [
+                          "kubernetes"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "cidrs"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "canReach"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "interface"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "skipInterface"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "$ref": "#/$defs/string-with-gotpl"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
           }
         }
       ]
