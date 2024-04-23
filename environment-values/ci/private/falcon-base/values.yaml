@@ -10,7 +10,7 @@ cluster:
     flavor_name: m1.xlarge
   machine_deployments:
     md0:
-      replicas: 1
+      replicas: 3
       capo:
         failure_domain: dev-az
 openstack:
