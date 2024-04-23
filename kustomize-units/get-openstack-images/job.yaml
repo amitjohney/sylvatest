@@ -72,13 +72,15 @@ spec:
           - key: values.yaml
             path: os-images-info.yaml
       - name: tmp-storage
-        ephemeral:
-          volumeClaimTemplate:
-            spec:
-              accessModes: ["ReadWriteOnce"]
-              resources:
-                requests:
-                  storage: ${TMP_STORAGE_SPACE:-8Gi}
+        # ephemeral:
+        #   volumeClaimTemplate:
+        #     spec:
+        #       accessModes: ["ReadWriteOnce"]
+        #       resources:
+        #         requests:
+        #           storage: ${TMP_STORAGE_SPACE:-8Gi}
+        emptyDir:
+          sizeLimit: ${TMP_STORAGE_SPACE:-8Gi}
 ---
 apiVersion: v1
 kind: ServiceAccount
