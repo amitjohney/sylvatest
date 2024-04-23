@@ -1,4 +1,6 @@
 cluster:
+  kubelet_extra_args:
+    serialize-image-pulls: "false"
   capo:
     ssh_key_name: caas_ci_key
     network_id: 489b1587-4aa4-49b2-be56-62af67efa68f
