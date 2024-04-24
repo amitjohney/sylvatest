@@ -38,19 +38,18 @@ create-runner:
   script:
     - glab config set -g check_update false
     - >
-      curl -Ss -X POST --fail
-      --form "token=$TEMPORARY_RUNNER_AAS_TRIGGER_TOKEN"
-      --form ref=main
-      --form "variables[TARGET_REF]=$RUNNER_AAS_TARGET_REF"
-      --form "variables[REQUEST]=$REQUEST"
-      --form "variables[SOURCE_JWT_TOKEN]=$JOB_ID_TOKEN"
-      --form "variables[RUNNER_PLAN]=$RUNNER_PLAN"
-      "$CI_API_V4_URL/projects/50678040/trigger/pipeline" > pipeline.json
-    - PIPELINE_ID=$(cat pipeline.json | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')
-    - echo "Pipeline triggered = $(cat pipeline.json | python3 -c 'import json,sys;print(json.load(sys.stdin)["web_url"])')"
+      glab ci run-trig
+      --token="$RUNNER_AAS_TOKEN"
+      --branch "main"
+      --variables "TARGET_REF:$RUNNER_AAS_TARGET_REF"
+      --variables "REQUEST:$REQUEST"
+      --variables "SOURCE_JWT_TOKEN:$JOB_ID_TOKEN"
+      --variables "RUNNER_PLAN:$RUNNER_PLAN"
+      --repo "sylva-projects/sylva-elements/ci-tooling/runner-aas-interface" | tee pipeline.json
+    - 'PIPELINE_ID=$(grep -Eo "id: \d+" pipeline.json | grep -Eo "\d+")'
     - >
       while true; do
-        PIPELINE=$(glab api projects/50678040/pipelines/$PIPELINE_ID)
+        PIPELINE=$(glab api projects/sylva-projects%2Fsylva-elements%2Fci-tooling%2Frunner-aas-interface/pipelines/$PIPELINE_ID)
         PIPELINE_STATUS=$(echo $PIPELINE | python3 -c 'import json,sys;print(json.load(sys.stdin)["status"])')
         echo "PIPELINE_STATUS = $PIPELINE_STATUS"
         [[ $PIPELINE_STATUS == "" ]] && exit 1
