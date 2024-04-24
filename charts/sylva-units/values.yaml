@@ -4242,7 +4242,17 @@ units:
               containerSecurityContext:
                 runAsUser: 1000
                 runAsGroup: 1000
+                runAsNonRoot: true
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                seccompProfile:
+                  type: RuntimeDefault
               securityContext:
+                runAsNonRoot: true
+                seccompProfile:
+                  type: RuntimeDefault
                 runAsUser: 1000
                 runAsGroup: 1000
                 fsGroup: 1000
@@ -4387,6 +4397,20 @@ units:
               - hosts:
                   - 'thanos-query.{{ .Values.external_hostnames.thanos_query }}'
                 secretName: thanos-tls
+          containerSecurityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
         queryFrontend:
           enabled: true
           loglevel: debug
@@ -4404,6 +4428,20 @@ units:
               - hosts:
                   - '{{ .Values.external_hostnames.thanos }}'
                 secretName: thanos-tls
+          containerSecurityContext:
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
         storegateway:
           enabled: true
           logLevel: debug
@@ -4411,6 +4449,25 @@ units:
             enabled: false
             storageClass: '{{ .Values._internal.default_storage_class }}'
             size: 8Gi
+          containerSecurityContext:
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          podSecurityContext:
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
           ingress:
             enabled: true
             hostname: '{{ .Values.external_hostnames.thanos_storegateway }}'
@@ -4425,6 +4482,25 @@ units:
           retentionResolutionRaw: 2d
           retentionResolution5m: 30d
           retentionResolution1h: 1y
+          containerSecurityContext:
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          podSecurityContext:
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
         bucketweb:
           enabled: false
         ruler:
@@ -4434,14 +4510,47 @@ units:
             enabled: true
           containerSecurityContext:
             runAsUser: 1001
+            runAsNonRoot: true
             privileged: false
             readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          podSecurityContext:
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
         receive:
           enabled: true
           mode: standalone
           logLevel: debug
           persistence:
             enabled: false
+          containerSecurityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
           ingress:
             enabled: true
             ingressClassName: "nginx"
