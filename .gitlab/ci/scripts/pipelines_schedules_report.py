@@ -137,52 +137,63 @@ def create_report():
                 ds_pipeline_summary = pipeline_summary(child.downstream_pipeline)
                 return f"[{duration_text} {get_status_icon(child.status)}]({child.web_url})<br>{ds_pipeline_summary}"
 
-            child_pipelines_per_name = dict()
-            headers = ["name"]
+            child_pipelines_reports = dict()
             for pipeline in newest_pipelines:
                 print(f"  processing pipeline {pipeline.id}")
-                time_status = f"[{pipeline.created_at[:16]} {get_status_icon(pipeline.status)}]({pipeline.web_url})"
-                headers.append(time_status)
                 for child in project.pipelines.get(pipeline.id).bridges.list():
                     print(f"    processing child {child.name}")
-                    child_pipelines_per_name.setdefault(child.name, [child.name.replace("-", "‑")])
-                    child_pipelines_per_name[child.name].append(_get_child_md(child))
+                    child_pipelines_reports.setdefault(child.name, dict())
+                    child_pipelines_reports[child.name][pipeline.id] = _get_child_md(child)
 
-            table = list(child_pipelines_per_name.values())
-            print_report(tabulate(table, headers=headers, tablefmt="pipe"))
+            headers = ["name"]
+            rows_as_dict = dict()
+            for pipeline in newest_pipelines:
+                time_status = f"[{pipeline.created_at[:16]} {get_status_icon(pipeline.status)}]({pipeline.web_url})"
+                headers.append(time_status)
+                # add empty cell in table if any child pipeline type doesn't exit at a given date
+                for child_pipeline_name in child_pipelines_reports.keys():
+                    if pipeline.id not in child_pipelines_reports[child_pipeline_name]:
+                        child_pipelines_reports[child_pipeline_name][pipeline.id] = ""
+
+                    rows_as_dict.setdefault(child_pipeline_name, [child_pipeline_name.replace("-deploy", "").replace("-", "‑")])
+                    rows_as_dict[child_pipeline_name].append(child_pipelines_reports[child_pipeline_name][pipeline.id])
+
+            report_rows = list(rows_as_dict.values())
+            print_report(tabulate(report_rows, headers=headers, tablefmt="pipe"))
             print_report(" ")
 
 
 def publish_report():
+
     with open(REPORT_FILE, "r") as f:
         report_content = f.read()
 
-    # if script is run for aggregate several days, publish on "WIKI_REPORT_PAGE"
     if PIPELINE_HISTORY_COUNT > 1:
-        main_report = project.wikis.get(WIKI_REPORT_PAGE)
-        main_report.content = report_content
-        main_report.save()
-
-    # if script is run for an single day, publish on "WIKI_REPORT_PAGE/date"
+        # if script is run for aggregate several days, publish on "WIKI_REPORT_PAGE"
+        wiki_page = WIKI_REPORT_PAGE
     else:
+        # if script is run for an single day, publish on "WIKI_REPORT_PAGE/date"
         date = datetime.datetime.now().strftime("%Y-%m-%d")
-        project.wikis.create(
+        wiki_page = f"{WIKI_REPORT_PAGE}/{date}"
+
+    try:
+        main_report = project.wikis.get(wiki_page)
+    except gitlab.exceptions.GitlabGetError:
+        main_report = project.wikis.create(
             {
-                "title": f"{WIKI_REPORT_PAGE}/{date}",
+                "title": f"{wiki_page}",
                 "content": report_content,
             }
         )
-        print(
-            f"The report can be found on following URL: https://gitlab.com/sylva-projects/sylva-core/-/wikis/{WIKI_REPORT_PAGE}/{date}"
-        )
-        print("Report uploaded for " + datetime.datetime.now().strftime("%Y-%m-%d"))
+    else:
+        main_report.content = report_content
+        main_report.save()
+
+    print(f"The report can be found on following URL: https://gitlab.com/sylva-projects/sylva-core/-/wikis/{wiki_page}")
+    print("Report uploaded for " + datetime.datetime.now().strftime("%Y-%m-%d"))
 
 
-def delete_report():
-    pages = project.wikis.list()
-    for page in pages:
-        print(page.title)
-
+def delete_old_reports():
     print("Delete reports older than 7 days")
     date = datetime.datetime.now().strftime("%Y-%m-%d")
     time_now = datetime.datetime.strptime(date, "%Y-%m-%d")
@@ -192,7 +203,7 @@ def delete_report():
         report_date = datetime.datetime.strptime(page.slug.split("/")[1], "%Y-%m-%d")
         delta = time_now - report_date
         if delta.days > 7:
-            print(page.slug)
+            print(f"Deleting page {page.slug}")
             project.wikis.delete(page.slug)
 
 
@@ -200,4 +211,4 @@ create_report()
 publish_report()
 
 if PIPELINE_HISTORY_COUNT == 1:
-    delete_report()
+    delete_old_reports()
