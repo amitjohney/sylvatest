@@ -426,13 +426,60 @@
                   "type": "array",
                   "items": {
                     "type": "object",
+                    "additionalProperties": false,
                     "required": [
-                      "name",
-                      "groups",
-                      "sudo",
-                      "shell",
-                      "sshAuthorizedKeys"
-                    ]
+                      "name"
+                    ],
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "gecos": {
+                        "type": "string"
+                      },
+                      "groups": {
+                        "type": "string"
+                      },
+                      "homeDir": {
+                        "type": "string"
+                      },
+                      "inactive": {
+                        "type": "boolean"
+                      },
+                      "shell": {
+                        "type": "string"
+                      },
+                      "passwd": {
+                        "type": "string"
+                      },
+                      "passwdFrom": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "secret"
+                        ],
+                        "properties": {
+                          "secret": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "primaryGroup": {
+                        "type": "string"
+                      },
+                      "lockPassword": {
+                        "type": "boolean"
+                      },
+                      "sudo": {
+                        "type": "string"
+                      },
+                      "sshAuthorizedKeys": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
                   }
                 },
                 {
