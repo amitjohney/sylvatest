@@ -87,7 +87,9 @@ def get_version_and_source(values, unit_name, unit):
     # for units that are using "repo: sylva-core", if kustomization_spec.path is defined
     # we can infer source URL and version from the kustomization definition
     # (in that case the 'version' and 'url' found above would not matter)
-    if repo == "sylva-core" and not get_or_empty(unit, "info", "internal"):  # (if repo is sylva-core and 'internal' is False or unspecified)
+
+    # (if repo is sylva-core and 'internal' is False or unspecified)
+    if repo == "sylva-core" and not get_or_empty(unit, "info", "internal"):
         kustomize_unit_path = get_or_empty(unit, "kustomization_spec", "path")
         if kustomize_unit_path:
             if '{{' in kustomize_unit_path:
@@ -95,7 +97,7 @@ def get_version_and_source(values, unit_name, unit):
                     kustomize_unit_path = kustomization_path
                 else:
                     print(f"unit {unit_name} has a templatized kustomization path: {kustomize_unit_path}")
-                    print(f" this isn't supported by this tool")
+                    print(" this isn't supported by this tool")
                     print(f" you need to set the path manually with units.{unit_name}.info.kustomization_path")
             kustomize_unit_version_source = search_version_in_kustomize_unit_files(kustomize_unit_path)
             if kustomize_unit_version_source:
@@ -107,10 +109,12 @@ def get_version_and_source(values, unit_name, unit):
                                 f"but no source URL or version could be guessed. "
                                 f"If this unit is fully defined in sylva-core then you need to set "
                                 f"'info.internal: true', or, if this unit relies on something upstream we "
-                                f"need to find out why the upstream URL and version aren't detected under {kustomize_unit_path}.")
+                                f"need to find out why the upstream URL and version aren't detected under "
+                                f"{kustomize_unit_path}.")
             elif get_or_empty(unit, "info", "internal") is False:
                 # if "internal: false" was specified, we throw an error
-                raise Exception(f"kustomize-based unit {unit_name}: 'info.internal: true' but no source URL or version could "
+                raise Exception(f"kustomize-based unit {unit_name}: "
+                                f"'info.internal: true' but no source URL or version could "
                                 f"be guessed from the kustomization definition under {kustomize_unit_path}.")
 
     return {"source_url": url, "version": version, "source_type": source_type}
@@ -208,7 +212,7 @@ def generate_units_metadata():
                 units_data[-1]["source"] = f"[{version_and_source['source_type']}]({version_and_source['source_url']})"
             else:
                 units_data[-1]["source"] = version_and_source["source_type"]
-        except Exception as e:
+        except Exception:
             print(f"Failed to generate documentation for unit {unit_name}:")
             raise
     return units_data

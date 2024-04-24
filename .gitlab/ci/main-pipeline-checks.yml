@@ -116,6 +116,12 @@ kustomize-lint:
 # Generic lint
 # ==========================================
 
+flake8:
+  extends: .lint-base
+  image: registry.gitlab.com/pipeline-components/flake8:0.14.1
+  script:
+    - flake8 --verbose .
+
 yamllint:
   extends: .lint-base
   script:

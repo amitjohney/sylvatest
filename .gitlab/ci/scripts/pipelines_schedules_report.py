@@ -83,7 +83,7 @@ def pipeline_summary(pipeline):
             continue
 
         if job not in test_jobs:
-            job_text = f"{job.name.replace('-','‑')}: {get_status_icon(job.status)}"
+            job_text = f"{job.name.replace('-', '‑')}: {get_status_icon(job.status)}"
             job_md = f"[{job_text}]({job.web_url})<br>"
             summary += job_md
         else:
@@ -172,9 +172,8 @@ def publish_report():
                 "content": report_content,
             }
         )
-        print(
-            f"The report can be found on following URL: https://gitlab.com/sylva-projects/sylva-core/-/wikis/{WIKI_REPORT_PAGE}/{date}"
-        )
+        print(f"The report can be found on following URL: "
+              f"https://gitlab.com/sylva-projects/sylva-core/-/wikis/{WIKI_REPORT_PAGE}/{date}")
         print("Report uploaded for " + datetime.datetime.now().strftime("%Y-%m-%d"))
 
 
