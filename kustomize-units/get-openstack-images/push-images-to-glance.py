@@ -60,9 +60,9 @@ class MyProvider(oras.provider.Registry):
             logger.exception("Failed to get OCI manifest.")
             raise
 
-    def pull_image(self, artifact_uri):
+    def pull_image(self, artifact_uri, directory):
         try:
-            res = self.pull(target=artifact_uri)
+            res = self.pull(target=artifact_uri, outdir=directory)
             if len(res) > 1:
                 raise ValueError("Expected only one file, but multiple files were found.")
             return res[0]
@@ -71,10 +71,9 @@ class MyProvider(oras.provider.Registry):
             raise
 
 
-def download_file(url, verify_ssl):
-    temp_dir = tempfile.mkdtemp()
+def download_file(url, verify_ssl, directory):
     filename = url.split('/')[-1]
-    file_path = os.path.join(temp_dir, filename)
+    file_path = os.path.join(directory, filename)
     # Use the verify_ssl parameter for the verify argument in requests.get
     with requests.get(url, stream=True, verify=verify_ssl) as r:
         r.raise_for_status()
@@ -84,14 +83,13 @@ def download_file(url, verify_ssl):
     return file_path
 
 
-def cleanup_image(file_path):
-    parent_dir = os.path.dirname(file_path)
+def cleanup_image(path):
     # Check if the file path exists and is a directory
-    if os.path.exists(parent_dir) and os.path.isdir(parent_dir):
-        shutil.rmtree(parent_dir)
-        return f"Directory '{parent_dir}' has been removed."
+    if os.path.exists(path) and os.path.isdir(path):
+        shutil.rmtree(path)
+        return f"Directory '{path}' has been removed."
     else:
-        return f"The path '{file_path}' does not exist or is not a directory."
+        return f"The path '{path}' does not exist or is not a directory."
 
 
 def unzip_artifact(file_path):
@@ -245,27 +243,26 @@ for os_name, os_image_info in os_images.items():
     existing_images = image_exists_in_glance(md5_checksum, _os_name)
 
     if not existing_images:
+        temp_dir = tempfile.mkdtemp()
         logger.info(f"image not in Glance: {os_name} / md5 {md5_checksum}")
-        logger.info(f"Pulling image: {os_name} from artifact uri: {artifact}")
+        logger.info(f"Pulling image: {os_name} from artifact uri: {artifact} to {temp_dir}")
         image_path = ''
         if parsed_url.scheme in ['http', 'https']:
-            image_path = download_file(artifact, verify_ssl=tls_verify)
+            image_path = download_file(artifact, verify_ssl=tls_verify, dir=temp_dir)
         elif parsed_url.scheme == 'oci':
-            oras_pull_path = oras_client.pull_image(artifact)
+            oras_pull_path = oras_client.pull_image(artifact, directory=temp_dir)
             logger.info("Unzipping artifact...")
             image_path = unzip_artifact(oras_pull_path)
         try:
             logger.info("Pushing image to Glance...")
             image = push_image_to_glance(image_path, os_image_info, _os_name, image_format)
             logger.info(f"Image pushed to glance with image ID {image['id']}")
-            logger.info("Cleaning up files")
-            if parsed_url.scheme in ['http', 'https']:
-                cleanup_image(image_path)
-            else:
-                cleanup_image(oras_pull_path)
         except Exception:
             logger.exception("exception while pushing image to glance")
             raise
+        finally:
+            logger.info("Cleaning up files")
+            cleanup_image(temp_dir)
 
         if image and 'id' in image:
             logger.info("Updating configmap")
