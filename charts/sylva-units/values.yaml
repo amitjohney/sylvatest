@@ -5089,6 +5089,8 @@ cluster:
   kubelet_extra_args:
     # increase max-pods for single-node deployments
     max-pods: '{{ tuple "196" (eq (.Values._internal.node_count | int) 1) | include "set-only-if" }}'
+    # pull image in parallel
+    serialize-image-pulls: "false"
 
   capo:
     # flavor_name: m1.large # Openstack flavor name
