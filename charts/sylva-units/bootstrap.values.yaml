@@ -59,7 +59,7 @@ bootstrap_os_images_override_enabled: []
 
 unit_templates:
   base-deps:
-    depends_on: null  # don't inherit dependencies from management.values.yaml
+    depends_on: null  # don't inherit dependencies from values.yaml or management.values.yaml
 
 unit_kustomization_spec_default:
   interval: 100000m   # for bootstrap, we don't care about having flux update things on the longterm
@@ -296,6 +296,7 @@ units:
     depends_on:
       management-cluster-configs: true
       management-namespace-defs: true
+      cluster-machines-ready: true
     unit_templates:
     - sylva-units
     labels:
