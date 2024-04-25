@@ -2,7 +2,8 @@
 #
 # This script can be tested with:
 #
-#   OS_IMAGES_INFO_PATH=my-os-images.info.yaml TARGET_NAMESPACE=sylva-system OS_CLIENT_CONFIG_FILE=./cloud.yaml OS_CLOUD=capo_cloud kustomize-units/get-openstack-images/push-images-to-glance.py
+#   OS_IMAGES_INFO_PATH=my-os-images.info.yaml TARGET_NAMESPACE=sylva-system OS_CLIENT_CONFIG_FILE=./cloud.yaml \
+#       OS_CLOUD=capo_cloud kustomize-units/get-openstack-images/push-images-to-glance.py
 #
 # With my-os-images.info.yaml having content similar as the one produced by the os-images-info unit:
 #
@@ -10,7 +11,8 @@
 #
 # And cloud.yaml with the content similar to:
 #
-#   kubectl get secrets cluster-cloud-config -n sylva-system -o yaml | yq '.data."clouds.yaml"' | base64 -d > clouds.yaml
+#   kubectl get secrets cluster-cloud-config -n sylva-system -o yaml | yq '.data."clouds.yaml"' | \
+#       base64 -d > clouds.yaml
 
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
@@ -25,10 +27,10 @@ import os
 import shutil
 import tarfile
 import gzip
-import sys
 import yaml
 
 from distutils.util import strtobool
+
 
 class MyProvider(oras.provider.Registry):
     def get_oci_manifest(self, artifact_url):
@@ -50,6 +52,7 @@ class MyProvider(oras.provider.Registry):
             logger.exception("Failed to pull image.")
             raise
 
+
 def download_file(url, verify_ssl):
     temp_dir = tempfile.mkdtemp()
     filename = url.split('/')[-1]
@@ -62,6 +65,7 @@ def download_file(url, verify_ssl):
                 f.write(chunk)
     return file_path
 
+
 def cleanup_image(file_path):
     parent_dir = os.path.dirname(file_path)
     # Check if the file path exists and is a directory
@@ -70,6 +74,7 @@ def cleanup_image(file_path):
         return f"Directory '{parent_dir}' has been removed."
     else:
         return f"The path '{file_path}' does not exist or is not a directory."
+
 
 def unzip_artifact(file_path):
     # Check if the file exists
@@ -200,7 +205,8 @@ logger = logging.getLogger(__name__)
 configmap = {}
 
 ##############################
-# Parse the YAML string resulted from loading the contents of the ConfigMap/os-images-info-xxxx  (produced by the os-images-info unit)
+# Parse the YAML string resulted from loading the contents of the ConfigMap/os-images-info-xxxx
+#       (produced by the os-images-info unit)
 os_images_info_path = os.environ.get("OS_IMAGES_INFO_PATH", '/opt/config/os-images-info.yaml')
 with open(os_images_info_path, 'r') as file:
     os_images = yaml.safe_load(file.read())
@@ -211,14 +217,15 @@ logger.info(f"os_images: {os_images}")
 
 # Initialize openstack connection
 try:
-    cloud_name = os.environ.get("OS_CLOUD","capo_cloud")  # 'capo-cloud' is the cloud name we hardcode for CAPO in Sylva
+    # 'capo-cloud' is the cloud name we hardcode for CAPO in Sylva
+    cloud_name = os.environ.get("OS_CLOUD", "capo_cloud")
 except KeyError:
     raise Exception("no OS_CLOUD environment variable specified")
 conn = openstack.connect(cloud=cloud_name, verify=False)
 openstack_user_project_id = conn.current_project_id
 
 # Initialize oras class
-insecure_tls = strtobool(os.environ.get('INSECURE_CLIENT','false'))
+insecure_tls = strtobool(os.environ.get('INSECURE_CLIENT', 'false'))
 oras_client = MyProvider(tls_verify=not insecure_tls)
 
 for os_name, os_image_info in os_images.items():
@@ -234,20 +241,20 @@ for os_name, os_image_info in os_images.items():
     existing_images = image_exists_in_glance(md5_checksum, _os_name)
 
     if not existing_images:
-        logger.info(f"image not in Glance: {os_name} / md5 {md5_checksum}" )
+        logger.info(f"image not in Glance: {os_name} / md5 {md5_checksum}")
         logger.info(f"Pulling image: {os_name} from artifact uri: {artifact}")
         image_path = ''
         if parsed_url.scheme in ['http', 'https']:
             image_path = download_file(artifact, verify_ssl=not insecure_tls)
         elif parsed_url.scheme == 'oci':
             oras_pull_path = oras_client.pull_image(artifact)
-            logger.info(f"Unzipping artifact...")
+            logger.info("Unzipping artifact...")
             image_path = unzip_artifact(oras_pull_path)
         try:
             logger.info("Pushing image to Glance...")
             image = push_image_to_glance(image_path, os_image_info, _os_name, image_format)
             logger.info(f"Image pushed to glance with image ID {image['id']}")
-            logger.info(f"Cleaning up files")
+            logger.info("Cleaning up files")
             if parsed_url.scheme in ['http', 'https']:
                 cleanup_image(image_path)
             else:
@@ -260,7 +267,9 @@ for os_name, os_image_info in os_images.items():
             logger.info("Updating configmap")
             configmap.update({os_name: {'openstack_glance_uuid': image['id']}})
         else:
-            logger.warning("Image push to Glance failed, image ID is unavailable, or image is None; configmap will not be updated.")
+            logger.warning(
+                "Image push to Glance failed, image ID is unavailable, or image is None; "
+                "configmap will not be updated.")
     else:
         # Image already exists in Glance, so we might want to update it
         logger.info(f"Image already in Glance: {os_name} with MD5 checksum {md5_checksum}")
@@ -273,13 +282,14 @@ for os_name, os_image_info in os_images.items():
 
         try:
             logger.info("Updating image properties in Glance...")
-            updated_image = push_image_to_glance(None, os_image_info, _os_name, image_format, update_only=True, existing_image=image_to_update)
+            updated_image = push_image_to_glance(
+                None, os_image_info, _os_name, image_format, update_only=True, existing_image=image_to_update)
             if updated_image and 'id' in updated_image:
                 logger.info(f"Image properties updated for image ID {updated_image['id']}")
             else:
                 logger.warning("Image properties could not be updated")
         except Exception:
-            logger.exception(f"Error updating image properties.")
+            logger.exception("Error updating image properties.")
             raise
 
         # Update configmap with the existing image's UUID
@@ -290,13 +300,15 @@ for os_name, os_image_info in os_images.items():
 logger.info(f"""Images UUID map:
 {configmap}""")
 
-logger.info(f"Pushing ConfigMap to Kubernetes...")
+logger.info("Pushing ConfigMap to Kubernetes...")
 
 # Initialize Kube config
 # Load Kubernetes configuration
 try:
     config.load_incluster_config()
-except:  # this is meant to allow testing this script manually out of a pod, assuming that KUBECONFIG points to your kubeconfig
+except Exception:
+    # this is meant to allow testing this script manually out of a pod,
+    # assuming that KUBECONFIG points to your kubeconfig
     config.load_kube_config()
 api_instance = client.CoreV1Api()
 
@@ -307,7 +319,8 @@ metadata = client.V1ObjectMeta(
 )
 
 # Convert configmap to yaml-formatted string
-yaml_string = yaml.dump({'os_images': configmap}, default_flow_style=False)  # os_images is the key expected for sylva-capi-cluster chart values
+# os_images is the key expected for sylva-capi-cluster chart values
+yaml_string = yaml.dump({'os_images': configmap}, default_flow_style=False)
 
 # Create a ConfigMap object
 body = client.V1ConfigMap(
@@ -317,12 +330,14 @@ body = client.V1ConfigMap(
     data={'values.yaml': yaml_string}
 )
 
+
 def create_or_update_configmap(api_instance, namespace, body):
     try:
         # Check if the ConfigMap exists
         api_instance.read_namespaced_config_map(name=body.metadata.name, namespace=namespace)
         # If exists, update the ConfigMap
-        api_response = api_instance.replace_namespaced_config_map(name=body.metadata.name, namespace=namespace, body=body)
+        api_response = api_instance.replace_namespaced_config_map(
+            name=body.metadata.name, namespace=namespace, body=body)
         logger.info(f"ConfigMap updated. Name: {api_response.metadata.name}")
     except ApiException as e:
         if e.status == 404:
@@ -338,6 +353,7 @@ def create_or_update_configmap(api_instance, namespace, body):
             logger.exception("Exception occurred while updating or creating ConfigMap.")
             raise
 
+
 # Create the ConfigMap in the specified namespace
 try:
     create_or_update_configmap(api_instance, NAMESPACE, body)
@@ -345,4 +361,4 @@ except Exception as e:
     logger.error(f"upsie.. : {e}")
     raise
 
-logger.info(f"We're done")
+logger.info("We're done")
