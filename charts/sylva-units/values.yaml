@@ -215,17 +215,16 @@ unit_templates:
     # the actual dependencies aren't the same for bootstrap/management and workload-cluster
     # the actual content is found in values files specific to each
 
-    # this, below, ensures that on an upgrade, we avoid having units being updated in paralell
-    # with a CAPI rolling update:
+    # this, below, ensures that we avoid having units being updated in parallel
+    # with a CAPI node creation and/or rolling update:
     # - the units that the 'cluster' unit depends on, directly or indirectly, will reconcile first
-    # - the 'cluster' unit will reconcile
-    # - the units on which the 'cluster' unit does not depend on, directly or indirectly, will
+    # - then 'cluster' unit will reconcile
+    # - then units on which the 'cluster' unit does not depend on, directly or indirectly, will
     #   reconcile after the "cluster-machines-ready" unit is ready
     depends_on:
       cluster-machines-ready: >-
         {{
-        and (.Release.IsUpgrade)
-            (tuple . "cluster-machines-ready" | include "unit-enabled")
+        and (tuple . "cluster-machines-ready" | include "unit-enabled")
             (not (.Values._internal.cluster_unit_deps | has .Values._unit_name_))
         }}
 
