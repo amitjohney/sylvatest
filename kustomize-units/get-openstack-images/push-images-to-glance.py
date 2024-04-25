@@ -117,7 +117,7 @@ def image_exists_in_glance(checksum, _image_name):
                 'checksum': image.get('checksum'),
                 'tags': image.tags
             } 
-            for image in conn.image.images(tags=[f"sylva-md5-{checksum}"])
+            for image in conn.image.images(tags=[f"sylva-md5-{checksum}"], visibility="community")
             if image.properties is not None and image.get('checksum') == checksum
         ]
         if _image_name in [i['name'] for i in matching_images]:
@@ -154,7 +154,8 @@ def push_image_to_glance(file, manifest, image_name, image_format, update_only=F
                     disk_format=image_format,
                     md5=_checksum,
                     tags=[tag],
-                    allow_duplicates=True
+                    allow_duplicates=True,
+                    visibility="community",
                 )
                 logger.info(f"Image UUID: {image.id}")
                 image_id = image.id
