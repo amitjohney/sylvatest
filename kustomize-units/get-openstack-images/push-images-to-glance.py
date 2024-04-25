@@ -28,8 +28,26 @@ import shutil
 import tarfile
 import gzip
 import yaml
+import sys
 
-from distutils.util import strtobool
+
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s %(levelname)s %(name)s %(funcName)s: %(message)s')
+logger = logging.getLogger(__name__)
+sys.tracebacklimit = 0
+NAMESPACE = os.environ.get('TARGET_NAMESPACE')
+if not NAMESPACE:
+    logger.exception("NAMESPACE not set")
+    sys.exit(22)
+os_images_info_path = os.environ.get("OS_IMAGES_INFO_PATH", '/opt/config/os-images-info.yaml')
+if not os.path.exists(os_images_info_path) or not os.path.isfile(os_images_info_path):
+    logger.exception(f"{os_images_info_path} not found")
+    sys.exit(2)
+# 'capo-cloud' is the cloud name we hardcode for CAPO in Sylva
+cloud_name = os.environ.get("OS_CLOUD", "capo_cloud")
+# Insecure TLS flag
+tls_verify = False if os.environ.get(
+            'INSECURE_CLIENT', 'false').lower() in ['true', 't'] else True
 
 
 class MyProvider(oras.provider.Registry):
@@ -194,20 +212,12 @@ def push_image_to_glance(file, manifest, image_name, image_format, update_only=F
         raise
 
 
-# Set namspace var
-NAMESPACE = os.environ.get('TARGET_NAMESPACE')
-# Configure logging
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s %(levelname)s %(name)s %(funcName)s: %(message)s')
-logger = logging.getLogger(__name__)
-
 # Create empty configmap
 configmap = {}
 
 ##############################
 # Parse the YAML string resulted from loading the contents of the ConfigMap/os-images-info-xxxx
 #       (produced by the os-images-info unit)
-os_images_info_path = os.environ.get("OS_IMAGES_INFO_PATH", '/opt/config/os-images-info.yaml')
 with open(os_images_info_path, 'r') as file:
     os_images = yaml.safe_load(file.read())
 os_images = os_images['os_images']
@@ -216,17 +226,11 @@ logger.info(f"os_images: {os_images}")
 ##############################
 
 # Initialize openstack connection
-try:
-    # 'capo-cloud' is the cloud name we hardcode for CAPO in Sylva
-    cloud_name = os.environ.get("OS_CLOUD", "capo_cloud")
-except KeyError:
-    raise Exception("no OS_CLOUD environment variable specified")
 conn = openstack.connect(cloud=cloud_name, verify=False)
 openstack_user_project_id = conn.current_project_id
 
 # Initialize oras class
-insecure_tls = strtobool(os.environ.get('INSECURE_CLIENT', 'false'))
-oras_client = MyProvider(tls_verify=not insecure_tls)
+oras_client = MyProvider(tls_verify=tls_verify)
 
 for os_name, os_image_info in os_images.items():
     artifact = os_image_info["uri"]
@@ -245,7 +249,7 @@ for os_name, os_image_info in os_images.items():
         logger.info(f"Pulling image: {os_name} from artifact uri: {artifact}")
         image_path = ''
         if parsed_url.scheme in ['http', 'https']:
-            image_path = download_file(artifact, verify_ssl=not insecure_tls)
+            image_path = download_file(artifact, verify_ssl=tls_verify)
         elif parsed_url.scheme == 'oci':
             oras_pull_path = oras_client.pull_image(artifact)
             logger.info("Unzipping artifact...")
