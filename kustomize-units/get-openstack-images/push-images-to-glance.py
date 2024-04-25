@@ -29,6 +29,7 @@ import tarfile
 import gzip
 import yaml
 import sys
+import time
 
 
 logging.basicConfig(level=logging.INFO,
@@ -129,17 +130,18 @@ def unzip_artifact(file_path):
     return None
 
 
-def image_exists_in_glance(checksum, _image_name):
+def image_exists_in_glance(checksum, _image_name, status=['active']):
     try:
         matching_images = [
             {
                 'id': image.id,
                 'name': image.name,
                 'checksum': image.get('checksum'),
-                'tags': image.tags
-            } 
-            for image in conn.image.images(tags=[f"sylva-md5-{checksum}"], visibility="community")
-            if image.properties is not None and image.get('checksum') == checksum
+                'tags': image.tags,
+                'status': image.status
+            }
+            for image in conn.image.images(tags=[f"sylva-md5-{checksum}"], visibility="community", paginated=False)
+            if image.status in status
         ]
         if _image_name in [i['name'] for i in matching_images]:
             logger.warning(f"Image with name '{_image_name}' already exists.")
@@ -155,6 +157,50 @@ def image_exists_in_glance(checksum, _image_name):
         raise
 
 
+def handle_queued_image(image):
+    try:
+        conn.image.delete_image(image.get('id'))
+        logger.warning(f"Stalling image {image.get('name')} {image.get('id')} deleted")
+    except Exception as E:
+        logger.warning(f"Can't delete image {image.get('name')} {image.get('id')} : {str(E)}")    
+
+
+def wait_for_in_progress_image(image_name, checksum):
+    """
+        if an image is already "saving" wait for it to complete
+        if an image is "queued" wait for 10sec and then clean it (stalling image upload)
+    """
+    TIMEOUT = 3600
+    WAIT_QUEUED_IMAGE = 10
+    INTERVAL = 10
+    t0 = t1 = time.time()
+    image_active = None
+    images = []
+    while ((time.time() - t0 < TIMEOUT) and not image_active and images) or (t1 == t0):
+        images = image_exists_in_glance(
+            _image_name=image_name,
+            checksum=checksum,
+            status=['active', 'queued', 'importing', 'uploading', 'saving']
+        )
+        for image in images:
+            if image.get('status') == 'active':
+                image_active = image
+            if image.get('status') == 'queued':
+                logger.warning(
+                    f"Stalling image {image.get('name')} {image.get('id')} waiting {WAIT_QUEUED_IMAGE} seconds")
+                time.sleep(WAIT_QUEUED_IMAGE)
+                _image = conn.image.get_image(image.get('id'))
+                if _image.status == 'queued':
+                    # probably a stalling image
+                    handle_queued_image(image)
+            if image.get('status') in ['saving', 'importing', 'uploading']:
+                logger.info(f"Waiting for image {image.get('name')} {image.get('id')} to be active")
+        if images and not image_active:
+            time.sleep(INTERVAL)
+        t1 = time.time()
+    return image_active
+
+
 def push_image_to_glance(file, manifest, image_name, image_format, update_only=False, existing_image=None):
     _checksum = manifest['md5']
     tag = f"sylva-md5-{_checksum}"
@@ -166,29 +212,31 @@ def push_image_to_glance(file, manifest, image_name, image_format, update_only=F
         image_id = existing_image['id']
         logger.info(f"Updating image properties for image ID {image_id} with tag {tag}...")
     else:
-        try:
-            with open(file, 'rb') as image_data:
-                logger.info(f"{image_name}: creating image with tag {tag}")
-                image = conn.image.create_image(
-                    name=image_name,
-                    data=image_data,
-                    disk_format=image_format,
-                    md5=_checksum,
-                    tags=[tag],
-                    allow_duplicates=True,
-                    visibility="community",
-                )
-                logger.info(f"Image UUID: {image.id}")
-                image_id = image.id
-        except openstack.exceptions.HttpException:
-            logger.exception("HTTP error during image creation.")
-            raise
-        except openstack.exceptions.SDKException:
-            logger.exception("OpenStack SDK error during image creation.")
-            raise
-        except Exception:
-            logger.exception("Unexpected error during image creation.")
-            raise
+        image = wait_for_in_progress_image(image_name=image_name, checksum=_checksum)
+        if not image:
+            try:
+                with open(file, 'rb') as image_data:
+                    logger.info(f"{image_name}: creating image with tag {tag}")
+                    image = conn.image.create_image(
+                        name=image_name,
+                        data=image_data,
+                        disk_format=image_format,
+                        md5=_checksum,
+                        tags=[tag],
+                        allow_duplicates=True,
+                        visibility="community"
+                    )
+                    logger.info(f"Image UUID: {image.id}")
+                    image_id = image.id
+            except openstack.exceptions.HttpException:
+                logger.exception("HTTP error during image creation.")
+                raise
+            except openstack.exceptions.SDKException:
+                logger.exception("OpenStack SDK error during image creation.")
+                raise
+            except Exception:
+                logger.exception("Unexpected error during image creation.")
+                raise
 
     # Common block for updating image properties, applicable in both cases
     try:
