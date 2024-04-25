@@ -4722,6 +4722,9 @@ units:
             enabled: false
         loki:
           auth_enabled: true
+          containerSecurityContext:
+            seccompProfile:
+              type: RuntimeDefault
           analytics:
             reporting_enabled: false
           server:
@@ -4791,6 +4794,17 @@ units:
                     expr: sum(rate(loki_request_duration_seconds_bucket[1m])) by (le, job, route)
                   - record: node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate
                     expr: sum(rate(container_cpu_usage_seconds_total[1m])) by (node, namespace, pod, container)
+            podsecurityContext:
+              seccompProfile:
+                type: RuntimeDefault
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
           serviceMonitor:
             enabled: true
             metricsInstance:
@@ -4805,6 +4819,14 @@ units:
           lokiCanary:
             enabled: false
             labelname: pod
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
         write:
           replicas: '{{ int .Values._internal.node_count | gt 2 | ternary 1 2 }}'
           persistence:
@@ -4814,6 +4836,17 @@ units:
             minReplicas: 2
             maxReplicas: 6
             targetCPUUtilizationPercentage: 40
+          podSecurityContext:
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
           extraVolumes:
             - name: data
               emptyDir: {}
@@ -4830,10 +4863,32 @@ units:
           replicas: '{{ int .Values._internal.node_count | gt 2 | ternary 1 2 }}'
           persistence:
             size: 3Gi
+          podSecurityContext:
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
         backend:
           replicas: '{{ int .Values._internal.node_count | gt 2 | ternary 1 2 }}'
           persistence:
             size: 3Gi
+          podSecurityContext:
+            seccompProfile:
+              type: RuntimeDefault
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
         memberlist:
           service:
             publishNotReadyAddresses: true
