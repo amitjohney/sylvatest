@@ -1,0 +1,44 @@
+---
+# Run kubescore on cluster dump
+
+variables:
+  KUBE_SCORE_OPTIONS: "--ignore-test statefulset-has-servicename --ignore-test container-image-pull-policy"
+
+.rules:run-if-kubescore-label:
+  rules:
+    - if: $ONLY_DEPLOY_MGMT
+      when: never
+    - if: $CI_MERGE_REQUEST_LABELS =~ /kubescore/
+      when: on_success
+    - when: never
+
+.kube-score-base:
+  stage: deployment-test
+  extends:
+    - .test-tags
+    - .rules:run-if-kubescore-label
+  script:
+    - wget -q --show-progress --progress=bar:force https://github.com/zegl/kube-score/releases/download/v1.17.0/kube-score_1.17.0_linux_amd64 -O /usr/local/bin/kube-score
+    - chmod +x /usr/local/bin/kube-score
+    - kube-score score $KUBE_SCORE_OPTIONS $DUMP_FOLDER/**.yaml | tee  ${DUMP_FOLDER}-kube-score-results
+  artifacts:
+    expire_in: 48 hour
+    when: always
+    paths:
+      - ${DUMP_FOLDER}-kube-score-results
+  # To be removed
+  allow_failure: true
+
+kube-score-management-cluster:
+  extends: .kube-score-base
+  needs:
+    - deploy-management-cluster
+  variables:
+    DUMP_FOLDER: management-cluster-dump
+
+kube-score-workload-cluster:
+  extends: .kube-score-base
+  needs:
+    - deploy-workload-cluster
+  variables:
+    DUMP_FOLDER: workload-cluster-dump
