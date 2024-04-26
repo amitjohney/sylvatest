@@ -3061,7 +3061,7 @@ units:
       chart:
         spec:
           chart: prometheus-snmp-exporter
-          version: 5.1.1
+          version: 5.2.0
       install:
         createNamespace: true
       values:
