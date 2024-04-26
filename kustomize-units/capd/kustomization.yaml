@@ -30,7 +30,7 @@ patches:
                   - name: "https_proxy"
                     value: "http://172.20.129.49:3128"
                   - name: "no_proxy"
-                    value: "localhost,127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,172.30.0.0/24,192.168.0.0/16,.sylva,172.20.129.142,${KIND_POD_SUBNET},${KIND_SVC_SUBNET},.cluster.local.,.cluster.local,.svc"
+                    value: "localhost,100.96.0.1,127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,172.30.0.0/24,192.168.0.0/16,.sylva,172.20.129.142,${KIND_POD_SUBNET},${KIND_SVC_SUBNET},.cluster.local.,.cluster.local,.svc"
     target:
       kind: Deployment
       labelSelector: control-plane=controller-manager
