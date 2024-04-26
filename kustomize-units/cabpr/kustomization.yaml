@@ -5,32 +5,6 @@ resources:
   - https://github.com/rancher-sandbox/cluster-api-provider-rke2/releases/download/v0.2.7/control-plane-components.yaml
 
 # Add labels to enable clusterctl move to retrieve resources correponding to cabpr CRDs
-patches:
-  - patch: |
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: all
-      spec:
-        template:
-          spec:
-            containers:
-              - name: manager
-                env:
-                  - name: "HTTP_PROXY"
-                    value: "http://172.20.129.49:3128"
-                  - name: "HTTPS_PROXY"
-                    value: "http://172.20.129.49:3128"
-                  - name: "http_proxy"
-                    value: "http://172.20.129.49:3128"
-                  - name: "https_proxy"
-                    value: "http://172.20.129.49:3128"
-                  - name: "no_proxy"
-                    value: "localhost,100.96.0.1,127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,172.30.0.0/24,192.168.0.0/16,.sylva,172.20.129.142,${KIND_POD_SUBNET},${KIND_SVC_SUBNET},.cluster.local.,.cluster.local,.svc"
-    target:
-      kind: Deployment
-      labelSelector: control-plane=controller-manager
-
 labels:
   - pairs:
       clusterctl.cluster.x-k8s.io: ""
