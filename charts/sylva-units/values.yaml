@@ -923,7 +923,7 @@ units:
       chart:
         spec:
           chart: external-secrets
-          version: 0.9.14
+          version: 0.9.16
       targetNamespace: external-secrets
       install:
         createNamespace: true
