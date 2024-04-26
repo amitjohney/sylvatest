@@ -88,13 +88,13 @@ patches:
               - name: manager
                 env:
                   - name: "HTTP_PROXY"
-                    value: "{$http_proxy}"
+                    value: "${http_proxy}"
                   - name: "HTTPS_PROXY"
-                    value: "{$http_proxy}"
+                    value: "${http_proxy}"
                   - name: "http_proxy"
-                    value: "{$http_proxy}"
+                    value: "${http_proxy}"
                   - name: "https_proxy"
-                    value: "{$http_proxy}"
+                    value: "${http_proxy}"
                   - name: "no_proxy"
                     value: "localhost,100.96.0.1,${no_proxy},${KIND_POD_SUBNET},${KIND_SVC_SUBNET},.cluster.local.,.cluster.local,.svc"
     target:
