@@ -4,7 +4,7 @@
 # ==========================================
 
 scheduled-cleanup-capo:
-  stage: delete
+  stage: cleanup
   image:
     name: $OPENSTACK_CLIENT_IMAGE
   script:

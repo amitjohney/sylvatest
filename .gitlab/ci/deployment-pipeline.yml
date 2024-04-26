@@ -14,6 +14,7 @@ stages:
   - deploy
   - deployment-test
   - delete
+  - cleanup
 
 default:
   tags:
@@ -107,3 +108,13 @@ update-workload-cluster:
   extends:
     - .update-workload
     - .rules:skip-if-only-deploy-mgmt
+
+# ----------------------------------------------------------
+
+delete-workload-cluster:
+  extends:
+    - .delete-workload
+  rules:
+    - if: $ONLY_DEPLOY_MGMT
+      when: never
+    - when: always

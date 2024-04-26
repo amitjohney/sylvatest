@@ -55,6 +55,10 @@ unit_helmrelease_spec_default:
   targetNamespace: sylva-system  # (in workload cluster)
   storageNamespace: sylva-system  # (in workload cluster)
 
+# Enable delete hook for workload cluster
+delete_hook:
+  enabled: true
+  job_timeout: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" | ternary 3600 1200 | include "preserve-type" }}'
 
 unit_templates:
 
@@ -115,6 +119,11 @@ units:
           kind: ConfigMap
           name: sylva-units-status
           namespace: sylva-system
+
+  capo-cloud-config:
+    enabled: on
+    unit_templates:
+    - kustomization-deployed-on-mgmt-cluster
 
   capo-cluster-resources:
     enabled: on

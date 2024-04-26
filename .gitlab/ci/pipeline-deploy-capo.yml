@@ -38,7 +38,7 @@ default:
     echo -e "\e[0Ksection_end:`date +%s`:gitlab_ci_capo\r\e[0K"
 
 .cleanup-openstack:
-  stage: delete
+  stage: cleanup
   image:
     name: $OPENSTACK_CLIENT_IMAGE
   script:

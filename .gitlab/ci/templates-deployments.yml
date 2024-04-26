@@ -238,3 +238,17 @@ include:
   variables:
     SPECIFIC_VALUES_FILE: $WC_UPDATE_ADDITIONAL_VALUES
     GIT_REVISION: $WC_UPDATE_REVISION
+
+.delete-workload:
+  extends: .workload-base
+  stage: delete
+  script:
+    - . bin/env
+    - kubectl --kubeconfig management-cluster-kubeconfig delete -n ${ENV_NAME} hr sylva-units --timeout 30m || true
+    - kubectl --kubeconfig management-cluster-kubeconfig delete ns ${ENV_NAME} --timeout 2m || true
+    - ./tools/shell-lib/debug-on-exit.sh
+    - |
+      if kubectl --kubeconfig management-cluster-kubeconfig get ns ${ENV_NAME} &>/dev/null; then
+        echo "Workload cluster namespace was not deleted in time"
+        exit 1
+      fi

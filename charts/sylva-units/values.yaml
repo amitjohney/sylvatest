@@ -151,7 +151,6 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
 helm_repo_spec_default:
   interval: 60m0s
 
-
 # this defines the default .spec for a Kustomization resource
 # generated for each item of 'units'
 unit_kustomization_spec_default: # default .spec for a Kustomization
@@ -2165,6 +2164,23 @@ units:
           newName: registry.gitlab.com/sylva-projects/sylva-elements/workload-cluster-operator
           newTag: 0.1.2
 
+  capo-cloud-config:
+    info:
+      description: creates CAPO cloud-config used to produce Heat stack
+      internal: true
+    unit_templates:
+    - base-deps
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/capo-cluster-resources/cloud-config
+      wait: true
+      targetNamespace: '{{ .Release.Namespace }}'
+    kustomization_substitute_secrets:
+      CAPO_CLOUD_YAML: '{{ .Values.cluster.capo.clouds_yaml  | toYaml | b64enc }}'
+      CAPO_CACERT: '{{ (.Values.cluster.capo.cacert|default "") | b64enc }}'
+
   capo-cluster-resources:
     info:
       description: installs OpenStack Heat stack for CAPO cluster prerequisites
@@ -2175,9 +2191,10 @@ units:
     - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
     repo: sylva-core
     depends_on:
+      capo-cloud-config: true
       heat-operator: true
     kustomization_spec:
-      path: ./kustomize-units/capo-cluster-resources
+      path: ./kustomize-units/capo-cluster-resources/heat-stack
       wait: true
       targetNamespace: '{{ .Release.Namespace }}'
       postBuild:
@@ -2193,9 +2210,6 @@ units:
           CAPO_CREATE_IRONIC_SECURITY_GROUP: '{{ tuple . (and (tuple . "metal3" | include "unit-enabled") (.Values.cluster.capi_providers.infra_provider | eq "capo")) "true" "false" | include "interpret-ternary" }}'
           COMMON_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}'
           DUMMY_UPDATE_TRIGGER: 'helm-release-revision/{{ .Release.Revision }},sylva-units-version/{{ .Chart.Version }}'
-    kustomization_substitute_secrets:
-      CAPO_CLOUD_YAML: '{{ .Values.cluster.capo.clouds_yaml  | toYaml | b64enc }}'
-      CAPO_CACERT: '{{ (.Values.cluster.capo.cacert|default "") | b64enc }}'
 
   calico-crd:
     info:

@@ -59,7 +59,7 @@ create-runner:
       done
 
 clean-runner:
-  stage: delete
+  stage: cleanup
   extends: create-runner
   dependencies: []
   variables:
