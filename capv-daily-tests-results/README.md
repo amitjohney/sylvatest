@@ -8,6 +8,8 @@ The results are summarized by the following table:
 
 | Date                      | Management Cluster CAPI Providers | Sylva-Core main commit ID        | Management cluster result                    | Workload cluster result              | Test logs (only for failed tests) |
 |---------------------------|-----------------------------------|----------------------------------|----------------------------------------------|--------------------------------------|-----------------------------------|
+|2024-04-26 02:30|rke2-capv|2658fc25327fcd142ba75d9813b8292d337cbd34|:white_check_mark:|:x:||
+|2024-04-26 02:27|kubeadm-capv|2658fc25327fcd142ba75d9813b8292d337cbd34|:white_check_mark:|:x:||
 |2024-04-25 02:32|rke2-capv|71695ffe4ab95d32add8321f2a2af272cecd0ad3|:white_check_mark:|:white_check_mark:||
 |2024-04-25 02:30|kubeadm-capv|71695ffe4ab95d32add8321f2a2af272cecd0ad3|:white_check_mark:|:white_check_mark:||
 |2024-04-24 02:28|rke2-capv|d16c7cec781e899153e6c9d8a7f12a13af225a0b|:white_check_mark:|:white_check_mark:||
@@ -27,8 +29,6 @@ The results are summarized by the following table:
 |2024-04-16 02:39|rke2-capv|e0ca483f4f31b0056b96c2795ba65c59f3d6fce5|:white_check_mark:|:white_check_mark:||
 |2024-04-16 02:43|kubeadm-capv|e0ca483f4f31b0056b96c2795ba65c59f3d6fce5|:white_check_mark:|:white_check_mark:||
 |2024-04-13 02:29|kubeadm-capv|2850a47fb5d2c760db5f91b842ec8a96ecde5a4c|:white_check_mark:|:white_check_mark:||
-|2024-04-13 02:37|rke2-capv|2850a47fb5d2c760db5f91b842ec8a96ecde5a4c|:white_check_mark:|:white_check_mark:||
-|2024-04-13 02:37|rke2-capv|2850a47fb5d2c760db5f91b842ec8a96ecde5a4c|:white_check_mark:|:white_check_mark:||
 
 Old layout table:
 
