@@ -60,6 +60,7 @@ default:
 .test-tags:
   tags:
     - gitlab-org-docker
+  dependencies: []
 
 .rules:skip-if-only-deploy-mgmt:
   rules:
@@ -84,7 +85,8 @@ deploy-management-cluster:
 
 deploy-workload-cluster:
   needs:
-    - deploy-management-cluster
+    - job: deploy-management-cluster
+      artifacts: false
   extends:
     - .deploy-workload
     - .rules:skip-if-only-deploy-mgmt
@@ -93,8 +95,10 @@ deploy-workload-cluster:
 
 update-management-cluster:
   needs:
-    - deploy-management-cluster
-    - deploy-workload-cluster
+    - job: deploy-management-cluster
+      artifacts: false
+    - job: deploy-workload-cluster
+      artifacts: false
   extends:
     - .update-management
     - .rules:skip-if-only-deploy-mgmt
@@ -103,8 +107,10 @@ update-management-cluster:
 
 update-workload-cluster:
   needs:
-    - deploy-workload-cluster
-    - update-management-cluster
+    - job: deploy-workload-cluster
+      artifacts: false
+    - job: update-management-cluster
+      artifacts: false
   extends:
     - .update-workload
     - .rules:skip-if-only-deploy-mgmt
