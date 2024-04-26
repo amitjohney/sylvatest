@@ -543,6 +543,7 @@ units_override_enabled:
   - management-sylva-units
   - pivot
   - heat-operator
+  - capo-cloud-config
   - capo-cluster-resources
   - multus
   - multus-ready

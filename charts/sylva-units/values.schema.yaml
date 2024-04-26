@@ -986,6 +986,24 @@ properties:
     items:
       type: string
 
+  delete_hook:  # -------------------------------
+    type: object
+    additionalProperties: false
+    properties:
+      enabled:  # -------------------------------
+        anyOf:
+          - type: boolean
+          - $ref: "#/$defs/string-with-gotpl"
+      job_timeout:  # -------------------------------
+        anyOf:
+          - type: integer
+          - $ref: "#/$defs/string-with-gotpl"
+      delete_timeout:  # -------------------------------
+        anyOf:
+          - type: integer
+          - $ref: "#/$defs/string-with-gotpl"
+
+
   env_type:  # -------------------------------
     type: string
     pattern: "^(dev|ci|prod)$"

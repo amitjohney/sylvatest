@@ -14,7 +14,7 @@ stages:
   - test
   - build
   - deploy
-  - delete
+  - cleanup
   - gitleaks
   - report
 
