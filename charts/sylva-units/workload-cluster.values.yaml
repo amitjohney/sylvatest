@@ -78,7 +78,8 @@ unit_templates:
   # - for sylva-units Helm release upgrades we want the same order of deployments as for management cluster,
   #   where calico is updated after the cluster (in that case calico depends on cluster/cluster-machines-ready)
   calico-depends-on-cluster-machines-ready:
-    cluster-machines-ready: '{{ and (.Release.IsUpgrade) (tuple . "cluster-machines-ready" | include "unit-enabled") }}'
+    depends_on:
+      cluster-machines-ready: '{{ and (.Release.IsUpgrade) (tuple . "cluster-machines-ready" | include "unit-enabled") }}'
 
   # used for units which are deployed on mgmt cluster itself
   kustomization-deployed-on-mgmt-cluster:
