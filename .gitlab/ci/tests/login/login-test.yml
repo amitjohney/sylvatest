@@ -53,6 +53,8 @@ test-sso+workload-kubeconfig:
   retry:
     max: 2
   script:
+    - !reference [.import_functions]
+    - download_artifact deploy-management-cluster management-cluster-kubeconfig
     - !reference [.test_scripts, edit_hosts_file]
     - !reference [.test_scripts, test_sso]
     - echo "-- Testing workload cluster. Job started at '$CI_JOB_STARTED_AT'."
@@ -75,6 +77,8 @@ test-sso:
   retry:
     max: 2
   script:
+    - !reference [.import_functions]
+    - download_artifact deploy-management-cluster management-cluster-kubeconfig
     - !reference [.test_scripts, edit_hosts_file]
     - !reference [.test_scripts, test_sso]
 
@@ -84,6 +88,8 @@ test-no-sso+workload-kubeconfig:
     - .test-tags
     - .rules:skip-if-only-deploy-mgmt
   script:
+    - !reference [.import_functions]
+    - download_artifact deploy-management-cluster management-cluster-kubeconfig
     - !reference [.test_scripts, edit_hosts_file]
     - !reference [.test_scripts, test_no_sso]
     - echo "-- Testing workload cluster. Job started at '$CI_JOB_STARTED_AT'."
@@ -115,6 +121,8 @@ test-login:
       junit:
       - $HURL_JUNIT_REPORT
   script:
+    - !reference [.import_functions]
+    - download_artifact deploy-management-cluster management-cluster-kubeconfig
     - !reference [.test_scripts, edit_hosts_file]
     - export HURL_token=$(kubectl --kubeconfig management-cluster-kubeconfig -n vault get secrets/vault-unseal-keys -o jsonpath='{.data.vault-root}' | base64 -d)
     - export HURL_flux_url=$(kubectl --kubeconfig management-cluster-kubeconfig get ingress -n flux-system flux-webui-weave-gitops -o jsonpath='{ .spec.tls[].hosts[] }')
