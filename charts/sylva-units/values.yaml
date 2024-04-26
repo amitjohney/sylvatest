@@ -148,6 +148,13 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: 0.0.9
 
+  sylva-alertmanager-resources:
+    kind: GitRepository
+    spec:
+      url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-alertmanager-resources.git
+      ref:
+        tag: 0.0.1
+
 helm_repo_spec_default:
   interval: 60m0s
 
@@ -3069,6 +3076,62 @@ units:
       _components:
         - '{{ tuple "components/kyverno-snmp-bmh-policy" (tuple . "metal3" | include "unit-enabled") | include "set-only-if" }}'
 
+  alertmanager-jiralert:
+    info:
+      description: installs Alertmanager webhook Jiralert
+      details: Jiralert is an Alertmanager wehbook that creates Jira issues
+      maturity: beta
+    enabled_conditions:
+    - '{{ tuple . "monitoring" | include "unit-enabled" }}'
+    - '{{ .Values.monitoring.alertmanager.webhooks.jiralert.config | empty | not }}'
+    unit_templates:
+    - base-deps
+    depends_on:
+      alertmanager-jiralert-config: true
+    helm_repo_url: https://prometheus-community.github.io/helm-charts
+    helmrelease_spec:
+      targetNamespace: cattle-monitoring-system
+      chart:
+        spec:
+          chart: jiralert
+          version: 1.7.1
+      values:
+        extraArgs:
+          - -log.level=debug
+          - -hash-jira-label
+        existingConfigSecret: sylva-alertmanager-webhook-jiralert  # this Secret is a byproduct of the alertmanager-jiralert-config unit
+        fullnameOverride: 'alertmanager-jiralert'
+        env:
+          http_proxy: '{{ .Values.monitoring.alertmanager.webhooks.jiralert.env.http_proxy | default .Values.proxies.http_proxy }}'
+          https_proxy: '{{ .Values.monitoring.alertmanager.webhooks.jiralert.env.https_proxy | default .Values.proxies.https_proxy }}'
+          no_proxy: '{{ .Values.monitoring.alertmanager.webhooks.jiralert.env.no_proxy | default (include "sylva-units.no_proxy" (tuple .)) }}'
+        replicaCount: '{{ .Values._internal.ha_cluster.is_ha | ternary 2 1 | include "preserve-type" }}'
+        podDisruptionBudget:
+          minAvailable: '{{ .Values._internal.ha_cluster.is_ha | ternary 1 0 | include "preserve-type" }}'
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+
+  alertmanager-jiralert-config:
+    info:
+      description: generates the config for Jiralert Alertmanager webhook
+    enabled_conditions:
+    - '{{ tuple . "alertmanager-jiralert" | include "unit-enabled" }}'
+    unit_templates:
+    - base-deps
+    depends_on:
+      namespace-defs: true
+    repo: sylva-alertmanager-resources
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: webhooks/jiralert
+      targetNamespace: cattle-monitoring-system
+    helm_secret_values:
+      config: '{{ .Values.monitoring.alertmanager.webhooks.jiralert.config | include "preserve-type" }}'
+
   snmp-exporter:
     info:
       description: installs SNMP exporter
@@ -5490,6 +5553,38 @@ monitoring:
   # - for workload clusters, this is overridden via shared_workload_clusters_values.monitoring.thanos_receive_url
   #   to point to the mgmt cluster Thanos receive ingress
   thanos_receive_url: http://thanos-receive.thanos.svc.cluster.local:19291/api/v1/receive
+
+  alertmanager:
+    webhooks:
+      jiralert:
+        env: {}
+        config: {}
+
+# Supported values from: https://github.com/prometheus-community/helm-charts/blob/main/charts/jiralert/values.yaml
+# Example config file: https://github.com/prometheus-community/jiralert/blob/master/examples/jiralert.yml
+#monitoring:
+#  alertmanager:
+#    webhooks:
+#      jiralert:
+#        # If missing, the proxies are those configured in `.Values.proxies`
+#        env:
+#          https_proxy: "https://example.com:3128"
+#          http_proxy: "https://example.com:3128"
+#          no_proxy: "127.0.0.1,jira.example.com"
+#        config:
+#          # Both `defaults` and `receivers` are required
+#          defaults:
+#            # API access fields.
+#            api_url: 'https://example.com'
+#            user: 'user'
+#            password: 'password'
+#            # Alternatively to user and password use a Personal Access Token
+#            # personal_access_token: "Your Personal Access Token". See https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html
+#          receivers:
+#            # At least one receiver must be defined
+#            # Must match the Alertmanager receiver name. Required.
+#            - name: jira_receiver
+#              project: Sylva
 
 logging:
   loki_url: "https://{{ .Values.external_hostnames.loki }}"  # for workload clusters, this is overridden via shared_workload_clusters_values to point to the mgmt cluster Loki

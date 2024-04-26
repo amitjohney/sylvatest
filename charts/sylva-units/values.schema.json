@@ -8185,6 +8185,94 @@
               "$ref": "#/$defs/string-with-gotpl"
             }
           ]
+        },
+        "alertmanager": {
+          "type": "object",
+          "properties": {
+            "webhooks": {
+              "type": "object",
+              "properties": {
+                "jiralert": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "env": {
+                      "type": "object"
+                    },
+                    "config": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "defaults": {
+                          "type": "object",
+                          "additionalProperties": true,
+                          "properties": {
+                            "api_url": {
+                              "type": "string",
+                              "pattern": "https?://.*"
+                            },
+                            "user": {
+                              "type": "string"
+                            },
+                            "password": {
+                              "type": "string"
+                            },
+                            "personal_access_token": {
+                              "type": "string"
+                            }
+                          },
+                          "oneOf": [
+                            {
+                              "required": [
+                                "api_url",
+                                "user",
+                                "password"
+                              ]
+                            },
+                            {
+                              "required": [
+                                "api_url",
+                                "personal_access_token"
+                              ]
+                            }
+                          ]
+                        },
+                        "receivers": {
+                          "type": "array",
+                          "additionalProperties": true,
+                          "minItems": 1,
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "project": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "name",
+                              "project"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [],
+                      "dependencies": {
+                        "receivers": [
+                          "defaults"
+                        ],
+                        "defaults": [
+                          "receivers"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     },
