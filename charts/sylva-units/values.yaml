@@ -5071,7 +5071,6 @@ units:
               name: _unused_
             parameters:
               numberOfReplicas: "1"
-              dataLocality: "best-effort"
 
   sylva-prometheus-rules:
     info:
