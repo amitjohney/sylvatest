@@ -2971,11 +2971,23 @@ units:
                   enabled: true
         prometheus:
           prometheusSpec:
+            scrapeInterval: "60s"
+            scrapeTimeout: "30s"
+            evaluationInterval: "30s"
             resources:
               limits:
                 memory: 6Gi
               request:
                 memory: 3Gi
+            storageSpec:
+              volumeClaimTemplate:
+                spec:
+                  storageClassName: '{{ tuple . (tuple . "single-replica-storageclass" | include "unit-enabled") "single-replica-storageclass" .Values._internal.default_storage_class | include "interpret-ternary" }}'
+                  accessModes: ["ReadWriteOnce"]
+                  resources:
+                    requests:
+                      # default storage is 50Gi, except for CI and dev environments, 8Gi
+                      storage: '{{  has .Values.env_type (list "dev" "ci") | ternary "8Gi" "50Gi" }}'
             externalLabels:
               cluster: '{{ .Values.cluster.name }}'  # required for multi-cluster dashboards
             remoteWriteDashboards: true
