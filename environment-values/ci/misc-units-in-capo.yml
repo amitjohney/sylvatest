@@ -158,9 +158,26 @@ units:
     enabled: true
   rancher-monitoring-clusterid-inject:
     enabled: true
+  alertmanager-jiralert-config:
+    enabled: true
+  alertmanager-jiralert:
+    enabled: true
 cluster:
   control_plane_replicas: 3
   capo:
     flavor_name: "m1.xlarge"
 _internal:
   default_storage_class: '{{ .Values.openstack.storageClass.name }}'
+monitoring:
+  alertmanager:
+    webhooks:
+      jiralert:
+        env:
+          https_proxy: "https://example.com:3128"
+        config:
+          defaults:
+            api_url: 'https://example.com'
+            personal_access_token: "Your Personal Access Token"
+          receivers:
+            - name: jira_receiver
+              project: Sylva
