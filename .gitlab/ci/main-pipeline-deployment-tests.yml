@@ -85,7 +85,7 @@ variables:
     value: ""
     description: |
       Use for web or scheduled pipelines to select which deployments to run
-      it can be the exact name of a job like "capd-kubeadm-deploy"
+      it can be the exact name of a job like "capd-kubeadm-ubuntu"
       or it can be a regex matching some deployment job. In this case
       the value need to be enclose with / like this
       "/capo-kubeadm/"
@@ -206,7 +206,7 @@ capd-preview-oci-deploy:
     ENV_NAME: kubeadm-capd
   needs: !reference [.needs-publish-jobs]
 
-capd-kubeadm-deploy:
+capd-kubeadm-ubuntu:
   extends: .default-trigger
   variables:
     CAPD_RUNNER_TAG: gitlab-org-docker
@@ -219,7 +219,7 @@ capd-kubeadm-deploy:
     include: .gitlab/ci/pipeline-deploy-capd.yml
     strategy: depend
 
-capd-rke2-deploy:
+capd-rke2-ubuntu:
   extends: .default-trigger
   variables:
     CAPD_RUNNER_TAG: saas-linux-medium-amd64
@@ -232,7 +232,7 @@ capd-rke2-deploy:
     include: .gitlab/ci/pipeline-deploy-capd.yml
     strategy: depend
 
-capd-kubeadm-oci-deploy:
+capd-kubeadm-oci-ubuntu:
   extends: .default-trigger-oci
   variables:
     CAPD_RUNNER_TAG: gitlab-org-docker
@@ -245,7 +245,7 @@ capd-kubeadm-oci-deploy:
     include: .gitlab/ci/pipeline-deploy-capd.yml
     strategy: depend
 
-capd-rke2-oci-deploy:
+capd-rke2-oci-ubuntu:
   extends: .default-trigger-oci
   variables:
     CAPD_RUNNER_TAG: saas-linux-medium-amd64
@@ -258,7 +258,7 @@ capd-rke2-oci-deploy:
     include: .gitlab/ci/pipeline-deploy-capd.yml
     strategy: depend
 
-capo-kubeadm-deploy:
+capo-kubeadm-ubuntu:
   extends: .default-trigger
   variables:
     CAPO_TAG: $ENV_TAG
@@ -268,7 +268,7 @@ capo-kubeadm-deploy:
     include: .gitlab/ci/pipeline-deploy-capo.yml
     strategy: depend
 
-capo-kubeadm-oci-deploy:
+capo-kubeadm-oci-ubuntu:
   extends: .default-trigger-oci
   variables:
     CAPO_TAG: $ENV_TAG_OCI
@@ -278,7 +278,7 @@ capo-kubeadm-oci-deploy:
     include: .gitlab/ci/pipeline-deploy-capo.yml
     strategy: depend
 
-capo-rke2-deploy:
+capo-rke2-ubuntu:
   extends: .default-trigger
   variables:
     CAPO_TAG: $ENV_TAG
@@ -288,7 +288,7 @@ capo-rke2-deploy:
     include: .gitlab/ci/pipeline-deploy-capo.yml
     strategy: depend
 
-capo-rke2-oci-deploy:
+capo-rke2-oci-ubuntu:
   extends: .default-trigger-oci
   variables:
     CAPO_TAG: $ENV_TAG_OCI
@@ -298,7 +298,7 @@ capo-rke2-oci-deploy:
     include: .gitlab/ci/pipeline-deploy-capo.yml
     strategy: depend
 
-capo-misc-units-deploy:
+capo-misc-rke2-units-ubuntu:
   extends: .default-trigger-oci
   stage: deploy
   variables:
@@ -311,7 +311,7 @@ capo-misc-units-deploy:
     include: .gitlab/ci/pipeline-deploy-capo.yml
     strategy: depend
 
-capo-fip-deploy:
+capo-fip-kubeadm-oci-ubuntu:
   extends: .default-trigger-oci
   variables:
     ENV_NAME: kubeadm-capo
@@ -324,45 +324,45 @@ capo-fip-deploy:
     include: .gitlab/ci/pipeline-deploy-capo.yml
     strategy: depend
 
-capo-rke2-suse-os:
-  extends: capo-rke2-deploy
+capo-rke2-suse:
+  extends: capo-rke2-ubuntu
   variables:
     MGMT_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2.yml
     WC_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2.yml
 
-capo-rke2-oci-suse-os:
-  extends: capo-rke2-oci-deploy
+capo-rke2-oci-suse:
+  extends: capo-rke2-oci-ubuntu
   variables:
     MGMT_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2.yml
     WC_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2.yml
 
-.capm3-virt-equinix-deploy:
+.capm3-virt-equinix:
   extends: .default-trigger
   variables:
     ENV_NAME: rke2-capm3-virt
     DOCKER_HOST: ""
   trigger:
-    include: .gitlab/ci/pipeline-deploy-rke2-capm3-virt-equinix.yml
+    include: .gitlab/ci/pipeline-deploy-capm3-virt-equinix.yml
     strategy: depend
 
-capm3-HA-ubuntu-rke2-virt-deploy:
-  extends: .capm3-virt-equinix-deploy
+capm3-ha-rke2-virt-ubuntu:
+  extends: .capm3-virt-equinix
   variables:
     MGMT_ADDITIONAL_VALUES: environment-values/rke2-capm3-virt/ha.yaml
     WC_ADDITIONAL_VALUES: environment-values/workload-clusters/rke2-capm3-virt/ha.yaml
     RUNNER_PLAN: m3.large.x86
 
-capm3-ubuntu-rke2-virt-deploy:
-  extends: .capm3-virt-equinix-deploy
+capm3-rke2-virt-ubuntu:
+  extends: .capm3-virt-equinix
 
-capm3-suse-rke2-virt-deploy:
-  extends: .capm3-virt-equinix-deploy
+capm3-rke2-virt-suse:
+  extends: .capm3-virt-equinix
   variables:
     MGMT_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2.yml
     WC_ADDITIONAL_VALUES: environment-values/ci/suse-os-rke2.yml
 
-capm3-ubuntu-kubeadm-virt-deploy:
-  extends: .capm3-virt-equinix-deploy
+capm3-kubeadm-virt-ubuntu:
+  extends: .capm3-virt-equinix
   variables:
     ENV_TAG: "${CI_PIPELINE_ID}-capm3-kubeadm-virt"
     MGMT_ADDITIONAL_VALUES: environment-values/ci/ubuntu-os-kubeadm-capm3-virt.yml
