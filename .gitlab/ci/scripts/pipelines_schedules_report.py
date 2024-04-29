@@ -78,8 +78,8 @@ def pipeline_summary(pipeline):
         if job.name == "create-runner" and job.status == "success":
             continue
 
-        # we don't care about displaying the delete stage if it worked
-        if job.stage == "delete" and job.status == "success":
+        # we don't care about displaying the cleanup stage if it worked
+        if job.stage == "cleanup" and job.status == "success":
             continue
 
         if job not in test_jobs:
