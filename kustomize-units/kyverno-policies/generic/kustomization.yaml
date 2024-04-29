@@ -4,5 +4,4 @@ kind: Kustomization
 resources:
 - tag.yaml
 - disable-automount-sa.yaml
-- patch-bond-policy.yaml
 - ensure-force-cluster-policy.yaml

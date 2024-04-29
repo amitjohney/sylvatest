@@ -1528,6 +1528,7 @@ units:
           CLUSTER_NAME: '{{ .Values.cluster.name }}'
       _components:
         - '{{ tuple "components/management-cluster-only" (tuple . "kyverno" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/capm3-patch-bond-policy" (tuple . "capm3" | include "unit-enabled") | include "set-only-if" }}'
 
   rancher-monitoring-clusterid-inject:
     info:
