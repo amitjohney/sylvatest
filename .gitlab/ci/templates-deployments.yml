@@ -261,11 +261,10 @@ include:
   stage: delete
   script:
     - . bin/env
-    - kubectl --kubeconfig management-cluster-kubeconfig delete -n ${ENV_NAME} hr sylva-units --timeout 30m || true
-    - kubectl --kubeconfig management-cluster-kubeconfig delete ns ${ENV_NAME} --timeout 2m || true
+    - kubectl --kubeconfig management-cluster-kubeconfig delete -n ${ENV_NAME} hr sylva-units --timeout 30m
+    - kubectl --kubeconfig management-cluster-kubeconfig delete ns ${ENV_NAME} --timeout 2m
+  after_script:
+    - echo -e "\e[1m\e[0Ksection_start:`date +%s`:debug_exit[collapsed=true]\r\e[0Kgathering debugging logs in debug-on-exit.log file\e[0m"
+    - . bin/env
     - ./tools/shell-lib/debug-on-exit.sh
-    - |
-      if kubectl --kubeconfig management-cluster-kubeconfig get ns ${ENV_NAME} &>/dev/null; then
-        echo "Workload cluster namespace was not deleted in time"
-        exit 1
-      fi
+    - echo -e "\e[0Ksection_end:`date +%s`:debug_exit\r\e[0K"
