@@ -195,6 +195,9 @@ units:
 
   namespace-defs:
     enabled: true
+    unit_templates:
+    - base-deps
+    - calico-depends-on-cluster-machines-ready
     depends_on:
       # some dependencies of base-deps are inherited, but don't apply here:
       namespace-defs: false
