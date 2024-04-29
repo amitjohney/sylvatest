@@ -260,6 +260,8 @@ include:
   extends: .workload-base
   stage: delete
   script:
+    - !reference [.function_download_artifact]
+    - download_artifact deploy-management-cluster management-cluster-kubeconfig
     - . bin/env
     - kubectl --kubeconfig management-cluster-kubeconfig delete -n ${ENV_NAME} hr sylva-units --timeout 30m || true
     - kubectl --kubeconfig management-cluster-kubeconfig delete ns ${ENV_NAME} --timeout 2m || true

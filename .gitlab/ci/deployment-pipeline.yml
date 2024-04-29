@@ -118,6 +118,7 @@ update-workload-cluster:
 # ----------------------------------------------------------
 
 delete-workload-cluster:
+  dependencies: []
   extends:
     - .delete-workload
   rules:
