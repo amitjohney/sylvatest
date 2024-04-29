@@ -6127,6 +6127,175 @@
               "capi_providers": {
                 "properties": {
                   "infra_provider": {
+                    "const": "capa"
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "capa"
+            ],
+            "properties": {
+              "control_plane": {
+                "anyOf": [
+                  {
+                    "properties": {
+                      "region": {
+                        "type": "string"
+                      },
+                      "sshKeyName": {
+                        "type": "string"
+                      },
+                      "version": {
+                        "type": "string"
+                      },
+                      "associateOIDCProvider": {
+                        "type": "boolean"
+                      },
+                      "addons": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "version": {
+                              "type": "string"
+                            },
+                            "conflictResolution": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name", "version", "conflictResolution"]
+                        }
+                      },
+                      "network": {
+                        "type": "object",
+                        "properties": {
+                          "vpc": {
+                            "type": "object",
+                            "properties": {
+                              "cidrBlock": {
+                                "type": "string",
+                                "pattern": "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\/\\d{1,2}$"
+                              },
+                              "availabilityZoneSelection": {
+                                "type": "string",
+                                "enum": ["Ordered", "Random"]
+                              }
+                            },
+                            "required": ["cidrBlock", "availabilityZoneSelection"]
+                          },
+                          "subnets": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "cidrBlock": {
+                                  "type": "string",
+                                  "pattern": "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\/\\d{1,2}$"
+                                },
+                                "availabilityZone": {
+                                  "type": "string"
+                                },
+                                "isPublic": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": ["id", "cidrBlock", "availabilityZone", "isPublic"]
+                            }
+                          }
+                        },
+                        "required": ["vpc", "subnets"]
+                      },
+                      "eksClusterName": {
+                        "type": "string"
+                      },
+                      "endpointAccess": {
+                        "type": "object",
+                        "properties": {
+                          "public": {
+                            "type": "boolean"
+                          },
+                          "private": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": ["public", "private"]
+                      },
+                      "logging": {
+                        "type": "object",
+                        "properties": {
+                          "apiServer": {
+                            "type": "boolean"
+                          },
+                          "authenticator": {
+                            "type": "boolean"
+                          },
+                          "scheduler": {
+                            "type": "boolean"
+                          },
+                          "controllerManager": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": ["apiServer", "authenticator", "scheduler", "controllerManager"]
+                      }
+                    }
+                  },
+                  {
+                    "$ref": "#/$defs/string-with-gotpl"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "capo": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "ssh_key_name",
+                      "network_id",
+                      "clouds_yaml",
+                      "resources_tag"
+                    ],
+                    "oneOf": [
+                      {
+                        "required": [
+                          "image_name"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "image_key"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "$ref": "#/$defs/string-with-gotpl"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "capi_providers": {
+                "properties": {
+                  "infra_provider": {
                     "const": "capv"
                   }
                 }
