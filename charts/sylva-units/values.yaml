@@ -1535,7 +1535,7 @@ units:
         substitute:
           CLUSTER_NAME: '{{ .Values.cluster.name }}'
       _components:
-        - '{{ tuple "components/management-cluster-only" (tuple . "kyverno" | include "unit-enabled") | include "set-only-if" }}'
+        - '{{ tuple "components/management-cluster-only" .Values._internal.mgmt_cluster | include "set-only-if" }}'
         - '{{ tuple "components/capm3-patch-bond-policy" (tuple . "capm3" | include "unit-enabled") | include "set-only-if" }}'
 
   rancher-monitoring-clusterid-inject:
@@ -5591,6 +5591,8 @@ logging:
   loki_url: "https://{{ .Values.external_hostnames.loki }}"  # for workload clusters, this is overridden via shared_workload_clusters_values to point to the mgmt cluster Loki
 
 _internal:
+
+  mgmt_cluster: false
 
   # 'cluster_unit_deps' contains all the dependencies of the 'cluster' unit, direct and indirect,
   # except the ones set due to depending on cluster-machines-ready.

@@ -177,3 +177,6 @@ keycloak:
 
 cluster:
   prevent_deletion: true
+
+_internal:
+  mgmt_cluster: true
