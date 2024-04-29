@@ -3381,59 +3381,115 @@
           ]
         },
         "capa": {
-          "anyOf": [
-            {
-              "type": "object",
-              "properties": {
-                "image_name": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "$ref": "#/$defs/string-with-gotpl"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
+          "type": "object",
+          "properties": {
+            "region": {
+              "type": "string"
+            },
+            "sshKeyName": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            },
+            "associateOIDCProvider": {
+              "type": "boolean"
+            },
+            "addons": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "string"
+                  },
+                  "conflictResolution": {
+                    "type": "string"
+                  }
                 },
-                "instance_type": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "$ref": "#/$defs/string-with-gotpl"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "ssh_key_name": {
-                  "anyOf": [
-                    {
-                      "type": "string",
-                      "pattern": "^[0-9A-Za-z@._ -]+$"
-                    },
-                    {
-                      "$ref": "#/$defs/string-with-gotpl"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                }
+                "required": ["name", "version", "conflictResolution"]
               }
             },
-            {
-              "$ref": "#/$defs/string-with-gotpl"
+            "network": {
+              "type": "object",
+              "properties": {
+                "vpc": {
+                  "type": "object",
+                  "properties": {
+                    "cidrBlock": {
+                      "type": "string",
+                      "pattern": "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\/\\d{1,2}$"
+                    },
+                    "availabilityZoneSelection": {
+                      "type": "string",
+                      "enum": ["Ordered", "Random"]
+                    }
+                  },
+                  "required": ["cidrBlock", "availabilityZoneSelection"]
+                },
+                "subnets": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "cidrBlock": {
+                        "type": "string",
+                        "pattern": "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\/\\d{1,2}$"
+                      },
+                      "availabilityZone": {
+                        "type": "string"
+                      },
+                      "isPublic": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": ["id", "cidrBlock", "availabilityZone", "isPublic"]
+                  }
+                }
+              },
+              "required": ["vpc", "subnets"]
             },
-            {
-              "type": "null"
+            "eksClusterName": {
+              "type": "string"
+            },
+            "endpointAccess": {
+              "type": "object",
+              "properties": {
+                "public": {
+                  "type": "boolean"
+                },
+                "private": {
+                  "type": "boolean"
+                }
+              },
+              "required": ["public", "private"]
+            },
+            "logging": {
+              "type": "object",
+              "properties": {
+                "apiServer": {
+                  "type": "boolean"
+                },
+                "authenticator": {
+                  "type": "boolean"
+                },
+                "scheduler": {
+                  "type": "boolean"
+                },
+                "controllerManager": {
+                  "type": "boolean"
+                }
+              },
+              "required": ["apiServer", "authenticator", "scheduler", "controllerManager"]
             }
-          ]
+          },
+          "required": ["region", "sshKeyName", "version", "associateOIDCProvider", "addons", "network", "eksClusterName", "endpointAccess", "logging"]
         },
         "capv": {
           "anyOf": [
@@ -5273,6 +5329,112 @@
               "type": "null"
             }
           ]
+        },
+        "machine_pools": {
+          "type": "object",
+          "properties": {
+            "replicas": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "awsmachinepool": {
+              "type": "object",
+              "properties": {
+                "awsLaunchTemplate": {
+                  "type": "object",
+                  "properties": {
+                    "ami": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["id"]
+                    },
+                    "iamInstanceProfile": {
+                      "type": "string"
+                    },
+                    "instanceType": {
+                      "type": "string"
+                    },
+                    "rootVolume": {
+                      "type": "object",
+                      "properties": {
+                        "deviceName": {
+                          "type": "string"
+                        },
+                        "encrypted": {
+                          "type": "boolean"
+                        },
+                        "iops": {
+                          "type": "integer"
+                        },
+                        "size": {
+                          "type": "integer"
+                        },
+                        "throughput": {
+                          "type": "integer"
+                        },
+                        "type": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["deviceName", "encrypted", "iops", "size", "throughput", "type"]
+                    },
+                    "sshKeyName": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["ami", "iamInstanceProfile", "instanceType", "rootVolume", "sshKeyName"]
+                },
+                "capacityRebalance": {
+                  "type": "boolean"
+                },
+                "defaultCoolDown": {
+                  "type": "string",
+                  "pattern": "^\\d+[smhdwy]?$"
+                },
+                "maxSize": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "minSize": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "subnets": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "filters": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "values": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "required": ["name", "values"]
+                        }
+                      }
+                    },
+                    "required": ["filters"]
+                  }
+                }
+              },
+              "required": ["awsLaunchTemplate", "capacityRebalance", "defaultCoolDown", "maxSize", "minSize", "subnets"]
+            }
+          },
+          "required": ["replicas", "awsmachinepool"]
         },
         "baremetal_host_default": {
           "anyOf": [
