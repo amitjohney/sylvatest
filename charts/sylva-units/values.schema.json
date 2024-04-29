@@ -6145,36 +6145,6 @@
                     "type": "null"
                   }
                 ]
-              },
-              "capo": {
-                "anyOf": [
-                  {
-                    "required": [
-                      "ssh_key_name",
-                      "network_id",
-                      "clouds_yaml",
-                      "resources_tag"
-                    ],
-                    "oneOf": [
-                      {
-                        "required": [
-                          "image_name"
-                        ]
-                      },
-                      {
-                        "required": [
-                          "image_key"
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "$ref": "#/$defs/string-with-gotpl"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
               }
             }
           }
