@@ -80,3 +80,9 @@ cluster:
         bmc:
           address: redfish-virtualmedia://{{ .Values._internal.bootstrap_node_ip }}:8010/redfish/v1/Systems/c0014001-b10b-f001-c0de-feeb1e54ee15
         bootMACAddress: 52:54:00:44:44:10
+units:
+  longhorn:
+    helmrelease_spec:
+      values:
+        persistence:
+          defaultClassReplicaCount: 1
