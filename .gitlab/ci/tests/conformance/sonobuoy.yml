@@ -1,0 +1,50 @@
+---
+
+# Run sonobuoy conformance testing against Sylva clusters
+variables:
+  SONOBUOY_VERSION: 0.56.16
+
+.sonobuoy:
+  stage: deployment-test
+  extends:
+    - .test-tags
+  script:
+    - !reference [.import_functions]
+    - download_artifact $KUBECONFIG_JOB $KUBECONFIG
+    - wget https://github.com/vmware-tanzu/sonobuoy/releases/download/v${SONOBUOY_VERSION}/sonobuoy_${SONOBUOY_VERSION}_linux_386.tar.gz
+    - tar -xvf sonobuoy_${SONOBUOY_VERSION}_linux_386.tar.gz
+    - ./sonobuoy run --wait $SONOBUOY_OPTIONS
+    - echo "-- Retrieve sonobuoy results"
+    - results=$(./sonobuoy retrieve)
+    - echo "-- mode report"
+    - ./sonobuoy results $results --mode=report
+    - echo "-- Generate the test report"
+    - echo -e "-------------------------------\n-- SONOBUOY TEST REPORT\n-- `date`\n-------------------------------" > sonobuoy-test-report.log
+    - ./sonobuoy results $results --mode=report >> sonobuoy-test-report.log
+    - echo -e "---------------------------------------------" >> sonobuoy-test-report.log
+    - echo -e "-- List of tests passed, failed or skipped --" >> sonobuoy-test-report.log
+    - echo -e "---------------------------------------------" >> sonobuoy-test-report.log
+    - ./sonobuoy results $results --mode=dump >> sonobuoy-test-report.log
+    - echo -e "-------------------------------\n-- END TEST REPORT\n-------------------------------" >> sonobuoy-test-report.log
+    - echo "-- Delete sonobuoy"
+    - ./sonobuoy delete --wait
+    - echo "-- Extract the results"
+    - mkdir sonobuoy-results
+    - mv $results sonobuoy-results/.
+    - mv sonobuoy-test-report.log sonobuoy-results/.
+    - echo "-- All done"
+  variables:
+    KUBECONFIG: management-cluster-kubeconfig
+    KUBECONFIG_JOB: deploy-management-cluster
+    SONOBUOY_OPTIONS: "--mode quick"
+  artifacts:
+    when: always
+    expire_in: 24 hour
+    name: sonobuoy-results
+    paths:
+      - sonobuoy-results/
+
+
+sonobuoy:management:
+  extends:
+    - .sonobuoy
