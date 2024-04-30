@@ -312,7 +312,7 @@ units:
 
   longhorn:
     # can be enabled at runtime if desired
-    enabled: false
+    enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
 
   multus:
     # can be enabled at runtime if desired
