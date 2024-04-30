@@ -118,7 +118,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-dashboards.git
       ref:
-        tag: 0.0.6
+        tag: 0.0.7
 
   minio-operator:
     kind: GitRepository
@@ -132,7 +132,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-snmp-resources.git
       ref:
-        tag: 0.0.6
+        tag: 0.0.7
 
   loki:
     kind: GitRepository
@@ -146,7 +146,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-prometheus-rules.git
       ref:
-        tag: 0.0.9
+        tag: 0.0.10
 
   sylva-alertmanager-resources:
     kind: GitRepository
@@ -2980,9 +2980,6 @@ units:
                   enabled: true
         prometheus:
           prometheusSpec:
-            scrapeInterval: "60s"
-            scrapeTimeout: "30s"
-            evaluationInterval: "30s"
             resources:
               limits:
                 memory: 6Gi
