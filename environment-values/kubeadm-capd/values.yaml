@@ -17,6 +17,8 @@ units:
     enabled: false
   harbor-init:
     enabled: false
+  harbor:
+    enabled: false
 
 cluster:
   capi_providers:
