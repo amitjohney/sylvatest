@@ -4915,7 +4915,8 @@ cluster:
   kubelet_extra_args:
     # increase max-pods for single-node deployments
     max-pods: '{{ tuple "196" (eq (.Values._internal.node_count | int) 1) | include "set-only-if" }}'
-
+  capa:
+    version: v1.28.0
   capo:
     # flavor_name: m1.large # Openstack flavor name
     # image_key: # key of an image in os_images or sylva_diskimage_builder
