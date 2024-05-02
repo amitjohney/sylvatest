@@ -317,3 +317,38 @@ NOTE WELL:
 {{- lookup "v1" "Secret" $envAll.Release.Namespace "sylva-units-values" | dig "data" "values" "" | b64dec | fromYaml | dig "_internal" $key (randAlphaNum 64) -}}
 {{- end -}}
 
+
+
+{{/*
+
+kustomization-name
+
+This named templates return the name of the Kustomization to use for a given unit.
+
+The name is 'kustomization_name' if this attribute is defined in the unit definition
+(either in unit.$unit_name.kustomization_name or inherited via unit_templates), or,
+by default the unit name.
+
+Usage:
+
+  {{- $unit_name := include "kustomization-name" (tuple $envAll "unit-foo") }}
+
+Or, as an optimization *if* *full* $unit_def, as computed by "unit-def-from-templates",
+is already known by caller:
+
+  {{- $unit_name := include "kustomization-name" (tuple $envAll "unit-foo" $unit_def) }}
+
+*/}}
+{{- define "kustomization-name" -}}
+{{- $envAll := index . 0 -}}
+{{- $unit_name := index . 1 -}}
+
+{{- $unit_def := dict -}}
+{{- if gt (len .) 2 -}}
+  {{- $unit_def = index . 2 -}}
+{{- else -}}
+  {{- $unit_def = include "unit-def-from-templates" (tuple $envAll $unit_name) | fromJson -}}
+{{- end -}}
+{{/* return the result */}}
+{{- $unit_def.kustomization_name | default $unit_name -}}
+{{- end -}}

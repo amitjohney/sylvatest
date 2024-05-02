@@ -251,16 +251,18 @@ stringData:
       {{- $dependsOnList := list -}}
       {{- range $dep_unit_name, $is_depend_on := $unit_def.depends_on -}}
         {{- if tuple $envAll $is_depend_on (printf "%s, depends on %s" $unit_name $dep_unit_name) | include "interpret-for-test" -}}
-
-          {{- if $dep_unit_name | contains "/" -}}
+          {{- if $dep_unit_name | contains "/" -}}{{/* dependency expressed as ns/kustomization, using it as-is */}}
             {{- $dependsOnList = append $dependsOnList (dict "namespace" (regexReplaceAll "/.*" $dep_unit_name "") "name" (regexReplaceAll ".*/" $dep_unit_name "")) -}}  
-          {{- else -}}
+          {{- else -}}{{/* dependency expressed as a unit name, let's do smarter things */}}
             {{- if not (hasKey $envAll.Values.units $dep_unit_name) -}}
               {{- fail (printf "unit '%s' is declared with a dependency on non-existing unit '%s'" $unit_name $dep_unit_name) -}}
             {{- else if not (include "unit-enabled" (tuple $envAll $dep_unit_name)) -}}
               {{- fail (printf "unit '%s' is declared with a dependency on disabled unit '%s'" $unit_name $dep_unit_name) -}}
             {{- end -}}
-            {{- $dependsOnList = append $dependsOnList (dict "name" $dep_unit_name) -}}  
+            {{- $dependsOnList = append $dependsOnList (
+                    dict "name" (include "kustomization-name" (tuple $envAll $dep_unit_name))
+                )
+            -}}
           {{- end -}}
         {{- end -}}
       {{ end }}
@@ -345,7 +347,7 @@ stringData:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: {{ $unit_name }}
+  name: {{ include "kustomization-name" (tuple $envAll $unit_name $unit_def) }}
   labels: {{ $labels | toYaml | nindent 4 }}
   annotations: {{ $unit_def.annotations | default dict | toYaml | nindent 4 }}
 spec: {{ $kustomization_spec | toYaml | nindent 2 }}

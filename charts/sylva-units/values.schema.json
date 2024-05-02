@@ -7123,6 +7123,16 @@
             "suspend": {
               "type": "boolean"
             },
+            "kustomization_name": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/$defs/string-with-gotpl"
+                }
+              ]
+            },
             "kustomization_spec": {
               "type": "object",
               "properties": {
