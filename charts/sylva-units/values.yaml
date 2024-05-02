@@ -3539,7 +3539,6 @@ units:
           JOB_NAME: cluster-creator-login
           JOB_TARGET_NAMESPACE: flux-system
           JOB_CHECKSUM: '{{ .Values | toJson | sha256sum }}'
-          RANCHER_EXTERNAL_URL: '{{ .Values.external_hostnames.rancher }}'
       healthChecks:
         - apiVersion: v1
           kind: Secret
