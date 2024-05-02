@@ -6,7 +6,7 @@ metadata:
     app.kubernetes.io/name: vault
     app.kubernetes.io/instance: vault
 spec:
-  maxUnavailable: ${MAX_POD_UNAVAILABLE}
+  minAvailable: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: vault
