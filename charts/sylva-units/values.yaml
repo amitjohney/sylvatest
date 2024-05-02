@@ -779,6 +779,25 @@ units:
       install:
         createNamespace: true
 
+  Keda:
+    info:
+      description: installs Keda
+      maturity: beta
+    unit_templates:
+    - base-deps
+    depends_on:
+      namespace-defs: true
+    helm_repo_url: https://kedacore.github.io/charts
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: keda
+          version: v2.14.0
+      targetNamespace: keda
+      values:
+      install:
+        createNamespace: true
+
   vault-operator:
     info:
       description: installs Vault operator
