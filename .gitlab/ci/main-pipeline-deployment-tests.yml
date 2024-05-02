@@ -235,7 +235,7 @@ capd-rke2-ubuntu:
 capd-kubeadm-oci-ubuntu:
   extends: .default-trigger-oci
   variables:
-    CAPD_RUNNER_TAG: gitlab-org-docker
+    CAPD_RUNNER_TAG: saas-linux-medium-amd64
     E2E_JOB_MR_PARITY: odd
     ENV_NAME: kubeadm-capd
     ONLY_DEPLOY_MGMT: "true"
