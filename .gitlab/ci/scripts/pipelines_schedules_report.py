@@ -115,6 +115,10 @@ def create_report():
         print_report("")
         for pipeline_schedule in pipeline_schedules:
 
+            if not pipeline_schedule.active:
+               print(pipeline_schedule.description + "is not active, skipping")
+               continue
+
             if pipeline_schedule_name not in pipeline_schedule.description:
                 continue
 
