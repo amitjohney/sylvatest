@@ -5107,6 +5107,7 @@ units:
     - base-deps
     depends_on:
       os-images-info: true
+      capo-cloud-config: true
     enabled_conditions:
       - '{{ eq .Values.cluster.capi_providers.infra_provider "capo" }}'
     repo: sylva-core
