@@ -3489,7 +3489,7 @@ units:
       chart:
         spec:
           chart: longhorn-crd
-          version: 103.2.2+up1.5.4
+          version: 103.2.3+up1.5.5
 
   longhorn:
     info:
@@ -3510,7 +3510,7 @@ units:
       chart:
         spec:
           chart: longhorn
-          version: 103.2.2+up1.5.4
+          version: 103.2.3+up1.5.5
       values:
         defaultSettings:
           createDefaultDiskLabeledNodes: true
