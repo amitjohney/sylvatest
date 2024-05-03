@@ -13,7 +13,7 @@ unit_templates:
       flux-system: true
       # Kyverno, because we're introducing Kyverno policies that manage pod
       #          security settings that need to be in place before things can start up
-      #kyverno: true
+      kyverno: true
 
 units:
 
