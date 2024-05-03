@@ -215,29 +215,6 @@ unit_templates:
         substitute:
           UNIT_NAME: '{{ .Values._unit_name_ }}'
 
-  # the "versioned-dependency" unit template is used for a
-  # unit X on which another unit Y dependson (Y has a depends_on=X)
-  # when we need to ensure that unit Y will depend on the last "revision"
-  # unit X being ready
-  #
-  # this is typically used with "dummy dependency" units
-  #
-  # for a unit 'foo' inheriting from 'versioned-dependency', the
-  # Kustomization will be named foo-<n> where n is the Helm release revision
-  # which is incremented at each update of the Helm release
-  #
-  # note well: for such units, the names of all resources produced
-  # must include .Release.Revision or another string that is guaranteed to
-  # change for each new Helm release revision (or else the old and new
-  # Kustomization will control the same resource, which hence might get
-  # deleted when the old Kustomization is deleted) -- see DISCRIMINATOR below
-  versioned-dependency:
-    kustomization_name: '{{ .Values._unit_name_ }}-{{ .Release.Revision }}'
-    kustomization_spec:
-      postBuild:
-        substitute:
-          DISCRIMINATOR: '-{{ .Release.Revision }}'  # see explanation above
-
   # this unit template gather depends_on common
   # to most units
   base-deps:
@@ -1958,11 +1935,8 @@ units:
       #  ready (for the controlplane nodes, the kubeadm controlplane provider ignores that)
       healthChecks: >-
         {{
-        (include "cluster-healthchecks" (dict "ns" .Release.Namespace
-                                              "cluster" .Values.cluster
-                                              "includeMDs" false)
-          | fromYaml).result
-          | include "preserve-type"
+        (include "cluster-healthchecks" (dict "ns" .Release.Namespace "cluster" .Values.cluster "includeMDs" false) | fromYaml).result
+        | include "preserve-type"
         }}
     helmrelease_spec:
       upgrade:
@@ -2036,21 +2010,15 @@ units:
       internal: true
     unit_templates:
     - dummy
-    - versioned-dependency  # units depending on this unit will depend on the last version of this unit being ready
     enabled_conditions:
     - '{{ tuple . "cluster" | include "unit-enabled" }}'
     depends_on:
       cluster: true
     kustomization_spec:
-      # release revision used in the job name below, because cluster-ready unit inherits from versioned-dependency unit template
       healthChecks: >-
         {{
-        (include "cluster-healthchecks" (dict "ns" .Release.Namespace
-                                              "cluster" .Values.cluster
-                                              "sleep_job_name" (printf "dummy-deps-cluster-ready-sleep-%d" .Release.Revision)
-                                        )
-          | fromYaml).result
-          | include "preserve-type"
+        (include "cluster-healthchecks" (dict "ns" .Release.Namespace "cluster" .Values.cluster "sleep_job" true) | fromYaml).result
+        | include "preserve-type"
         }}
       # we add a sleep to overcome a race condition happening when
       # from bootstrap cluster, after pivot, the cluster unit is enabled
@@ -2096,8 +2064,7 @@ units:
       calico: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") (not .Release.IsUpgrade) }}'
       cluster: true
       cluster-ready: true  # no need to start waiting for anything until
-    unit_templates:
-    - versioned-dependency  # units depending on this unit will depend on the last version of this unit being ready
+    unit_templates: []
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kube-job
@@ -2127,7 +2094,7 @@ units:
         patch: |
           - op: replace
             path: /metadata/name
-            value: cluster-machines-ready-{{ .Release.Namespace }}-{{ .Release.Revision }}-cm  # needs to match the ConfigMap names used in the Job manifest container volume
+            value: cluster-machines-ready-{{ .Release.Namespace }}-cm
           - op: replace
             path: /data/kube-job.sh
             value: |
@@ -3371,7 +3338,6 @@ units:
     unit_templates:
     - base-deps
     - dummy
-    - versioned-dependency  # units depending on this unit will depend on the last version of this unit being ready
     enabled_conditions:
       - '{{ tuple . "multus" | include "unit-enabled" }}'
     depends_on:

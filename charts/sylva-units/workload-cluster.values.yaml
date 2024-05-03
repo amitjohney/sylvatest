@@ -101,7 +101,6 @@ units:
     unit_templates:
     - dummy
     - kustomization-deployed-on-mgmt-cluster
-    - versioned-dependency  # units depending on this unit will depend on the last version of this unit being ready
     depends_on:
       mgmt-cluster-ready: false  # cancel this dependency inherited via kustomization-deployed-on-mgmt-cluster unit template
     kustomization_spec:
@@ -169,14 +168,12 @@ units:
     unit_templates:
     - kustomization-deployed-on-mgmt-cluster
     - dummy
-    - versioned-dependency  # units depending on this unit will depend on the last version of this unit being ready
 
   cluster-ready:
     enabled: true
     unit_templates:
     - kustomization-deployed-on-mgmt-cluster
     - dummy
-    - versioned-dependency  # units depending on this unit will depend on the last version of this unit being ready
     kustomization_spec:
       targetNamespace: '{{ .Release.Namespace }}'
 
@@ -184,7 +181,6 @@ units:
     enabled: true
     unit_templates:
     - kustomization-deployed-on-mgmt-cluster
-    - versioned-dependency  # units depending on this unit will depend on the last version of this unit being ready
 
   namespace-defs:
     enabled: true
