@@ -6,15 +6,15 @@ Interpret templating statements in values.
 {{- $envAll := set . "Values" (include "interpret-values-gotpl" . | fromJson) -}}
 
 {{/*
-compute .Values._internal.cluster_unit_deps (which is used by unit_templates.base-deps)
+compute .Values._internal.cluster_machines_ready_unit_deps (which is used by unit_templates.base-deps)
 
 this is done here because doing it in values.yaml ._internal does not work, because
-computing 'cluster_unit_deps' in _internal would result in fully interpreting 'unit_template.base-deps',
-resulting in interpreting 'depends_on.cluster-machines-ready' which itself relies on 'cluster_unit_deps',
+computing 'cluster_machines_ready_unit_deps' in _internal would result in fully interpreting 'unit_template.base-deps',
+resulting in interpreting 'depends_on.cluster-machines-ready' which itself relies on 'cluster_machines_ready_unit_deps',
 causing a variable interpretation loop
 */}}
-{{- $_ := set .Values._internal "cluster_unit_deps"
-                                (index (include "all-unit-dependencies" (tuple . "cluster" (list "cluster-machines-ready"))
+{{- $_ := set .Values._internal "cluster_machines_ready_unit_deps"
+                                (index (include "all-unit-dependencies" (tuple . "cluster-machines-ready" (list "cluster-machines-ready"))
                                         | fromJson) "result")
 -}}
 {{/*
