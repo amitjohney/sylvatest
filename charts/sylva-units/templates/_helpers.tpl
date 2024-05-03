@@ -45,6 +45,7 @@ Common labels
 {{- define "sylva-units.labels" -}}
 helm.sh/chart: {{ include "sylva-units.chart" . }}
 {{ include "sylva-units.selectorLabels" . }}
+sylva-units-helm-revision: {{ .Release.Revision | quote }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}

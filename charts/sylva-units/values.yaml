@@ -234,6 +234,17 @@ unit_templates:
             (not (.Values._internal.cluster_machines_ready_unit_deps | has .Values._unit_name_))
         }}
 
+# unit_definition_defaults is merged with each "units.x" before
+# it inherits from unit templates
+unit_definition_defaults:
+  depends_on:
+    root-dependency: >-
+      {{
+      and
+         (tuple . "root-dependency" | include "unit-enabled")
+         (not (.Values._unit_name_ | eq "root-dependency"))
+      }}
+
 # this defines Flux Kustomizations and the related ConfigMaps and Secrets
 # for Helm-based unit, the Kustomization will produce a Flux HelmRelease
 units:
@@ -280,6 +291,55 @@ units:
   #                   unit templates are defined under "unit_templates"
   #                   the settings for the unit are inherited from the corresponding entries under .Values.unit_templates,
   #                   merging them in the specified order
+
+  root-dependency:
+    info:
+      description: special unit ensuring ordered updates of all Kustomizations
+      details: >-
+        All Kustomizations will depend on this Kustomization, whose name is root-dependency-<n>
+        and changes at each update of the sylva-units Helm release. This Kustomization does not become
+        ready before all other Kustomizations have been updated. All this ensures in a race-free way
+        that during an update, units will be reconciled in an order matching dependency declarations.
+      internal: true
+    # Note:
+    # for this unit, the names of all resources produced must include .Release.Revision
+    # or another string that is guaranteed to change for each new sylva-units
+    # Helm release revision (or else the old and new Kustomization will control the same resource,
+    # which hence might get deleted when the old Kustomization is deleted), see DISCRIMINATOR below
+    repo: sylva-core
+    unit_templates: []
+    kustomization_name: root-dependency-{{ .Release.Revision }}
+    kustomization_spec:
+      path: ./kustomize-units/kube-job
+      wait: true
+      force: true
+      postBuild:
+        substitute:
+          JOB_NAME: root-dependency-check
+          DISCRIMINATOR: '-{{ .Release.Revision }}'  # needed to ensure that resources are distinct between root-dependency-<n> and root-dependency-<n+1>
+          JOB_TARGET_NAMESPACE: '{{ .Release.Namespace }}'
+          JOB_CHECKSUM: '{{ .Release.Revision }}'
+          RUNASUSER: '10000'
+          RUNASGROUP: '10000'
+      _patches:
+      - target:
+          kind: Job
+        patch: |
+          - op: add
+            path: /spec/template/spec/containers/0/env/-
+            value:
+              name: HELM_REVISION
+              value: '{{ .Release.Revision }}'
+      - target:
+          kind: ConfigMap
+        patch: |
+          - op: replace
+            path: /metadata/name
+            value: root-dependency-check-{{ .Release.Namespace }}-{{ .Release.Revision }}-cm
+          - op: replace
+            path: /data/kube-job.sh
+            value: |
+          {{ .Files.Get "scripts/root-dependency-check.sh" | indent 4 }}
 
   flux-system:
     info:
