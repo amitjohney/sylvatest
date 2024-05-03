@@ -91,11 +91,15 @@ variables:
       "/capo-kubeadm/"
 
 .deployment_rules:
-  - if: $CI_MERGE_REQUEST_LABELS =~ /renovate/ && $CAPO_TAG
+  - if: $CI_MERGE_REQUEST_LABELS =~ /allow-ci-failure/
+    # Bypass to allow some MR to be merged even if some tests are failing
     allow_failure: true
+    when: manual
+  - if: $CI_MERGE_REQUEST_LABELS =~ /renovate/ && $CAPO_TAG
     when: manual
   - if: '$CI_COMMIT_TAG'
   - if: $CI_PIPELINE_SOURCE == 'pipeline' && $OCI_TAG == null
+    # Allow failure to not block MR in upstream repo
     allow_failure: true
     when: manual
   - if: '$CI_PIPELINE_SOURCE == "web" && $CI_JOB_NAME =~ $DEPLOYMENT_FLAVOR'
@@ -149,7 +153,6 @@ variables:
   - if: $CI_MERGE_REQUEST_LABELS =~ /run-e2e-tests/ && ($E2E_JOB_MR_PARITY == "any" || ($E2E_JOB_MR_PARITY == "even" && $CI_OPEN_MERGE_REQUESTS =~ /[02468]$/) || ($E2E_JOB_MR_PARITY == "odd" && $CI_OPEN_MERGE_REQUESTS =~ /[13579]$/))
     allow_failure: true
   - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-    allow_failure: true
     when: manual
 
 .default-trigger:
