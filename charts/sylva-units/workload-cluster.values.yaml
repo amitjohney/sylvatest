@@ -94,6 +94,13 @@ unit_templates:
 # here we select which units we want to enable for a workload cluster
 units:
 
+  root-dependency:
+    enabled: on
+    unit_templates:
+    - kustomization-deployed-on-mgmt-cluster
+    depends_on:
+      mgmt-cluster-ready: false  # cancel this dependency inherited via kustomization-deployed-on-mgmt-cluster unit template
+
   mgmt-cluster-ready:
     enabled: on
     info:
