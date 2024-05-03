@@ -231,7 +231,7 @@ unit_templates:
       cluster-machines-ready: >-
         {{
         and (tuple . "cluster-machines-ready" | include "unit-enabled")
-            (not (.Values._internal.cluster_unit_deps | has .Values._unit_name_))
+            (not (.Values._internal.cluster_machines_ready_unit_deps | has .Values._unit_name_))
         }}
 
 # this defines Flux Kustomizations and the related ConfigMaps and Secrets
@@ -2058,6 +2058,10 @@ units:
     enabled_conditions:
     - '{{ tuple . "cluster" | include "unit-enabled" }}'
     depends_on:
+      # for kubeadm, calico is installed by Flux and Machines don't become ready until calico is installed
+      # so we need to have cluster-machines-ready depend on 'calico'
+      # (this is relevant only on installation, on upgrades calico is already installed)
+      calico: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") (not .Release.IsUpgrade) }}'
       cluster: true
       cluster-ready: true  # no need to start waiting for anything until
     unit_templates: []
@@ -5594,10 +5598,10 @@ _internal:
 
   mgmt_cluster: false
 
-  # 'cluster_unit_deps' contains all the dependencies of the 'cluster' unit, direct and indirect,
+  # 'cluster_machines_ready_unit_deps' contains all the dependencies of the 'cluster' unit, direct and indirect,
   # except the ones set due to depending on cluster-machines-ready.
   # (this is used by unit_templates.base-deps)
-  # cluster_unit_deps:   # to avoid a circular references loop between interpret variables, this is computed directly in units.yaml
+  # cluster_machines_ready_unit_deps:   # to avoid a circular references loop between interpret variables, this is computed directly in units.yaml
 
   ha_cluster:
 
