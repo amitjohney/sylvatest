@@ -83,7 +83,8 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/os-image-server.git
       ref:
-        tag: 2.0.0
+        #tag: 2.0.0
+        branch: fe/serve-gzipped-images
 
   capo-contrail-bgpaas:
     kind: GitRepository
@@ -3709,7 +3710,7 @@ units:
             - host: '{{ .Values.external_hostnames.os_image_server }}'
         osImagePersistenceDefaults:
           enabled: true
-          size: '{{ .Values.os_images_default_download_storage_space }}'
+          size: 3Gi
           storageClass: '{{ .Values._internal.default_storage_class }}'
       valuesFrom:
         - kind: ConfigMap
