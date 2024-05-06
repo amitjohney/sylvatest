@@ -35,6 +35,7 @@ sylva-units:helm-lint:
   stage: test
   extends: .helm-lint
   script:
+    - helm dependencies update charts/sylva-units
     - helm lint charts/sylva-units
 
 sylva-units:helm-yamllint:
