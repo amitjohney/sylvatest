@@ -1,7 +1,5 @@
 # Grab some info in case of failure, essentially usefull to troubleshoot CI, fell free to add your own commands while troubleshooting
 
-unset KUBECONFIG
-
 # list of kinds to dump
 #
 # for some resources, we add the apiGroup because there are resources
@@ -148,21 +146,32 @@ echo -e "\nSystem info"
 free -h
 df -h || true
 
+# Unset KUBECONFIG to make sure that we are targetting kind cluster
+unset KUBECONFIG
+
 if [[ $(kind get clusters) =~ $KIND_CLUSTER_NAME ]]; then
   cluster_info_dump bootstrap
   echo -e "\nDump bootstrap node logs"
   docker ps -q -f name=control-plane* | xargs -I % -r docker exec % journalctl -e > bootstrap-cluster-dump/bootstap_node.log
 fi
 
-if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
-    export KUBECONFIG=${KUBECONFIG:-$BASE_DIR/management-cluster-kubeconfig}
+# Try to guess management-cluster-kubeconfig path:
+# - Use first argument if provided
+# - Use BASE_DIR environment value if it is set (it is usually done by common.sh in CI)
+# - Use relative path to current script location as BASE_DIR as a last option
+
+BASE_DIR=${BASE_DIR:-$(realpath $(dirname $0)/../../)}
+MGMT_KUBECONFIG=${1:-${BASE_DIR}/management-cluster-kubeconfig}
+
+if [[ -f $MGMT_KUBECONFIG ]]; then
+    export KUBECONFIG=${MGMT_KUBECONFIG}
 
     echo -e "\nGet nodes in management cluster"
     kubectl --request-timeout=3s get nodes
 
     cluster_info_dump management
 
-    workload_cluster_name=$(kubectl get cluster.cluster -A -o jsonpath='{ $.items[?(@.metadata.namespace != "sylva-system")].metadata.name }')
+    workload_cluster_name=$(kubectl --request-timeout=3s get cluster.cluster -A -o jsonpath='{ $.items[?(@.metadata.namespace != "sylva-system")].metadata.name }')
     if [[ -z "$workload_cluster_name" ]]; then
         echo -e "There's no workload cluster for this deployment. All done"
     else
@@ -175,7 +184,7 @@ if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
         else
           # in case of baremetal emulation workload cluster is only accessible from Rancher
           # and rancher API certificates does not match expected (so kubectl must be used with insecure-skip-tls-verify)
-          ./tools/shell-lib/get-wc-kubeconfig-from-rancher.sh $workload_cluster_name > $BASE_DIR/workload-cluster-kubeconfig-rancher
+          $BASE_DIR/tools/shell-lib/get-wc-kubeconfig-from-rancher.sh $workload_cluster_name > $BASE_DIR/workload-cluster-kubeconfig-rancher
           yq -i e '.clusters[].cluster.insecure-skip-tls-verify = true' $BASE_DIR/workload-cluster-kubeconfig-rancher
           yq -i e 'del(.clusters[].cluster.certificate-authority-data)' $BASE_DIR/workload-cluster-kubeconfig-rancher
           export KUBECONFIG=$BASE_DIR/workload-cluster-kubeconfig-rancher
