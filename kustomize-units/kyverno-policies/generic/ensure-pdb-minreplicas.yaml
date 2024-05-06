@@ -37,7 +37,7 @@ spec:
         - name: minavailable
           apiCall:
             urlPath: "/apis/policy/v1/namespaces/{{request.namespace}}/poddisruptionbudgets"
-            jmesPath: "items[?label_match(spec.selector.matchLabels, `{{request.object.spec.template.metadata.labels}}`)] | [0] | spec.minAvailable || `-1`"
+            jmesPath: "items[?label_match(spec.selector.matchLabels, `{{request.object.spec.template.metadata.labels}}`)] | max_by(@, &spec.minAvailable) | spec.minAvailable || `-1`"
       validate:
         message: >-
           The matching PodDisruptionBudget for this resource has its minAvailable value

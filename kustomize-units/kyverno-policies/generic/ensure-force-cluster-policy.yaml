@@ -20,6 +20,10 @@ spec:
       - resources:
           kinds:
           - ClusterPolicy
+          selector:
+            matchLabels:
+              kustomize.toolkit.fluxcd.io/name: "*"
+              kustomize.toolkit.fluxcd.io/namespace: "*"
     validate:
       message: "ClusterPolicy must have 'kustomize.toolkit.fluxcd.io/force: Enabled' annotation."
       pattern:
