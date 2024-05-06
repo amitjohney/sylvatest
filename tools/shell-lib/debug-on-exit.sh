@@ -60,7 +60,7 @@ additional_resources="
 function dump_additional_resources() {
     local cluster_dir=$1
     shift
-    for cr in $@; do
+    for cr in "$@"; do
       echo "Dumping resources $cr in the whole cluster"
       if kubectl api-resources | grep -qi $cr ; then
         kind=${cr/\*/}  # transform the .* used for matching kubectl api-resource, into a plain '.'
