@@ -110,6 +110,7 @@
 | **postgres-init** | initializes Postgresql for Keycloak |  | True | Kustomize | N/A |
 | **prometheus-flux** | Prometheus configuration for Flux controllers & resources<br/><br/>Adding podmonitors for flux controllers and custom labels to the flux resource metrics by configuring kube-state-metrics |  | True | Kustomize | N/A |
 | **prometheus-resources** | Creates required ConfigMaps and Kyverno policies to enable SNMP monitoring by Prometheus |  | True | Kustomize | N/A |
+| **rancher-default-roles** | Create Rancher role templates<br/><br/>This unit creates a set of additional role templates which are likely to be needed by many<br/>clusters. |  | True | Kustomize | N/A |
 | **rancher-keycloak-oidc-provider** | configures Rancher for Keycloak OIDC integration |  | True | Kustomize | N/A |
 | **rancher-monitoring-clusterid-inject** | injects Rancher cluster ID in Helm values of Rancher monitoring chart |  | True | Kustomize | N/A |
 | **sandbox-privileged-namespace** | creates the sandbox namespace used to perform privileged operations like debugging a node |  | True | Kustomize | N/A |
