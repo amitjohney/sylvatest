@@ -29,9 +29,6 @@ cluster:
 #  "kustomization-deployed-on-mgmt-cluster" or "helmrelease-deployed-on-mgmt-cluster"
 #  unit templates)
 unit_kustomization_spec_default:
-  depends_on:
-    mgmt-cluster-ready: true  # all units in this file should depend on mgmt-cluster-ready,
-                              # which reflects the readiness of the mgmt cluster
   kubeConfig:
     secretRef:
       name: '{{ .Values.cluster.name }}-kubeconfig'
@@ -66,6 +63,7 @@ unit_templates:
     # we put here the list of base units that most units will need to depend on
     # they correspond to "the workload cluster is ready for stuff to be deployed on it"
     depends_on:
+      mgmt-cluster-ready: true
       cluster-reachable: true
       namespace-defs: true
       calico: '{{ tuple . "calico" | include "unit-enabled" }}'
@@ -85,6 +83,7 @@ unit_templates:
   kustomization-deployed-on-mgmt-cluster:
     depends_on:
       cluster-machines-ready: false
+      mgmt-cluster-ready: true
     # the resources produced by this Kustomization will live in the mgmt cluster
     # so we override what is defined in unit_kustomization_spec_default
     kustomization_spec:
@@ -94,6 +93,7 @@ unit_templates:
   helmrelease-deployed-on-mgmt-cluster:
     depends_on:
       cluster-machines-ready: false
+      mgmt-cluster-ready: true
     helmrelease_spec:
       # the resources produced by this HelmRelease will live in the mgmt cluster:
       # so we override what is defined in unit_helmrelease_spec_default
@@ -109,11 +109,11 @@ units:
     enabled: on
     info:
       description: (workload cluster) this unit reflects the readiness of the mgmt cluster
-    depends_on:
-      mgmt-cluster-ready: false  # cancel this dependency inherited via unit_kustomization_spec_default
     unit_templates:
     - dummy
     - kustomization-deployed-on-mgmt-cluster
+    depends_on:
+      mgmt-cluster-ready: false  # cancel this dependency inherited via kustomization-deployed-on-mgmt-cluster unit template
     kustomization_spec:
       healthChecks:
         - apiVersion: v1
