@@ -337,6 +337,227 @@ Before trigerring bootstrap.sh, some prerequisites need to be satisfied.
 
 </details>
 
+<details><summary>Deploying baremetal clusters using CAPM3</summary>
+
+This scenario details deployment procedure for a full baremetal use-case, so using baremetal servers for both management and workload clusters.
+The deployment workflow is in line with other infrastructure providers as detailed above, with `sylva-units` values specific to CAPM3, as shown in `environment-values/rke2-capm3/`.
+
+Before triggering deployment through bootstrap.sh, some prerequisites need to be satisfied.
+
+- Create a **bootstrap vm** using OpenStack, vsphere or use an existing vm (please check previous section)
+- Review the hardware and network specs for a baremetal deployment:
+
+In order to deploy a minimal `sylva cluster`, you would need a baremetal server, acting both as control-plane and worker (both in kubeadm and rke2, the control-plane nodes don't have the `effect: NoSchedule` taint).
+For highly Available clusters at least three servers are required.
+
+> **_Hardware Requirements:_** It is recommended to have the following specs at the minimum for the baremetal Servers
+
+- 16 CPU cores (32 vCPU with HT)
+- 32GB of RAM
+- 100GB of OS Disk
+
+The BMC interfaces (IDRAC for Dell, ILO for HPE, XCC for Lenovo) must be reachable from the bootstrap vm over the list of ports mention below (It is advised to only allow these flows by L4 stateful inspection devices like Firewalls, to permit reachability from/to the Out-of-Band network, since this network allows sensitive/disruptive operations):
+
+TCP 6180: (Ironic -> BM) pull discovery image (ram disk) (ironic-httpd)
+TCP 5050: (BM <-> Ironic) Port used by Ironic Python Agent from the BM node to the Ironic Inspector (management cluster)
+TCP 6385: (BM <-> Ironic) Port used for Ironic API
+TCP 161/162: SNMPv3 (BM -> Prometheus) (optional)
+
+> **_IMPORTANT NOTE:_** Depending on the security rules implementation in your infrastructure provider, the following ports shall be allowed to facilitate traffic flow in both directions (ingress and egress) between the bootstrap vm and the baremetal hosts.
+
+- 80
+- 443
+- 6443
+- 6180
+- 6385
+- 5050
+- 9345
+- 9999
+
+The first interface (PXE boot interface) of the baremetal nodes must be connected to a provisioning network with access to a DHCP server (potentially through a DHCP relay). The provisioning network needs to reach a HTTP(s) endpoint (Ironic API: components of CAPM3) on the management cluster and also have accessibility over port 9999 (TCP).
+
+The provisioning network is usually split into 2 ranges, one used for DHCP server during provisioning and the second one for Ironic provisioning pools to provision the operating system on each baremetal node.
+
+Reference for Network Allocation:
+
+```shell
+---------------------------------------------------------------------------------------------------------------------------------------
+| Network        | VLAN id | CIDR             | Gateway       | Reserved Pool                   | Metal3 pools                        |
+| -------------- | ------- | ---------------- | ------------- | --------------------------------|-------------------------------------|
+| Provisioning   | 2016    | 10.199.39.192/27 | 10.199.39.193 | 10.199.39.225-240 (DHCPD server)| Provisioning pool: 10.199.39.219-220|
+| Public Network | 2015    | 10.188.36.128/26 | 10.188.36.129 | None                            | Public pool: 10.188.36.148-149      |
+---------------------------------------------------------------------------------------------------------------------------------------
+```
+
+On the Bootstrap VM:
+
+- Install **Docker** and add your user to the `docker` group
+- Clone **sylva-core** project on the **bootstrap vm**
+- Create your own copy of **environment-values** (this will prevent you from accidentally committing your secrets).
+- Set the **proxies** environment variables (http_proxy, https_proxy, no_proxy) if using a corporate proxy
+
+  ```shell
+  cp -a environment-values/rke2-capm3 environment-values/my-rke2-capm3
+  ```
+
+- Provide your **server specific IPMI credentials** in `environment-values/my-rke2-camp3/secrets.yaml`
+
+  ```yaml
+  cluster:
+    baremetal_hosts:
+      my-hpe-server:
+        credentials:
+          username: Administrator
+          password: "put the actual password here"
+      my-dell-server:
+        credentials:
+          username: Administrator
+          password: "put the actual password here"     
+  ```
+
+> **_NOTE:_** Obviously, the `secrets.yaml` file is sensitive and meant to be ignored by Git (see `.gitignore`). However, for the sake of security, it can be a good idea to [secure these files with SOPS](./sops-howto.md) to mitigate the risk of leakage.
+
+- Adapt `environment-values/my-rke2-camp3/values.yaml` by changing the values:
+
+  ```yaml
+  ...
+  cluster_external_ip: 10.188.36.149
+  cluster:
+    capi_providers:
+      infra_provider: capm3
+      bootstrap_provider: cabpr
+  
+    control_plane_replicas: 1
+  
+    rke2:
+      additionalUserData:
+        config:
+          #cloud-config
+          users:
+            - name: sylva-user
+              groups: users
+              sudo: ALL=(ALL) NOPASSWD:ALL
+              shell: /bin/bash
+              lock_passwd: false
+              passwd: "put your password hash here"  # (copy pasted from /etc/shadow or created with "mkpasswd --method=SHA-512 --stdin")
+              ssh_authorized_keys:
+                - ssh-rsa AAAA...... YOUR KEY HERE ....UqnQ==
+  
+    capm3:
+      machine_image_url: http://{{ .Values.display_external_ip }}/ubuntu-22.04-plain.qcow2
+      machine_image_format: qcow2
+      machine_image_checksum: http://{{ .Values.display_external_ip }}/ubuntu-22.04-plain.qcow2.sha256sum
+      machine_image_checksum_type: sha256
+      public_pool_name: "public-pool"
+      public_pool_network: 10.188.36.128
+      public_pool_gateway: 10.188.36.129
+      public_pool_start: 10.188.36.148
+      public_pool_end: 10.188.36.148
+      public_pool_prefix: "26"
+      provisioning_pool_name: "provisioning-pool"
+      provisioning_pool_network: 10.199.39.192
+      provisioning_pool_gateway: 10.199.39.193
+      provisioning_pool_start: 10.199.39.219
+      provisioning_pool_end: 10.199.39.219
+      provisioning_pool_prefix: "27"
+      dns_server: 1.2.3.4
+  
+    control_plane:  # tweak network configuration as needed
+  
+      capm3:
+        hostSelector:  # criteria for matching labels on BareMetalHost objects defined by baremetal_hosts value
+          matchLabels:
+            cluster-role: control-plane
+  
+        provisioning_pool_interface: bond0
+        public_pool_interface: bond0.13
+  
+      network_interfaces:
+        # for CAPM3 folowing are used and mapped to Metal3Data.spec.template.spec.networkData.links
+        bond0:
+          # bond_mode can be one of balance-rr, active-backup, balance-xor, broadcast, balance-tlb, balance-alb, 802.3ad
+          # https://github.com/metal3-io/cluster-api-provider-metal3/blob/main/api/v1alpha5/metal3datatemplate_types.go#L201-L202
+          bond_mode: 802.3ad
+          interfaces:
+            - ens1f0
+            - ens1f1
+          vlans:
+            - id: 13
+        ens1f0:
+          type: phy
+        ens1f1:
+          type: phy
+  
+    machine_deployment_default:  # tweak as needed
+  
+      capm3:
+        hostSelector:
+          matchLabels:
+            cluster-role: worker
+  
+        provisioning_pool_interface: bond0
+        public_pool_interface: bond0.13
+  
+    machine_deployments:
+      md0:
+        replicas: 1
+        network_interfaces:
+          bond0:
+            bond_mode: 802.3ad
+            interfaces:
+              - ens2f0
+              - ens2f1
+            vlans:
+              - id: 13
+          ens2f0:
+            type: phy
+          ens2f1:
+            type: phy
+  
+    baremetal_hosts:  # corresponding credentials need to be set in secrets.yaml
+  
+      # this example is based on what worked on an HP Proliant DL360 Gen10
+      my-hpe-server:
+        bmh_metadata:
+          labels:
+            cluster-role: control-plane
+        bmh_spec:
+          description: my control plane node
+          bmc:
+            address: redfish-virtualmedia://66.66.66.66/redfish/v1/Systems/1   # put the real BMC address here ()
+            disableCertificateVerification: true
+          bootMACAddress: ba:ad:00:c0:ff:ee    # put the real address here!
+          # rootDeviceHints:
+          #   hctl: 2:1:0:0   # tweak as needed
+  
+      # this example is based on what worked on an Dell PowerEdge XR11
+      my-dell-server:
+        bmh_metadata:
+          labels:
+            cluster-role: worker
+        bmh_spec:
+          description: my worker node
+          bmc:
+            address: idrac-virtualmedia://77.77.77.77/redfish/v1/Systems/System.Embedded.1  # put the real BMC address here!
+          bootMACAddress: ba:ad:00:c0:ff:ee    # put the real address here!
+  
+  metal3:
+    bootstrap_ip: 10.177.129.138
+
+  proxies:
+    http_proxy: http://your.company.proxy.url  #replace me
+    https_proxy: http://your.company.proxy.url  #replace me
+    no_proxy: 127.0.0.1,localhost,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8,.sylva
+  ```
+
+- Run the bootstrap script:
+
+  ```shell
+   ./bootstrap.sh environment-values/my-rke2-camp3
+  ```
+
+</details>
+
 ### Finding the default admin SSO password
 
 Sylva tooling will generate a random default admin password, used for accessing the different services (Rancher, Flux Web UI and Vault) through the Keycloak default SSO account.
