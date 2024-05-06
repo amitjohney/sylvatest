@@ -500,6 +500,8 @@ For example, if you want to get the final values passed to a specific unit, such
 kubectl get secret sylva-units-values -o template='{{ .data.values }}' | base64 -d | yq .units.cluster.helmrelease_spec.values
 ```
 
+The timeout value for oci image artifacts for os-image-server unit is set by default to 30 minutes but this values can be customized for some environments if needed. To override the default value just set parameter `.Values.units.os-image-server.helmrelease_spec.values.downloader.oci_timeout`.
+
 ### Knowing the state of a deployment
 
 When a deployment (a first one or an update) is done, this is reflected in the status of the `sylva-units`
