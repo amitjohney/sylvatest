@@ -2302,8 +2302,6 @@ units:
     info:
       description: install Calico CNI
       maturity: stable
-    enabled_conditions:
-    - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'  # installed by RKE2 when RKE2 is used
     unit_templates:
     - base-deps
     depends_on:
@@ -2315,6 +2313,8 @@ units:
       v3.26.300: '{{ include "k8s-version-match" (tuple . ">=1.27.10,<1.28.8") }}'
       v3.27.200: '{{ include "k8s-version-match" (tuple . ">=1.28.8") }}'
     helmrelease_spec:
+      releaseName: rke2-calico
+      targetNamespace: kube-system
       chart:
         spec:
           chart: rke2-calico
@@ -2334,7 +2334,12 @@ units:
     unit_templates:
     - base-deps
     enabled_conditions:
-      - '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" }}'
+      # Disable for cabpk when deploying on capo/capm3 infra because in this case we use kube-vip
+      - '{{ or
+              (.Values.cluster.capi_providers.infra_provider | eq "capd")
+              ( and (not (.Values.cluster.capi_providers.infra_provider | eq "capd"))
+                    (not (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk")))
+        | include "preserve-type" }}'
     depends_on:
       calico: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
     helm_repo_url: https://metallb.github.io/metallb
