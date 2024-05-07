@@ -10,16 +10,6 @@ patches:
     patch: |-
       - op: remove
         path: /spec/conversion/webhook/clientConfig/caBundle
-  - target:
-      group: apps
-      version: v1
-      kind: Deployment
-      name: capd-controller-manager
-      namespace: capd-system
-    patch: |-
-      - op: replace
-        path: /spec/template/spec/containers/0/args/2
-        value: --feature-gates=MachinePool=false,ClusterTopology=false
 
 images:
   - name: gcr.io/k8s-staging-cluster-api/capd-manager
