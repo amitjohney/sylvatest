@@ -3016,7 +3016,7 @@ units:
 
   grafana-init:
     info:
-      description: sets up Grafana certificate
+      description: sets up Grafana certificate for Keycloak OIDC integration
       internal: true
     enabled_conditions:
       - '{{ tuple . "monitoring" | include "unit-enabled" }}'
