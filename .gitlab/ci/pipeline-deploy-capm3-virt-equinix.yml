@@ -30,7 +30,8 @@ create-runner:
     RUNNER_TAG: $CI_PIPELINE_IID
     RUNNER_PROJECT_ID: $CI_PROJECT_ID
     RUNNER_PLAN: m3.small.x86
-    RUNNER_AAS_TARGET_REF: main
+    # RUNNER_AAS_TARGET_REF: main
+    RUNNER_AAS_TARGET_REF: test
   tags: []
   image:
     name: registry.gitlab.com/gitlab-org/cli:v1.40.0
