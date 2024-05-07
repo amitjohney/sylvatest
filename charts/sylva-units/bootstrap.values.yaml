@@ -555,3 +555,4 @@ units_override_enabled:
   - libvirt-metal
   - vsphere-cpi
   - get-openstack-images
+  - capo-get-existing-resources
