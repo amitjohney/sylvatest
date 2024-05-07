@@ -133,11 +133,11 @@ Waiting for the cluster kubeconfig Secret is a workaround
     "name" (printf "%s-kubeconfig" $cluster.name)
     "namespace" $ns
 ) -}}
-{{ if .sleep_job }}
+{{ if .sleep_job_name }}
   {{- $result = append $result (dict
     "apiVersion" "batch/v1"
     "kind" "Job"
-    "name" "dummy-deps-cluster-ready-sleep"
+    "name" .sleep_job_name
     "namespace" $ns
     ) -}}
 {{ end }}

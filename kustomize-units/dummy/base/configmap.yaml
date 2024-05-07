@@ -1,7 +1,7 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: dummy-deps-${UNIT_NAME}
+  name: dummy-deps-${UNIT_NAME}${DISCRIMINATOR:-}
   namespace: sylva-system
 data:
   explanation: |
