@@ -178,32 +178,26 @@ variables:
   needs: !reference [.needs-publish-jobs]
 
 capd-preview-deploy:
-  stage: deploy
-  extends:
-    - .deploy-management
-  timeout: 15min
-  script:
-    - !reference [.setup_ci_values]
-    - ./preview.sh environment-values/${ENV_NAME}
-  artifacts:
-    when: on_failure
-    expire_in: 1 hour
-    paths:
-      - debug-on-exit.log
-      - bootstrap-cluster-dump/
+  extends: .default-trigger
+  variables:
+    CAPD_RUNNER_TAG: gitlab-org-docker
+    ENV_NAME: kubeadm-capd
+    ONLY_DEPLOY_MGMT: "true"
+    SKIP_TESTS: "true"
+  trigger:
+    include: .gitlab/ci/pipeline-deploy-capd-preview.yml
+    strategy: depend
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       changes:
         - preview.sh
         - tools/shell-lib/common.sh
-  variables:
-    ENV_NAME: kubeadm-capd
+        - .gitlab/ci/pipeline-deploy-capd-preview.yml
 
 capd-preview-oci-deploy:
   extends: [capd-preview-deploy]
   variables:
     OCI_TAG: $OCI_TAG_FORMAT
-    ENV_NAME: kubeadm-capd
   needs: !reference [.needs-publish-jobs]
 
 capd-kubeadm-ubuntu:
