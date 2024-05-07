@@ -816,6 +816,9 @@ units:
           CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
           VO_VAULT_ACCESS_KEY: '{{ .Values.vault.access_key }}'
           VO_VAULT_SECRET_KEY: '{{ .Values.vault.secret_key }}'
+        substituteFrom:
+        - kind: ConfigMap
+          name: proxy-env-vars
       _components:
         # generate certificate for external communitation
         - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.vault "cert") }}'

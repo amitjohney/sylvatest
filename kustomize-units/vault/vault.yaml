@@ -152,16 +152,16 @@ spec:
     storage:
       raft:
         path: "/vault/file"
-        retry_join:
-        - leader_api_addr: https://vault-0:8200
-          leader_ca_cert_file: /vault/tls/ca.crt
-          leader_tls_servername: vault
-        - leader_api_addr: https://vault-1:8200
-          leader_ca_cert_file: /vault/tls/ca.crt
-          leader_tls_servername: vault
-        - leader_api_addr: https://vault-2:8200
-          leader_ca_cert_file: /vault/tls/ca.crt
-          leader_tls_servername: vault
+#        retry_join:
+#        - leader_api_addr: https://vault-0:8200
+#          leader_ca_cert_file: /vault/tls/ca.crt
+#          leader_tls_servername: vault
+#        - leader_api_addr: https://vault-1:8200
+#          leader_ca_cert_file: /vault/tls/ca.crt
+#          leader_tls_servername: vault
+#        - leader_api_addr: https://vault-2:8200
+#          leader_ca_cert_file: /vault/tls/ca.crt
+#          leader_tls_servername: vault
     listener:
       tcp:
         address: "0.0.0.0:8200"
@@ -285,13 +285,13 @@ spec:
         fieldRef:
           fieldPath: metadata.name
     - name: VAULT_CLUSTER_ADDR
-      value: http://$(POD_NAME):8201
+      value: https://$(POD_NAME):8201
     - name: http_proxy
-      value: http://proxy.rd.francetelecom.fr:8080
+      value: ${http_proxy}
     - name: https_proxy
-      value: http://proxy.rd.francetelecom.fr:8080
+      value: ${https_proxy}
     - name: no_proxy
-      value: localhost,127.0.0.1,10.0.0.0/8,172.0.0.0/12,192.168.0.0/16,172.20.129.169,.sylva,.cluster.local.,.cluster.local,.svc,vault-0,vault-1,vault-2,100.73.0.1
+      value: ${no_proxy},vault,$(KUBERNETES_SERVICE_HOST)
   # If you are using a custom certificate and are setting the hostname in a custom way
   # sidecarEnvsConfig:
   #   - name: VAULT_ADDR
