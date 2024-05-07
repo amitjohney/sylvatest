@@ -81,17 +81,22 @@ function dump_additional_resources() {
 
 function format_and_sort_events() {
   # this sorts events by lastTimestamp (when defined)
-  yq '[.items[] |
+  include_ns=''
+  if [[ $1 == "include-ns" ]]; then
+    include_ns='.involvedObject.namespace // "-",'
+  fi
+  yq "[.items[] |
        [.firstTimestamp // .eventTime,
-        .lastTimestamp // .firstTimestamp // .eventTime,
+        .lastTimestamp // .series.lastObservedTime // .firstTimestamp // .eventTime,
         .involvedObject.kind,
+        $include_ns
         .involvedObject.name,
-        .count,
+        .count // .series.count // 1,
         .reason,
-        .message // "" | sub("\n","\n        ")]
+        .message // \"\" | sub(\"\n\",\"\n        \")]
        ]
       | sort_by(.1)
-      | @tsv'
+      | @tsv"
 }
 
 function cluster_info_dump() {
@@ -113,7 +118,7 @@ function cluster_info_dump() {
   done
 
   # same in a single file
-  kubectl get events -A -o yaml | format_and_sort_events > $dump_dir/events.log
+  kubectl get events -A -o yaml | format_and_sort_events include-ns > $dump_dir/events.log
 
   dump_additional_resources $dump_dir $additional_resources
 
