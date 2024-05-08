@@ -1,0 +1,11 @@
+kind: ClusterResourceSet
+metadata:
+  name: crs-cni
+spec:
+  clusterSelector:
+    matchLabels:
+      cni: external
+  resources:
+  - kind: ConfigMap
+    name: aws-vpc-cni-driver-addon
+  strategy: ApplyOnce

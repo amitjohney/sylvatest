@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - credentials.yaml
   - infrastructure-components.yaml
+  - crs.yaml
 # Add labels to enable clusterctl move to retrieve resources correponding to capo CRDs
 labels:
   - pairs:
