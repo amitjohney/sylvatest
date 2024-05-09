@@ -1123,7 +1123,7 @@ units:
         manager:
           image:
             repository: neuvector/manager
-          runAsUser: 10000
+          runAsUser: "10000"
           ingress:
             enabled: true
             host: '{{ .Values.external_hostnames.neuvector }}'
