@@ -21,13 +21,13 @@ KEYCLOAK_INITIAL_PASSWORD=`kubectl -n keycloak get secret keycloak-initial-admin
 echo "-- Retrieve Keycloak access token"
 ACCESS_TOKEN=$(curl -k -s -X POST \
 -H "Content-Type: application/x-www-form-urlencoded" \
--d "username=${KEYCLOAK_INITIAL_USERNAME}" \
--d "password=${KEYCLOAK_INITIAL_PASSWORD}" \
+-d "username=$KEYCLOAK_INITIAL_USERNAME" \
+-d "password=$KEYCLOAK_INITIAL_PASSWORD" \
 -d "grant_type=password" \
 -d "client_id=admin-cli" \
-${KEYCLOAK_BASE_URL}/realms/master/protocol/openid-connect/token \
+$${KEYCLOAK_BASE_URL}/realms/master/protocol/openid-connect/token \
 | jq -r '.access_token')
-if [ -z "${ACCESS_TOKEN-unset}" ]; then
+if [ -z "$${ACCESS_TOKEN-unset}" ]; then
     echo "ACCESS_TOKEN is set to the empty string, will try again"
     exit 1
 fi
@@ -35,8 +35,8 @@ fi
 echo "-- Check that sylva realm was already created by keycloak-operator"
 NON_MASTER_REALM=$(curl -k -s -X GET \
 -H "Content-Type: application/json" \
--H "Authorization: Bearer ${ACCESS_TOKEN}" \
-${KEYCLOAK_BASE_URL}/admin/realms \
+-H "Authorization: Bearer $ACCESS_TOKEN" \
+$${KEYCLOAK_BASE_URL}/admin/realms \
 | jq -r '.[] | select( (.realm | test("^master$")|not) ).realm')
 if [ "$NON_MASTER_REALM" != "sylva" ]; then
     echo "The sylva realm is not yet ready, will try again"
@@ -46,7 +46,7 @@ fi
 echo "-- Create client scope"
 curl -k -s -X POST \
 -H "Content-Type: application/json" \
--H "Authorization: Bearer ${ACCESS_TOKEN}" \
+-H "Authorization: Bearer $ACCESS_TOKEN" \
 -d '{
     "name": "groups",
     "protocol": "openid-connect",
@@ -55,6 +55,6 @@ curl -k -s -X POST \
     "default.client.scope": "false"
     }
 }' \
-${KEYCLOAK_BASE_URL}/admin/realms/sylva/client-scopes
+$${KEYCLOAK_BASE_URL}/admin/realms/sylva/client-scopes
 
 echo "-- All done"

@@ -21,7 +21,7 @@ set -o pipefail
 #  it may require sometime to kubectl to see all Kustomizations, and
 #  unfortunately it may declare that a Kustomization didn't meet the wait
 #  criteria even if just didn't had time to see it)
-WAIT_TIMEOUT=${WAIT_TIMEOUT:-60s}
+WAIT_TIMEOUT=$${WAIT_TIMEOUT:-60s}
 
 # we setup an exit trap to display the status of all Kustomization
 # if one of the 'kubectl wait' fails
