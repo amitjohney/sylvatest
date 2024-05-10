@@ -1145,6 +1145,9 @@ properties:
   _internal:  # -------------------------------
     type: object
 
+  immutable_values: #--------------------------------
+    type: object
+
   # Placeholder for external units that would need to define their own values
   third_party:  # -------------------------------
     type: object

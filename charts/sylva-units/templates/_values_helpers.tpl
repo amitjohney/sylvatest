@@ -83,3 +83,39 @@ branch: main
    {{- end }}
  {{- end -}}
 {{- end -}}
+
+{{/*
+Have the (first paramenter) dict structure traversed by dig for each element of an input list (second parameter)
+
+usage: |
+  tuple (dict "foo1" (dict "bar1" "toto1") "foo2" (dict "bar2" (dict "titi2" "toto2"))) (list "foo1" "bar1")         | include "recursive-dig" # returns toto1
+  tuple (dict "foo1" (dict "bar1" "toto1") "foo2" (dict "bar2" (dict "titi2" "toto2"))) (list "foo2" "bar2" "titi2") | include "recursive-dig" # returns toto2
+
+*/}}
+{{- define "recursive-dig" -}}
+  {{- $checked_dict := index . 0 -}}
+  {{- $dig_values_list := index . 1 -}}
+  {{- range $i := $dig_values_list }}
+    {{- $checked_dict = $checked_dict | dig $i "" | default dict -}}
+  {{- end -}}
+  {{- $checked_dict }}
+{{- end -}}
+
+{{/*
+Return an error if the upgrade values (passed as list of dict keys) are not equal to previous revision set
+*/}}
+{{- define "enforce-immutable" -}}
+  {{- $envAll := index . 0 -}}
+  {{- $dig_values_list := index . 1 -}}
+  {{- $current_value := tuple ($envAll.Values | merge (dict)) $dig_values_list | include "recursive-dig" -}}
+  {{- $debug_secret_values := lookup "v1" "Secret" $envAll.Release.Namespace "sylva-units-values"| dig "data" "values" "" | b64dec | fromYaml | default dict -}}
+
+  {{/* only check if Secret/sylva-units-values contents is not empty map */}}
+  {{- if $debug_secret_values -}}
+    {{- $initial_value := tuple $debug_secret_values $dig_values_list | include "recursive-dig" }}
+    {{- if not (deepEqual $initial_value  $current_value)  -}}
+      {{- fail (printf "The %s value provided initially (%s) is different than the currently provided one (%s)" (join "." $dig_values_list) $initial_value $current_value) -}}
+    {{- end -}}
+  {{- end -}}
+  {{- $current_value -}}
+{{- end -}}

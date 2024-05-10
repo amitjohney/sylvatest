@@ -8306,6 +8306,9 @@
     "_internal": {
       "type": "object"
     },
+    "immutable_values": {
+      "type": "object"
+    },
     "third_party": {
       "type": "object"
     },

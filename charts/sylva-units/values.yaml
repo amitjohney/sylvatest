@@ -5781,6 +5781,12 @@ _internal:
   default_os_images_info_configmap: os-images-info-{{ tuple . .Values._internal.os_images_info_input_hash | include "interpret-as-string" }}
   os_images_info_configmap: '{{ .Values._internal.default_os_images_info_configmap }}'  # overridden in workload-cluster.values.yaml
 
+immutable_values:
+  cluster:
+    name: '{{ tuple . (list "cluster" "name") | include "enforce-immutable" }}'
+    capi_providers:
+      bootstrap_provider: '{{ tuple . (list "cluster" "capi_providers" "bootstrap_provider") | include "enforce-immutable" }}'
+
 shared_workload_clusters_values:
   ntp: '{{ .Values.ntp | include "set-if-defined" }}'
   proxies: '{{ .Values.proxies | include "set-if-defined" }}'
