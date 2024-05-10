@@ -23,6 +23,11 @@ cluster:
         ens5:
           type: phy
 
+  capi_providers:
+    bootstrap_provider: cabpk
+  capm3:
+    image_key: ubuntu-jammy-plain-kubeadm-1-28-8
+
   baremetal_hosts:
     management-cp-0:
       bmh_metadata:
@@ -106,9 +111,3 @@ sylva_diskimagebuilder_images:
     default_enabled: false
   ubuntu-jammy-plain-kubeadm-1-28-8:
     default_enabled: true
-
-cluster:
-  capi_providers:
-    bootstrap_provider: cabpk
-  capm3:
-    image_key: ubuntu-jammy-plain-kubeadm-1-28-8
