@@ -5681,7 +5681,6 @@ shared_workload_clusters_values:
   metal3:
     provider: '{{ .Values.metal3.provider }}'
   sylva_diskimagebuilder_version: '{{ .Values.sylva_diskimagebuilder_version }}'
-  sylva_diskimagebuilder_images: '{{ .Values.sylva_diskimagebuilder_images | include "preserve-type" }}'
   os_images: '{{ .Values.os_images | include "preserve-type" }}'
   monitoring:
     thanos_receive_url: '{{ .Values.monitoring.thanos_receive_url }}'
