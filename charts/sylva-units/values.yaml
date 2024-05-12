@@ -293,6 +293,7 @@ units:
   #                   merging them in the specified order
 
   root-dependency:
+
     info:
       description: special unit ensuring ordered updates of all Kustomizations
       details: >-
@@ -301,6 +302,11 @@ units:
         ready before all other Kustomizations have been updated. All this ensures in a race-free way
         that during an update, units will be reconciled in an order matching dependendy declarations.
       internal: true
+    # Note:
+    # for this unit, the names of all resources produced must include .Release.Revision
+    # or another string that is guaranteed to change for each new sylva-units
+    # Helm release revision (or else the old and new Kustomization will control the same resource,
+    # which hence might get deleted when the old Kustomization is deleted), see DISCRIMINATOR below
     repo: sylva-core
     unit_templates: []
     kustomization_name: root-dependency-{{ .Release.Revision }}
