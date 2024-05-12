@@ -295,10 +295,12 @@ units:
   root-dependency:
     info:
       description: special unit ensuring ordered updates of all Kustomizations
+      details: >-
+        All Kustomizations will depend on this Kustomization, whose name is root-dependency-<n>
+        and changes at each update of the sylva-units Helm release. This Kustomization does not become
+        ready before all other Kustomizations have been updated. All this ensures in a race-free way
+        that during an update, units will be reconciled in an order matching dependendy declarations.
       internal: true
-    #
-    #
-    #
     repo: sylva-core
     unit_templates: []
     kustomization_name: root-dependency-{{ .Release.Revision }}
