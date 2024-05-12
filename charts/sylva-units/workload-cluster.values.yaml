@@ -99,7 +99,7 @@ units:
     unit_templates:
     - kustomization-deployed-on-mgmt-cluster
     depends_on:
-      mgmt-cluster-ready: false  # cancel this dependency inherited via kustomization-deployed-on-mgmt-cluster unit template
+      mgmt-cluster-ready: false  # cancel this dependency inherited via kustomization-deployed-on-mgmt-cluster unit template (this unit is the "root dependency", and everything depends on it, so it can't depend on anything without creating a dependency loop)
 
   mgmt-cluster-ready:
     enabled: on
