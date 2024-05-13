@@ -19,6 +19,7 @@ spec:
       parameters:
         cluster_virtual_ip:
           type: string
+          default: ""
         cluster_virtual_ip_uuid:
           type: string
           default: ""
