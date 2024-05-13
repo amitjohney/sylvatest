@@ -2250,6 +2250,7 @@ units:
           httpsProxy: '{{ .Values.proxies.https_proxy }}'
           noProxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
           VIP: '{{ .Values.cluster_virtual_ip }}'
+          NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
           CLOUD: 'capo_cloud'
           backoffLimit: '0'
       _patches:
@@ -2259,7 +2260,7 @@ units:
             - op: replace
               path: /data/openstack-job.sh
               value: |
-            {{ .Files.Get "scripts/get-os-exisiting-resources.sh" | indent 4 }}
+            {{ .Files.Get "scripts/get-os-existing-resources.sh" | indent 4 }}
         - target:
             kind: Job
           patch: >-
@@ -2268,6 +2269,8 @@ units:
               value:
                 - name: VIP
                   value: ${VIP}
+                - name: NETWORK_ID
+                  value: ${NETWORK_ID}
                 - name: OS_CLIENT_CONFIG_FILE
                   value: "/etc/openstack/clouds.yaml"
                 - name: TARGET_NAMESPACE
@@ -5454,7 +5457,7 @@ vsphere:
           datacenters:
             - '{{ .Values.cluster.capv.dataCenter }}'
 
-cluster_virtual_ip: 55.55.55.55
+cluster_virtual_ip: ""
 
 # Admin password that will be configured by default on various units  # FIXME, only used for SSO today see https://gitlab.com/sylva-projects/sylva-core/-/issues/503
 # [WARNING] This value cannot be overwritten on production environment (env_type: prod)

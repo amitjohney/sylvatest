@@ -2,7 +2,6 @@
 
 set -e
 set -o pipefail
-
 echo "Initiate ConfigMap manifest file"
 
 configmap_file=/tmp/os-resources-info.yaml
@@ -19,16 +18,16 @@ data:
 EOF
 
 echo "Looking for existing resources in Openstack..."
-if [[ "$VIP" != "55.55.55.55" ]]; then
+if [[ -n "$VIP" ]]; then
   echo "Looking for Neutron port matching $VIP"
-  openstack --os-cloud $CLOUD  port list --fixed-ip ip-address=$VIP -f yaml > /tmp/port.yaml 
+  openstack --os-cloud $CLOUD  port list --fixed-ip ip-address=$VIP --network $NETWORK_ID -f yaml > /tmp/port.yaml 
   LENGTH=$(yq '. | length' /tmp/port.yaml)
   if [[ $LENGTH -gt 0 ]]; then
     UUID=$(yq '.0.ID' /tmp/port.yaml)
     echo "  CLUSTER_VIRTUAL_IP_UUID: ${UUID}" >> $configmap_file
     echo "    Neutron port found: ${UUID}"
   else
-    echo "    Fatal error: Neutron port matching ${VIP} not found"
+    echo "    Fatal error: Neutron port matching ${VIP} in network ${NETWORK_ID} not found"
     exit 1
   fi
 fi
