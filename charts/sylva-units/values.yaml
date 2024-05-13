@@ -1508,8 +1508,7 @@ units:
     info:
       description: installs Kyverno
       maturity: core-component
-    unit_templates:
-    - base-deps
+    unit_templates: [] # we intendedly don't inherit from base-deps, because kyverno is itself part of base dependencies
     helm_repo_url: https://kyverno.github.io/kyverno
     helmrelease_spec:
       chart:
@@ -1581,8 +1580,7 @@ units:
     info:
       description: configures Kyverno policies
       internal: true
-    unit_templates:
-    - base-deps
+    unit_templates: [] # we intendedly don't inherit from base-deps, because kyverno-policies is itself part of base dependencies
     enabled_conditions:
     - '{{ tuple . "kyverno" | include "unit-enabled" }}'
     depends_on:
