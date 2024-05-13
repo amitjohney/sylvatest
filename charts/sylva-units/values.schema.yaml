@@ -1139,6 +1139,8 @@ properties:
     type: object
     additionalProperties: false
     properties:
+      variant:
+        type: string
       access_key:
         type: string
       secret_key:

@@ -802,8 +802,9 @@ units:
     kustomization_substitute_secrets:
       ADMIN_PASSWORD: '{{ .Values.admin_password }}'
       KEY: '{{ .Values.external_certificates.vault.key | default "" | b64enc }}'
+      VO_VAULT_SECRET_KEY: '{{ .Values.vault.secret_key }}'
     kustomization_spec:
-      path: ./kustomize-units/vault
+      path: '{{ ternary (print "./kustomize-units/vault/" .Values.vault.variant) "./kustomize-units/vault/base" (ne .Values.vault.variant "") }}'
       postBuild:
         substitute:
           VAULT_DNS: '{{ .Values.external_hostnames.vault }}'
@@ -815,14 +816,13 @@ units:
           CERT: '{{ .Values.external_certificates.vault.cert | default "" | b64enc }}'
           CACERT: '{{ .Values.external_certificates.cacert | default "" | b64enc }}'
           VO_VAULT_ACCESS_KEY: '{{ .Values.vault.access_key }}'
-          VO_VAULT_SECRET_KEY: '{{ .Values.vault.secret_key }}'
         substituteFrom:
         - kind: ConfigMap
           name: proxy-env-vars
       _components:
         # generate certificate for external communitation
-        - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.vault "cert") }}'
-        - "../tls-components/sylva-ca"
+        - '{{ ternary "../../tls-components/tls-secret" "../../tls-components/tls-certificate" (hasKey .Values.external_certificates.vault "cert") }}'
+        - "../../tls-components/sylva-ca"
       healthChecks:  # sometimes this kustomization seems correctly applied while vault pod is not running, see https://gitlab.com/sylva-projects/sylva-core/-/issues/250
       # so we replace wait:true by checking for the Vault components health
         - apiVersion: apps/v1
@@ -5639,6 +5639,7 @@ snmp:
   auth: {}
 
 vault:
+  variant: ""
   access_key: ""
   secret_key: ""
 # Sample snmp configuration as it needs to be added in the secrets.yaml file
