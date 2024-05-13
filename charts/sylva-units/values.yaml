@@ -4537,7 +4537,7 @@ units:
             hostname: '{{ .Values.external_hostnames.thanos_query }}'
             extraTls:
               - hosts:
-                  - 'thanos-query.{{ .Values.external_hostnames.thanos_query }}'
+                  - '{{ .Values.external_hostnames.thanos_query }}'
                 secretName: thanos-tls
           containerSecurityContext:
             allowPrivilegeEscalation: false
