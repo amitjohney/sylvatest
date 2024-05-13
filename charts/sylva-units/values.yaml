@@ -215,29 +215,6 @@ unit_templates:
         substitute:
           UNIT_NAME: '{{ .Values._unit_name_ }}'
 
-  # the "versioned-dependency" unit template is used for a
-  # unit X on which another unit Y dependson (Y has a depends_on=X)
-  # when we need to ensure that unit Y will depend on the last "revision"
-  # unit X being ready
-  #
-  # this is typically used with "dummy dependency" units
-  #
-  # for a unit 'foo' inheriting from 'versioned-dependency', the
-  # Kustomization will be named foo-<n> where n is the Helm release revision
-  # which is incremented at each update of the Helm release
-  #
-  # note well: for such units, the names of all resources produced
-  # must include .Release.Revision or another string that is guaranteed to
-  # change for each new Helm release revision (or else the old and new
-  # Kustomization will control the same resource, which hence might get
-  # deleted when the old Kustomization is deleted) -- see DISCRIMINATOR below
-  versioned-dependency:
-    kustomization_name: '{{ .Values._unit_name_ }}-{{ .Release.Revision }}'
-    kustomization_spec:
-      postBuild:
-        substitute:
-          DISCRIMINATOR: '-{{ .Release.Revision }}'  # see explanation above
-
   # this unit template gather depends_on common
   # to most units
   base-deps:
@@ -256,6 +233,17 @@ unit_templates:
         and (tuple . "cluster-machines-ready" | include "unit-enabled")
             (not (.Values._internal.cluster_machines_ready_unit_deps | has .Values._unit_name_))
         }}
+
+# unit_definition_defaults is merged with each "units.x" before
+# it inherits from unit templates
+unit_definition_defaults:
+  depends_on:
+    root-dependency: >-
+      {{
+      and
+         (tuple . "root-dependency" | include "unit-enabled")
+         (not (.Values._unit_name_ | eq "root-dependency"))
+      }}
 
 # this defines Flux Kustomizations and the related ConfigMaps and Secrets
 # for Helm-based unit, the Kustomization will produce a Flux HelmRelease
@@ -303,6 +291,55 @@ units:
   #                   unit templates are defined under "unit_templates"
   #                   the settings for the unit are inherited from the corresponding entries under .Values.unit_templates,
   #                   merging them in the specified order
+
+  root-dependency:
+    info:
+      description: special unit ensuring ordered updates of all Kustomizations
+      details: >-
+        All Kustomizations will depend on this Kustomization, whose name is root-dependency-<n>
+        and changes at each update of the sylva-units Helm release. This Kustomization does not become
+        ready before all other Kustomizations have been updated. All this ensures in a race-free way
+        that during an update, units will be reconciled in an order matching dependency declarations.
+      internal: true
+    # Note:
+    # for this unit, the names of all resources produced must include .Release.Revision
+    # or another string that is guaranteed to change for each new sylva-units
+    # Helm release revision (or else the old and new Kustomization will control the same resource,
+    # which hence might get deleted when the old Kustomization is deleted), see DISCRIMINATOR below
+    repo: sylva-core
+    unit_templates: []
+    kustomization_name: root-dependency-{{ .Release.Revision }}
+    kustomization_spec:
+      path: ./kustomize-units/kube-job
+      wait: true
+      force: true
+      postBuild:
+        substitute:
+          JOB_NAME: root-dependency-check
+          DISCRIMINATOR: '-{{ .Release.Revision }}'  # needed to ensure that resources are distinct between root-dependency-<n> and root-dependency-<n+1>
+          JOB_TARGET_NAMESPACE: '{{ .Release.Namespace }}'
+          JOB_CHECKSUM: '{{ .Release.Revision }}'
+          RUNASUSER: '10000'
+          RUNASGROUP: '10000'
+      _patches:
+      - target:
+          kind: Job
+        patch: |
+          - op: add
+            path: /spec/template/spec/containers/0/env/-
+            value:
+              name: HELM_REVISION
+              value: '{{ .Release.Revision }}'
+      - target:
+          kind: ConfigMap
+        patch: |
+          - op: replace
+            path: /metadata/name
+            value: root-dependency-check-{{ .Release.Namespace }}-{{ .Release.Revision }}-cm
+          - op: replace
+            path: /data/kube-job.sh
+            value: |
+          {{ .Files.Get "scripts/root-dependency-check.sh" | indent 4 }}
 
   flux-system:
     info:
@@ -1958,11 +1995,8 @@ units:
       #  ready (for the controlplane nodes, the kubeadm controlplane provider ignores that)
       healthChecks: >-
         {{
-        (include "cluster-healthchecks" (dict "ns" .Release.Namespace
-                                              "cluster" .Values.cluster
-                                              "includeMDs" false)
-          | fromYaml).result
-          | include "preserve-type"
+        (include "cluster-healthchecks" (dict "ns" .Release.Namespace "cluster" .Values.cluster "includeMDs" false) | fromYaml).result
+        | include "preserve-type"
         }}
     helmrelease_spec:
       upgrade:
@@ -2036,21 +2070,15 @@ units:
       internal: true
     unit_templates:
     - dummy
-    - versioned-dependency  # units depending on this unit will depend on the last version of this unit being ready
     enabled_conditions:
     - '{{ tuple . "cluster" | include "unit-enabled" }}'
     depends_on:
       cluster: true
     kustomization_spec:
-      # release revision used in the job name below, because cluster-ready unit inherits from versioned-dependency unit template
       healthChecks: >-
         {{
-        (include "cluster-healthchecks" (dict "ns" .Release.Namespace
-                                              "cluster" .Values.cluster
-                                              "sleep_job_name" (printf "dummy-deps-cluster-ready-sleep-%d" .Release.Revision)
-                                        )
-          | fromYaml).result
-          | include "preserve-type"
+        (include "cluster-healthchecks" (dict "ns" .Release.Namespace "cluster" .Values.cluster "sleep_job" true) | fromYaml).result
+        | include "preserve-type"
         }}
       # we add a sleep to overcome a race condition happening when
       # from bootstrap cluster, after pivot, the cluster unit is enabled
@@ -2096,8 +2124,7 @@ units:
       calico: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") (not .Release.IsUpgrade) }}'
       cluster: true
       cluster-ready: true  # no need to start waiting for anything until
-    unit_templates:
-    - versioned-dependency  # units depending on this unit will depend on the last version of this unit being ready
+    unit_templates: []
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kube-job
@@ -2127,7 +2154,7 @@ units:
         patch: |
           - op: replace
             path: /metadata/name
-            value: cluster-machines-ready-{{ .Release.Namespace }}-{{ .Release.Revision }}-cm  # needs to match the ConfigMap names used in the Job manifest container volume
+            value: cluster-machines-ready-{{ .Release.Namespace }}-cm
           - op: replace
             path: /data/kube-job.sh
             value: |
@@ -3371,7 +3398,6 @@ units:
     unit_templates:
     - base-deps
     - dummy
-    - versioned-dependency  # units depending on this unit will depend on the last version of this unit being ready
     enabled_conditions:
       - '{{ tuple . "multus" | include "unit-enabled" }}'
     depends_on:

@@ -45,6 +45,7 @@ Common labels
 {{- define "sylva-units.labels" -}}
 helm.sh/chart: {{ include "sylva-units.chart" . }}
 {{ include "sylva-units.selectorLabels" . }}
+sylva-units-helm-revision: {{ .Release.Revision | quote }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -153,24 +154,25 @@ true
 
 {{/*
 
-"unit-def-from-templates"
+"unit-def"
 
 This named template takes a unit name and
-provides the full definition of the unit *taking into account what is inherited from unit_templates*
-via the declarations of *unit.xxx.unit_templates*
+provides the full definition of the unit *taking into account:
+- what comes from unit_definition_defaults
+- what is inherited from unit_templates* via the declarations of *unit.xxx.unit_templates*
 
 Usage:
 
-  {{ $unit_def := include "unit-def-from-templates" (tuple $envAll "my-unit") | fromJson }}
+  {{ $unit_def := include "unit-def" (tuple $envAll "my-unit") | fromJson }}
 
 See usage in units.yaml and sources.yaml
 
 */}}
-{{ define "unit-def-from-templates" }}
+{{ define "unit-def" }}
   {{- $envAll := index . 0 -}}
   {{- $unit_name := index . 1 -}}
 
-  {{- $unit_def := index $envAll.Values.units $unit_name -}}
+  {{- $unit_def := mergeOverwrite (deepCopy $envAll.Values.unit_definition_defaults) (deepCopy (index $envAll.Values.units $unit_name)) -}}
 
   {{/* inherit settings from any template specified in unit.<this unit>.unit_templates */}}
   {{- $merged_unit_templates := dict -}}
@@ -178,16 +180,16 @@ See usage in units.yaml and sources.yaml
     {{- if not (hasKey $envAll.Values.unit_templates $template_name) -}}
       {{ fail (printf "unit %s has '%s' in '<unit>.unit_templates' but no such template is declared in '.Values.unit_templates'" $unit_name $template_name) -}}
     {{- end -}}
-    {{/* interpret _unit_name_ in unit template */}}
-    {{- $_ := set $envAll.Values "_unit_name_" $unit_name -}}
-    {{- $unit_template := deepCopy (index $envAll.Values.unit_templates $template_name) -}}
-    {{- $unit_template := index (tuple $envAll $unit_template | include "interpret-inner-gotpl" | fromJson) "result" -}}
     {{/* merge the unit template with the others*/}}
-    {{- $merged_unit_templates = mergeOverwrite $merged_unit_templates $unit_template -}}
+    {{- $merged_unit_templates = mergeOverwrite $merged_unit_templates (deepCopy (index $envAll.Values.unit_templates $template_name)) -}}
   {{- end -}}
 
   {{/* merge unit definition with unit templates */}}
   {{- $unit_def = mergeOverwrite $merged_unit_templates $unit_def -}}
+
+  {{/* interpret _unit_name_ in unit template */}}
+  {{- $_ := set $envAll.Values "_unit_name_" $unit_name -}}
+  {{- $unit_def := index (tuple $envAll $unit_def | include "interpret-inner-gotpl" | fromJson) "result" -}}
 
   {{/* clear _unit_name_ from Values, we don't need it anymore */}}
   {{- $_ := set $envAll.Values "_unit_name_" "N/A" -}}
@@ -226,7 +228,7 @@ or exclude a unit from being considered during computation)
 
 {{- $debug := printf "(start %s " $unit_name }}
 
-{{- $unit_def := include "unit-def-from-templates" (tuple $envAll $unit_name) | fromJson -}}
+{{- $unit_def := include "unit-def" (tuple $envAll $unit_name) | fromJson -}}
 
 {{- if hasKey $unit_def "depends_on" -}}
   {{/*
@@ -333,7 +335,7 @@ Usage:
 
   {{- $unit_name := include "kustomization-name" (tuple $envAll "unit-foo") }}
 
-Or, as an optimization *if* *full* $unit_def, as computed by "unit-def-from-templates",
+Or, as an optimization *if* *full* $unit_def, as computed by "unit-def",
 is already known by caller:
 
   {{- $unit_name := include "kustomization-name" (tuple $envAll "unit-foo" $unit_def) }}
@@ -347,7 +349,7 @@ is already known by caller:
 {{- if gt (len .) 2 -}}
   {{- $unit_def = index . 2 -}}
 {{- else -}}
-  {{- $unit_def = include "unit-def-from-templates" (tuple $envAll $unit_name) | fromJson -}}
+  {{- $unit_def = include "unit-def" (tuple $envAll $unit_name) | fromJson -}}
 {{- end -}}
 {{/* return the result */}}
 {{- $unit_def.kustomization_name | default $unit_name -}}
