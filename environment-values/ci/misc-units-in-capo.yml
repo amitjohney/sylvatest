@@ -19,6 +19,8 @@ units:
     enabled: true
   capo-cluster-resources:
     enabled: true
+  capo-get-existing-resources:
+    enabled: true
   eso-secret-stores:
     enabled: true
   vault-secrets:
