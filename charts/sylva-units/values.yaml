@@ -335,9 +335,6 @@ units:
           kind: ConfigMap
         patch: |
           - op: replace
-            path: /metadata/name
-            value: root-dependency-check-{{ .Release.Namespace }}-{{ .Release.Revision }}-cm
-          - op: replace
             path: /data/kube-job.sh
             value: |
           {{ .Files.Get "scripts/root-dependency-check.sh" | indent 4 }}
@@ -1422,9 +1419,6 @@ units:
           kind: ConfigMap
         patch: |
           - op: replace
-            path: /metadata/name
-            value: keycloak-add-client-scope-job-keycloak-cm
-          - op: replace
             path: /data/kube-job.sh
             value: |
           {{ .Files.Get "scripts/keycloak-add-client-scope.sh" | indent 4 }}
@@ -1469,9 +1463,6 @@ units:
       - target:
           kind: ConfigMap
         patch: |
-          - op: replace
-            path: /metadata/name
-            value: keycloak-add-truststore-job-keycloak-cm
           - op: replace
             path: /data/kube-job.sh
             value: |
@@ -2153,9 +2144,6 @@ units:
       - target:
           kind: ConfigMap
         patch: |
-          - op: replace
-            path: /metadata/name
-            value: cluster-machines-ready-{{ .Release.Namespace }}-cm
           - op: replace
             path: /data/kube-job.sh
             value: |
@@ -3685,9 +3673,6 @@ units:
         - target:
             kind: ConfigMap
           patch: >-
-            - op: replace
-              path: /metadata/name
-              value: create-image-info-{{ .Release.Namespace }}-cm
             - op: replace
               path: /data/kube-job.sh
               value: |

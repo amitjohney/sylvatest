@@ -5,12 +5,10 @@ resources:
   - role.yaml
   - cluster-creator-global-role.yaml
 
-patches:
-  - path: delete-kube-job-cm.yaml
-
 configMapGenerator:
-- name: '${JOB_NAME}-${JOB_TARGET_NAMESPACE:-sylva-system}-cm'
+- name: ${JOB_NAME}-${JOB_TARGET_NAMESPACE:-sylva-system}${DISCRIMINATOR:-}-cm
   namespace: kube-job
+  behavior: merge   # overload the ../kube-job/job.yaml ConfigMap contents
   options:
     disableNameSuffixHash: true
   files:

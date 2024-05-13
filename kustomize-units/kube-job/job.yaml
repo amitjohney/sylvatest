@@ -45,7 +45,7 @@ spec:
       imagePullSecrets:
       - name: registry-secret
       restartPolicy: Never
-      serviceAccountName: ${JOB_NAME}-${JOB_TARGET_NAMESPACE:-sylva-system}-sa${DISCRIMINATOR:-}
+      serviceAccountName: ${JOB_NAME}-${JOB_TARGET_NAMESPACE:-sylva-system}${DISCRIMINATOR:-}-sa
       securityContext:
         runAsNonRoot: true
         seccompProfile:
@@ -59,7 +59,7 @@ spec:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: ${JOB_NAME}-${JOB_TARGET_NAMESPACE:-sylva-system}-sa${DISCRIMINATOR:-}
+  name: ${JOB_NAME}-${JOB_TARGET_NAMESPACE:-sylva-system}${DISCRIMINATOR:-}-sa
   namespace: kube-job
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -79,7 +79,7 @@ metadata:
   namespace: ${JOB_TARGET_NAMESPACE:-sylva-system}
 subjects:
 - kind: ServiceAccount
-  name: ${JOB_NAME}-${JOB_TARGET_NAMESPACE:-sylva-system}-sa${DISCRIMINATOR:-}
+  name: ${JOB_NAME}-${JOB_TARGET_NAMESPACE:-sylva-system}${DISCRIMINATOR:-}-sa
   namespace: kube-job
 roleRef:
   kind: Role
@@ -89,10 +89,8 @@ roleRef:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: kube-job-cm
+  name: ${JOB_NAME}-${JOB_TARGET_NAMESPACE:-sylva-system}${DISCRIMINATOR:-}-cm
   namespace: kube-job
-  annotations:
-    kustomize.toolkit.fluxcd.io/substitute: disabled
 data:
   kube-job.sh: |
   #sleep 20
