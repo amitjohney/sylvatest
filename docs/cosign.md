@@ -52,7 +52,7 @@ cSWbGpnECsZ7IvdUj9GGGlmPpYl8H0WCHCRuWGSGX58ZiiSuUQRDQoHAxw==
 
 ### Generating a Cosign Key Pair for a GitLab Group
 
-When dealing with a bunch of GitLab project aiming at producing Sylva artifacts, e.g. projects of the group `sylva-elements`, the cosign keypair should be created at the group to avoid different keys key per project, which would turn the signature verification of Sylva artifacts into a nightmare. In this case, all the the projects belonging to the group inherit of the same signing metrial stored in the group variables. However `cosign generate-key-pair gitlab://foo/bar`, used in the preceding section, only generates a cosign a key pair with a project as destination (cf. https://github.com/sigstore/cosign/issues/2914). To adress the issue, a group member with read/write privileges on CI/CD variables can use the script `sylva-core/tools/security/groups-keys.sh`. This script generates the key pair in a target project (or copy an existing key pair from a given project) and then promotes it at the group level: 
+When dealing with a bunch of GitLab project aiming at producing Sylva artifacts, e.g. projects of the group `sylva-elements`, the cosign keypair should be created at the group to avoid different keys key per project, which would turn the signature verification of Sylva artifacts into a nightmare. In this case, all the the projects belonging to the group inherit of the same signing metrial stored in the group variables. However `cosign generate-key-pair gitlab://foo/bar`, used in the preceding section, only generates a key pair with a project as destination (cf. https://github.com/sigstore/cosign/issues/2914). To adress the issue, a group member with read/write privileges on CI/CD variables can use the script `sylva-core/tools/security/groups-keys.sh`. This script generates the key pair in a target project (or copy an existing key pair from a given project) and then promotes it at the group level (Export the environment variable `GITLAB_TOKEN` with rights to create CI/CD variables before runing the script):
 
 ```shell
 $ ./groups-keys.sh -h
@@ -68,7 +68,7 @@ h     Print this Help.
 For example, to create a key pair in a givent GitLab proj-ect and promote it at the group level:
 
 ```shell
-$ ./groups-keys.sh -c 57260766 63142339
+$ ./groups-keys.sh -c 43786055 63142339
 Project Name: diskimage-builder (ID: 43786055)
 Group Name: sylva-elements (ID: 63142339)
 Generating Project key pair
@@ -85,7 +85,7 @@ Group Variable COSIGN_PUBLIC_KEY created
 Skip the flag `-c` if you want to promote an existing key pair at the group level. For example, to promote **diskimage-builder** cosign signing material at the **sylva-elements** group level, run the following command:
 
 ```shell
-$ ./groups-keys.sh 57260766 63142339
+$ ./groups-keys.sh 43786055 63142339
 Project Name: diskimage-builder (ID: 43786055)
 Group Name: sylva-elements (ID: 63142339)
 Creating Group key pair

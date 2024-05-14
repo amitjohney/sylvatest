@@ -5,6 +5,8 @@ Help()
    # Display Help
    echo "Generate a Cosign Key pair in a Gitlab project and promote it at the Gitlab group level."
    echo
+   echo "Before runing this script: export the environment variable GITLAB_TOKEN with rights to create CI/CD variables"
+   echo
    echo "Syntax: $(basename "$0") [-c|d|h] PROJECT_ID GROUP_ID"
    echo "options:"
    echo "c     Create Cosign key pair stored in CI variables of PROJECT_ID."
