@@ -3193,7 +3193,7 @@ units:
       description: generates the config for Alertmanager
     enabled_conditions:
     - '{{ tuple . "monitoring" | include "unit-enabled" }}'
-    - '{{ .Values.units.monitoring.helmrelease_spec.value.alertmanager.alertmanagerSpec.useExistingSecret }}'
+    - '{{ .Values.units.monitoring.helmrelease_spec.values.alertmanager.alertmanagerSpec.useExistingSecret }}'
     unit_templates:
     - base-deps
     depends_on:
