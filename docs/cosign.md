@@ -4,9 +4,9 @@ This document explains how to use `cosign` to sign the artifacts pushed to the O
 
 ## Generate Signing Keys
 
-### Generating a Cosign Key Pair for a Gitlab Project
+### Generating a Cosign Key Pair for a GitLab Project
 
-If you want a `cosign` key pair dedicated to a Gitlab project, e.g. the `cosign` key pair for sylva-core, you can generate keys with the GitLab provider. The later stores the Cosign signing material in the CI/CD variables of the project. The command is as follows:
+If you want a `cosign` key pair dedicated to a GitLab project, e.g. the `cosign` key pair for sylva-core, you can generate keys with the GitLab provider. The later stores the Cosign signing material in the CI/CD variables of the project. The command is as follows:
 
 ```shell
 cosign generate-key-pair gitlab://<project_id>
@@ -50,10 +50,9 @@ cSWbGpnECsZ7IvdUj9GGGlmPpYl8H0WCHCRuWGSGX58ZiiSuUQRDQoHAxw==
 -----END PUBLIC KEY-----
 ```
 
-### Generating a Cosign Key Pair for a Gitlab Group
+### Generating a Cosign Key Pair for a GitLab Group
 
-When dealing with a bunch of Gitlab project aiming at producing Sylva artifacts, e.g. projects of the group `sylva-elements`, the cosign keypair should be created at the group to avoid different keys key per project, which would turn the signature verification of Sylva artifacts into a nightmare. In this case, all the the projects belonging to the group inherit of the same signing metrial stored in the group variables.
-However  `cosign generate-key-pair gitlab://foo/bar`, used in the preceding section, only generates a cosign a key pair with a project as destination (cf. https://github.com/sigstore/cosign/issues/2914). To adress the issue, you can use the script `sylva-core/tools/security/groups-keys.sh`. This script generates the key pair in a target project (or copy an existing key pair from a given project) and then promotes it at the group level: 
+When dealing with a bunch of GitLab project aiming at producing Sylva artifacts, e.g. projects of the group `sylva-elements`, the cosign keypair should be created at the group to avoid different keys key per project, which would turn the signature verification of Sylva artifacts into a nightmare. In this case, all the the projects belonging to the group inherit of the same signing metrial stored in the group variables. However `cosign generate-key-pair gitlab://foo/bar`, used in the preceding section, only generates a cosign a key pair with a project as destination (cf. https://github.com/sigstore/cosign/issues/2914). To adress the issue, a group member with read/write privileges on CI/CD variables can use the script `sylva-core/tools/security/groups-keys.sh`. This script generates the key pair in a target project (or copy an existing key pair from a given project) and then promotes it at the group level: 
 
 ```shell
 $ ./groups-keys.sh -h
@@ -66,7 +65,7 @@ d     Delete key pair
 h     Print this Help.
 ```
 
-For example, to create a key pair in a givent Gitlab proect and promote it at the group level:
+For example, to create a key pair in a givent GitLab proj-ect and promote it at the group level:
 
 ```shell
 $ ./groups-keys.sh -c 57260766 63142339
