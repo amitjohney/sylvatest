@@ -22,11 +22,17 @@ spec:
             set -e
 
             ALL_KS=$(kubectl get kustomizations -n {{ .Release.Namespace }} -l  helm.toolkit.fluxcd.io/name={{ .Release.Name }} -o json)
-            DELETED_KS='[]'
+            CLEANED_KS='[]'
+
+            echo "=== Disabling the pruning of resources installed on workload cluster ==="
+            for KUST in $(jq -r <<< $ALL_KS '.items[] | select(.spec.kubeConfig != null) | .metadata.name'); do
+                echo "Disable pruning in kustomization $KUST"
+                kubectl -n {{ .Release.Namespace }} patch kustomization $KUST --type=merge --patch='{"spec":{"prune":false}}' >/dev/null
+            done
 
             while true; do
                 # Compute remaining kustomizations
-                REMAINING_KS=$(jq -r --argjson deleted "$DELETED_KS" <<< $ALL_KS '[.items[] | select(.metadata.name as $in | $deleted | index($in) | not)]')
+                REMAINING_KS=$(jq -r --argjson cleaned "$CLEANED_KS" <<< $ALL_KS '[.items[] | select(.metadata.name as $in | $cleaned | index($in) | not)]')
 
                 if jq -e <<< $REMAINING_KS '. | length == 0' >/dev/null; then
                     echo "=== All kustomizations have been deleted ==="
@@ -37,7 +43,7 @@ spec:
                 jq -r <<< $REMAINING_KS '[.[].metadata.name] | join(" ")'
 
                 # Compute the list of kustomizations that don't have dependents
-                KS_LIST=$(jq -r <<< $REMAINING_KS '[.[] | .metadata.name] - 
+                KS_LIST=$(jq -r <<< $REMAINING_KS '[.[] | .metadata.name] -
                      [.[].spec.dependsOn | select(. | length > 0) | .[] | select(.namespace == null or .namespace == "{{ .Release.Namespace }}") | .name ]
                      | unique | join(" ")')
 
@@ -47,16 +53,17 @@ spec:
 
                     KUST_JSON=$(jq --arg kust $KUST <<< $ALL_KS '.items[] | select(.metadata.name == $kust)')
 
-                    # Don't wait for resources deletion in the following cases:
-                    #  * the Kustomization targets a remote cluster
+                    # If a Kustomization does not exist anymore, don't wait the deletion of its resources in the following cases:
+                    #  * the Kustomization was targeting a remote cluster
                     #  * no resource would be deleted (empty kustomization)
-                    #  * the Kustomization is suspended (in that case Flux controller will not delete anything)
-                    #  * the Kustomization is "prune: false" (in that case Flux controller will not delete anything)
-                    if jq -e <<< $KUST_JSON '(.spec.kubeConfig != null) or
+                    #  * the Kustomization was suspended (in that case Flux controller will not delete anything)
+                    #  * the Kustomization had "prune: false" (in that case Flux controller will not delete anything)
+                    if ! kubectl -n {{ .Release.Namespace }} get kustomization $KUST 2>/dev/null &&
+                       jq -e <<< $KUST_JSON '(.spec.kubeConfig != null) or
                                              (.status.inventory.entries // [] | length == 0) or
                                              (.spec.prune == false) or
                                              (.spec.suspend // false)' >/dev/null; then
-                        DELETED_KS=$(jq --arg kust $KUST <<< $DELETED_KS '. + [$kust]')
+                        CLEANED_KS=$(jq --arg kust $KUST <<< $CLEANED_KS '. + [$kust]')
 
                     # Wait for kustomization's resources to be pruned from API, as kustomize controller is not (yet?) doing it
                     else
@@ -73,9 +80,9 @@ spec:
                         done < <(jq -r <<< $KUST_JSON '.status.inventory.entries[].id | split ("_") as $entry |
                             "\(if $entry[0] != "" then "-n \($entry[0])" else "" end) \(if $entry[2] != "" then "\($entry[3]).\($entry[2])" else "\($entry[3])" end) \($entry[1])"')
 
-                        # Mark kustomization as deleted if all resources have been deleted
-                        if [[ $REMAINING_RES -eq 0 ]]; then
-                            DELETED_KS=$(jq --arg kust $KUST <<< $DELETED_KS '. + [$kust]')
+                        # Mark kustomization as deleted if all resources have been deleted and if the Kustomization does not exist anymore
+                        if [[ $REMAINING_RES -eq 0 ]] && ! kubectl -n {{ .Release.Namespace }} get kustomization $KUST 2>/dev/null; then
+                            CLEANED_KS=$(jq --arg kust $KUST <<< $CLEANED_KS '. + [$kust]')
                         fi
                     fi
                 done
