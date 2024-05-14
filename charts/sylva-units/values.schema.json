@@ -8199,6 +8199,9 @@
         "alertmanager": {
           "type": "object",
           "properties": {
+            "config": {
+              "type": "object"
+            },
             "webhooks": {
               "type": "object",
               "properties": {
