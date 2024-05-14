@@ -1433,6 +1433,50 @@ units:
             value: |
           {{ .Files.Get "scripts/keycloak-add-client-scope.sh" | indent 4 }}
 
+# Workaround for realm role creation
+  keycloak-add-realm-role:
+    info:
+      description: Creates Keycloak realm role
+      details: >
+        a job to manually create a custom realm role to sylva realm (on top of default ones) and assigns it to sylva-admin
+        while CRD option does not allow updates.
+      internal: true
+    unit_templates:
+    - base-deps
+    enabled_conditions:
+    - '{{ tuple . "flux-webui" | include "unit-enabled" }}'
+    - '{{ tuple . "keycloak" | include "unit-enabled" }}'
+    repo: sylva-core
+    depends_on:
+      keycloak-resources: true
+      keycloak: true  # defines the keycloak-initial-admin Secret used by the script
+    kustomization_spec:
+      path: ./kustomize-units/kube-job
+      wait: true
+      force: true
+      postBuild:
+        substitute:
+          JOB_NAME: keycloak-add-realm-role-job
+          JOB_TARGET_NAMESPACE: keycloak
+          RUNASUSER: '10000'
+          RUNASGROUP: '10000'
+      _patches:
+      - target:
+          kind: Job
+        patch: |
+          - op: replace
+            path: /spec/backoffLimit
+            value: 15
+      - target:
+          kind: ConfigMap
+        patch: |
+          - op: replace
+            path: /metadata/name
+            value: keycloak-add-realm-role-job-keycloak-cm
+          - op: replace
+            path: /data/kube-job.sh
+            value: |
+          {{ .Files.Get "scripts/keycloak-add-realm-role.sh" | indent 4 }}
 
   keycloak-add-truststore:
     info:
@@ -3049,6 +3093,7 @@ units:
       namespace-defs: true
       monitoring-crd: true
       prometheus-resources: '{{ tuple . "prometheus-resources" | include "unit-enabled" }}'
+      grafana-init: true
     helm_repo_url: https://charts.rancher.io/
     helmrelease_spec:
       releaseName: rancher-monitoring
