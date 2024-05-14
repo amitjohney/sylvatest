@@ -2502,6 +2502,7 @@ units:
     kustomization_spec:
       path: ./kustomize-units/rancher-init
       targetNamespace: cattle-system
+      wait: true
       postBuild:
         substitute:
           SERVICE: rancher
@@ -2512,11 +2513,6 @@ units:
         - '{{ tuple "components/webhook-ha" (.Values._internal.ha_cluster.is_ha) | include "set-only-if" }}'
         - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.rancher "cert") }}'
         - "../tls-components/sylva-ca"
-      healthChecks:
-        - apiVersion: v1
-          kind: Secret
-          name: rancher-tls
-          namespace: cattle-system
 
   rancher:
     info:
