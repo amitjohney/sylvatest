@@ -3804,8 +3804,7 @@ units:
     info:
       description: configures Vsphere Cloud controller manager
       internal: true
-    unit_templates:
-    - base-deps
+    unit_templates: []
     enabled_conditions:
       - '{{ eq .Values.cluster.capi_providers.infra_provider "capv" }}'
     repo: cloud-provider-vsphere
