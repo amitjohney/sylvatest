@@ -68,7 +68,11 @@ func extractDependency(suPath string, clusterType string, clusterFlavor string, 
 	// a map of key unit name and value Kustomization name
 	ksUnitMap := make(map[string]string)
 
+<<<<<<< HEAD
 	// parse each Kubernetes manifest
+=======
+	// Parse each Kubernetes manifest
+>>>>>>> b5bcec54 (polishing out with SVG format diagrams embedded in Markdown using mermaid-cli; add arg to Go tool for defining multiple occurences of --skipUnit for sending KS name; add tool README)
 	for _, manifest := range manifests {
 		manifestByteArray := []byte(manifest)
 		// parse the YAML into a custom struct
@@ -91,7 +95,7 @@ func extractDependency(suPath string, clusterType string, clusterFlavor string, 
 			continue
 		}
 		// get the unit name (ks.metadata.name can be different than ks.metadata.labels."sylva-units.unit")
-		// and save it in a map with Kustomization name as key, when the unit name is different
+		// and save the Kustomization name in a map when the unit name is different
 		unitName := kustomization.Labels["sylva-units.unit"]
 		if unitName != kustomization.Name {
 			ksUnitMap[kustomization.Name] = unitName
