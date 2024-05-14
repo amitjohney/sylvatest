@@ -3,33 +3,68 @@
 
 variables:
   KUBE_SCORE_OPTIONS: >-
-    --ignore-test statefulset-has-servicename
-    --ignore-test container-image-pull-policy
+    --kubernetes-version=1.28
+  KUBE_SCORE_TESTS_WHITELIST: >-
+    container-cpu-requests-equal-limits
+    container-ephemeral-storage-request-equals-limit
+    container-image-tag
+    container-memory-requests-equal-limits
+    container-ports-check
+    container-resource-requests-equal-limits
+    container-seccomp-profile
+    container-security-context-privileged
+    cronjob-restartpolicy
+    deployment-has-host-podantiaffinity
+    deployment-has-poddisruptionbudget
+    deployment-pod-selector-labels-match-template-metadata-labels
+    deployment-replicas
+    deployment-strategy
+    deployment-targeted-by-hpa-does-not-have-replicas-configured
+    horizontalpodautoscaler-has-target
+    ingress-targets-service
+    label-values
+    networkpolicy-targets-pod
+    pod-topology-spread-constraints
+    poddisruptionbudget-has-policy
+    service-type
+    stable-version
+    statefulset-has-host-podantiaffinity
+    statefulset-pod-selector-labels-match-template-metadata-labels
 
-.rules:run-if-kubescore-label:
-  rules:
-    - if: $ONLY_DEPLOY_MGMT
-      when: never
-    - if: $CI_MERGE_REQUEST_LABELS =~ /kubescore/
-      when: on_success
-    - when: never
+# The following test were removed from the Whitelist:
+
+# Container Ephemeral Storage Request and Limit
+# Container Image Pull Policy
+# Container Resources
+# Container Security Context ReadOnlyRootFilesystem
+# Container Security Context User Group ID
+# CronJob has deadline
+# Environment Variable Key Duplication
+# Pod NetworkPolicy
+# Pod Probes
+# Service Targets Pod
+# StatefulSet has PodDisruptionBudget
+# StatefulSet has ServiceName
 
 .kube-score-base:
   stage: deployment-test
   extends:
     - .test-tags
-    - .rules:run-if-kubescore-label
+  dependencies: null
   script:
     - wget -q https://github.com/zegl/kube-score/releases/download/v1.17.0/kube-score_1.17.0_linux_amd64 -O /usr/local/bin/kube-score
     - chmod +x /usr/local/bin/kube-score
-    - kube-score score $KUBE_SCORE_OPTIONS $DUMP_FOLDER/**.yaml | tee  ${DUMP_FOLDER}-kube-score-results
+    # Gather all available kube-score tests
+    - kube-score list | awk -F, '{ print  $1 }' | sort > kube-score-tests
+    - echo -e ${KUBE_SCORE_TESTS_WHITELIST// /'\n'} > kube-score-test-whitelist
+    # Build tests blacklist
+    - KUBE_SCORE_BLACKLIST=$(comm kube-score-tests kube-score-test-whitelist -2 -3 | awk '{ print "--ignore-test " $1}')
+    - kube-score score $KUBE_SCORE_OPTIONS $KUBE_SCORE_BLACKLIST $DUMP_FOLDER/**.yaml | tee ${DUMP_FOLDER}-kube-score-results
   artifacts:
     expire_in: 48 hour
     when: always
     paths:
       - ${DUMP_FOLDER}-kube-score-results
-  # To be removed
-  allow_failure: true
 
 kube-score-management-cluster:
   extends: .kube-score-base
