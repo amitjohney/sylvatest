@@ -2,9 +2,11 @@
 
 This document explains how to use `cosign` to sign the artifacts pushed to the OCI registry of this project.
 
-## Generate Keys
+## Generate Signing Keys
 
-The first step is to generate keys using the GitLab provider with the command:
+### Generating a Cosign Key Pair for a Gitlab Project
+
+If you want a `cosign` key pair dedicated to a Gitlab project, e.g. the `cosign` key pair for sylva-core, you can generate keys with the GitLab provider. The later stores the Cosign signing material in the CI/CD variables of the project. The command is as follows:
 
 ```shell
 cosign generate-key-pair gitlab://<project_id>
@@ -38,7 +40,7 @@ On success, three CI/CD variables are added to the project:
 >
 > For example, if using Vault: when the signing is handled by a CI, the signing job shall authenticate against Vault with the JWT method (see https://docs.gitlab.com/ee/ci/secrets/) to fetch the signing keys. On the Vault side, a role is configured to grant only the Job's JWT with the appropriate bound claims, e.g. a set of GitLab user ID, to access the secret path with the signing keys.
 
-The public key can be retrieved with:
+The public key is in the file `cosign.pub` created in your current repository. You can also retrieve the public key with the command `cosign public-key --key gitlab://<project ID>`, for example:
 
 ```shell
 $ cosign public-key --key gitlab://43786055
@@ -47,6 +49,53 @@ MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAESbuSEUBFW0yndQABomJKA3dQwbKD
 cSWbGpnECsZ7IvdUj9GGGlmPpYl8H0WCHCRuWGSGX58ZiiSuUQRDQoHAxw==
 -----END PUBLIC KEY-----
 ```
+
+### Generating a Cosign Key Pair for a Gitlab Group
+
+When dealing with a bunch of Gitlab project aiming at producing Sylva artifacts, e.g. projects of the group `sylva-elements`, the cosign keypair should be created at the group to avoid different keys key per project, which would turn the signature verification of Sylva artifacts into a nightmare. In this case, all the the projects belonging to the group inherit of the same signing metrial stored in the group variables.
+However  `cosign generate-key-pair gitlab://foo/bar`, used in the preceding section, only generates a cosign a key pair with a project as destination (cf. https://github.com/sigstore/cosign/issues/2914). To adress the issue, you can use the script `sylva-core/tools/security/groups-keys.sh`. This script generates the key pair in a target project (or copy an existing key pair from a given project) and then promotes it at the group level: 
+
+```shell
+$ ./groups-keys.sh -h
+Generate a Cosign Key pair in a Gitlab project and promote it at the Gitlab group level.
+
+Syntax: groups-keys.sh [-c|d|h] PROJECT_ID GROUP_ID
+options:
+c     Create Cosign key pair stored in CI variables of PROJECT_ID.
+d     Delete key pair
+h     Print this Help.
+```
+
+For example, to create a key pair in a givent Gitlab proect and promote it at the group level:
+
+```shell
+$ ./groups-keys.sh -c 57260766 63142339
+Project Name: diskimage-builder (ID: 43786055)
+Group Name: sylva-elements (ID: 63142339)
+Generating Project key pair
+Password written to "COSIGN_PASSWORD" variable
+Private key written to "COSIGN_PRIVATE_KEY" variable
+Public key written to "COSIGN_PUBLIC_KEY" variable
+Public key also written to cosign.pub
+Creating Group key pair
+Group Variable COSIGN_PRIVATE_KEY created
+Group Variable COSIGN_PASSWORD created
+Group Variable COSIGN_PUBLIC_KEY created
+```
+
+Skip the flag `-c` if you want to promote an existing key pair at the group level. For example, to promote **diskimage-builder** cosign signing material at the **sylva-elements** group level, run the following command:
+
+```shell
+$ ./groups-keys.sh 57260766 63142339
+Project Name: diskimage-builder (ID: 43786055)
+Group Name: sylva-elements (ID: 63142339)
+Creating Group key pair
+Group Variable COSIGN_PRIVATE_KEY created
+Group Variable COSIGN_PASSWORD created
+Group Variable COSIGN_PUBLIC_KEY created
+```
+
+Now, you should have the `cosign` material stored in the CI/CD variable of the group **sylva-elements** and all projects of this group inherit from these CI/CD variables.
 
 ## Signing
 

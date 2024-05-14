@@ -8,7 +8,7 @@ Help()
    echo "Syntax: $(basename "$0") [-c|d|h] PROJECT_ID GROUP_ID"
    echo "options:"
    echo "c     Create Cosign key pair stored in CI variables of PROJECT_ID."
-   echo "d     delete key pair"
+   echo "d     Delete key pair"
    echo "h     Print this Help."
    echo
 }
@@ -88,4 +88,3 @@ else
    printf "Group Variable \033[1m%s\033[0m created\n" $(curl -s -XPOST --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "https://gitlab.com/api/v4/groups/"${GROUP_ID}"/variables" --form "key=COSIGN_PASSWORD" --form "value=$COSIGN_PASSWORD" --form "protected=true" | jq -r '.key')
    printf "Group Variable \033[1m%s\033[0m created\n" $(curl -s -XPOST --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "https://gitlab.com/api/v4/groups/"${GROUP_ID}"/variables" --form "key=COSIGN_PUBLIC_KEY" --form "value=$COSIGN_PUBLIC_KEY" | jq -r '.key')
 fi
-
