@@ -2388,6 +2388,7 @@ units:
           - effect: NoSchedule
             key: node-role.kubernetes.io/control-plane
         speaker:
+          ignoreExcludeLB: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "as-bool" }}'
           frr:
             enabled: false
           nodeSelector:
