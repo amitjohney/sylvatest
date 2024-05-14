@@ -340,6 +340,11 @@ units:
     unit_templates:
     - base-deps
 
+  kyverno-policies:
+    enabled: true
+    unit_templates:
+    - base-deps
+
   cluster-import:
     enabled: false  # overriden depending on whether Rancher is enabled or not (eg. via shared-workload-clusters-settings)
     info:
