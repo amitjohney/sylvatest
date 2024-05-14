@@ -2,7 +2,9 @@
 # Run kubescore on cluster dump
 
 variables:
-  KUBE_SCORE_OPTIONS: "--ignore-test statefulset-has-servicename --ignore-test container-image-pull-policy"
+  KUBE_SCORE_OPTIONS: >-
+    --ignore-test statefulset-has-servicename
+    --ignore-test container-image-pull-policy
 
 .rules:run-if-kubescore-label:
   rules:
@@ -18,7 +20,7 @@ variables:
     - .test-tags
     - .rules:run-if-kubescore-label
   script:
-    - wget -q --show-progress --progress=bar:force https://github.com/zegl/kube-score/releases/download/v1.17.0/kube-score_1.17.0_linux_amd64 -O /usr/local/bin/kube-score
+    - wget -q https://github.com/zegl/kube-score/releases/download/v1.17.0/kube-score_1.17.0_linux_amd64 -O /usr/local/bin/kube-score
     - chmod +x /usr/local/bin/kube-score
     - kube-score score $KUBE_SCORE_OPTIONS $DUMP_FOLDER/**.yaml | tee  ${DUMP_FOLDER}-kube-score-results
   artifacts:
