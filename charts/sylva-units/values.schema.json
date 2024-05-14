@@ -8428,7 +8428,7 @@
         "cluster": {
           "properties": {
             "cluster_virtual_ip": {
-              "const": "{{ .Values.cluster_virtual_ip }}"
+              "const": "{{ .Values._internal.cluster_virtual_ip }}"
             }
           }
         }

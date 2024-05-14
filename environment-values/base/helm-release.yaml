@@ -37,7 +37,7 @@ spec:
   - kind: ConfigMap
     name: capo-cluster-resources
     valuesKey: allocated_ip
-    targetPath: cluster_virtual_ip
+    targetPath: _internal.cluster_virtual_ip
     optional: true
   - kind: ConfigMap
     name: capo-cluster-resources

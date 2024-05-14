@@ -1837,7 +1837,7 @@ units:
           service:
             type: LoadBalancer
             externalIPs:
-            - '{{ .Values.cluster_virtual_ip }}'
+            - '{{ .Values._internal.cluster_virtual_ip }}'
             annotations:
               metallb.universe.tf/allow-shared-ip: cluster-external-ip
           baremetaloperator:
@@ -2235,6 +2235,7 @@ units:
     - base-deps
     enabled_conditions:
     - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+    - '{{ not (.Values.cluster_virtual_ip | eq "") }}'
     repo: sylva-core
     depends_on:
       capo-cloud-config: true
@@ -2253,6 +2254,7 @@ units:
           NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
           CLOUD: 'capo_cloud'
           backoffLimit: '0'
+      force: true
       _patches:
         - target:
             kind: ConfigMap
@@ -2312,7 +2314,7 @@ units:
     depends_on:
       capo-cloud-config: true
       heat-operator: true
-      capo-get-existing-resources: true
+      capo-get-existing-resources: '{{ tuple . "capo-get-existing-resources" | include "unit-enabled" }}'
     kustomization_spec:
       path: ./kustomize-units/capo-cluster-resources/heat-stack
       wait: true
@@ -2717,7 +2719,7 @@ units:
         domain: '{{ .Values.cluster_domain }}'
         replicaCount: 3
         service:
-          loadBalancerIP: '{{ .Values.cluster_virtual_ip }}'
+          loadBalancerIP: '{{ .Values._internal.cluster_virtual_ip }}'
           annotations:
             metallb.universe.tf/allow-shared-ip: cluster-external-ip
         # Following extraZonePlugins lines include all chart defaults plus the hosts plugin
@@ -2782,7 +2784,7 @@ units:
       wait: true
       postBuild:
         substitute:
-          CLUSTER_VIRTUAL_IP: '{{ .Values.cluster_virtual_ip }}'
+          CLUSTER_VIRTUAL_IP: '{{ .Values._internal.cluster_virtual_ip }}'
 
   capi-rancher-import:
     info:
@@ -2857,7 +2859,7 @@ units:
           service:
             enabled: true
             externalIPs:
-            - '{{ .Values.cluster_virtual_ip }}'
+            - '{{ .Values._internal.cluster_virtual_ip }}'
             annotations:
               metallb.universe.tf/allow-shared-ip: cluster-external-ip
           publishService:
@@ -3553,7 +3555,7 @@ units:
               value: '{{ (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | ternary "coredns" "rke2-coredns-rke2-coredns" }}'
       postBuild:
         substitute:
-          CLUSTER_VIRTUAL_IP: '{{ .Values.cluster_virtual_ip }}'
+          CLUSTER_VIRTUAL_IP: '{{ .Values._internal.cluster_virtual_ip }}'
           CLUSTER_DOMAIN: '{{ .Values.cluster_domain }}'
 
   ceph-csi-cephfs:
@@ -5349,7 +5351,7 @@ cluster:
       - capo-{{ .Values.cluster.name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}
       - capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}
 
-  cluster_virtual_ip: '{{ .Values.cluster_virtual_ip }}'
+  cluster_virtual_ip: '{{ .Values._internal.cluster_virtual_ip }}'
 
   cluster_public_ip: '{{ tuple (.Values.openstack.floating_ip) (not (eq .Values.openstack.floating_ip "")) | include "set-only-if" }}'
   cluster_services_cidrs:
@@ -5466,7 +5468,7 @@ admin_password: '{{ .Values._internal.default_password }}'
 flux_webui:
   admin_user: admin
 
-display_external_ip: '{{ .Values.openstack.floating_ip | eq "" | ternary .Values.cluster_virtual_ip .Values.openstack.floating_ip }}'
+display_external_ip: '{{ .Values.openstack.floating_ip | eq "" | ternary .Values._internal.cluster_virtual_ip .Values.openstack.floating_ip }}'
 
 cluster_domain: sylva
 
@@ -5711,6 +5713,11 @@ logging:
   loki_url: "https://{{ .Values.external_hostnames.loki }}"  # for workload clusters, this is overridden via shared_workload_clusters_values to point to the mgmt cluster Loki
 
 _internal:
+
+  # cluster virtual IP:
+  #   capo case: either dynamic IP provided by Heat Operator or fixed IP set by end-user, this value will be overrided by sylva-unit HelmRelease
+  #   other cases: copy of .Values.cluster_virtual_ip
+  cluster_virtual_ip: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | ternary "" .Values.cluster_virtual_ip }}'
 
   mgmt_cluster: false
 
