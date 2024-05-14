@@ -141,6 +141,13 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
       ref:
         tag: v2.9.7
 
+  sylva-logging-flows:
+    kind: GitRepository
+    spec:
+      url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-logging-flows.git
+      ref:
+        tag: 0.0.1
+
   sylva-prometheus-rules:
     kind: GitRepository
     spec:
@@ -4829,6 +4836,30 @@ units:
           LOKI_PASSWORD: '{{ .Values._internal.loki_password }}'
       wait: true
 
+  sylva-logging-flows:
+    info:
+      description: configures logging flows and output to export the platform logs to an external server
+      maturity: beta
+      internal: true
+    unit_templates:
+    - base-deps
+    enabled: false
+    depends_on:
+      logging: true
+    repo: sylva-logging-flows
+    helm_chart_artifact_name: sylva-logging-flows
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: .
+      targetNamespace: cattle-logging-system
+      values:
+        flows: '{{ .Values.logging.flows | include "preserve-type" }}'
+        clusterflows: '{{ .Values.logging.clusterflows | include "preserve-type" }}'
+    helm_secret_values:
+      outputs: '{{ .Values.logging.outputs | include "preserve-type" }}'
+      clusteroutputs: '{{ .Values.logging.clusteroutputs | include "preserve-type" }}'
+
   loki-init:
     info:
       description: sets up Loki certificate
@@ -5054,12 +5085,7 @@ units:
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
-              drop:
-                - ALL
-            runAsNonRoot: true
-            seccompProfile:
-              type: RuntimeDefault
-        memberlist:
+              drop:helm_secret_values
           service:
             publishNotReadyAddresses: true
           join_members:
@@ -5650,6 +5676,10 @@ monitoring:
 
 logging:
   loki_url: "https://{{ .Values.external_hostnames.loki }}"  # for workload clusters, this is overridden via shared_workload_clusters_values to point to the mgmt cluster Loki
+  flows: {}
+  clusterflows: {}
+  outputs: {}
+  clusteroutputs: {}
 
 _internal:
 
