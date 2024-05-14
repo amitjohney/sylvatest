@@ -5,9 +5,10 @@ Help()
    # Display Help
    echo "Generate a Cosign Key pair in a Gitlab project and promote it at the Gitlab group level."
    echo
-   echo "Syntax: $(basename "$0") [-k|h] PROJECT_ID GROUP_ID"
+   echo "Syntax: $(basename "$0") [-c|d|h] PROJECT_ID GROUP_ID"
    echo "options:"
-   echo "k     Generate Cosign key pair stored in CI variables of PROJECT_ID."
+   echo "c     Create Cosign key pair stored in CI variables of PROJECT_ID."
+   echo "d     delete key pair"
    echo "h     Print this Help."
    echo
 }
@@ -20,15 +21,19 @@ then
 fi
 
 GENERATE_KEY=false
+DELETE_KEY=false
 
-while getopts "hk" option; do
+while getopts "hcd" option; do
    case $option in
       h) # display Help
          Help
          exit
          ;;
-      k) # generate key pair
+      c) # create key pair
         GENERATE_KEY=true
+        ;;
+      d) # delete key pair
+        DELETE_KEY=true
         ;;
       \?) # Invalid option
          echo "Error: Invalid option"
@@ -49,9 +54,8 @@ fi
 PROJECT_ID=$1
 GROUP_ID=$2
 
-printf "Project ID: %s\n" $PROJECT_ID
-printf "Group ID: %s\n" $GROUP_ID
-
+printf "Project Name: %s (ID: %s)\n" $(curl -s --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "https://gitlab.com/api/v4/projects/${PROJECT_ID}" | jq -r '.name')  $PROJECT_ID 
+printf "Group Name: %s (ID: %s)\n" $(curl -s --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "https://gitlab.com/api/v4/groups/${GROUP_ID}" | jq -r '.name') $GROUP_ID 
 
 if ! [[ -v  GITLAB_TOKEN ]]; then
    echo "[ERROR] the environment variable GITLAB_TOKEN is not set"
@@ -59,14 +63,28 @@ if ! [[ -v  GITLAB_TOKEN ]]; then
 fi
 
 if $GENERATE_KEY; then
-  echo "Generating keys"
+  echo "Generating Project kepair"
   cosign generate-key-pair gitlab://"${PROJECT_ID}"
 fi
 
-COSIGN_PRIVATE_KEY=$(curl -s --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "https://gitlab.com/api/v4/projects/"${PROJECT_ID}"/variables/COSIGN_PRIVATE_KEY" | jq -r '.value')
-COSIGN_PASSWORD=$(curl -s --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "https://gitlab.com/api/v4/projects/"${PROJECT_ID}"/variables/COSIGN_PASSWORD" | jq -r '.value')
-COSIGN_PUBLIC_KEY=$(curl -s --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "https://gitlab.com/api/v4/projects/"${PROJECT_ID}"/variables/COSIGN_PUBLIC_KEY" | jq -r '.value')
+if $DELETE_KEY; then
+   echo "Removing Group keypair"
+   curl -s -XDELETE --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "https://gitlab.com/api/v4/groups/"${GROUP_ID}"/variables/COSIGN_PRIVATE_KEY" | jq
+   curl -s -XDELETE --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "https://gitlab.com/api/v4/groups/"${GROUP_ID}"/variables/COSIGN_PASSWORD" | jq
+   curl -s -XDELETE --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "https://gitlab.com/api/v4/groups/"${GROUP_ID}"/variables/COSIGN_PUBLIC_KEY" | jq
 
-curl -s -XPOST --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "https://gitlab.com/api/v4/groups/"${GROUP_ID}"/variables" --form "key=COSIGN_PRIVATE_KEY" --form "value=$COSIGN_PRIVATE_KEY" --form "protected=true" | jq
-curl -s -XPOST --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "https://gitlab.com/api/v4/groups/"${GROUP_ID}"/variables" --form "key=COSIGN_PASSWORD" --form "value=$COSIGN_PASSWORD" --form "protected=true" | jq
-curl -s -XPOST --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "https://gitlab.com/api/v4/groups/"${GROUP_ID}"/variables" --form "key=COSIGN_PUBLIC_KEY" --form "value=$COSIGN_PUBLIC_KEY" | jq
+   echo "Removing Project keypair"
+   curl -s -XDELETE --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "https://gitlab.com/api/v4/projects/"${PROJECT_ID}"/variables/COSIGN_PRIVATE_KEY" | jq 
+   curl -s -XDELETE --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "https://gitlab.com/api/v4/projects/"${PROJECT_ID}"/variables/COSIGN_PASSWORD" | jq
+   curl -s -XDELETE --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "https://gitlab.com/api/v4/projects/"${PROJECT_ID}"/variables/COSIGN_PUBLIC_KEY" | jq
+else
+   echo "Creating Group keypair"
+   
+   COSIGN_PRIVATE_KEY=$(curl -s --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "https://gitlab.com/api/v4/projects/"${PROJECT_ID}"/variables/COSIGN_PRIVATE_KEY" | jq -r '.value')
+   COSIGN_PASSWORD=$(curl -s --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "https://gitlab.com/api/v4/projects/"${PROJECT_ID}"/variables/COSIGN_PASSWORD" | jq -r '.value')
+   COSIGN_PUBLIC_KEY=$(curl -s --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "https://gitlab.com/api/v4/projects/"${PROJECT_ID}"/variables/COSIGN_PUBLIC_KEY" | jq -r '.value')
+
+   printf "Group Variable %s created\n" $(curl -s -XPOST --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "https://gitlab.com/api/v4/groups/"${GROUP_ID}"/variables" --form "key=COSIGN_PRIVATE_KEY" --form "value=$COSIGN_PRIVATE_KEY" --form "protected=true" | jq -r '.key')
+   printf "Group Variable %s created\n" $(curl -s -XPOST --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "https://gitlab.com/api/v4/groups/"${GROUP_ID}"/variables" --form "key=COSIGN_PASSWORD" --form "value=$COSIGN_PASSWORD" --form "protected=true" | jq -r '.key')
+   printf "Group Variable %s created\n" $(curl -s -XPOST --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "https://gitlab.com/api/v4/groups/"${GROUP_ID}"/variables" --form "key=COSIGN_PUBLIC_KEY" --form "value=$COSIGN_PUBLIC_KEY" | jq -r '.key')
+fi
