@@ -1,23 +1,5 @@
 ## [Kustomization dependencies](https://fluxcd.io/flux/components/kustomize/kustomizations/#dependencies) diagrams
 
-Following [mermaid](https://mermaid.js.org/syntax/stateDiagram.html) diagrams were created using [tools/unit-dependency-diagram](../../../../tools/unit-dependency-diagram).
-
-> _Note:_ Where the diagram is too complex to be displayed by GitLab, the syntax can be dumped in https://mermaid.live/edit, where download to SVG action is available.
-
-<Tabs groupId="flavor-tabs">
-
-<TabItem value="kubeadm-capd" label='management cluster for kubeadm-capd deployment'>
-
-management cluster for kubeadm-capd deployment:
-
-![dot-example-svg](./dot-example.svg)
-
-</TabItem>
-
-<TabItem value="kubeadm-capo" label='management cluster for kubeadm-capo deployment'>
-
-management cluster for kubeadm-capo deployment:
-
 ```mermaid
 %%{init: {'theme': 'forest'} }%%
 graph TD;
@@ -365,12 +347,6 @@ graph TD;
   sylva-units-operator --> workload-cluster-operator
 ```
 
-</TabItem>
-
-<TabItem value="kubeadm-capv" label='management cluster for kubeadm-capv deployment'>
-
-management cluster for kubeadm-capv deployment:
-
 ```mermaid
 %%{init: {'theme': 'forest'} }%%
 graph TD;
@@ -702,12 +678,6 @@ graph TD;
   root-dependency-1 --> workload-cluster-operator
   sylva-units-operator --> workload-cluster-operator
 ```
-
-</TabItem>
-
-<TabItem value="rke2-capd" label='management cluster for rke2-capd deployment'>
-
-management cluster for rke2-capd deployment:
 
 ```mermaid
 %%{init: {'theme': 'forest'} }%%
@@ -878,12 +848,6 @@ graph TD;
   sylva-units-operator --> workload-cluster-operator
 ```
 
-</TabItem>
-
-<TabItem value="rke2-capo" label='management cluster for rke2-capo deployment'>
-
-management cluster for rke2-capo deployment:
-
 ```mermaid
 %%{init: {'theme': 'forest'} }%%
 graph TD;
@@ -1231,12 +1195,6 @@ graph TD;
   sylva-units-operator --> workload-cluster-operator
 ```
 
-</TabItem>
-
-<TabItem value="rke2-capv" label='management cluster for rke2-capv deployment'>
-
-management cluster for rke2-capv deployment:
-
 ```mermaid
 %%{init: {'theme': 'forest'} }%%
 graph TD;
@@ -1571,12 +1529,6 @@ graph TD;
   root-dependency-1 --> workload-cluster-operator
   sylva-units-operator --> workload-cluster-operator
 ```
-
-</TabItem>
-
-<TabItem value="rke2-capm3" label='management cluster for rke2-capm3 deployment'>
-
-management cluster for rke2-capm3 deployment:
 
 ```mermaid
 %%{init: {'theme': 'forest'} }%%
@@ -1936,12 +1888,6 @@ graph TD;
   sylva-units-operator --> workload-cluster-operator
 ```
 
-</TabItem>
-
-<TabItem value="rke2-capm3-virt" label='management cluster for rke2-capm3-virt deployment'>
-
-management cluster for rke2-capm3-virt deployment:
-
 ```mermaid
 %%{init: {'theme': 'forest'} }%%
 graph TD;
@@ -2228,6 +2174,3 @@ graph TD;
   sylva-units-operator --> workload-cluster-operator
 ```
 
-</TabItem>
-
-</Tabs>
