@@ -48,14 +48,14 @@ cluster:
         bmc:
           address: redfish-virtualmedia://{{ .Values._internal.bootstrap_node_ip }}:8002/redfish/v1/Systems/c0014001-b10b-f001-c0de-feeb1e54ee15
         bootMACAddress: 52:54:00:44:44:02
-    management-md-0:
-      bmh_metadata:
-        labels:
-          cluster-role: worker
-      bmh_spec:
-        bmc:
-          address: redfish-virtualmedia://{{ .Values._internal.bootstrap_node_ip }}:8003/redfish/v1/Systems/c0014001-b10b-f001-c0de-feeb1e54ee15
-        bootMACAddress: 52:54:00:44:44:03
+    # management-md-0:
+    #   bmh_metadata:
+    #     labels:
+    #       cluster-role: worker
+    #   bmh_spec:
+    #     bmc:
+    #       address: redfish-virtualmedia://{{ .Values._internal.bootstrap_node_ip }}:8003/redfish/v1/Systems/c0014001-b10b-f001-c0de-feeb1e54ee15
+    #     bootMACAddress: 52:54:00:44:44:03
 
 units:
   longhorn:
@@ -79,10 +79,10 @@ libvirt_metal:
       redfishPort: 8002
       memGB: 16
       numCPUs: 6
-    management-md-0:
-      redfishPort: 8003
-      memGB: 16
-      numCPUs: 6
+    # management-md-0:
+    #   redfishPort: 8003
+    #   memGB: 16
+    #   numCPUs: 6
 
     workload-cp-0:
       redfishPort: 8010
@@ -96,7 +96,7 @@ libvirt_metal:
       redfishPort: 8012
       memGB: 16
       numCPUs: 4
-    workload-md-0:
-      redfishPort: 8013
-      memGB: 16
-      numCPUs: 4
+    # workload-md-0:
+    #   redfishPort: 8013
+    #   memGB: 16
+    #   numCPUs: 4
