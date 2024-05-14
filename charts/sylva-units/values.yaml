@@ -5643,7 +5643,13 @@ monitoring:
 #      global:
 #        resolve_timeout: 15m
 #      route:
-#         group_by: ['namespace']
+#         group_by: ['namespace', 'alertname']
+#         receiver: 'jira_receiver'
+#      receivers:
+#      - name: 'jira_receiver'
+#        webhook_configs:
+#        - url: 'http://alertmanager-jiralert:9097/alert'
+#          send_resolved: false
 #    # Supported values from: https://github.com/prometheus-community/helm-charts/blob/main/charts/jiralert/values.yaml
 #    # Example config file: https://github.com/prometheus-community/jiralert/blob/master/examples/jiralert.yml
 #    webhooks:
