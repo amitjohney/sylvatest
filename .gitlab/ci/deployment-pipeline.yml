@@ -107,8 +107,6 @@ update-management-cluster:
 
 update-workload-cluster:
   needs:
-    - job: deploy-workload-cluster
-      artifacts: false
     - job: update-management-cluster
       artifacts: false
   extends:
