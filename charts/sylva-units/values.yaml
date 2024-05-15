@@ -2241,7 +2241,7 @@ units:
       capo-cloud-config: true
     kustomization_spec:
       path: ./kustomize-units/openstack-job
-      # targetNamespace: '{{ .Release.Namespace }}'
+      targetNamespace: '{{ .Release.Namespace }}'
       wait: true
       postBuild:
         substitute:
