@@ -2241,19 +2241,12 @@ units:
       capo-cloud-config: true
     kustomization_spec:
       path: ./kustomize-units/openstack-job
-      targetNamespace: '{{ .Release.Namespace }}'
+      # targetNamespace: '{{ .Release.Namespace }}'
       wait: true
       postBuild:
         substitute:
           JOB_NAME: capo-get-existing-resources
           JOB_TARGET_NAMESPACE: '{{ .Release.Namespace }}'
-          httpProxy: '{{ .Values.proxies.https_proxy }}'
-          httpsProxy: '{{ .Values.proxies.https_proxy }}'
-          noProxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
-          VIP: '{{ .Values.cluster_virtual_ip }}'
-          NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
-          CLOUD: 'capo_cloud'
-          backoffLimit: '0'
       force: true
       _patches:
         - target:
@@ -2266,29 +2259,31 @@ units:
         - target:
             kind: Job
           patch: >-
-            - op: replace
-              path: /spec/template/spec/containers/0/env
+            - op: add
+              path: /spec/template/spec/containers/0/env/-
               value:
-                - name: VIP
-                  value: ${VIP}
-                - name: NETWORK_ID
-                  value: ${NETWORK_ID}
-                - name: OS_CLIENT_CONFIG_FILE
-                  value: "/etc/openstack/clouds.yaml"
-                - name: TARGET_NAMESPACE
-                  value: ${JOB_TARGET_NAMESPACE}
-                - name: INSECURE_CLIENT
+                name: VIP
+                value: '{{ .Values.cluster_virtual_ip }}'
+            - op: add
+              path: /spec/template/spec/containers/0/env/-
+              value:
+                name: NETWORK_ID
+                value: '{{ .Values.cluster.capo.network_id }}'
+            - op: add
+              path: /spec/template/spec/containers/0/env/-
+              value:
+                name: OUTPUT_CONFIGMAP
+                value: os-existing-resources-info
+            - op: add
+              path: /spec/template/spec/containers/0/env/-
+              value:
+                name: TARGET_NAMESPACE
+                value: ${JOB_TARGET_NAMESPACE}
+            - op: add
+              path: /spec/template/spec/containers/0/env/-
+              value:
+                  name: INSECURE_CLIENT
                   value: ${JOB_INSECURE_CLIENT}
-                - name: http_proxy
-                  value: ${httpProxy}
-                - name: https_proxy
-                  value: ${httpsProxy}
-                - name: no_proxy
-                  value: ${noProxy}
-                - name: OUTPUT_CONFIGMAP
-                  value: os-existing-resources-info
-                - name: CLOUD
-                  value: capo_cloud
         - target:
             kind: Role
           patch: >-

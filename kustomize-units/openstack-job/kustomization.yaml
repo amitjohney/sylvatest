@@ -1,4 +1,59 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - job.yaml
+  - ../kube-job/
+  - secret.yaml
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: registry.gitlab.com/sylva-projects/sylva-elements/container-images/openstack-client:v0.0.10
+      - op: replace
+        path: /spec/template/spec/containers/0/command
+        value: ["/bin/sh", "-c", "/opt/openstack-job.sh"]
+      - op: replace
+        path: /spec/template/spec/containers/0/env
+        value: 
+          - name: CLOUD
+            value: ${CLOUD}
+          - name: http_proxy
+            value: ${httpProxy}
+          - name: https_proxy
+            value: ${httpsProxy}
+          - name: no_proxy
+            value: ${noProxy}
+          - name: OS_CLIENT_CONFIG_FILE
+            value: "/etc/openstack/clouds.yaml"
+      - op: replace
+        path: /spec/template/spec/containers/0/volumeMounts
+        value: 
+          - name: script-volume
+            mountPath: /opt/
+            readOnly: true
+          - name: openstack-config
+            mountPath: /etc/openstack
+            readOnly: true
+      - op: replace
+        path: /spec/template/spec/containers/0/volumes
+        value:
+          - name: script-volume
+            configMap:
+              name: openstack-job-script
+              defaultMode: 0755
+          - name: openstack-config
+            secret:
+              secretName: cluster-cloud-config
+    target:
+      kind: Job
+  - patch: |-
+      - op: replace
+        path: /metadata/name
+        value: openstack-job-script
+      - op: replace
+        path: /data
+        value: 
+          openstack-job.sh: |
+            sleep 20
+    target:
+      kind: ConfigMap
+      name: kube-job-cm
