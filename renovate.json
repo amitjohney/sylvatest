@@ -22,6 +22,34 @@
   },
   "packageRules": [
     {
+      "description": "update alignment between diskimage-builder and k8s map in the same time",
+      "matchPackagePatterns": [
+        "kubernetes/kubernetes",
+        "rancher/rke2",
+        ".*diskimage-builder"
+      ],
+      "prBodyNotes": ["WARNING: MAKE SURE TO ALIGN the kubernetes, rke2 versions in [sylva_diskimagebuilder_images] and [sylva_diskimagebuilder_version]"],
+      "groupName": "kubernetes-diskimagebuilder"
+    },
+    {
+      "matchPackagePatterns": [
+        "kubernetes/kubernetes",
+        "rancher/rke2"
+      ],
+      "matchUpdateTypes": ["major", "minor"],
+      "description": "disabling major and minor version to only keep the patch updates",
+      "enabled": false
+    },
+    {
+      "matchPackagePatterns": [
+        "kubernetes/kubernetes",
+        "rancher/rke2"
+      ],
+      "description": "renovate to propose only patch update without grouping them with minor update",
+      "separateMinorPatch": true,
+      "separateMajorMinor": true
+    },
+    {
       "description": "Regroup vsphere-cloud-controller-manager updates",
       "matchFileNames": ["kustomize-units/vsphere-cloud-controller-manager/**"],
       "matchPackagePrefixes": [
@@ -216,6 +244,26 @@
         "#\\s?renovate: depName=(?<depName>.*?)\\n*?sylva_diskimagebuilder_version: (?<currentValue>.*)"
       ],
       "datasourceTemplate": "gitlab-tags"
+    },
+    {
+      "description": "Detect k8s minor version map",
+      "customType": "regex",
+      "fileMatch": "charts/sylva-units/values.yaml",
+      "matchStrings": [
+        "\\s+# renovate: k8s minor updates\n\\s.*(?<currentValue>v\\d+.\\d+.\\d+)"
+      ],
+      "depNameTemplate": "kubernetes/kubernetes",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "description": "Detect k8s minor version map for rancher",
+      "customType": "regex",
+      "fileMatch": "charts/sylva-units/values.yaml",
+      "matchStrings": [
+        "\\s+# renovate: k8s minor updates\n\\s.*(?<currentValue>v\\d+.\\d+.\\d+)\\+"
+      ],
+      "depNameTemplate": "rancher/rke2",
+      "datasourceTemplate": "github-releases"
     },
     {
       "description": "Match images used by operators",
