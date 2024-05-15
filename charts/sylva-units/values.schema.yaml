@@ -656,8 +656,7 @@ properties:
     anyOf:
       - type: string
         format: ipv4
-      - type: string
-        maxLength: 0
+      - const: ""
 
   admin_password:  # -------------------------------
     type: string
