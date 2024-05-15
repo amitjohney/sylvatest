@@ -22,7 +22,7 @@ workload cluster for kubeadm-capo deployment:
 
 </TabItem>
 
-<TabItem value="kubeadm-capv" label='workload cluster for kubeadm-capv deployment'>
+<TabItem value="kubeadm-capv" label='# workload cluster for kubeadm-capv deployment'>
 
 workload cluster for kubeadm-capv deployment:
 
