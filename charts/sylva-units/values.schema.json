@@ -7526,8 +7526,7 @@
           "format": "ipv4"
         },
         {
-          "type": "string",
-          "maxLength": 0
+          "const": ""
         }
       ]
     },

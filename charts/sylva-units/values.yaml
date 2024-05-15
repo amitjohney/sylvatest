@@ -2337,9 +2337,6 @@ units:
         - kind: ConfigMap
           name: os-existing-resources-info
           optional: true
-    kustomization_substitute_secrets:
-      CAPO_CLOUD_YAML: '{{ .Values.cluster.capo.clouds_yaml  | toYaml | b64enc }}'
-      CAPO_CACERT: '{{ (.Values.cluster.capo.cacert|default "") | b64enc }}'
 
   calico-crd:
     info:

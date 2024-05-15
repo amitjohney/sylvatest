@@ -1227,7 +1227,7 @@ properties:
 
 allOf:
 
-  - # users cluster_virtual_ip must be set via ._internal.cluster_virtual_ip,
+  - # users cluster_virtual_ip must be set via .cluster_virtual_ip,
     # not via .cluster.cluster_virtual_ip
     properties:
       cluster:  # -------------------------------
