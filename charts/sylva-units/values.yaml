@@ -5649,7 +5649,11 @@ monitoring:
 #              project: Sylva
 
 logging:
-  loki_url: "https://{{ .Values.external_hostnames.loki }}"  # for workload clusters, this is overridden via shared_workload_clusters_values to point to the mgmt cluster Loki
+  # loki_url:
+  # - for mgmt cluster, the local Loki k8s service is used
+  # - for workload clusters, this is overridden via shared_workload_clusters_values.logging.loki_url
+  #   to point to the mgmt cluster Loki
+  loki_url: http://loki-gateway.svc.cluster.local
 
 _internal:
 
@@ -5838,7 +5842,7 @@ shared_workload_clusters_values:
   monitoring:
     thanos_receive_url: https://{{ .Values.external_hostnames.thanos_receive }}/api/v1/receive
   logging:
-    loki_url: '{{ .Values.logging.loki_url }}'
+    loki_url: "https://{{ .Values.external_hostnames.loki }}"
 
   _internal:
     sylva_system_default_storage_class_unit: '{{ .Values._internal.default_storage_class_unit }}'
