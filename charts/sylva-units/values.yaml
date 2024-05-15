@@ -5714,7 +5714,7 @@ _internal:
   # cluster virtual IP:
   #   capo case: either dynamic IP provided by Heat Operator or fixed IP set by end-user, this value will be overrided by sylva-unit HelmRelease
   #   other cases: copy of .Values.cluster_virtual_ip
-  cluster_virtual_ip: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | ternary "" .Values.cluster_virtual_ip }}'
+  cluster_virtual_ip: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | ternary "capo-dynamic-ip-still-unknown" .Values.cluster_virtual_ip }}'
 
   mgmt_cluster: false
 
