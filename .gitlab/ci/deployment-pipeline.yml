@@ -83,13 +83,13 @@ deploy-management-cluster:
 
 # ----------------------------------------------------------
 
-deploy-workload-cluster:
-  needs:
-    - job: deploy-management-cluster
-      artifacts: false
-  extends:
-    - .deploy-workload
-    - .rules:skip-if-only-deploy-mgmt
+#deploy-workload-cluster:
+#  needs:
+#    - job: deploy-management-cluster
+#      artifacts: false
+#  extends:
+#    - .deploy-workload
+#    - .rules:skip-if-only-deploy-mgmt
 
 # ----------------------------------------------------------
 
