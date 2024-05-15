@@ -97,8 +97,6 @@ update-management-cluster:
   needs:
     - job: deploy-management-cluster
       artifacts: false
-    - job: deploy-workload-cluster
-      artifacts: false
   extends:
     - .update-management
     - .rules:skip-if-only-deploy-mgmt
