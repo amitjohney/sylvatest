@@ -24,7 +24,7 @@ if [[ -n "$VIP" ]]; then
   LENGTH=$(yq '. | length' /tmp/port.yaml)
   if [[ $LENGTH -gt 0 ]]; then
     UUID=$(yq '.0.ID' /tmp/port.yaml)
-    echo "  CLUSTER_VIRTUAL_IP_UUID: ${UUID}" >> $configmap_file
+    echo "  CLUSTER_VIRTUAL_IP_PORT_UUID: ${UUID}" >> $configmap_file
     echo "    Neutron port found: ${UUID}"
   else
     echo "    Fatal error: Neutron port matching ${VIP} in network ${NETWORK_ID} not found"

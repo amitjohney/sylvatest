@@ -20,7 +20,7 @@ spec:
         cluster_virtual_ip:
           type: string
           default: ""
-        cluster_virtual_ip_uuid:
+        cluster_virtual_ip_port_uuid:
           type: string
           default: ""
         network:
@@ -98,7 +98,7 @@ spec:
               - ""
         vip_requested:
           equals:
-            - get_param: cluster_virtual_ip_uuid
+            - get_param: cluster_virtual_ip_port_uuid
             - ""
 
       resources:
@@ -117,7 +117,7 @@ spec:
           condition: external_network_cond
           properties:
             floatingip_id: { get_resource: floating-ip }
-            port_id: {if: [vip_requested, { get_resource: port }, {get_param: cluster_virtual_ip_uuid }] }
+            port_id: {if: [vip_requested, { get_resource: port }, {get_param: cluster_virtual_ip_port_uuid }] }
         srvgroup-ctrl-plane:
           type: OS::Nova::ServerGroup
           properties:
@@ -201,7 +201,7 @@ spec:
 
     environment:
       parameters:
-        cluster_virtual_ip_uuid: "${CLUSTER_VIRTUAL_IP_UUID}"
+        cluster_virtual_ip_port_uuid: "${CLUSTER_VIRTUAL_IP_PORT_UUID}"
         cluster_virtual_ip: "${CLUSTER_VIRTUAL_IP}"
         network: "${CAPO_NETWORK_ID}"
         external_network: "${CAPO_EXTERNAL_NETWORK_ID}"
