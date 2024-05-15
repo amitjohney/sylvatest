@@ -24,25 +24,7 @@ patches:
             value: ${noProxy}
           - name: OS_CLIENT_CONFIG_FILE
             value: "/etc/openstack/clouds.yaml"
-      - op: replace
-        path: /spec/template/spec/containers/0/volumeMounts
-        value: 
-          - name: script-volume
-            mountPath: /opt/
-            readOnly: true
-          - name: openstack-config
-            mountPath: /etc/openstack
-            readOnly: true
-      - op: replace
-        path: /spec/template/spec/containers/0/volumes
-        value:
-          - name: script-volume
-            configMap:
-              name: openstack-job-script
-              defaultMode: 0755
-          - name: openstack-config
-            secret:
-              secretName: cluster-cloud-config
+
     target:
       kind: Job
   - patch: |-
