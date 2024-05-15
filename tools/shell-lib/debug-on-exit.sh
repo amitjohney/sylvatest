@@ -157,7 +157,7 @@ unset KUBECONFIG
 if [[ $(kind get clusters) =~ $KIND_CLUSTER_NAME ]]; then
   cluster_info_dump bootstrap
   echo -e "\nDump bootstrap node logs"
-  docker ps -q -f name=control-plane* | xargs -I % -r docker exec % journalctl -e > bootstrap-cluster-dump/bootstap_node.log
+  docker ps -q -f name=control-plane* | xargs -I % -r docker exec % journalctl -e > bootstrap-cluster-dump/bootstrap_node.log
 fi
 
 # Try to guess management-cluster-kubeconfig path:
