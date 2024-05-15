@@ -39,7 +39,7 @@
         curl -k -s -G https://$thanos_url:443/api/v1/query -u thanos-user:$thanos_token \
         --data-urlencode "$ALERT_QUERY" | jq -c .data.result[].metric | jtbl | tee thanos-alert-$CLUSTER.log
       else
-        echo "Thanos unis is not enable - SKIPPING"
+        echo "Thanos unit is not enable - SKIPPING"
       fi
   variables:
     ALERT_QUERY: "query=ALERTS{alertstate=\"firing\", cluster=\"$CLUSTER\"}"
