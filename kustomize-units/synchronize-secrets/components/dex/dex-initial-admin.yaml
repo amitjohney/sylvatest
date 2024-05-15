@@ -1,0 +1,28 @@
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+   name: dex-initial-admin
+   namespace: dex
+spec:
+   secretStoreRef:
+      name: vault
+      kind: ClusterSecretStore
+   refreshInterval: 0s
+   target:
+      creationPolicy: Orphan
+      name: dex-initial-admin
+      template:
+         metadata:
+            labels:
+               app: dex
+         type: kubernetes.io/basic-auth
+         data:
+            username: admin
+            password: "{{ .password | toString }}"
+   data:
+   - secretKey: password
+     remoteRef:
+        key: secret/data/dex
+        property: password
+#        version: "1"  # setting the version here should not be necessary if ExternalSecret.spec.refreshInterval: 0

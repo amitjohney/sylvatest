@@ -1,0 +1,74 @@
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+   name: dex-init
+   namespace: dex
+spec:
+   secretStoreRef:
+      name: vault
+      kind: ClusterSecretStore
+   target:
+      creationPolicy: Orphan
+      name: dex-init
+      template:
+         type: Opaque
+         data:  # see https://open-docs.neuvector.com/deploying/production/configmap
+            config.yaml: |
+                enablePasswordDB: false
+                issuer: https://auth.${CLUSTER_DOMAIN}
+                logger:
+                  level: "debug"
+                  format: text
+                storage:
+                  type: memory
+                oauth2:
+                  alwaysShowLoginScreen: false
+                  skipApprovalScreen: true
+                connectors:
+                  - id: mock
+                    name: Example
+                    type: mockCallback
+                  - type: oidc
+                    id: orange-connect
+                    name: orange-connect
+                    config:
+                      clientID: ${ORANGE_CONNECT_CLIENT:=client-id}
+                      clientSecret: ${ORANGE_CONNECT_SECRET:=client-secret}
+                      redirectURI: https://auth.${CLUSTER_DOMAIN}/callback
+                      issuer: https://auth.tech.orange
+                      getUserInfo: true
+                      insecureSkipEmailVerified: true
+                      scopes:
+                        - openid
+                        - profile
+                        - email
+                  - config:
+                      bindDN: cn=dex,ou=nif_tz_tools,ou=users,${LDAP_BASE_DC}
+                      bindPW: "{{ .password | toString }}"
+                      groupSearch:
+                        baseDN: ou=groups,${LDAP_BASE_DC}
+                        filter: "(objectClass=groupOfUniqueNames)"
+                        nameAttr: uid
+                        userMatchers:
+                          - groupAttr: uniqueMember
+                            userAttr: DN
+                      host: glauth.glauth:389
+                      insecureNoSSL: true
+                      userSearch:
+                        baseDN: ou=users,${LDAP_BASE_DC}
+                        emailAttr: mail
+                        filter: "(objectClass=posixAccount)"
+                        idAttr: uid
+                        nameAttr: uid
+                        preferredUsernameAttr: uid
+                        username: uid
+                      usernamePrompt: SSO Username
+                    id: ldap
+                    name: LDAP
+                    type: ldap
+   data:
+   - secretKey: password
+     remoteRef:
+        key: secret/data/dex
+        property: password
