@@ -118,8 +118,8 @@ variables:
       MGMT_INITIAL_ADDITIONAL_VALUES: environment-values/ci/control-plane-replicas-3.yml
       MGMT_UPDATE_ADDITIONAL_VALUES: environment-values/ci/dummy-rolling-update-trigger.yml
       APPLY_WATCH_TIMEOUT_MIN: 40
-      WC_INITIAL_ADDITIONAL_VALUES: environment-values/ci/k8s-kubeadm-1.26.yml
-      WC_UPDATE_ADDITIONAL_VALUES: environment-values/ci/k8s-kubeadm-1.27.yml
+      WC_INITIAL_ADDITIONAL_VALUES: environment-values/ci/k8s-kubeadm-1.27.yml
+      WC_UPDATE_ADDITIONAL_VALUES: environment-values/ci/k8s-kubeadm-1.28.yml
       APPLY_WC_WATCH_TIMEOUT_MIN: 40
   # RKE2 override to test rolling upgrades in MR flagged with ci-feature::test-rolling-upgrade (exclude capd pipelines)
   - if: $CI_MERGE_REQUEST_LABELS =~ /ci-feature::test-rolling-upgrade/ && $ENV_NAME =~ /.*rke2.*/ && $ENV_NAME !~ /.*capd.*/
@@ -138,8 +138,8 @@ variables:
       MGMT_INITIAL_ADDITIONAL_VALUES: environment-values/ci/control-plane-replicas-3.yml
       MGMT_UPDATE_ADDITIONAL_VALUES: environment-values/ci/dummy-rolling-update-trigger.yml
       APPLY_WATCH_TIMEOUT_MIN: 40
-      WC_INITIAL_ADDITIONAL_VALUES: environment-values/ci/k8s-kubeadm-1.26.yml
-      WC_UPDATE_ADDITIONAL_VALUES: environment-values/ci/k8s-kubeadm-1.27.yml
+      WC_INITIAL_ADDITIONAL_VALUES: environment-values/ci/k8s-kubeadm-1.27.yml
+      WC_UPDATE_ADDITIONAL_VALUES: environment-values/ci/k8s-kubeadm-1.28.yml
       APPLY_WC_WATCH_TIMEOUT_MIN: 40
     allow_failure: true
     when: manual
