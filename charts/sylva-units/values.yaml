@@ -644,7 +644,7 @@ units:
     helmrelease_spec:
       chart:
         spec:
-          chart: kepler/kepler
+          chart: kepler
           version: 0.5.6
       targetNamespace: kepler
       install:
