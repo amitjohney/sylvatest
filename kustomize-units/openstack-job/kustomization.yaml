@@ -15,13 +15,13 @@ patches:
         path: /spec/template/spec/containers/0/env
         value:
           - name: CLOUD
-            value: capo_cloud
+            value: ${CLOUD}
           - name: http_proxy
-            value: '{{ .Values.proxies.http_proxy }}'
+            value: ${httpProxy}
           - name: https_proxy
-            value: '{{ .Values.proxies.https_proxy }}'
+            value: ${httpsProxy}
           - name: no_proxy
-            value: '{{ include "sylva-units.no_proxy" (tuple .) }}'
+            value: ${noProxy}
           - name: OS_CLIENT_CONFIG_FILE
             value: "/etc/openstack/clouds.yaml"
       - op: replace

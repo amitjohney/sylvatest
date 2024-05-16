@@ -2247,6 +2247,10 @@ units:
         substitute:
           JOB_NAME: capo-get-existing-resources
           JOB_TARGET_NAMESPACE: '{{ .Release.Namespace }}'
+          httpProxy: '{{ .Values.proxies.https_proxy }}'
+          httpsProxy: '{{ .Values.proxies.https_proxy }}'
+          noProxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
+          CLOUD: capo_cloud
       force: true
       _patches:
         - target:
