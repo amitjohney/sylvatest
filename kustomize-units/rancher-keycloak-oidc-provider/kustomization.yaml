@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - keycloak-auth-provider.yaml
   - rancher-global-role-binding.yaml
+  - rancher-refresh-user-info.yaml

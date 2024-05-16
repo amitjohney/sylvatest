@@ -1,0 +1,12 @@
+apiVersion: management.cattle.io/v3
+kind: Setting
+metadata:
+  name: auth-user-info-max-age-seconds
+value: ${REFRESH_TIME}
+---
+apiVersion: management.cattle.io/v3
+kind: Setting
+metadata:
+  name: auth-user-info-resync-cron
+value: ${CRON_REFRESH}
+

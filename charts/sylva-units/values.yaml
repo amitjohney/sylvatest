@@ -2648,6 +2648,8 @@ units:
         substitute:
           KEYCLOAK_EXTERNAL_URL: '{{ .Values.external_hostnames.keycloak }}'
           RANCHER_EXTERNAL_URL: '{{ .Values.external_hostnames.rancher }}'
+          REFRESH_TIME: '{{ .Values._internal.rancher_user_refresh | default "240" | quote }}'
+          CRON_REFRESH:  '{{ .Values._internal.rancher_cron_refresh | default "" | quote }}'
       wait: true
 
   k8s-gateway:
