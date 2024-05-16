@@ -638,6 +638,8 @@ units:
     info:
       description: installs kepler
       maturity: beta
+    depends_on:
+      namespace-defs: true
     unit_templates:
     - base-deps
     helm_repo_url: https://sustainable-computing-io.github.io/kepler-helm-chart
