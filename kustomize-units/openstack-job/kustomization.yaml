@@ -31,7 +31,7 @@ patches:
             mountPath: /etc/openstack
             readOnly: true
       - op: replace
-        path: /spec/template/spec/containers/0/volumes
+        path: /spec/template/spec/volumes
         value:
           - name: openstack-config
             secret:
