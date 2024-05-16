@@ -649,6 +649,8 @@ units:
       targetNamespace: kepler
       install:
         createNamespace: false
+        remediation:
+          retries: -1
       values:
         serviceMonitor:
           enabled: false
