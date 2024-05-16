@@ -26,11 +26,11 @@ spec:
           default: ""
         cluster_virtual_ip_port_uuid:
           type: string
-          description: "Port UUID to adopt as cluster virtual IP"
+          description: "Port UUID to adopt as cluster virtual IP (if set, will be used instead of creating a new port to allocate a VIP)"
           default: ""
         cluster_public_ip_uuid:
           type: string
-          description: "Floating-ip UUID to adopt as cluster public IP"
+          description: "Floating-ip UUID to adopt as cluster public IP (if set, will be used instead of allocating a floating IP)"
           default: ""
         control_plane_affinity_policy:
           type: string
