@@ -1725,6 +1725,11 @@ units:
       cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/capo
+      postBuild:
+        substituteFrom:
+        - kind: ConfigMap
+          name: proxy-env-vars
+          optional: true
       wait: true
       _components:
         - '{{ tuple "components/ha" (.Values._internal.ha_cluster.is_ha) | include "set-only-if" }}'
@@ -1814,6 +1819,11 @@ units:
       cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/cabpr
+      postBuild:
+        substituteFrom:
+        - kind: ConfigMap
+          name: proxy-env-vars
+          optional: true
       wait: true
       _components:
         - '{{ tuple "components/ha" (.Values._internal.ha_cluster.is_ha) | include "set-only-if" }}'
