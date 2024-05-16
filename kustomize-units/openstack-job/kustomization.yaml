@@ -30,12 +30,19 @@ patches:
           - name: openstack-config
             mountPath: /etc/openstack
             readOnly: true
+          - name: script-volume
+            mountPath: /opt/
+            readOnly: true
       - op: replace
         path: /spec/template/spec/volumes
         value:
           - name: openstack-config
             secret:
               secretName: cluster-cloud-config
+          - name: script-volume
+            configMap:
+              name: openstack-job-script
+              defaultMode: 0755
     target:
       kind: Job
   - patch: |-
