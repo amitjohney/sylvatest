@@ -3,7 +3,7 @@
 set -e
 set -o pipefail
 echo "Initiate ConfigMap manifest file"
-sleep 300
+
 configmap_file=/tmp/os-resources-info.yaml
 
 cat <<EOF >> $configmap_file
