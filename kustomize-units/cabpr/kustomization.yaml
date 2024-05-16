@@ -3,7 +3,32 @@ kind: Kustomization
 resources:
   - https://github.com/rancher-sandbox/cluster-api-provider-rke2/releases/download/v0.2.7/bootstrap-components.yaml
   - https://github.com/rancher-sandbox/cluster-api-provider-rke2/releases/download/v0.2.7/control-plane-components.yaml
-
+patches: 
+  - patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: all
+      spec:
+        template:
+          spec:
+            containers:
+              - name: manager
+                env:
+                  - name: "HTTP_PROXY"
+                    value: "${http_proxy}"
+                  - name: "HTTPS_PROXY"
+                    value: "${http_proxy}"
+                  - name: "http_proxy"
+                    value: "${http_proxy}"
+                  - name: "https_proxy"
+                    value: "${http_proxy}"
+                  - name: "no_proxy"
+                    value: "localhost,100.96.0.1,${no_proxy},${KIND_POD_SUBNET},${KIND_SVC_SUBNET},.cluster.local.,.cluster.local,.svc"
+    target:
+      kind: Deployment
+      labelSelector: control-plane=controller-manager
+  
 # Add labels to enable clusterctl move to retrieve resources correponding to cabpr CRDs
 labels:
   - pairs:
