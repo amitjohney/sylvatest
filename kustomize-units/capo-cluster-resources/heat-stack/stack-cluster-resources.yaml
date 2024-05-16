@@ -120,7 +120,7 @@ spec:
           condition: vip_requested
           properties:
             network: { get_param: network }
-        adopted_port:
+        adopted-port:
           type: OS::Neutron::Port
           condition: adopt_port
           external_id: { get_param: cluster_virtual_ip_port_uuid }
@@ -129,8 +129,8 @@ spec:
           condition: public_ip_requested
           properties:
             floating_network: { get_param: external_network }
-            port_id: { if: [vip_requested, { get_resource: port }, { get_resource: adopted_port }] }
-        adopted_floating-ip:
+            port_id: { if: [vip_requested, { get_resource: port }, { get_resource: adopted-port }] }
+        adopted-floating-ip:
           type: OS::Neutron::FloatingIP
           condition: adopt_floating_ip
           external_id: {get_param: cluster_public_ip_uuid }
@@ -138,8 +138,8 @@ spec:
           type: OS::Neutron::FloatingIPAssociation
           condition: adopt_floating_ip
           properties:
-            floatingip_id: { get_resource: adopted_floating-ip }
-            port_id: {if: [vip_requested, { get_resource: port }, {get_resource: adopted_port }] }
+            floatingip_id: { get_resource: adopted-floating-ip }
+            port_id: {if: [vip_requested, { get_resource: port }, {get_resource: adopted-port }] }
         srvgroup-ctrl-plane:
           type: OS::Nova::ServerGroup
           properties:
@@ -209,10 +209,10 @@ spec:
                 permutations: false
       outputs:
         allocated_ip:
-          value: { if: [vip_requested, { get_attr: [port, fixed_ips, 0, ip_address] }, { get_attr: [adopted_port, fixed_ips, 0, ip_address] } ]}
+          value: { if: [vip_requested, { get_attr: [port, fixed_ips, 0, ip_address] }, { get_attr: [adopted-port, fixed_ips, 0, ip_address] } ]}
           description: IP address allocated to the port
         allocated_fip:
-          value: {if: [public_ip_requested, { get_attr: [floating-ip, floating_ip_address] }, {if: [ adopt_floating_ip, { get_attr: [ adopted_floating-ip, floating_ip_address ] }, "" ]} ] }
+          value: {if: [public_ip_requested, { get_attr: [floating-ip, floating_ip_address] }, {if: [ adopt_floating_ip, { get_attr: [ adopted-floating-ip, floating_ip_address ] }, "" ]} ] }
           description: Floating IP associated to the port
         control_plane_servergroup_id:
           value: { get_resource: srvgroup-ctrl-plane }

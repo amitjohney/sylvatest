@@ -659,14 +659,6 @@ properties:
     type: string
     format: ipv4
 
-  cluster_virtual_ip_port_uuid:
-    type: string
-    pattern: "[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}"
-
-  cluster_public_ip_uuid:
-    type: string
-    pattern: "[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}"
-
   admin_password:  # -------------------------------
     type: string
 
@@ -1295,6 +1287,14 @@ allOf:
                   type: string
               required:
                 - type
+
+            cluster_virtual_ip_port_uuid:
+              type: string
+              pattern: "[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}"
+
+            cluster_public_ip_uuid:
+              type: string
+              pattern: "[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}"
 
             control_plane_affinity_policy:  # -------------------------------
               type: string
