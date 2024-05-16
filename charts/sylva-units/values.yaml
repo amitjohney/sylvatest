@@ -650,7 +650,7 @@ units:
           version: 0.5.6
       targetNamespace: kepler
       install:
-        createNamespace: true
+        createNamespace: false
       values:
         serviceMonitor:
           enabled: false
