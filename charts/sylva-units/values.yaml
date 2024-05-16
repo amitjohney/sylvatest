@@ -2257,7 +2257,7 @@ units:
               value: |
             {{ .Files.Get "scripts/get-os-existing-resources.sh" | indent 4 }}
         - target:
-            kind: Job
+            kind: Job 
           patch: >-
             - op: add
               path: /spec/template/spec/containers/0/env/-
