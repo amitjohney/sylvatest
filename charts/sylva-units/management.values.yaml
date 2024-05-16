@@ -83,6 +83,9 @@ units:
 
   kubevirt-test-vms:
     enabled: false
+  
+  kepler:
+    enabled: false
 
   prometheus-flux:
     depends_on:

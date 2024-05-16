@@ -634,6 +634,29 @@ units:
       wait: true
       targetNamespace: kubevirt-tests
 
+  kepler:
+    info:
+      description: installs kepler
+      maturity: beta
+    unit_templates:
+    - base-deps
+    helm_repo_url: https://sustainable-computing-io.github.io/kepler-helm-chart
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: kepler/kepler
+          version: 0.5.6
+      targetNamespace: kepler
+      install:
+        createNamespace: true
+      values:
+        serviceMonitor:
+          enabled: false
+          labels:
+            release: rancher-monitoring
+        service:
+          type: NodePort
+
   harbor-init:
     info:
       description: sets up Harbor prerequisites
