@@ -62,7 +62,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        branch: immutableOS-test
+        tag: 0.2.18
 
   local-path-provisioner:
     kind: GitRepository
@@ -1725,11 +1725,6 @@ units:
       cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/capo
-      postBuild:
-        substituteFrom:
-        - kind: ConfigMap
-          name: proxy-env-vars
-          optional: true
       wait: true
       _components:
         - '{{ tuple "components/ha" (.Values._internal.ha_cluster.is_ha) | include "set-only-if" }}'
@@ -1819,11 +1814,6 @@ units:
       cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/cabpr
-      postBuild:
-        substituteFrom:
-        - kind: ConfigMap
-          name: proxy-env-vars
-          optional: true
       wait: true
       _components:
         - '{{ tuple "components/ha" (.Values._internal.ha_cluster.is_ha) | include "set-only-if" }}'
