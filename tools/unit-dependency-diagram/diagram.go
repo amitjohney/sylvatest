@@ -68,11 +68,10 @@ func extractDependency(suPath string, clusterType string, clusterFlavor string, 
 	// a map of key unit name and value Kustomization name
 	ksUnitMap := make(map[string]string)
 
-<<<<<<< HEAD
+	// a map of key ks found in ks.spec.dependsOn and value slice of ks.metadata.name
+	dependencyKsMap := make(map[string][]string)
+
 	// parse each Kubernetes manifest
-=======
-	// Parse each Kubernetes manifest
->>>>>>> b5bcec54 (polishing out with SVG format diagrams embedded in Markdown using mermaid-cli; add arg to Go tool for defining multiple occurences of --skipUnit for sending KS name; add tool README)
 	for _, manifest := range manifests {
 		manifestByteArray := []byte(manifest)
 		// parse the YAML into a custom struct
@@ -95,7 +94,7 @@ func extractDependency(suPath string, clusterType string, clusterFlavor string, 
 			continue
 		}
 		// get the unit name (ks.metadata.name can be different than ks.metadata.labels."sylva-units.unit")
-		// and save the Kustomization name in a map when the unit name is different
+		// and save it in a map with Kustomization name as key, when the unit name is different
 		unitName := kustomization.Labels["sylva-units.unit"]
 		if unitName != kustomization.Name {
 			ksUnitMap[kustomization.Name] = unitName
@@ -109,32 +108,32 @@ func extractDependency(suPath string, clusterType string, clusterFlavor string, 
 			for _, dependencyKs := range kustomization.Spec.DependsOn {
 				// fmt.Println(reflect.TypeOf(dependencyKs)) // meta.NamespacedObjectReference
 				// fmt.Printf("%s\n", dependencyKs.Name)
-				diagramText = append(diagramText, "  "+dependencyKs.Name+" --> "+kustomization.Name)
+				dependencyKsMap[dependencyKs.Name] = append(dependencyKsMap[dependencyKs.Name], kustomization.Name)
 			}
 		}
 	}
-	for ksName := range ksUnitMap {
-		for i, line := range diagramText {
-			// if one of the Kustomization names for which the unit name is different was used in diagramText elements
-			// replace one occurence in that element with the unit name
-			if strings.Contains(line, ksName) {
-				diagramText[i] = strings.Replace(line, ksName, ksUnitMap[ksName], 1)
+
+	// https://mermaid.js.org/syntax/flowchart.html#styling-links: the order number of when the link was defined in the graph is used as id
+	// we want to have all links from a dependency be grouped/ordered
+	// to try color all from a dependency in same color, same as the border of the dependency unit
+	for dependencyKs := range dependencyKsMap {
+		// in case the ks found in ks.spec.dependsOn ha a .metadata.name different than its source unit's name
+		// use unit's name goind forward, otherwise the ks (in ks.spec.dependsOn) is already a unit name (i.e. usable with skipUnits)
+		unitName, exists := ksUnitMap[dependencyKs]
+		if exists {
+			dependencyKs = unitName
+		}
+		if skipUnits[dependencyKs] {
+			fmt.Println("Unit " + dependencyKs + " is skipped from the diagram.")
+			continue
+		} else {
+			for _, ks := range dependencyKsMap[dependencyKs] {
+				diagramText = append(diagramText, "  "+dependencyKs+" --> "+ks)
 			}
 		}
 	}
 	for _, line := range diagramText {
 		fmt.Println(line)
-	}
-
-	for unitName := range skipUnits {
-		for i := 0; i < len(diagramText); i++ {
-			// if one of the unit names designated to be skipped was used as a dependency (x in "x --> y") in diagramText elements
-			// remove the element
-			if strings.Contains(diagramText[i], unitName+" -->") {
-				diagramText = RemoveIndex(diagramText, i)
-				i-- // decrement i to account for the removed element
-			}
-		}
 	}
 	return diagramText
 }
