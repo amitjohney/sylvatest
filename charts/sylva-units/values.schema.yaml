@@ -659,6 +659,9 @@ properties:
     type: string
     format: ipv4
 
+  cluster_virtual_ip_port_uuid:
+    type: string
+
   admin_password:  # -------------------------------
     type: string
 

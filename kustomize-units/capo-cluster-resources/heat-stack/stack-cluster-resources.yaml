@@ -24,6 +24,9 @@ spec:
           type: string
           description: "External Network ID"
           default: ""
+        cluster_virtual_ip_port_uuid:
+          type: string
+          description: "Port UUID to adopt as virtual IP"
         control_plane_affinity_policy:
           type: string
           description: "Control plane affinity policy"
@@ -90,18 +93,32 @@ spec:
             equals:
               - get_param: external_network
               - ""
+        vip_requested:
+          equals:
+            - get_param: cluster_virtual_ip_port_uuid
+            - ""
+        adopt_port:
+          not:
+            equals:
+              - get_param: cluster_virtual_ip_port_uuid
+              - ""
 
       resources:
         port:
           type: OS::Neutron::Port
+          condition: vip_requested
           properties:
             network: { get_param: network }
+        adopted_port:
+          type: OS::Neutron::Port
+          condition: adopt_port
+          external_id: { get_param: cluster_virtual_ip_port_uuid }
         floating-ip:
           type: OS::Neutron::FloatingIP
           condition: external_network_cond
           properties:
             floating_network: { get_param: external_network }
-            port_id: { get_resource: port }
+            port_id: { if: [vip_requested, { get_resource: port }, { get_resource: adopted_port }] }
         srvgroup-ctrl-plane:
           type: OS::Nova::ServerGroup
           properties:
@@ -171,7 +188,7 @@ spec:
                 permutations: false
       outputs:
         allocated_ip:
-          value: { get_attr: [port, fixed_ips, 0, ip_address] }
+          value: { if: [vip_requested, { get_attr: [port, fixed_ips, 0, ip_address] }, { get_attr: [adopted_port, fixed_ips, 0, ip_address] } ]}
           description: IP address allocated to the port
         allocated_fip:
           value: {if: [external_network_cond, { get_attr: [floating-ip, floating_ip_address] }, ""]}
@@ -186,6 +203,7 @@ spec:
     environment:
       parameters:
         network: "${CAPO_NETWORK_ID}"
+        cluster_virtual_ip_port_uuid: "${CLUSTER_VIRTUAL_IP_PORT_UUID}"
         external_network: "${CAPO_EXTERNAL_NETWORK_ID}"
         control_plane_affinity_policy: "${CONTROL_PLANE_AFFINITY_POLICY}"
         worker_affinity_policy: "${WORKER_AFFINITY_POLICY}"
