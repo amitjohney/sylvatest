@@ -2284,6 +2284,7 @@ units:
           COMMON_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}'
           DUMMY_UPDATE_TRIGGER: 'helm-release-revision/{{ .Release.Revision }},sylva-units-version/{{ .Chart.Version }}'
           CLUSTER_VIRTUAL_IP_PORT_UUID: '{{ .Values.cluster_virtual_ip_port_uuid | default "" }}'
+          CLUSTER_PUBLIC_IP_UUID: '{{ .Values.cluster_public_ip_uuid | default "" }}'
 
   calico-crd:
     info:
