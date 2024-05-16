@@ -491,7 +491,7 @@ units:
       chart:
         spec:
           chart: charts/libvirt-metal
-      values: '{{ mergeOverwrite (dict "clusterVirtualIp" .Values.cluster_virtual_ip "clusterPublicIP" .Values._internal.bootstrap_node_ip "clusterPublicDomain" .Values.cluster_domain ) .Values.libvirt_metal | include "preserve-type" }}'
+      values: '{{ mergeOverwrite (dict "clusterVirtualIp" .Values._internal.cluster_virtual_ip "clusterPublicIP" .Values._internal.bootstrap_node_ip "clusterPublicDomain" .Values.cluster_domain ) .Values.libvirt_metal | include "preserve-type" }}'
 
   vsphere-cpi:
     # overload vsphere-cpi definition in bootstrap context to deploy in the management cluster
@@ -555,3 +555,4 @@ units_override_enabled:
   - libvirt-metal
   - vsphere-cpi
   - get-openstack-images
+  - capo-get-existing-resources

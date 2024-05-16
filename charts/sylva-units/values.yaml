@@ -1874,7 +1874,7 @@ units:
           service:
             type: LoadBalancer
             externalIPs:
-            - '{{ .Values.cluster_virtual_ip }}'
+            - '{{ .Values._internal.cluster_virtual_ip }}'
             annotations:
               metallb.universe.tf/allow-shared-ip: cluster-external-ip
           baremetaloperator:
@@ -2254,6 +2254,80 @@ units:
       CAPO_CLOUD_YAML: '{{ .Values.cluster.capo.clouds_yaml  | toYaml | b64enc }}'
       CAPO_CACERT: '{{ (.Values.cluster.capo.cacert|default "") | b64enc }}'
 
+  capo-get-existing-resources:
+    info:
+      description: Trigger a job to retrieve some UUID from Openstack (existing cluster_virtual_ip ..etc)
+      internal: true
+    unit_templates:
+    - base-deps
+    enabled_conditions:
+    - '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" }}'
+    - '{{ not (.Values.cluster_virtual_ip | eq "") }}'
+    repo: sylva-core
+    depends_on:
+      capo-cloud-config: true
+    kustomization_spec:
+      path: ./kustomize-units/openstack-job
+      targetNamespace: '{{ .Release.Namespace }}'
+      wait: true
+      postBuild:
+        substitute:
+          JOB_NAME: capo-get-existing-resources
+          JOB_TARGET_NAMESPACE: '{{ .Release.Namespace }}'
+          httpProxy: '{{ .Values.proxies.https_proxy }}'
+          httpsProxy: '{{ .Values.proxies.https_proxy }}'
+          noProxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
+          CLOUD: capo_cloud
+      force: true
+      _patches:
+        - target:
+            kind: ConfigMap
+          patch: >-
+            - op: replace
+              path: /data/openstack-job.sh
+              value: |
+            {{ .Files.Get "scripts/get-os-existing-resources.sh" | indent 4 }}
+        - target:
+            kind: Job 
+          patch: >-
+            - op: add
+              path: /spec/template/spec/containers/0/env/-
+              value:
+                name: VIP
+                value: '{{ .Values.cluster_virtual_ip }}'
+            - op: add
+              path: /spec/template/spec/containers/0/env/-
+              value:
+                name: NETWORK_ID
+                value: '{{ .Values.cluster.capo.network_id }}'
+            - op: add
+              path: /spec/template/spec/containers/0/env/-
+              value:
+                name: OUTPUT_CONFIGMAP
+                value: os-existing-resources-info
+            - op: add
+              path: /spec/template/spec/containers/0/env/-
+              value:
+                name: TARGET_NAMESPACE
+                value: ${JOB_TARGET_NAMESPACE}
+            - op: add
+              path: /spec/template/spec/containers/0/env/-
+              value:
+                  name: INSECURE_CLIENT
+                  value: ${JOB_INSECURE_CLIENT}
+        - target:
+            kind: Role
+          patch: >-
+            - op: replace
+              path: /rules
+              value:
+                - apiGroups: ["*"]
+                  resources: ["*"]
+                  verbs: ["get", "list", "create", "update", "delete"]
+    kustomization_substitute_secrets:
+      CAPO_CLOUD_YAML: '{{ .Values.cluster.capo.clouds_yaml  | toYaml | b64enc }}'
+      CAPO_CACERT: '{{ (.Values.cluster.capo.cacert|default "") | b64enc }}'
+
   capo-cluster-resources:
     info:
       description: installs OpenStack Heat stack for CAPO cluster prerequisites
@@ -2266,12 +2340,14 @@ units:
     depends_on:
       capo-cloud-config: true
       heat-operator: true
+      capo-get-existing-resources: '{{ tuple . "capo-get-existing-resources" | include "unit-enabled" }}'
     kustomization_spec:
       path: ./kustomize-units/capo-cluster-resources/heat-stack
       wait: true
       targetNamespace: '{{ .Release.Namespace }}'
       postBuild:
         substitute:
+          CLUSTER_VIRTUAL_IP: '{{ .Values.cluster_virtual_ip }}'
           STACK_NAME_PREFIX: '{{ .Values.cluster.name }}-{{ tuple . .Values.cluster.capo.resources_tag | include "interpret-as-string" | replace "." "-" }}'
           CAPO_TAG: '{{ .Values.cluster.capo.resources_tag }}'
           CAPO_NETWORK_ID: '{{ .Values.cluster.capo.network_id }}'
@@ -2283,6 +2359,10 @@ units:
           CAPO_CREATE_IRONIC_SECURITY_GROUP: '{{ tuple . (and (tuple . "metal3" | include "unit-enabled") (.Values.cluster.capi_providers.infra_provider | eq "capo")) "true" "false" | include "interpret-ternary" }}'
           COMMON_SECURITY_GROUP_NAME: 'capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}'
           DUMMY_UPDATE_TRIGGER: 'helm-release-revision/{{ .Release.Revision }},sylva-units-version/{{ .Chart.Version }}'
+        substituteFrom:
+        - kind: ConfigMap
+          name: os-existing-resources-info
+          optional: true
 
   calico-crd:
     info:
@@ -2659,7 +2739,7 @@ units:
         domain: '{{ .Values.cluster_domain }}'
         replicaCount: 3
         service:
-          loadBalancerIP: '{{ .Values.cluster_virtual_ip }}'
+          loadBalancerIP: '{{ .Values._internal.cluster_virtual_ip }}'
           annotations:
             metallb.universe.tf/allow-shared-ip: cluster-external-ip
         # Following extraZonePlugins lines include all chart defaults plus the hosts plugin
@@ -2724,7 +2804,7 @@ units:
       wait: true
       postBuild:
         substitute:
-          CLUSTER_VIRTUAL_IP: '{{ .Values.cluster_virtual_ip }}'
+          CLUSTER_VIRTUAL_IP: '{{ .Values._internal.cluster_virtual_ip }}'
 
   capi-rancher-import:
     info:
@@ -2799,7 +2879,7 @@ units:
           service:
             enabled: true
             externalIPs:
-            - '{{ .Values.cluster_virtual_ip }}'
+            - '{{ .Values._internal.cluster_virtual_ip }}'
             annotations:
               metallb.universe.tf/allow-shared-ip: cluster-external-ip
           publishService:
@@ -3494,7 +3574,7 @@ units:
               value: '{{ (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") | ternary "coredns" "rke2-coredns-rke2-coredns" }}'
       postBuild:
         substitute:
-          CLUSTER_VIRTUAL_IP: '{{ .Values.cluster_virtual_ip }}'
+          CLUSTER_VIRTUAL_IP: '{{ .Values._internal.cluster_virtual_ip }}'
           CLUSTER_DOMAIN: '{{ .Values.cluster_domain }}'
 
   ceph-csi-cephfs:
@@ -5290,7 +5370,7 @@ cluster:
       - capo-{{ .Values.cluster.name }}-security-group-workers-{{ .Values.cluster.capo.resources_tag }}
       - capo-{{ .Values.cluster.name }}-security-group-common-{{ .Values.cluster.capo.resources_tag }}
 
-  cluster_virtual_ip: '{{ .Values.cluster_virtual_ip }}'
+  cluster_virtual_ip: '{{ .Values._internal.cluster_virtual_ip }}'
 
   cluster_public_ip: '{{ tuple (.Values.openstack.floating_ip) (not (eq .Values.openstack.floating_ip "")) | include "set-only-if" }}'
   cluster_services_cidrs:
@@ -5398,7 +5478,7 @@ vsphere:
           datacenters:
             - '{{ .Values.cluster.capv.dataCenter }}'
 
-cluster_virtual_ip: 55.55.55.55
+cluster_virtual_ip: ""
 
 # Admin password that will be configured by default on various units  # FIXME, only used for SSO today see https://gitlab.com/sylva-projects/sylva-core/-/issues/503
 # [WARNING] This value cannot be overwritten on production environment (env_type: prod)
@@ -5407,7 +5487,7 @@ admin_password: '{{ .Values._internal.default_password }}'
 flux_webui:
   admin_user: admin
 
-display_external_ip: '{{ .Values.openstack.floating_ip | eq "" | ternary .Values.cluster_virtual_ip .Values.openstack.floating_ip }}'
+display_external_ip: '{{ .Values.openstack.floating_ip | eq "" | ternary .Values._internal.cluster_virtual_ip .Values.openstack.floating_ip }}'
 
 cluster_domain: sylva
 
@@ -5656,6 +5736,11 @@ logging:
   loki_url: http://loki-gateway.svc.cluster.local
 
 _internal:
+
+  # cluster virtual IP:
+  #   capo case: either dynamic IP provided by Heat Operator or fixed IP set by end-user, this value will be overrided by sylva-unit HelmRelease
+  #   other cases: copy of .Values.cluster_virtual_ip
+  cluster_virtual_ip: '{{ .Values.cluster.capi_providers.infra_provider | eq "capo" | ternary "capo-dynamic-ip-still-unknown" .Values.cluster_virtual_ip }}'
 
   mgmt_cluster: false
 
