@@ -86,6 +86,9 @@ units:
   
   kepler:
     enabled: false
+  
+  kepler-resources:
+    enabled: false
 
   prometheus-flux:
     depends_on:

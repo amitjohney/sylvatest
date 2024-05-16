@@ -634,6 +634,17 @@ units:
       wait: true
       targetNamespace: kubevirt-tests
 
+  kepler-resources:
+    info:
+      description: installs kepler
+      maturity: beta
+    unit_templates:
+    - base-deps
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/kepler
+      wait: true
+
   kepler:
     info:
       description: installs kepler
