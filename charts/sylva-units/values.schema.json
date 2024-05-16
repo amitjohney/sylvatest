@@ -8542,6 +8542,12 @@
               "external_network_id": {
                 "type": "string"
               }
+            },
+            "not": {
+              "required": [
+                "external_network_id",
+                "cluster_public_ip_uuid"
+              ]
             }
           }
         }

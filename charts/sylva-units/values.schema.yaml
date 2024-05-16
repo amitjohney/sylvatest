@@ -1311,6 +1311,12 @@ allOf:
             external_network_id:  # -------------------------------
               type: string
 
+          not:
+            required:
+              - external_network_id
+              - cluster_public_ip_uuid
+          
+
   # additional constraints for .metal3
   - if:
       properties:
