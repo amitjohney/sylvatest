@@ -97,7 +97,7 @@ spec:
           equals:
             - get_param: cluster_virtual_ip_port_uuid
             - ""
-        public_ip_requested:
+        floating_ip_allocation_requested:
           not:
             equals:
               - get_param: external_network
@@ -126,7 +126,7 @@ spec:
           external_id: { get_param: cluster_virtual_ip_port_uuid }
         floating-ip:
           type: OS::Neutron::FloatingIP
-          condition: public_ip_requested
+          condition: floating_ip_allocation_requested
           properties:
             floating_network: { get_param: external_network }
             port_id: { if: [vip_requested, { get_resource: port }, { get_resource: adopted-port }] }
@@ -212,7 +212,7 @@ spec:
           value: { if: [vip_requested, { get_attr: [port, fixed_ips, 0, ip_address] }, { get_attr: [adopted-port, fixed_ips, 0, ip_address] } ]}
           description: IP address allocated to the port
         allocated_fip:
-          value: {if: [public_ip_requested, { get_attr: [floating-ip, floating_ip_address] }, {if: [ adopt_floating_ip, { get_attr: [ adopted-floating-ip, floating_ip_address ] }, "" ]} ] }
+          value: {if: [floating_ip_allocation_requested, { get_attr: [floating-ip, floating_ip_address] }, {if: [ adopt_floating_ip, { get_attr: [ adopted-floating-ip, floating_ip_address ] }, "" ]} ] }
           description: Floating IP associated to the port
         control_plane_servergroup_id:
           value: { get_resource: srvgroup-ctrl-plane }
