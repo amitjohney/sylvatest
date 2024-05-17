@@ -44,7 +44,7 @@ os_images_info_path = os.environ.get("OS_IMAGES_INFO_PATH", '/opt/config/os-imag
 if not os.path.exists(os_images_info_path) or not os.path.isfile(os_images_info_path):
     logger.exception(f"{os_images_info_path} not found")
     sys.exit(2)
-# 'capo-cloud' is the cloud name we hardcode for CAPO in Sylva
+# 'capo_cloud' is the cloud name we hardcode for CAPO in Sylva
 cloud_name = os.environ.get("OS_CLOUD", "capo_cloud")
 # Insecure TLS flag
 tls_verify = False if os.environ.get(
@@ -138,7 +138,8 @@ def image_exists_in_glance(checksum, _image_name, status=['active']):
                 'name': image.name,
                 'checksum': image.get('checksum'),
                 'tags': image.tags,
-                'status': image.status
+                'status': image.status,
+                'owner': image.owner
             }
             for image in conn.image.images(tags=[f"sylva-md5-{checksum}"], visibility="community", paginated=False)
             if image.status in status
@@ -158,11 +159,16 @@ def image_exists_in_glance(checksum, _image_name, status=['active']):
 
 
 def handle_queued_image(image):
-    try:
-        conn.image.delete_image(image.get('id'))
-        logger.warning(f"Stalling image {image.get('name')} {image.get('id')} deleted")
-    except Exception as E:
-        logger.warning(f"Can't delete image {image.get('name')} {image.get('id')} : {str(E)}")    
+    if image.get('owner') == conn.current_project_id:
+        try:
+            logger.info(f"Deleting image {image.get('name')}  {image.get('id')}")
+            conn.image.delete_image(image.get('id'))
+            logger.warning(f"Stalling image {image.get('name')} {image.get('id')} deleted")
+        except Exception as E:
+            logger.warning(f"Can't delete image {image.get('name')} {image.get('id')} : {str(E)}")
+    else:
+        logger.warning(
+            f"Can't delete image {image.get('name')} {image.get('id')} : {conn.current_project_id} is not the owner")
 
 
 def wait_for_in_progress_image(image_name, checksum):
@@ -172,7 +178,7 @@ def wait_for_in_progress_image(image_name, checksum):
     """
     TIMEOUT = 3600
     WAIT_QUEUED_IMAGE = 10
-    INTERVAL = 10
+    LOOP_INTERVAL = 10
     t0 = t1 = time.time()
     image_active = None
     images = []
@@ -196,7 +202,7 @@ def wait_for_in_progress_image(image_name, checksum):
             if image.get('status') in ['saving', 'importing', 'uploading']:
                 logger.info(f"Waiting for image {image.get('name')} {image.get('id')} to be active")
         if images and not image_active:
-            time.sleep(INTERVAL)
+            time.sleep(LOOP_INTERVAL)
         t1 = time.time()
     return image_active
 
