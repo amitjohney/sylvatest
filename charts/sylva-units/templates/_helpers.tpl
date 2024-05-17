@@ -172,6 +172,9 @@ See usage in units.yaml and sources.yaml
   {{- $envAll := index . 0 -}}
   {{- $unit_name := index . 1 -}}
 
+  {{- if not (hasKey $envAll.Values.units $unit_name) -}}
+    {{- fail (printf "unit-def called on non-existing unit: %s" $unit_name) -}}
+  {{- end -}}
   {{- $unit_def := mergeOverwrite (deepCopy $envAll.Values.unit_definition_defaults) (deepCopy (index $envAll.Values.units $unit_name)) -}}
 
   {{/* inherit settings from any template specified in unit.<this unit>.unit_templates */}}
