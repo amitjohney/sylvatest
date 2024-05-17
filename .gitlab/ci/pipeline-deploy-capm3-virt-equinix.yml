@@ -50,7 +50,7 @@ create-runner:
     - >
       while true; do
         PIPELINE=$(glab api projects/sylva-projects%2Fsylva-elements%2Fci-tooling%2Frunner-aas-interface/pipelines/$PIPELINE_ID)
-        PIPELINE_STATUS=$(echo $PIPELINE | python3 -c 'import json,sys;print(json.load(sys.stdin)["status"])')
+        PIPELINE_STATUS=$(echo $PIPELINE | python3 -c 'import json, sys; obj = json.load(sys.stdin); print(obj["status"]) if "status" in obj else print("Key not found")')
         echo "PIPELINE_STATUS = $PIPELINE_STATUS"
         [[ $PIPELINE_STATUS == "" ]] && exit 1
         [[ $PIPELINE_STATUS == "failed" ]] && exit 1
