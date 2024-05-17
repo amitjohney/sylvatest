@@ -1311,6 +1311,7 @@ allOf:
             external_network_id:  # -------------------------------
               type: string
 
+        # prevent having both external_network_id and cluster_public_ip_uuid specified:
           not:
             required:
               - external_network_id
