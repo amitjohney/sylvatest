@@ -264,7 +264,7 @@ include:
     - download_artifact deploy-management-cluster management-cluster-kubeconfig
     - . bin/env
     - kubectl --kubeconfig management-cluster-kubeconfig delete -n ${ENV_NAME} hr sylva-units --timeout 30m
-    - kubectl --kubeconfig management-cluster-kubeconfig delete ns ${ENV_NAME} --timeout 2m
+    #- kubectl --kubeconfig management-cluster-kubeconfig delete ns ${ENV_NAME} --timeout 2m
   after_script:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:debug_exit[collapsed=true]\r\e[0Kgathering debugging logs in debug-on-exit.log file\e[0m"
     - . bin/env
