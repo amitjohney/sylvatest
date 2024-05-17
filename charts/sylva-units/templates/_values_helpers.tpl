@@ -117,5 +117,77 @@ Return an error if the upgrade values (passed as list of dict keys) are not equa
       {{- fail (printf "The %s value provided initially (%s) is different than the currently provided one (%s)" (join "." $dig_values_list) $initial_value $current_value) -}}
     {{- end -}}
   {{- end -}}
-  {{- $current_value -}}
+{{- end -}}
+
+{{/*
+Recursively parse a dict and collect in a list of lists with all keys making up the path, each list for path of a value dict "_immutable: true"
+- checks if the immediate key value is a dict with "_immutable: true", if yes appends current path plus the key (list) to the result list of paths
+- if the value is another dict, the function calls itself recursively with the updated path
+
+usage: |
+  include "recursive-immutable-key-collect" (dict "dict" .Values.immutable_values)
+
+  E.g. for input values:
+
+    immutable_values:
+      cluster:
+        name:
+          _immutable: true
+        capi_providers:
+          bootstrap_provider:
+            _immutable: true
+      vsphere:
+        vsphere-cpi:
+          vsphere_conf:
+            global:
+              insecureFlag:
+                _immutable: true
+
+  Calling in templates/sylva-units-values.yaml:
+
+    immutableValuesList:
+    {{- $values := .Values.immutable_values -}}
+    {{- $result := include "recursive-immutable-key-collect" (dict "dict" $values) | fromJson -}}
+    {{- $paths_list := index $result "encapsulated-result" -}}
+    {{- range $path := $paths_list -}}
+      {{ printf "Immutable value (.%s) has the following list of keys (length %d)" (join "." $path) ($path | len) | nindent 2 }}
+      {{- $path | toYaml | nindent 4 }}
+    {{- end -}}
+
+  Shows:
+
+    immutableValuesList:
+      Immutable value (cluster.capi_providers.bootstrap_provider) has the following list of keys (length 3)
+        - cluster
+        - capi_providers
+        - bootstrap_provider
+      Immutable value (cluster.name) has the following list of keys (length 2)
+        - cluster
+        - name
+      Immutable value (vsphere.vsphere-cpi.vsphere_conf.global.insecureFlag) has the following list of keys (length 5)
+        - vsphere
+        - vsphere-cpi
+        - vsphere_conf
+        - global
+        - insecureFlag
+
+*/}}
+{{- define "recursive-immutable-key-collect" -}}
+{{- $dict := .dict -}}
+{{- $path := .path | default (list) -}}
+{{- $result := .result | default (list) -}}
+{{- range $key, $value := $dict -}}
+  {{- if and (eq (kindOf $value) "map") (hasKey $value "_immutable") (eq (index $value "_immutable") true) -}}
+    {{- $new_path := append $path $key -}}
+    {{- $result = append $result $new_path -}}
+  {{- else if eq (kindOf $value) "map" -}}
+    {{- $new_path := append $path $key -}}
+    {{- $recursive_result := tpl (include "recursive-immutable-key-collect" (dict "dict" $value "path" $new_path "result" (list))) . -}}
+    {{- $recursive_paths := index ($recursive_result | fromJson) "encapsulated-result" -}}
+    {{- range $recursive_paths -}}
+      {{- $result = append $result . -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $result | include "preserve-type" -}}
 {{- end -}}

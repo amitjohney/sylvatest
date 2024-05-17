@@ -5783,9 +5783,17 @@ _internal:
 
 immutable_values:
   cluster:
-    name: '{{ tuple . (list "cluster" "name") | include "enforce-immutable" }}'
+    name:
+      _immutable: true
     capi_providers:
-      bootstrap_provider: '{{ tuple . (list "cluster" "capi_providers" "bootstrap_provider") | include "enforce-immutable" }}'
+      bootstrap_provider:
+        _immutable: true
+  vsphere:
+    vsphere-cpi:
+      vsphere_conf:
+        global:
+          insecureFlag:
+            _immutable: true
 
 shared_workload_clusters_values:
   ntp: '{{ .Values.ntp | include "set-if-defined" }}'
