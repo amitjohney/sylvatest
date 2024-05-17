@@ -181,8 +181,8 @@ def wait_for_in_progress_image(image_name, checksum):
     LOOP_INTERVAL = 10
     t0 = t1 = time.time()
     image_active = None
-    images = []
-    while ((time.time() - t0 < TIMEOUT) and not image_active and images) or (t1 == t0):
+    images = [None]
+    while ((time.time() - t0 < TIMEOUT) and not image_active and images):
         images = image_exists_in_glance(
             _image_name=image_name,
             checksum=checksum,
@@ -203,7 +203,6 @@ def wait_for_in_progress_image(image_name, checksum):
                 logger.info(f"Waiting for image {image.get('name')} {image.get('id')} to be active")
         if images and not image_active:
             time.sleep(LOOP_INTERVAL)
-        t1 = time.time()
     return image_active
 
 
