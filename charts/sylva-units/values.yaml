@@ -1686,7 +1686,7 @@ units:
         substitute:
           force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
           EXP_MACHINE_POOL: "true"
-          EXP_CLUSTER_RESOURCE_SET: "false"
+          EXP_CLUSTER_RESOURCE_SET: "true"
       wait: true
       _components:
         - '{{ tuple "components/ha" (.Values._internal.ha_cluster.is_ha) | include "set-only-if" }}'
