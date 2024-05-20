@@ -3093,7 +3093,6 @@ units:
       namespace-defs: true
       monitoring-crd: true
       prometheus-resources: '{{ tuple . "prometheus-resources" | include "unit-enabled" }}'
-      grafana-init: '{{ tuple . "grafana-init" | include "unit-enabled" }}'
     helm_repo_url: https://charts.rancher.io/
     helmrelease_spec:
       releaseName: rancher-monitoring
