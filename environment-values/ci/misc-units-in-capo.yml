@@ -166,6 +166,8 @@ units:
     enabled: true
   grafana-init:
     enabled: true
+  keycloak-add-realm-role:
+    enabled: true
 cluster:
   control_plane_replicas: 3
   capo:
