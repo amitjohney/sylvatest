@@ -845,6 +845,7 @@ units:
       maturity: stable
     depends_on:
       namespace-defs: true
+      vault: true
     repo: vault-operator
     unit_templates:
     - base-deps
