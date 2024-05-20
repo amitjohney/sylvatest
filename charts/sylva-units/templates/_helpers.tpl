@@ -174,7 +174,7 @@ See usage in units.yaml and sources.yaml
 
   {{- $unit_found := false -}}
 
-  {{- range $envAll.Values }}
+  {{- range $envAll.Values.units }}
     {{- if eq . $unit_name -}}
       {{- $unit_found = true -}}
       {{- break -}}
