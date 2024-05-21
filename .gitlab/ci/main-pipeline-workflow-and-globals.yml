@@ -26,6 +26,7 @@ default:
 variables:
   RUNNER_GENERATE_ARTIFACTS_METADATA: "true"
   OCI_TAG_FORMAT: "0.0.0-git-$CI_COMMIT_SHORT_SHA"
+  DOCKER_KIND_NETWORK: "172.21.0.0/16"
 
 gitleaks:
   rules:
