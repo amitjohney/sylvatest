@@ -1684,10 +1684,6 @@ units:
       postBuild:
         substitute:
           force_var_substitution_enabled: "true"  # dummy value to ensure substitution of defaults
-        substituteFrom:
-        - kind: ConfigMap
-          name: proxy-env-vars
-          optional: true
       wait: true
       _components:
         - '{{ tuple "components/ha" (.Values._internal.ha_cluster.is_ha) | include "set-only-if" }}'
