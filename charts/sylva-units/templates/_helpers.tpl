@@ -172,30 +172,44 @@ See usage in units.yaml and sources.yaml
   {{- $envAll := index . 0 -}}
   {{- $unit_name := index . 1 -}}
 
-  {{- $unit_def := mergeOverwrite (deepCopy $envAll.Values.unit_definition_defaults) (deepCopy (index $envAll.Values.units $unit_name)) -}}
+  {{- $unit_found := false -}}
 
-  {{/* inherit settings from any template specified in unit.<this unit>.unit_templates */}}
-  {{- $merged_unit_templates := dict -}}
-  {{ range $template_name := $unit_def.unit_templates | default list -}}
-    {{- if not (hasKey $envAll.Values.unit_templates $template_name) -}}
-      {{ fail (printf "unit %s has '%s' in '<unit>.unit_templates' but no such template is declared in '.Values.unit_templates'" $unit_name $template_name) -}}
+  {{- range $envAll.Values.units | keys }}
+    {{- if eq . $unit_name -}}
+      {{- $unit_found = true -}}
+      {{- break -}}
     {{- end -}}
-    {{/* merge the unit template with the others*/}}
-    {{- $merged_unit_templates = mergeOverwrite $merged_unit_templates (deepCopy (index $envAll.Values.unit_templates $template_name)) -}}
   {{- end -}}
 
-  {{/* merge unit definition with unit templates */}}
-  {{- $unit_def = mergeOverwrite $merged_unit_templates $unit_def -}}
+  {{- if $unit_found }}
+    {{- $unit_def := mergeOverwrite (deepCopy $envAll.Values.unit_definition_defaults) (deepCopy (index $envAll.Values.units $unit_name)) -}}
 
-  {{/* interpret _unit_name_ in unit template */}}
-  {{- $_ := set $envAll.Values "_unit_name_" $unit_name -}}
-  {{- $unit_def := index (tuple $envAll $unit_def | include "interpret-inner-gotpl" | fromJson) "result" -}}
+    {{/* inherit settings from any template specified in unit.<this unit>.unit_templates */}}
+    {{- $merged_unit_templates := dict -}}
+    {{ range $template_name := $unit_def.unit_templates | default list -}}
+      {{- if not (hasKey $envAll.Values.unit_templates $template_name) -}}
+        {{ fail (printf "unit %s has '%s' in '<unit>.unit_templates' but no such template is declared in '.Values.unit_templates'" $unit_name $template_name) -}}
+      {{- end -}}
+      {{/* merge the unit template with the others*/}}
+      {{- $merged_unit_templates = mergeOverwrite $merged_unit_templates (deepCopy (index $envAll.Values.unit_templates $template_name)) -}}
+    {{- end -}}
 
-  {{/* clear _unit_name_ from Values, we don't need it anymore */}}
-  {{- $_ := set $envAll.Values "_unit_name_" "N/A" -}}
+    {{/* merge unit definition with unit templates */}}
+    {{- $unit_def = mergeOverwrite $merged_unit_templates $unit_def -}}
 
-  {{/* return the result */}}
-  {{- $unit_def | toJson -}}
+    {{/* interpret _unit_name_ in unit template */}}
+    {{- $_ := set $envAll.Values "_unit_name_" $unit_name -}}
+    {{- $unit_def := index (tuple $envAll $unit_def | include "interpret-inner-gotpl" | fromJson) "result" -}}
+
+    {{/* clear _unit_name_ from Values, we don't need it anymore */}}
+    {{- $_ := set $envAll.Values "_unit_name_" "N/A" -}}
+
+    {{/* return the result */}}
+    {{- $unit_def | toJson -}}
+  
+  {{- else }}
+    {{- fail (printf "Error: The unit '%s' is not present in .Values.units" $unit_name) }}
+  {{- end -}}
 {{ end }}
 
 
