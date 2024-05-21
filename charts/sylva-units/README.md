@@ -1,3 +1,7 @@
+---
+custom_edit_url: https://gitlab.com/sylva-projects/sylva-core/-/edit/main/charts/sylva-units/README.md
+---
+
 # `sylva-units` Helm chart
 
 ## Purpose
@@ -21,7 +25,7 @@ resources, each defining the final resources for a given unit thanks to either o
 * FluxCD `HelmReleases`, which contain definitions of Helm releases for Helm charts hosted
   for instance on Git (or in Helm repos) with the desired overridden Helm values.
 
-![sylva-units overview](../../docs/img/sylva-units-overview.drawio.png)
+![sylva-units overview](./img/sylva-units-overview.drawio.png)
 
 To ensure that no useless attemps at deploying a unit is made before everything that it
 depends on is ready, we declare dependencies between these FluxCD resources,
@@ -425,7 +429,7 @@ For this to be possible, you **must** use some helpers, as illustrated by the fo
         x: '{{ not (tuple . .Values.xyz.baz.enabled | include "interpret-for-test") }}'
   ```
 
-* processing a value in a `ternary` statement  ("if <condition> then <result> else <another result>")
+* processing a value in a `ternary` statement  ("if `<condition>` then `<result>` else `<another_result>`")
 
   * the `ternary` from Sprig GoTPL library is not usable in some cases, because it badly interacts
     with the behavior of `and` and `or`, which do not always return a boolean, e.g. `and '' true` returns `''`
