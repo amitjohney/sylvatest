@@ -30,19 +30,19 @@
   {{/* the healtchecks is a list, we wrap it into a dict to overcome the
        fact that fromYaml can't return anything else than a dict
   */}}
-  result:
+  {{ $result := list }}
   
   {{/*
   
   Wait for Cluster resource:
   
   */}}
-  
-      - apiVersion: cluster.x-k8s.io/v1beta1
-        kind: Cluster
-        name: {{ $cluster.name }}
-        namespace: {{ $ns }}
-  
+  {{- $result = append $result (dict
+      "apiVersion" "cluster.x-k8s.io/v1beta1"
+      "kind" "Cluster"
+      "name" $cluster.name
+      "namespace" $ns
+  ) -}}
   {{/*
   
   Wait for infra provider Cluster
@@ -63,18 +63,21 @@
   {{- else if $cluster.capi_providers.infra_provider | eq "capd" -}}
     {{- $cluster_kind = "DockerCluster" -}}
     {{- $cluster_apiVersion = "infrastructure.cluster.x-k8s.io/v1beta1" -}}
-  {{- else if $cluster.capi_providers.infra_provider | eq "capa" -}}
-    {{- $cluster_kind = "AWSManagedCluster" -}}
-    {{- $cluster_apiVersion = "infrastructure.cluster.x-k8s.io/v1beta2" -}}
   {{- else -}}
     {{- fail (printf "sylva-units cluster-healthchecks named template would need to be extended to support CAPI infra provider %s" $cluster.capi_providers.infra_provider) -}}
   {{- end }}
   
-      - apiVersion: {{ $cluster_apiVersion }}
-        kind: {{ $cluster_kind }}
-        name: {{ $cluster.name }}
-        namespace: {{ $ns }}
+  {{- $result = append $result (dict
+      "apiVersion" $cluster_apiVersion
+      "kind" $cluster_kind
+      "name" $cluster.name
+      "namespace" $ns
+  ) -}}
   
+  {{/* Workaround for https://gitlab.com/sylva-projects/sylva-core/-/issues/959; we drop the last element (Metal3Cluster) */}}
+  {{- if $cluster.capi_providers.infra_provider | eq "capm3" -}}
+    {{- $result = initial $result -}}
+  {{- end }}
   {{/*
   
   We determine which control plane object to look at depending
@@ -90,18 +93,15 @@
   {{- else if $cluster.capi_providers.bootstrap_provider | eq "cabpr" -}}
     {{- $cp_kind = "RKE2ControlPlane" -}}
     {{- $cp_apiVersion = "controlplane.cluster.x-k8s.io/v1alpha1" -}}
-  {{- else if $cluster.capi_providers.bootstrap_provider | eq "cabpe" -}}
-    {{- $cp_kind = "AWSManagedControlPlane" -}}
-    {{- $cp_apiVersion = "controlplane.cluster.x-k8s.io/v1beta2" -}}
   {{- else -}}
     {{- fail (printf "sylva-units cluster-healthchecks named template would need to be extended to support CAPI bootstrap provider %s" $cluster.capi_providers.bootstrap_provider) -}}
   {{- end }}
-  
-      - apiVersion: {{ $cp_apiVersion }}
-        kind: {{ $cp_kind }}
-        name: {{ $cluster.name }}-control-plane
-        namespace: {{ $ns }}
-  
+  {{ $result = append $result (dict
+      "apiVersion" $cp_apiVersion
+      "kind" $cp_kind
+      "name" (printf "%s-control-plane" $cluster.name)
+      "namespace" $ns
+  ) -}}
   {{/*
   
   If $includeMDs was specified, we include all the MachineDeployments in the healthChecks.
@@ -110,10 +110,12 @@
   
   {{ if $includeMDs -}}
       {{- range $md_name,$_ := $cluster.machine_deployments }}
-      - apiVersion: cluster.x-k8s.io/v1beta1
-        kind: MachineDeployment
-        name: {{ $cluster.name }}-{{ $md_name }}
-        namespace: {{ $ns }}
+          {{- $result = append $result (dict
+      "apiVersion" "cluster.x-k8s.io/v1beta1"
+      "kind" "MachineDeployment"
+      "name" (printf "%s-%s" $cluster.name $md_name)
+      "namespace" $ns
+          ) -}}
       {{ end -}}
   {{- end -}}
   
@@ -125,18 +127,19 @@
   Waiting for the cluster kubeconfig Secret is a workaround
   
   */}}
-  
-      - apiVersion: v1
-        kind: Secret
-        name: {{ $cluster.name }}-kubeconfig
-        namespace: {{ $ns }}
-  
+  {{- $result = append $result (dict
+      "apiVersion" "v1"
+      "kind" "Secret"
+      "name" (printf "%s-kubeconfig" $cluster.name)
+      "namespace" $ns
+  ) -}}
   {{ if .sleep_job }}
-      - apiVersion: batch/v1
-        kind: Job
-        name: dummy-deps-cluster-ready-sleep
-        namespace: {{ $ns }}
+    {{- $result = append $result (dict
+      "apiVersion" "batch/v1"
+      "kind" "Job"
+      "name" "dummy-deps-cluster-ready-sleep"
+      "namespace" $ns
+      ) -}}
   {{ end }}
-  
+  {{ dict "result" $result | toYaml }}
   {{ end -}}
-  
