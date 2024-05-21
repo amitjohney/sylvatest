@@ -179,7 +179,7 @@ def wait_for_in_progress_image(image_name, checksum):
     TIMEOUT = 3600
     WAIT_QUEUED_IMAGE = 10
     LOOP_INTERVAL = 10
-    t0 = t1 = time.time()
+    t0 = time.time()
     image_active = None
     images = [None]
     while ((time.time() - t0 < TIMEOUT) and not image_active and images):
