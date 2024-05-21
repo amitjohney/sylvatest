@@ -50,6 +50,10 @@ cloud_name = os.environ.get("OS_CLOUD", "capo_cloud")
 tls_verify = False if os.environ.get(
             'INSECURE_CLIENT', 'false').lower() in ['true', 't'] else True
 
+if not tls_verify:
+    logger.warning("TLS Verify is disabled")
+else:
+    logger.info("TLS Verify is enabled")
 
 class MyProvider(oras.provider.Registry):
     def get_oci_manifest(self, artifact_url):
@@ -179,7 +183,7 @@ def wait_for_in_progress_image(image_name, checksum):
     TIMEOUT = 3600
     WAIT_QUEUED_IMAGE = 10
     LOOP_INTERVAL = 10
-    t0 = t1 = time.time()
+    t0 = time.time()
     image_active = None
     images = [None]
     while ((time.time() - t0 < TIMEOUT) and not image_active and images):
