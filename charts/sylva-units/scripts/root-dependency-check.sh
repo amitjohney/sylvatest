@@ -10,7 +10,6 @@
 # We apply the following criteria:
 # - (a Kustomization named root-dependency-* is ignored)
 # - Kustomization has 'root-dependency-$HELM_REVISION' in spec.dependsOn
-# - Kustomization has a Ready=False condition
 
 set -e
 set -o pipefail
