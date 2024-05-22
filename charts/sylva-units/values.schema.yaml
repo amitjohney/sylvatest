@@ -142,6 +142,10 @@ $defs:
       - not:
           required: [ key ]
 
+  openstack-uuid:
+    type: string
+    pattern: "[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}"  # an OpenStack UUID
+
 # lines with '# -------------------------------' correspond to keys in values.yaml
 # (the rest being the JSONSchema language itself)
 
@@ -1289,12 +1293,10 @@ allOf:
                 - type
 
             cluster_virtual_ip_port_uuid:
-              type: string
-              pattern: "[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}"
+              $ref: "#/$defs/openstack-uuid"
 
             cluster_public_ip_uuid:
-              type: string
-              pattern: "[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}"
+              $ref: "#/$defs/openstack-uuid"
 
             control_plane_affinity_policy:  # -------------------------------
               type: string
