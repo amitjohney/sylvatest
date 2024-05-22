@@ -4545,6 +4545,14 @@ units:
           enabled: true
           serviceMonitor:
             enabled: true
+            extraParameters:
+              basicAuth:
+                password:
+                  name: thanos-basic-auth
+                  key: password
+                username:
+                  name: thanos-basic-auth
+                  key: username
         query:
           enabled: true
           logLevel: debug
@@ -4738,6 +4746,15 @@ units:
           targetPath: objstoreConfig.config.secret_key
           optional: false
     helm_secret_values:
+      extraDeploy:
+      - apiVersion: v1
+        kind: Secret
+        metadata:
+          name: thanos-basic-auth
+        type: Opaque
+        data:
+          username: '{{ "thanos-user" | b64enc }}'
+          password: '{{ .Values._internal.thanos_password | b64enc }}'
       auth:
         basicAuthUsers:
           thanos-user: '{{ .Values._internal.thanos_password }}'
