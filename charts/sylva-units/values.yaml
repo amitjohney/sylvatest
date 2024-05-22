@@ -4753,7 +4753,7 @@ units:
           name: thanos-basic-auth
         type: Opaque
         data:
-          username: '{{ printf "%s" "thanos-user" | b64enc }}'
+          username: '{{ "thanos-user" | b64enc }}'
           password: '{{ .Values._internal.thanos_password | b64enc }}'
       auth:
         basicAuthUsers:
