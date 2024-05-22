@@ -10,7 +10,6 @@
 # We apply the following criteria:
 # - (a Kustomization named root-dependency-* is ignored)
 # - Kustomization has 'root-dependency-$HELM_REVISION' in spec.dependsOn
-# - Kustomization has a Ready=False condition
 
 set -e
 set -o pipefail
@@ -25,11 +24,11 @@ WAIT_TIMEOUT=${WAIT_TIMEOUT:-60s}
 
 # we setup an exit trap to display the status of all Kustomization
 # if one of the 'kubectl wait' fails
-function exit_trap() {
+function error_trap() {
     echo "--- summary of resources"
     kubectl -n $TARGET_NAMESPACE get Kustomizations -l app.kubernetes.io/instance=sylva-units
 }
-trap exit_trap EXIT
+trap error_trap ERR
 
 # TODO: check if something special needs to be done on suspended resources ...
 
@@ -38,7 +37,3 @@ echo "--- waiting for Kustomization to be labeled with sylva-units-helm-revision
 kubectl -n $TARGET_NAMESPACE wait Kustomization -l app.kubernetes.io/instance=sylva-units --timeout $WAIT_TIMEOUT \
   --for=jsonpath="{.metadata.labels.sylva-units-helm-revision}=$HELM_REVISION"
 
-echo "--- waiting for Kustomization to have a Ready=false condition"
-
-kubectl -n $TARGET_NAMESPACE wait Kustomization -l app.kubernetes.io/instance=sylva-units --timeout $WAIT_TIMEOUT \
-  --for condition=Ready=false
