@@ -21,7 +21,7 @@
 | **external-secrets-operator** | installs the External Secrets operator | stable |  | [Helm](https://charts.external-secrets.io) | 0.9.18 |
 | **flux-webui** | installs Weave GitOps Flux web GUI | stable |  | [Helm](https://github.com/weaveworks/weave-gitops.git) | v0.38.0 |
 | **gitea** | installs Gitea | stable |  | [Helm](https://dl.gitea.com/charts/) | 9.5.1 |
-| **gitea-postgresql-ha** | installs PostgreSQL HA cluster for Gitea | stable |  | [Helm](https://charts.bitnami.com/bitnami) | 13.6.1 |
+| **gitea-postgresql-ha** | installs PostgreSQL HA cluster for Gitea | stable |  | [Helm](https://charts.bitnami.com/bitnami) | 14.0.10 |
 | **gitea-redis** | installs Redis cluster for Gitea | stable |  | [Helm](https://charts.bitnami.com/bitnami) | 9.1.1 |
 | **harbor-postgres** | installs Postgresql for Harbor | stable |  | [Helm](https://charts.bitnami.com/bitnami) | 14.0.5 |
 | **ingress-nginx** | installs Nginx ingress controller | stable |  | [Helm](https://rke2-charts.rancher.io) | 4.5.202, 4.6.101, 4.8.200 |
