@@ -1740,7 +1740,7 @@ units:
     unit_templates:
     - base-deps
     enabled_conditions:
-    - '{{ tuple . "capo" | include "unit-enabled" }}'      ################## FIXME, we could have a condition using 'lookup' that would check if v1alpha8 is still presents in CAPO CRDs
+    - '{{ .Values._internal.capo_need_v1alpha8_fix }}'
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kube-job
@@ -1808,7 +1808,7 @@ units:
       details: migrates CAPO CRs from v1alpha8 back to v1alpha7
       internal: true
     enabled_conditions:
-    - '{{ tuple . "capo" | include "unit-enabled" }}'
+    - '{{ .Values._internal.capo_need_v1alpha8_fix }}'
     unit_templates:
     - base-deps
     depends_on:
@@ -1827,7 +1827,7 @@ units:
     unit_templates:
     - base-deps
     enabled_conditions:
-    - '{{ tuple . "capo" | include "unit-enabled" }}'      ################## FIXME, we could have a condition using 'lookup' that would check if v1alpha8 is still presents in CAPO CRDs
+    - '{{ .Values._internal.capo_need_v1alpha8_fix }}'
     depends_on:
       capo-v1alpha8-fix-resources: true
     repo: sylva-core
@@ -1893,7 +1893,7 @@ units:
     unit_templates:
     - base-deps
     depends_on:
-      capo-v1alpha8-clear: '{{ tuple . "capo-v1alpha8-clear" | include "unit-enabled" }}'
+      capo-v1alpha8-clear: '{{ .Values._internal.capo_need_v1alpha8_fix }}'
       cert-manager: true
     kustomization_spec:
       path: ./kustomize-units/capo
@@ -5987,6 +5987,11 @@ _internal:
     }}'
   default_os_images_info_configmap: os-images-info-{{ tuple . .Values._internal.os_images_info_input_hash | include "interpret-as-string" }}
   os_images_info_configmap: '{{ .Values._internal.default_os_images_info_configmap }}'  # overridden in workload-cluster.values.yaml
+
+  capo_need_v1alpha8_fix: >-
+    {{
+    .Capabilities.APIVersions | has "infrastructure.cluster.x-k8s.io/v1alpha8/OpenStackCluster" | include "preserve-type"
+    }}
 
 shared_workload_clusters_values:
   ntp: '{{ .Values.ntp | include "set-if-defined" }}'
