@@ -83,7 +83,8 @@ ports:
     protocol: TCP
     port: 25888
 endpoints:
-  - addresses: [] # Will be patched when real machine IPs will be retrieved
+  - addresses:
+    - 1.2.3.4 # fake address, will be patched when real machine IPs will be retrieved
   " | kubectl apply --kubeconfig=bootstrap-cluster-kubeconfig -f -
 fi
 
