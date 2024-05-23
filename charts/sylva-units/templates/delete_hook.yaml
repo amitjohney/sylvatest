@@ -7,7 +7,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": pre-delete
-    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook-delete-policy": before-hook-creation
 spec:
   activeDeadlineSeconds: {{ $delete_hook.job_timeout | default 1800 }}
   template:
@@ -21,14 +21,27 @@ spec:
           - |
             set -e
 
-            ALL_KS=$(kubectl get kustomizations -n {{ .Release.Namespace }} -l  helm.toolkit.fluxcd.io/name={{ .Release.Name }} -o json)
-            CLEANED_KS='[]'
+            NS="{{ .Release.Namespace }}"
+            NAME="{{ .Release.Name }}"
 
-            echo "=== Disabling the pruning of resources installed on workload cluster ==="
-            for KUST in $(jq -r <<< $ALL_KS '.items[] | select(.spec.kubeConfig != null) | .metadata.name'); do
+            function _kubectl {
+                kubectl -n $NS $@
+            }
+
+            echo "=== Disabling the pruning of kustomizations installed on workload cluster ==="
+            for KUST in $(_kubectl get kustomization -l app.kubernetes.io/instance=$NAME -o json | jq -r '.items[] | select(.spec.kubeConfig != null) | .metadata.name'); do
                 echo "Disable pruning in kustomization $KUST"
-                kubectl -n {{ .Release.Namespace }} patch kustomization $KUST --type=merge --patch='{"spec":{"prune":false}}' >/dev/null
+                _kubectl patch kustomization $KUST --type=merge --patch='{"spec":{"prune":false}}' >/dev/null
             done
+
+            echo "=== Disabling the pruning of helmreleases installed on workload cluster ==="
+            for RELEASE in $(_kubectl get  helmreleases -l app.kubernetes.io/instance=$NAME -o json | jq -r '.items[] | select(.spec.kubeConfig != null) | .metadata.name'); do
+                echo "Suspending helmreleases $RELEASE"
+                _kubectl patch helmreleases $RELEASE --type=merge --patch='{"spec":{"suspend":true}}' >/dev/null
+            done
+
+            ALL_KS=$(_kubectl get kustomizations -l app.kubernetes.io/instance=$NAME -o json)
+            CLEANED_KS='[]'
 
             while true; do
                 # Compute remaining kustomizations
@@ -43,13 +56,13 @@ spec:
                 jq -r <<< $REMAINING_KS '[.[].metadata.name] | join(" ")'
 
                 # Compute the list of kustomizations that don't have dependents
-                KS_LIST=$(jq -r <<< $REMAINING_KS '[.[] | .metadata.name] -
-                     [.[].spec.dependsOn | select(. | length > 0) | .[] | select(.namespace == null or .namespace == "{{ .Release.Namespace }}") | .name ]
+                KS_LIST=$(jq -r --arg ns $NS <<< $REMAINING_KS '[.[] | .metadata.name] -
+                     [.[].spec.dependsOn | select(. | length > 0) | .[] | select(.namespace == null or .namespace == "$ns") | .name ]
                      | unique | join(" ")')
 
                 for KUST in $KS_LIST; do
                     echo "=== Deleting kustomization $KUST ==="
-                    kubectl -n {{ .Release.Namespace }} delete kustomization $KUST 2>/dev/null || true
+                    _kubectl delete kustomization $KUST 2>/dev/null || true
 
                     KUST_JSON=$(jq --arg kust $KUST <<< $ALL_KS '.items[] | select(.metadata.name == $kust)')
 
@@ -58,7 +71,7 @@ spec:
                     #  * no resource would be deleted (empty kustomization)
                     #  * the Kustomization was suspended (in that case Flux controller will not delete anything)
                     #  * the Kustomization had "prune: false" (in that case Flux controller will not delete anything)
-                    if ! kubectl -n {{ .Release.Namespace }} get kustomization $KUST 2>/dev/null &&
+                    if ! _kubectl get kustomization $KUST 2>/dev/null &&
                        jq -e <<< $KUST_JSON '(.spec.kubeConfig != null) or
                                              (.status.inventory.entries // [] | length == 0) or
                                              (.spec.prune == false) or
@@ -81,7 +94,7 @@ spec:
                             "\(if $entry[0] != "" then "-n \($entry[0])" else "" end) \(if $entry[2] != "" then "\($entry[3]).\($entry[2])" else "\($entry[3])" end) \($entry[1])"')
 
                         # Mark kustomization as deleted if all resources have been deleted and if the Kustomization does not exist anymore
-                        if [[ $REMAINING_RES -eq 0 ]] && ! kubectl -n {{ .Release.Namespace }} get kustomization $KUST 2>/dev/null; then
+                        if [[ $REMAINING_RES -eq 0 ]] && ! _kubectl get kustomization $KUST 2>/dev/null; then
                             CLEANED_KS=$(jq --arg kust $KUST <<< $CLEANED_KS '. + [$kust]')
                         fi
                     fi
@@ -123,6 +136,9 @@ metadata:
 rules:
 - apiGroups: ["kustomize.toolkit.fluxcd.io"]
   resources: ["kustomizations"]
+  verbs: ["get", "delete", "list", "watch", "patch"]
+- apiGroups: ["helm.toolkit.fluxcd.io"]
+  resources: ["helmreleases"]
   verbs: ["get", "delete", "list", "watch", "patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
