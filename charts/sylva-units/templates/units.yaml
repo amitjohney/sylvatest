@@ -176,14 +176,14 @@ spec: {{ $helm_repo_spec | toYaml | nindent 2 }}
         {{- range $ver, $enabled := $unit_def.helm_chart_versions }}
           {{- if $enabled -}}
             {{- if $helm_chart_versions_selection -}}
-              {{- fail (printf "unit '%s' has 'true' set on more than one version inside 'helm_chart_versions'" $unit_name) }}
+              {{- fail (printf "unit '%s' has 'true' set on more than one version inside 'helm_chart_versions':\n%s" $unit_name ($unit_def.helm_chart_versions | toYaml)) }}
             {{- else -}}
               {{- $helm_chart_versions_selection = $ver -}}
             {{- end }}
           {{- end }}
         {{- end }}
         {{- if not $helm_chart_versions_selection }}
-          {{- fail (printf "unit '%s' has no version set to true inside 'helm_chart_versions'" $unit_name)}}
+          {{- fail (printf "unit '%s' has no version set to true inside 'helm_chart_versions':\n%s" $unit_name ($unit_def.helm_chart_versions | toYaml))}}
         {{- end }}
         {{- if not $unit_def.helmrelease_spec.chart.spec.version -}}
           {{- $_ := set $unit_def.helmrelease_spec.chart.spec "version" $helm_chart_versions_selection -}}

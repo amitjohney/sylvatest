@@ -295,7 +295,10 @@ Result (in sylva-units final rendering, where boolean typing will have been pres
 {{ define "k8s-version-match" }}
   {{- $envAll := index . 0 -}}
   {{- $match := index . 1 -}}
-  {{- semverCompare $match (tuple $envAll $envAll.Values.cluster.k8s_version | include "interpret-as-string") | include "preserve-type" -}}
+  {{- if (semverCompare $match (tuple $envAll $envAll.Values.cluster.k8s_version | include "interpret-as-string")) -}}
+    true
+  {{- else -}}{{/* false encoded as empty string */}}
+  {{- end -}}
 {{ end }}
 
 {{/*
