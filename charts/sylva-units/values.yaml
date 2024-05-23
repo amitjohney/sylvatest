@@ -3041,9 +3041,6 @@ units:
                   enabled: true
         prometheus:
           prometheusSpec:
-            scrapeInterval: "60s"
-            scrapeTimeout: "30s"
-            evaluationInterval: "30s"
             resources:
               limits:
                 memory: 6Gi
