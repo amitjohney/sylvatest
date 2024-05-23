@@ -3,7 +3,5 @@ cluster:
     infra_provider: capd
     bootstrap_provider: cabpk
   control_plane_replicas: 1
-  # we force the k8s_version since hub.docker.com/kindest/node does not include a v1.28.8 tag atm
-  k8s_version: v1.28.7
 
 cluster_virtual_ip: # use the .200 (or any other that wouldn't be assigned by Docker) IP from the local kind subnet, returned by: docker network inspect -f '{{json .}}' kind | jq -r .IPAM.Config[0].Subnet
