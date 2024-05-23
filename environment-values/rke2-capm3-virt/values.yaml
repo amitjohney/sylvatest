@@ -120,6 +120,7 @@ units:
 
 libvirt_metal:
   #image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/libvirt-metal:0.1.4  # customize if wanted
+  image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/libvirt-metal:test-fe
   nodes:
     management-cp-0:
       redfishPort: 8000
