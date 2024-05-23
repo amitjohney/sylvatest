@@ -13,7 +13,7 @@ patches:
         path: /spec/conversion/webhook/clientConfig/caBundle
   - target:
       kind: Deployment
-      name: capi-controller-manager
+      name: capi-kubeadm-control-plane-controller-manager
     patch: |-
       - op: add
         path: /spec/template/spec/containers/0/env
