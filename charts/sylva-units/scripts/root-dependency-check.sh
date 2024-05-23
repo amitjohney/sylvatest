@@ -33,4 +33,4 @@ trap error_trap ERR
 echo "--- waiting for Kustomizations to be labeled with sylva-units-helm-revision=$HELM_REVISION"
 
 kubectl -n $TARGET_NAMESPACE wait Kustomization -l sylva-units/root-dependency-wait --timeout $WAIT_TIMEOUT \
-  --for=jsonpath="{.annotations.labels.sylva-units-helm-revision}=$HELM_REVISION"
+  --for=jsonpath="{.metadata.annotations.sylva-units-helm-revision}=$HELM_REVISION"
