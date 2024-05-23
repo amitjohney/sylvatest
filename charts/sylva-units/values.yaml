@@ -3199,6 +3199,7 @@ units:
     depends_on:
       namespace-defs: true
     repo: sylva-alertmanager-resources
+    helm_chart_artifact_name: alertmanager-config
     helmrelease_spec:
       chart:
         spec:
