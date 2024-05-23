@@ -2350,8 +2350,7 @@ units:
         installation:
           calicoNetwork:
             bgp: Enabled
-            nodeAddressAutodetectionV4:
-              '{{ .Values.cluster.calico_autodetection_method | include "preserve-type"}}'
+            nodeAddressAutodetectionV4: '{{ .Values.cluster.calico_autodetection_method | include "preserve-type"}}'
           registry: UseDefault
         felixConfiguration:
           wireguardEnabled: '{{ .Values.security.calico_wireguard_enabled | include "preserve-type" }}'
@@ -5301,8 +5300,7 @@ cluster:
     - 100.72.0.0/16
   calico_wireguard_enabled: '{{ .Values.security.calico_wireguard_enabled | include "preserve-type" }}'
 
-  calico_autodetection_method:
-    canReach: '{{ not (empty .Values.cluster.mgmt_cluster_ip) | ternary .Values.cluster.mgmt_cluster_ip .Values.cluster.cluster_virtual_ip }}'
+  calico_autodetection_method: '{{ .Values._internal.default_calico_autodetection_method | include "preserve-type" }}'
 
   use_custom_rancher_dns_resolver: false
   ntp: '{{ .Values.ntp | include "preserve-type" }}'
@@ -5812,6 +5810,9 @@ _internal:
     }}'
   default_os_images_info_configmap: os-images-info-{{ tuple . .Values._internal.os_images_info_input_hash | include "interpret-as-string" }}
   os_images_info_configmap: '{{ .Values._internal.default_os_images_info_configmap }}'  # overridden in workload-cluster.values.yaml
+
+  default_calico_autodetection_method:
+    canReach: '{{ not (empty .Values.cluster.mgmt_cluster_ip) | ternary .Values.cluster.mgmt_cluster_ip .Values.cluster.cluster_virtual_ip }}'
 
 shared_workload_clusters_values:
   ntp: '{{ .Values.ntp | include "set-if-defined" }}'
