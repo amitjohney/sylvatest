@@ -3598,8 +3598,16 @@ units:
       postBuild:
         substitute:
           JOB_NAME: cluster-creator-login
+          CRONJOB_NAME: cluster-creator-renewal
           JOB_TARGET_NAMESPACE: flux-system
           JOB_CHECKSUM: '{{ .Values | toJson | sha256sum }}'
+      _patches:
+        - target:
+            kind: CronJob
+          patch: |
+            - op: replace
+              path: /spec/schedule
+              value: "*/1 * * * *"
       healthChecks:
         - apiVersion: v1
           kind: Secret
@@ -3608,6 +3616,10 @@ units:
         - apiVersion: batch/v1
           kind: Job
           name: cluster-creator-login-flux-system
+          namespace: kube-job
+        - apiVersion: batch/v1
+          kind: CronJob
+          name: cluster-creator-renewal-flux-system
           namespace: kube-job
 
   cluster-creator-policy:
