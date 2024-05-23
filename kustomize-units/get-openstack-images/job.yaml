@@ -54,6 +54,10 @@ spec:
           mountPath: /opt/config
         - name: tmp-storage
           mountPath: /tmp
+        - name: extra-ca-certs
+          subPath: extra-ca-certs.pem
+          mountPath: /etc/ssl/certs/extra-ca-certs.pem
+          readOnly: true
       volumes:
       - name: openstack-config
         secret:
@@ -79,6 +83,9 @@ spec:
               resources:
                 requests:
                   storage: ${TMP_STORAGE_SPACE:-8Gi}
+      - name: extra-ca-certs
+        configMap:
+          name: get-openstack-images-extra-ca
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -109,3 +116,12 @@ roleRef:
   kind: Role
   name: ${JOB_NAME}
   apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: get-openstack-images-extra-ca
+  namespace: ${JOB_TARGET_NAMESPACE}
+data:
+  extra-ca-certs.pem: |
+    ${EXTRA_CA_CERTS}

@@ -5213,6 +5213,7 @@ units:
           TMP_STORAGE_SPACE: '{{ .Values.os_images_default_download_storage_space }}'
           # compute total timeout based on per-image timeout and number of images
           ACTIVE_DEADLINE_SECONDS: '{{ mul .Values.get_openstack_images_per_image_timeout_minutes 60 (include "generate-os-images" . | fromYaml | dig "os_images" dict | len) }}'
+          EXTRA_CA_CERTS: '{{ .Values.oci_registry_extra_ca_certs | default "" }}'
       _patches:
         - target:
             kind: Job
