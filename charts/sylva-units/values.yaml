@@ -2648,8 +2648,8 @@ units:
         substitute:
           KEYCLOAK_EXTERNAL_URL: '{{ .Values.external_hostnames.keycloak }}'
           RANCHER_EXTERNAL_URL: '{{ .Values.external_hostnames.rancher }}'
-          REFRESH_TIME: '{{ .Values._internal.rancher_user_refresh | default "0" | quote }}'
-          CRON_REFRESH: '{{ .Values._internal.rancher_cron_refresh | default "*/4 * * * *" | quote }}'
+          AUTH_USER_INFO_MAX_AGE_SECONDS: '{{ .Values.rancher.auth_user_info_max_age_seconds | quote }}'
+          AUTH_USER_INFO_RESYNC_CRON: '{{ .Values.rancher.auth_user_info_resync_cron | quote }}'
       wait: true
 
   k8s-gateway:
@@ -5785,6 +5785,10 @@ shared_workload_clusters_secret_values:
 snmp:
   devices: []
   auth: {}
+
+rancher:
+  auth_user_info_max_age_seconds: "0"
+  auth_user_info_resync_cron: "*/4 * * * *"
 
 # Sample snmp configuration as it needs to be added in the secrets.yaml file
 # snmp:
