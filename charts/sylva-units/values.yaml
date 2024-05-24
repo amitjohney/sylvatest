@@ -4579,6 +4579,8 @@ units:
                 secretName: thanos-tls
         queryFrontend:
           loglevel: debug
+          extraFlags:
+            - --query-frontend.forward-header=Authorization
           config: |-
             type: IN-MEMORY
             config:
