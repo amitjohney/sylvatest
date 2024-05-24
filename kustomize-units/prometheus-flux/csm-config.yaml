@@ -1,45 +1,6 @@
 # this file contains values overrides for the rancher-monitoring Helm chart, for prometheus
 # it's content comes from https://fluxcd.io/flux/monitoring/custom-metrics/#adding-custom-metrics
 kube-state-metrics:
-  collectors:
-    - certificatesigningrequests
-    - configmaps
-    - cronjobs
-    - daemonsets
-    - deployments
-    - endpoints
-    - horizontalpodautoscalers
-    - ingresses
-    - jobs
-    - leases
-    - limitranges
-    - mutatingwebhookconfigurations
-    - namespaces
-    - networkpolicies
-    - nodes
-    - persistentvolumeclaims
-    - persistentvolumes
-    - poddisruptionbudgets
-    - pods
-    - replicasets
-    - replicationcontrollers
-    - resourcequotas
-    - secrets
-    - services
-    - statefulsets
-    - storageclasses
-    - validatingwebhookconfigurations
-    - volumeattachments
-    - gitrepositories
-    - helmrepositories
-    - helmcharts
-    - ocirepositories
-    - kustomizations
-    - helmreleases
-    - alerts
-    - providers
-    - receivers
-    - imagerepositories
   rbac:
     extraRules:
       - apiGroups:
@@ -47,7 +8,6 @@ kube-state-metrics:
           - kustomize.toolkit.fluxcd.io
           - helm.toolkit.fluxcd.io
           - notification.toolkit.fluxcd.io
-          - image.toolkit.fluxcd.io
         resources:
           - gitrepositories
           - helmrepositories
@@ -58,7 +18,6 @@ kube-state-metrics:
           - alerts
           - providers
           - receivers
-          - imagerepositories
         verbs: [ "list", "watch" ]
   customResourceState:
     enabled: true
@@ -240,22 +199,3 @@ kube-state-metrics:
                   ready: [ status, conditions, "[type=Ready]", status ]
                   suspended: [ spec, suspend ]
                   webhook_path: [ status, webhookPath ]
-          - groupVersionKind:
-              group: image.toolkit.fluxcd.io
-              version: v1beta2
-              kind: ImageRepository
-            metricNamePrefix: gotk
-            metrics:
-              - name: "resource_info"
-                help: "The current state of a GitOps Toolkit resource."
-                each:
-                  type: Info
-                  info:
-                    labelsFromPath:
-                      name: [ metadata, name ]
-                labelsFromPath:
-                  customresource_kind: [ kind ]
-                  exported_namespace: [ metadata, namespace ]
-                  ready: [ status, conditions, "[type=Ready]", status ]
-                  suspended: [ spec, suspend ]
-                  image: [ spec, image ]
