@@ -76,9 +76,6 @@ units:
         substitute:
           CLUSTER_NAME: '{{ .Values.cluster.name }}'
 
-  kyverno-policies:
-    enabled: true
-
   os-image-server:
     enabled: '{{ tuple . "metal3" | include "unit-enabled" }}'
 
