@@ -237,6 +237,11 @@ unit_templates:
 # unit_definition_defaults is merged with each "units.x" before
 # it inherits from unit templates
 unit_definition_defaults:
+  # the root-dependency wait job will wait on resources having this label
+  labels:
+    sylva-units/root-dependency-wait: ""
+  annotations:
+    sylva-units-helm-revision: '{{ .Release.Revision }}'
   depends_on:
     root-dependency: >-
       {{

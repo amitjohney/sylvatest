@@ -26,14 +26,11 @@ WAIT_TIMEOUT=${WAIT_TIMEOUT:-60s}
 # if one of the 'kubectl wait' fails
 function error_trap() {
     echo "--- summary of resources"
-    kubectl -n $TARGET_NAMESPACE get Kustomizations -l app.kubernetes.io/instance=sylva-units
+    kubectl -n $TARGET_NAMESPACE get Kustomizations -l sylva-units/root-dependency-wait
 }
 trap error_trap ERR
 
-# TODO: check if something special needs to be done on suspended resources ...
+echo "--- waiting for Kustomizations to be labeled with sylva-units-helm-revision=$HELM_REVISION"
 
-echo "--- waiting for Kustomization to be labeled with sylva-units-helm-revision=$HELM_REVISION"
-
-kubectl -n $TARGET_NAMESPACE wait Kustomization -l app.kubernetes.io/instance=sylva-units --timeout $WAIT_TIMEOUT \
-  --for=jsonpath="{.metadata.labels.sylva-units-helm-revision}=$HELM_REVISION"
-
+kubectl -n $TARGET_NAMESPACE wait Kustomization -l sylva-units/root-dependency-wait --timeout $WAIT_TIMEOUT \
+  --for=jsonpath="{.metadata.annotations.sylva-units-helm-revision}=$HELM_REVISION"

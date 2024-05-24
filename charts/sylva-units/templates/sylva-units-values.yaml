@@ -48,7 +48,9 @@ kind: Kustomization
 metadata:
   name: sylva-units-status
   labels: {{ include "sylva-units.labels" $envAll | nindent 4 }}
+    sylva-units/root-dependency-wait: ""
   annotations:
+    sylva-units-helm-revision: '{{ .Release.Revision }}'
     target-release-revision: "{{ .Release.Revision }}"
     target-sylva-units-chart-version: "{{ .Chart.Version }}"
     target-values-checksum: "{{ $values_checksum }}"
