@@ -21,11 +21,6 @@ spec:
           namespaces:
           - cattle-system
     mutate:
-      targets:
-      - apiVersion: apps/v1
-        kind: Deployment
-        name: rancher-webhook
-        namespace: cattle-system
       patchStrategicMerge:
         spec:
           replicas: 2

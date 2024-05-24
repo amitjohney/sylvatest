@@ -1,3 +1,5 @@
+unit_definition_defaults: null
+
 units:
 
   foo:

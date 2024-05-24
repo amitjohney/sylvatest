@@ -14,17 +14,17 @@
 | **flux-system** | contains Flux definitions *to manage the Flux system itself via gitops*<br/><br/>Note that Flux is always installed on the current cluster as a pre-requisite to installing the chart | core-component |  | [Kustomize](https://github.com/fluxcd/flux2/releases/download/v2.2.3/install.yaml) | v2.2.3 |
 | **heat-operator** | installs OpenStack Heat operator | core-component |  | [Kustomize](https://gitlab.com/sylva-projects/sylva-elements/heat-operator.git/config/default?ref=0.0.7) | 0.0.7 |
 | **kyverno** | installs Kyverno | core-component |  | [Helm](https://kyverno.github.io/kyverno) | 3.1.4 |
-| **calico** | install Calico CNI | stable |  | [Helm](https://rke2-charts.rancher.io) | v3.25.001, v3.26.101, v3.26.300, v3.27.200 |
+| **calico** | install Calico CNI | stable |  | [Helm](https://rke2-charts.rancher.io) | v3.25.001, v3.26.101, v3.26.300, v3.27.200, v3.27.300 |
 | **capo-contrail-bgpaas** | installs CAPO Contrail BGPaaS controller | stable |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/capo-contrail-bgpaas.git) | 1.0.3 |
 | **cinder-csi** | installs OpenStack Cinder CSI | stable |  | [Helm](https://kubernetes.github.io/cloud-provider-openstack) | 2.28.1 |
 | **cis-operator** | install CIS operator | stable |  | [Helm](https://charts.rancher.io) | 5.2.0 |
-| **external-secrets-operator** | installs the External Secrets operator | stable |  | [Helm](https://charts.external-secrets.io) | 0.9.17 |
+| **external-secrets-operator** | installs the External Secrets operator | stable |  | [Helm](https://charts.external-secrets.io) | 0.9.18 |
 | **flux-webui** | installs Weave GitOps Flux web GUI | stable |  | [Helm](https://github.com/weaveworks/weave-gitops.git) | v0.38.0 |
 | **gitea** | installs Gitea | stable |  | [Helm](https://dl.gitea.com/charts/) | 9.5.1 |
 | **gitea-postgresql-ha** | installs PostgreSQL HA cluster for Gitea | stable |  | [Helm](https://charts.bitnami.com/bitnami) | 13.6.1 |
 | **gitea-redis** | installs Redis cluster for Gitea | stable |  | [Helm](https://charts.bitnami.com/bitnami) | 9.1.1 |
 | **harbor-postgres** | installs Postgresql for Harbor | stable |  | [Helm](https://charts.bitnami.com/bitnami) | 14.0.5 |
-| **ingress-nginx** | installs Nginx ingress controller | stable |  | [Helm](https://rke2-charts.rancher.io) | 4.5.202, 4.6.101, 4.8.200 |
+| **ingress-nginx** | installs Nginx ingress controller | stable |  | [Helm](https://rke2-charts.rancher.io) | 4.5.202, 4.6.101, 4.8.200, 4.9.100 |
 | **k8s-gateway** | installs k8s gateway (coredns + plugin to resolve external service names to ingress IPs)<br/><br/>is here only to allow for DNS resolution of Ingress hosts (FQDNs), used for importing workload clusters into Rancher and for flux-webui to use Keycloak SSO | stable |  | [Helm](https://ori-edge.github.io/k8s_gateway/) | 2.4.0 |
 | **keycloak** | initializes and configures Keycloak | stable |  | [Kustomize](https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/23.0.7/kubernetes/keycloaks.k8s.keycloak.org-v1.yml) | 23.0.7 |
 | **keycloak-legacy-operator** | installs Keycloak "legacy" operator | stable |  | [Kustomize](https://raw.githubusercontent.com/keycloak/keycloak-realm-operator/1.0.0/deploy/crds/legacy.k8s.keycloak.org_externalkeycloaks_crd.yaml) | 1.0.0 |
@@ -40,22 +40,22 @@
 | **rancher** | installs Rancher | stable |  | [Helm](https://releases.rancher.com/server-charts/latest) | 2.8.3 |
 | **sriov** | installs SRIOV operator | stable |  | [Helm](https://charts.rancher.io/) | 103.0.0+up0.1.0 |
 | **vault** | installs Vault<br/><br/>Vault assumes that the certificate vault-tls has been issued | stable |  | [Kustomize](https://raw.githubusercontent.com/banzaicloud/bank-vaults/1.19.0/operator/deploy/rbac.yaml) | 1.19.0 |
-| **vault-config-operator** | installs Vault config operator | stable |  | [Helm](https://redhat-cop.github.io/vault-config-operator) | v0.8.25 |
+| **vault-config-operator** | installs Vault config operator | stable |  | [Helm](https://redhat-cop.github.io/vault-config-operator) | v0.8.27 |
 | **vault-operator** | installs Vault operator | stable |  | [Helm](https://github.com/bank-vaults/vault-operator.git) | v1.22.1 |
 | **vsphere-csi-driver** | installs Vsphere CSI | stable |  | [Kustomize](https://raw.githubusercontent.com/kubernetes-sigs/vsphere-csi-driver/v3.1.2/manifests/vanilla/vsphere-csi-driver.yaml) | v3.1.2 |
 | **alertmanager-jiralert** | installs Alertmanager webhook Jiralert<br/><br/>Jiralert is an Alertmanager wehbook that creates Jira issues | beta |  | [Helm](https://prometheus-community.github.io/helm-charts) | 1.7.1 |
 | **ceph-csi-cephfs** | Installs Ceph-CSI | beta |  | [Helm](https://ceph.github.io/csi-charts) | 3.10.2 |
 | **flux-webui-init** | initializes and configures flux-webui | beta | True | Kustomize | N/A |
 | **harbor** | installs Harbor | beta |  | [Helm](https://helm.goharbor.io) | 1.14.0 |
-| **kubevirt** | installs kubevirt | beta |  | [Helm](https://suse-edge.github.io/charts) | 0.2.3 |
-| **logging** | installs Rancher Fluentbit/Fluentd logging stack, for log collecting and shipping | beta |  | [Helm](https://charts.rancher.io/) | 103.0.1+up3.17.10 |
+| **kubevirt** | installs kubevirt | beta |  | [Helm](https://suse-edge.github.io/charts) | 0.2.4 |
+| **logging** | installs Rancher Fluentbit/Fluentd logging stack, for log collecting and shipping | beta |  | [Helm](https://charts.rancher.io/) | 103.1.1+up4.4.0 |
 | **loki** | installs Loki log storage<br/><br/>installs Loki log storage in simple scalable mode | beta |  | Helm | v2.9.2 |
 | **minio-monitoring-tenant** | creates a MinIO tenant for the monitoring stack<br/><br/>Loki and Thanos will use this MinIO S3 storage | beta |  | Helm | v5.0.13 |
 | **minio-operator** | install MinIO operator<br/><br/>MinIO operator is used to manage multiple S3 tenants | beta |  | Helm | v5.0.13 |
 | **neuvector** | installs Neuvector | beta |  | [Helm](https://neuvector.github.io/neuvector-helm) | 2.6.6 |
 | **rancher-init** | initializes and configures Rancher | beta | True | Kustomize | N/A |
 | **snmp-exporter** | installs SNMP exporter | beta |  | [Helm](https://prometheus-community.github.io/helm-charts) | 5.2.0 |
-| **sylva-prometheus-rules** | installs prometheus rules using external helm chart & rules git repo | beta |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-prometheus-rules.git) | 0.0.9 |
+| **sylva-prometheus-rules** | installs prometheus rules using external helm chart & rules git repo | beta |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-prometheus-rules.git) | 0.0.10 |
 | **sylva-units-operator** | installs sylva-units operator | experimental |  | [Kustomize](https://gitlab.com/sylva-projects/sylva-elements/sylva-units-operator.git/config/default?ref=0.1.1) | 0.1.1 |
 | **sylva-units-release-template** | create the default sylva-units-release-template used by workload-cluster CR | experimental | True | Kustomize | N/A |
 | **thanos** | installs Thanos | beta |  | [Helm](https://charts.bitnami.com/bitnami) | 12.23.2 |
@@ -99,7 +99,7 @@
 | **management-namespace-defs** | creates sylva-system namespace in management cluster |  | True | Kustomize | N/A |
 | **management-sylva-units** | installs sylva-units in management cluster during bootstrap |  | True | Helm | N/A |
 | **metal3-pdb** | add pdb to baremetal-operator pods |  | True | Kustomize | N/A |
-| **mgmt-cluster-ready** | (workload cluster) this unit reflects the readiness of the mgmt cluster |  |  | Kustomize |  |
+| **mgmt-cluster-ready** | (workload cluster) this unit reflects the readiness of the mgmt cluster<br/><br/>this unit acts as simple dependency lock to prevent deploying a workload cluster before the mgmt cluster is ready |  |  | Kustomize |  |
 | **minio-monitoring-tenant-init** | sets up MinIO certificate for minio-monitoring-tenant<br/><br/>it generate certificate |  | True | Kustomize | N/A |
 | **minio-operator-init** | sets up MinIO certificate for minio-operator<br/><br/>it generate certificate |  | True | Kustomize | N/A |
 | **multus-ready** | checks that Multus is ready<br/><br/>This unit only has dependencies, it does not create resources. It performs healthchecks outside of the multus unit, in order to properly target workload cluster when we deploy multus in it. |  | True | Kustomize | N/A |
@@ -112,6 +112,7 @@
 | **prometheus-resources** | Creates required ConfigMaps and Kyverno policies to enable SNMP monitoring by Prometheus |  | True | Kustomize | N/A |
 | **rancher-keycloak-oidc-provider** | configures Rancher for Keycloak OIDC integration |  | True | Kustomize | N/A |
 | **rancher-monitoring-clusterid-inject** | injects Rancher cluster ID in Helm values of Rancher monitoring chart |  | True | Kustomize | N/A |
+| **root-dependency** | special unit ensuring ordered updates of all Kustomizations<br/><br/>All Kustomizations will depend on this Kustomization, whose name is `root-dependency-<n>` and changes at each update of the sylva-units Helm release. This Kustomization does not become ready before all other Kustomizations have been updated. All this ensures in a race-free way that during an update, units will be reconciled in an order matching dependency declarations. |  | True | Kustomize | N/A |
 | **sandbox-privileged-namespace** | creates the sandbox namespace used to perform privileged operations like debugging a node |  | True | Kustomize | N/A |
 | **shared-workload-clusters-settings** | manages parameters which would be shared between management and workload clusters |  | True | Kustomize | N/A |
 | **single-replica-storageclass** | Create a longhorn storage class with a single replica |  | True | Kustomize | N/A |
