@@ -1939,6 +1939,10 @@ units:
       values:
         storageClass:
           defaultClass: '{{ .Values._internal.default_storage_class | eq "local-path" | include "as-bool" }}'
+        nodePathMap:
+          - node: DEFAULT_PATH_FOR_NON_LISTED_NODES
+            paths:
+              - /var/lib/kubelet/local-path-provisioner
         helperImage:
           repository: docker.io/library/busybox
           tag: 1.36.1
