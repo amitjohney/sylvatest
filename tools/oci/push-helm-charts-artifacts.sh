@@ -97,11 +97,11 @@ function artifact_integrity {
 function push_and_sign {
  
       local tgz_file=$1
-      local chart_name=$2
+      local artifact_name=$2
       local artifact_version=$3
 
       if !(artifact_integrity $tgz_file $artifact_name $artifact_version); then
-        echo "[ERROR] cannot push and sign $chart_name because its content differs from the content of the already existing OCI artifact"
+        echo "[ERROR] cannot push and sign $artifact_name because its content differs from the content of the already existing OCI artifact"
         return 1
       fi
       
@@ -142,7 +142,7 @@ function process_chart_in_helm_repo {
       fi
 
       # Push Helm chart to OCI, then sign if signing material is available
-      push_and_sign $tgz_file $chart_name $version_to_check
+      push_and_sign $tgz_file $artifact_name $version_to_check
       rm -f $tgz_file
     else
       if ls $chart_name*tgz >/dev/null 2>&1; then
