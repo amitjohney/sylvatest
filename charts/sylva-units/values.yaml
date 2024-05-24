@@ -5830,6 +5830,20 @@ _internal:
   default_os_images_info_configmap: os-images-info-{{ tuple . .Values._internal.os_images_info_input_hash | include "interpret-as-string" }}
   os_images_info_configmap: '{{ .Values._internal.default_os_images_info_configmap }}'  # overridden in workload-cluster.values.yaml
 
+immutable_values:
+  cluster:
+    name:
+      _immutable: true
+    capi_providers:
+      bootstrap_provider:
+        _immutable: true
+  vsphere:
+    vsphere-cpi:
+      vsphere_conf:
+        global:
+          insecureFlag:
+            _immutable: true
+
 shared_workload_clusters_values:
   ntp: '{{ .Values.ntp | include "set-if-defined" }}'
   proxies: '{{ .Values.proxies | include "set-if-defined" }}'

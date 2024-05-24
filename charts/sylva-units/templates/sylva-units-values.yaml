@@ -72,3 +72,36 @@ spec:
           release-time: "{{ $time }}"
           values-checksum: "{{ $values_checksum }}"
           additional-info: | {{ .Values.additional_sylva_units_status_info | toYaml | nindent 12 }}
+
+{{/*
+Checking that all values under .immutable_values and set with value "_immutable: true" will not change during Helm upgrade/rollback
+E.g. for input:
+
+values: |
+  immutable_values:
+    cluster:
+      name:
+        _immutable: true
+      capi_providers:
+        bootstrap_provider:
+          _immutable: true
+    vsphere:
+      vsphere-cpi:
+        vsphere_conf:
+          global:
+            insecureFlag:
+              _immutable: true
+
+1. by calling "recursive-immutable-key-collect" we will return a list of lists:
+
+return: |
+  - list "cluster" "name"
+  - list "cluster" "capi_proiders" "bootstrap_provider"
+  - list "vsphere" "vsphere-cpi" "vsphere_conf" "global" "insecureFlag"
+
+2. by calling "enforce-immutable" we will return an error if the upgrade values (passed as list of keys) are not equal to previous revision set
+
+*/}}
+{{- range $immutable_value_path := index (include "recursive-immutable-key-collect" (dict "dict" $envAll.Values.immutable_values) | fromJson) "encapsulated-result" -}}
+  {{ tuple $envAll $immutable_value_path | include "enforce-immutable" }}
+{{- end -}}
