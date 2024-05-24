@@ -355,7 +355,6 @@ capm3-ha-rke2-virt-ubuntu:
 capm3-ha-kubeadm-virt-ubuntu:
   extends: .capm3-virt-equinix
   variables:
-    ENV_TAG: "${CI_PIPELINE_ID}-capm3-ha-kubeadm-virt"
     MGMT_ADDITIONAL_VALUES: environment-values/rke2-capm3-virt/ha-kubeadm.yaml
     WC_ADDITIONAL_VALUES: environment-values/workload-clusters/rke2-capm3-virt/ha-kubeadm.yaml
     RUNNER_PLAN: m3.large.x86
