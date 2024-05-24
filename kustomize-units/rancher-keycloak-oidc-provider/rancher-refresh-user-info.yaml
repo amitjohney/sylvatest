@@ -9,4 +9,3 @@ kind: Setting
 metadata:
   name: auth-user-info-resync-cron
 value: ${AUTH_USER_INFO_RESYNC_CRON}
-
