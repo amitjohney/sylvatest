@@ -209,7 +209,7 @@ include:
       - management-cluster-units-report.xml
     # expose_as: $CI_JOB_NAME  # not allowed https://gitlab.com/gitlab-org/gitlab/-/issues/427149
   after_script:
-    - !reference [.setup_docker]  # needed to access bootstrap clustger and/or capd mgmt clustger
+    - !reference [.setup_docker]  # needed to access bootstrap clustger and/or capd mgmt cluster
     - .gitlab/ci/scripts/dump_machine_logs.sh management || true
 
 .deploy-management:
