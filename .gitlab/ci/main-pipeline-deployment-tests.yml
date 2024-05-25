@@ -341,6 +341,12 @@ capo-rke2-oci-suse:
   variables:
     ENV_NAME: rke2-capm3-virt
     DOCKER_HOST: ""
+    MGMT_INITIAL_REVISION: "1.1.0-patch-issue1193-baburciu"
+    MGMT_INITIAL_ADDITIONAL_VALUES: environment-values/ci/capm3-virt-1.1.0-to-main-patch.yml
+    MGMT_UPDATE_REVISION: "main"
+    WC_INITIAL_REVISION: "1.1.0-patch-issue1193-baburciu"
+    WC_INITIAL_ADDITIONAL_VALUES: environment-values/ci/capm3-virt-1.1.0-to-main-patch.yml
+    WC_UPDATE_REVISION: "main"
   trigger:
     include: .gitlab/ci/pipeline-deploy-capm3-virt-equinix.yml
     strategy: depend
