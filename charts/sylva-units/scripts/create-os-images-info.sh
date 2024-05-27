@@ -21,7 +21,7 @@ data:
 EOF
 
 echo "Looping over OS images..."
-
+sleep 3600
 yq '.os_images | keys | .[]' /opt/images.yaml | while read os_image_key; do
   echo "-- processing image $os_image_key"
   export os_image_key
