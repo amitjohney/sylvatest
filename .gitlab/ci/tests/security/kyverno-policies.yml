@@ -1,7 +1,7 @@
 ---
-# Theses jobs are checking if we have some policyreport or clusterpolicyreport
-# in a FAIL, WARN, ERROR state. If some are detected the job loop over them
-# to display the result and log it into a file before failing
+# Theses jobs are checking if we have some PolicyReportor ClusterPolicyReport
+# in a FAIL, WARN, ERROR state. If some are detected the job loops over them
+# to display the result and dump it into a file before failing
 
 PolicyReport-check:
   stage: deployment-test
