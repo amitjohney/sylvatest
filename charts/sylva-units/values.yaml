@@ -4644,6 +4644,25 @@ units:
           alertmanagers:
           - http://rancher-monitoring-alertmanager.cattle-monitoring-system:9093
           existingConfigmap: "sylva-thanos-rules-configmap"  # this ConfigMap is a byproduct of the sylva-thanos-rules unit
+          sidecars:
+          # reload thanos-ruler when changes to rule files are detected
+          - name: configmap-reload
+            image: bitnami/configmap-reload:0.13.0
+            args:
+            - --volume-dir=/conf/rules/
+            - --webhook-url=http://thanos-user:{{ .Values._internal.thanos_password }}@localhost:10902/-/reload
+            volumeMounts:
+            - name: ruler-config
+              mountPath: /conf/rules
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - ALL
+              privileged: false
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
         query:
           logLevel: debug
           extraFlags:
