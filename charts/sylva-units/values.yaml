@@ -5134,6 +5134,37 @@ units:
               path: /spec/template/spec/volumes/2/configMap/name
               value: {{ .Values._internal.os_images_info_configmap }}  # this configmap is a byproduct of the os-images-info unit
 
+  descheduler:
+    info:
+      description: install descheduler
+    enabled: false
+    unit_templates:
+    - base-deps
+    helm_repo_url: https://kubernetes-sigs.github.io/descheduler/
+    helmrelease_spec:
+      releaseName: descheduler
+      targetNamespace: kube-system
+      chart:
+        spec:
+          chart: descheduler
+          version: 0.29.0
+      values:
+        kind: Deployment
+        deschedulerPolicy:
+          strategies:
+            LowNodeUtilization:
+              enabled: true
+              params:
+                nodeResourceUtilizationThresholds:
+                  thresholds:
+                    cpu: 20
+                    memory: 20
+                    pods: 20
+                  targetThresholds:
+                    cpu: 60
+                    memory: 60
+                    pods: 50
+
 ##### stuff related to the 'cluster' unit #####
 #
 # all these values under 'cluster' are passed as values to sylva-capi-cluster chart
