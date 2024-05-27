@@ -20,7 +20,7 @@ until kubectl get -n keycloak keycloakrealmimport.k8s.keycloak.org sylva -o json
     ((attempts++)) && ((attempts==max_attempts)) && echo "timed out waiting for sylva keycloakrealmimport to become ready" | tee -a $LOGFILE && exit -1
 done
 
-KEYCLOAK_BASE_URL="https://keycloak.sylva"
+KEYCLOAK_BASE_URL="https://keycloak-service.keycloak.svc.cluster.local:8443"
 KEYCLOAK_INITIAL_USERNAME="admin"
 KEYCLOAK_REALM="sylva"
 KEYCLOAK_ROLE="grafanaadmin"
