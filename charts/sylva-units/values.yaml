@@ -4641,7 +4641,7 @@ units:
             subPath: ruler-queries.yaml
           alertmanagers:
           - http://rancher-monitoring-alertmanager.cattle-monitoring-system:9093
-          existingConfigmap: "thanos-rules-configmap"  # this ConfigMap is a byproduct of the sylva-thanos-rules unit
+          existingConfigmap: "sylva-thanos-rules-configmap"  # this ConfigMap is a byproduct of the sylva-thanos-rules unit
         query:
           logLevel: debug
           extraFlags:
