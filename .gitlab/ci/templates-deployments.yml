@@ -91,9 +91,10 @@ include:
       ip route add $KIND_PREFIX via $DOCKER_IP
     fi
 
-.setup_ci_values:
+.setup_ci_context_and_values:
   - echo -e "\e[1m\e[0Ksection_start:`date +%s`:gitlab_ci_common[collapsed=true]\r\e[0KRunning common deployment steps\e[0m"
   - !reference [.import_functions]
+  - !reference [.setup_docker]
   - download_artifact deploy-management-cluster management-cluster-kubeconfig
   - |
     if [ -n "${GIT_REVISION}" ] ; then
@@ -215,8 +216,7 @@ include:
 .deploy-management:
   extends: .management-base
   script:
-    - !reference [.setup_docker]
-    - !reference [.setup_ci_values]
+    - !reference [.setup_ci_context_and_values]
     - ./bootstrap.sh environment-values/${ENV_NAME}
   variables:
     SPECIFIC_VALUES_FILE: $MGMT_INITIAL_ADDITIONAL_VALUES
@@ -225,8 +225,7 @@ include:
 .update-management:
   extends: .management-base
   script:
-    - !reference [.setup_docker]
-    - !reference [.setup_ci_values]
+    - !reference [.setup_ci_context_and_values]
     - ./apply.sh environment-values/${ENV_NAME}
   variables:
     SPECIFIC_VALUES_FILE: $MGMT_UPDATE_ADDITIONAL_VALUES
@@ -257,8 +256,7 @@ include:
 .deploy-workload:
   extends: .workload-base
   script:
-    - !reference [.setup_docker]
-    - !reference [.setup_ci_values]
+    - !reference [.setup_ci_context_and_values]
     - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
   variables:
     SPECIFIC_VALUES_FILE: $WC_INITIAL_ADDITIONAL_VALUES
@@ -267,8 +265,7 @@ include:
 .update-workload:
   extends: .workload-base
   script:
-    - !reference [.setup_docker]
-    - !reference [.setup_ci_values]
+    - !reference [.setup_ci_context_and_values]
     - ./apply-workload-cluster.sh environment-values/workload-clusters/${ENV_NAME}
   variables:
     SPECIFIC_VALUES_FILE: $WC_UPDATE_ADDITIONAL_VALUES
