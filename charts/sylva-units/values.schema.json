@@ -8517,6 +8517,14 @@
                   "type"
                 ]
               },
+              "cluster_virtual_ip_port_uuid": {
+                "type": "string",
+                "pattern": "[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}"
+              },
+              "cluster_public_ip_uuid": {
+                "type": "string",
+                "pattern": "[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}"
+              },
               "control_plane_affinity_policy": {
                 "type": "string",
                 "enum": [
@@ -8534,6 +8542,12 @@
               "external_network_id": {
                 "type": "string"
               }
+            },
+            "not": {
+              "required": [
+                "external_network_id",
+                "cluster_public_ip_uuid"
+              ]
             }
           }
         }
