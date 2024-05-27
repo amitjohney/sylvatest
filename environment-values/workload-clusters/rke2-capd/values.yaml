@@ -1,0 +1,7 @@
+cluster:
+  capi_providers:
+    infra_provider: capd
+    bootstrap_provider: cabpr
+  control_plane_replicas: 1
+
+cluster_virtual_ip: # use the .200 (or any other that wouldn't be assigned by Docker) IP from the local kind subnet, returned by: docker network inspect -f '{{json .}}' kind | jq -r .IPAM.Config[0].Subnet

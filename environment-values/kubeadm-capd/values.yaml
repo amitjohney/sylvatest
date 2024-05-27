@@ -1,12 +1,23 @@
 ---
 cluster:
-  k8s_version: v1.27.3
   capi_providers:
     infra_provider: capd
     bootstrap_provider: cabpk
 
   # CAPD only supports 1 CP machine
   control_plane_replicas: 1
+
+# We can define users if needed (.cluster.kubeadm.users[])
+  #kubeadm:
+  #  users:
+  #    - name: sylva-user
+  #      passwd: "put your password hash here"  # (copy pasted from /etc/shadow or created with "mkpasswd --method=SHA-512 --stdin")
+  #      groups: users
+  #      sudo: ALL=(ALL) NOPASSWD:ALL
+  #      shell: /bin/bash
+  #      lockPassword: false
+  #      sshAuthorizedKeys:
+  #        - ssh-rsa AAAA...... YOUR KEY HERE ....UqnQ==
 
 capd_docker_host: unix:///var/run/docker.sock  # dynamically replaced in CI
 

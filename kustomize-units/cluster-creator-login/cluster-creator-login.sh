@@ -1,10 +1,12 @@
 #!/bin/bash
+set -x
 set -e
 set -o pipefail
 
 echo "Looking for a kubeconfig for importing clusters"
 
-RANCHER_API=https://${RANCHER_EXTERNAL_URL}/v3
+RANCHER_INTERNAL_URL="rancher.cattle-system.svc.cluster.local"
+RANCHER_API=https://$RANCHER_INTERNAL_URL/v3
 RANCHER_PUBLIC_API=$RANCHER_API-public
 USERNAME=cluster-creator
 GLOBAL_ROLE=global-cluster-creator

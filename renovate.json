@@ -1,9 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "gitlab>sylva-projects/sylva-elements/renovate-config:default"
   ],
-  "prConcurrentLimit": 0,
   "labels": [
     "run-e2e-tests",
     "renovate"
@@ -22,12 +21,6 @@
     ]
   },
   "packageRules": [
-    {
-      "description": "Allow renovate self-update only once a week",
-      "matchPackageNames": ["renovate-bot/renovate-runner"],
-      "groupName": "renovate",
-      "schedule": ["before 4am on monday"]
-    },
     {
       "description": "Regroup vsphere-cloud-controller-manager updates",
       "matchFileNames": ["kustomize-units/vsphere-cloud-controller-manager/**"],
@@ -74,21 +67,20 @@
       "groupName": "rancher-cis-benchmark"
     },
     {
+      "description": "Regroup rancher-logging updates",
+      "matchPackageNames": [
+        "rancher-logging",
+        "rancher-logging-crd"
+      ],
+      "groupName": "rancher-logging"
+    },
+    {
       "description": "Regroup rancher-monitoring updates",
       "matchPackageNames": [
         "rancher-monitoring",
         "rancher-monitoring-crd"
       ],
       "groupName": "rancher-monitoring"
-    },
-    {
-      "description": "Regroup metallb updates",
-      "matchPackageNames": [
-        "metallb",
-        "metallb/metallb"
-      ],
-      "enabled": false,
-      "groupName": "metallb"
     },
     {
       "description": "Regroup longhorn updates",
@@ -125,8 +117,10 @@
       "allowedVersions": "<1.14"
     },
     {
-      "description": "Prevent helm rancher update to over 103 due to compatibility issue with rancher 2.8",
+      "description": "Prevent helm rancher update to over 103 for compatibility with rancher 2.8",
       "matchPackageNames": [
+        "rancher-logging",
+        "rancher-logging-crd",
         "rancher-monitoring-crd",
         "rancher-monitoring",
         "sriov-crd",
@@ -150,6 +144,11 @@
       "description": "Regroup heat-operator updates",
       "matchPackagePatterns": ".*heat-operator.*",
       "groupName": "heat-operator"
+    },
+    {
+      "description": "Regroup sylva-toolbox updates",
+      "matchPackagePatterns": ".*sylva-toolbox.*",
+      "groupName": "sylva-toolbox"
     },
     {
       "description": "Catch all changes related to values files and run generate_units_documentation script",

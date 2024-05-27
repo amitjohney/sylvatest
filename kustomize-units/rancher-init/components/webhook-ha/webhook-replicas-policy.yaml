@@ -1,0 +1,26 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: rancher-webhook-replicas
+  namespace: sylva-system
+  annotations:
+    kustomize.toolkit.fluxcd.io/force: Enabled
+    policies.kyverno.io/title: increase the number of replicas of rancher-webhook deployment
+    policies.kyverno.io/minversion: 1.11.0
+spec:
+  rules:
+  - name: rancher-webhook-replicas
+    match:
+      any:
+      - resources:
+          kinds:
+          - Deployment
+          names:
+          - rancher-webhook
+          namespaces:
+          - cattle-system
+    mutate:
+      patchStrategicMerge:
+        spec:
+          replicas: 2

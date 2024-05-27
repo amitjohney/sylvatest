@@ -6,7 +6,7 @@ export PATH=${BASE_DIR}/bin:${PATH}
 export KIND_CLUSTER_NAME=${KIND_CLUSTER_NAME:-sylva}
 
 SYLVA_BASE_OCI_REGISTRY=${SYLVA_BASE_OCI_REGISTRY:-registry.gitlab.com/sylva-projects}
-SYLVA_TOOLBOX_VERSION=${SYLVA_TOOLBOX_VERSION:-"v0.3.7"}
+SYLVA_TOOLBOX_VERSION=${SYLVA_TOOLBOX_VERSION:-"v0.3.15"}
 SYLVA_TOOLBOX_IMAGE=${SYLVA_TOOLBOX_IMAGE:-container-images/sylva-toolbox}
 SYLVA_TOOLBOX_REGISTRY=${SYLVA_TOOLBOX_REGISTRY:-${SYLVA_BASE_OCI_REGISTRY}/sylva-elements}
 export KIND_POD_SUBNET=${KIND_POD_SUBNET:-100.100.0.0/16}
@@ -32,6 +32,17 @@ function check_args() {
     export ENV_PATH=$(readlink -f ${BASH_ARGV[0]})
   fi
 }
+
+if ! python3 -c 'import yaml' &>/dev/null; then
+    echo "PyYAML python package is required to run this script, install it on your system and start over."
+    exit 1
+fi
+
+if ! python3 -c 'import yamllint' &>/dev/null; then
+    echo "yamllint python package is required to run this script, install it on your system and start over."
+    exit 1
+fi
+
 
 function _kustomize {
   kustomize build --load-restrictor LoadRestrictionsNone $1
@@ -71,7 +82,7 @@ function check_apply_kustomizations() {
   fi
 }
 
-export CURRENT_COMMIT=${CI_COMMIT_SHA:-$(git rev-parse HEAD)}
+export CURRENT_COMMIT=$(git rev-parse HEAD)
 export SYLVA_CORE_REPO=${SYLVA_CORE_REPO:-$(git remote get-url origin | sed 's|^git@\([^:]\+\):|https://\1/|')}
 
 echo_b() {
@@ -110,7 +121,7 @@ function check_pivot_has_ran() {
 
 function validate_input_values {
   echo_b "\U0001F50E Validate input files"
-  find $ENV_PATH -name "*.yaml" -exec yq --header-preprocess=false {} + 1> /dev/null
+  yamllint -c ${BASE_DIR}/tools/shell-lib/yamllint-validate.conf.yaml $ENV_PATH/*.y*ml
 }
 
 function retrieve_kubeconfig {
@@ -126,6 +137,13 @@ function retrieve_kubeconfig {
     fi
     kubectl --kubeconfig=management-cluster-kubeconfig config set-context --current --namespace=sylva-system
     umask $orig_umask
+}
+
+function check_management_kubeconfig() {
+    if ! kubectl get -n sylva-system configmap dummy-deps-management-flag &>/dev/null; then
+        echo_b "\U000026A0 Provided kubeconfig ($KUBECONFIG) does not seem to target management cluster, aborting."
+        exit 1
+    fi
 }
 
 function ensure_flux {

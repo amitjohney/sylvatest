@@ -38,7 +38,7 @@ of a deployment with information about the revision and values of the sylva-unit
 {{- $deps := list -}}
 {{- range $unit_name, $unit_def := $envAll.Values.units -}}
   {{- if include "unit-enabled" (tuple $envAll $unit_name) -}}
-    {{- $deps = append $deps (dict "name" $unit_name) -}}
+    {{- $deps = append $deps (dict "name" (include "kustomization-name" (tuple $envAll $unit_name))) -}}
   {{- end -}}
 {{- end }}
 {{- $deps = append $deps (dict "name" "cluster") -}}
@@ -48,7 +48,9 @@ kind: Kustomization
 metadata:
   name: sylva-units-status
   labels: {{ include "sylva-units.labels" $envAll | nindent 4 }}
+    sylva-units/root-dependency-wait: ""
   annotations:
+    sylva-units-helm-revision: '{{ .Release.Revision }}'
     target-release-revision: "{{ .Release.Revision }}"
     target-sylva-units-chart-version: "{{ .Chart.Version }}"
     target-values-checksum: "{{ $values_checksum }}"

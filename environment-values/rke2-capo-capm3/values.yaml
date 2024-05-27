@@ -7,7 +7,7 @@ cluster:
     infra_provider: capo
     bootstrap_provider: cabpr
   capo:
-    image_key: ubuntu-jammy-plain-rke2-1-26-9 # OpenStack Glance image (key of image in sylva_diskimagebuilder_images/os_images)
+    image_key: ubuntu-jammy-plain-rke2-1-28-9 # OpenStack Glance image (key of image in sylva_diskimagebuilder_images/os_images)
     ssh_key_name: # put the name of your nova SSH keypair here
     network_id: # the network id is provided by remote target unit if Kustomize remote target is used, but can be overwritten
     flavor_name: # put the name of the flavor from OpenStack
@@ -33,13 +33,6 @@ units:
 
   capm3:
     enabled: true
-
-# Add external ceph cluster details
-ceph:
-  cephfs_csi:
-    clusterID: "" # ceph cluster fsid
-    fs_name: "" # ceph fs name
-    monitors_ips: [] # ceph cluster monitors IP
 
 proxies:
   # put your own proxy settings here if you need

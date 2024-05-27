@@ -2,6 +2,8 @@ apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
   name: merge-neuvector-secrets
+  annotations:
+    kustomize.toolkit.fluxcd.io/force: Enabled
 spec:
   mutateExistingOnPolicyUpdate: true
   rules:
@@ -29,6 +31,8 @@ apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
   name: add-sylva-ca
+  annotations:
+    kustomize.toolkit.fluxcd.io/force: Enabled
 spec:
   rules:
   - name: add-sylva-ca

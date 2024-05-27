@@ -26,8 +26,8 @@ spec:
             value: "/etc/openstack/clouds.yaml"
           - name: TARGET_NAMESPACE
             value: ${JOB_TARGET_NAMESPACE}
-          - name: ORAS_INSECURE_CLIENT
-            value: ${JOB_ORAS_INSECURE_CLIENT}
+          - name: INSECURE_CLIENT
+            value: ${JOB_INSECURE_CLIENT}
           - name: http_proxy
             value: ${httpProxy}
           - name: https_proxy
@@ -78,7 +78,7 @@ spec:
               accessModes: ["ReadWriteOnce"]
               resources:
                 requests:
-                  storage: ${TMP_STORAGE_SIZE:-8Gi}
+                  storage: ${TMP_STORAGE_SPACE:-8Gi}
 ---
 apiVersion: v1
 kind: ServiceAccount

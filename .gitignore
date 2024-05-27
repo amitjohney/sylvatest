@@ -7,9 +7,13 @@ clouds.yaml
 .gitlab-ci-local/
 sylva-units-preview/
 sylva.env
+*__pycache__*
 
 # Sops decyphered
 environment-values/ci/private/falcon-base/secrets.yaml
 
 # Gitleaks reports
 reports/
+
+# Pipeline reports
+report_output.md

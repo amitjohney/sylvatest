@@ -1,7 +1,5 @@
 # Metal3 in Sylva
 
-> :warning: The deployment of metal3 proposed in Sylva is currently meant to be used for lab experimentations but not for production
-
 Metal3 is the component of the Sylva stack responsible of the management of baremetal servers.
 
 It provides the capability to enroll, inspect and provision physical servers by means of a set of CRDs.
@@ -50,7 +48,7 @@ The most important CRD is the [BareMetalHost](https://github.com/metal3-io/barem
 
 Ironic is a project initially developed to work inside Open Stack but it is deployed as standalone component within metal3.
 
-Ironic is the component that actually interacts with the baremetal servers to be managed while the baremetal-operator is mostly a Kubernetes interface (actually a set of controllers) towords Ironic.
+Ironic is the component that actually interacts with the baremetal servers to be managed while the baremetal-operator is mostly a Kubernetes interface (actually a set of controllers) towards Ironic.
 
 It is capable of interacting with a wide set of vendor's BMC through many protocols such as `IPMI`, `redfish`, `iDRAC`, `iLO` etc. .
 
@@ -140,7 +138,7 @@ The cluster-api (CAPI) and cluster-api-provider-metal3 (CAPM3) controllers start
 Basically there are some CRDs describing the cluster topology: `KubeADMControlPlane` defines the number of control plane nodes while `MachineDeployment` defines the number of worker nodes.
 
 Each kind of node (control plane and worker) is associated to a `Metal3MachineTemplate` which in turn contains in its `spec` the field `hostSelector`.
-The `hostSelector` defines a criteria for matchine labels on `BareMetalHost` objects so it is the way to decide what servers to consume for the cluster as control plane or worker nodes.
+The `hostSelector` defines a criteria for matching labels on `BareMetalHost` objects so it is the way to decide what servers to consume for the cluster as control plane or worker nodes.
 
 So the CAPM3 controller processes the `hostSelector` spec, selects the `BareMetalHosts` to be consumed and updates their spec with an OS `image`, `userData` and `networkData` so that metal3 can start the provisioning process for each of them.
 
@@ -160,8 +158,10 @@ Metal3 can be deployed as a `unit` in the Sylva stack by enabling the units `met
 
 ### Helm chart
 
-We provide an helm chart to simplify the installation and configuration of Metal3 in the scenario of interest of the Sylva stack, that is with level 3 connectivity between Metal3 on the management cluster and the remote baremetal machine to be managed and consumed by cluster-api.
-[Here](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3) you can find the Metal3 helm chart with its documentation.
+At this moment, we use a helm chart provided by SUSE in order to simplify the installation and configuration of Metal3 in the scenario of interest for the Sylva stack, that is with Layer 3 connectivity between Metal3's Ironic on the management cluster and the remote baremetal machine to be managed and consumed by Cluster API.
+You can find this Metal3 helm chart [here](https://github.com/suse-edge/charts/tree/main/charts/metal3).
+
+In the past, a similar [sylva-elements/helm-charts/metal3](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3) solution was developed, maintained and consumed by Sylva, before we decided to switch to SUSE's one.
 
 ### How to enable and configure metal3 in Sylva
 
@@ -178,7 +178,7 @@ units:
 
 The `capm3` unit doesn't require any configuration, it simply acts as an intermediate layer between CAPI and Metal3, so in addition to configure metal3 enabling `capm3` is enough to enable bare metal3 cluster management with CAPI.
 
-The `metal3` unit configuration can be provided through the [metal3 helm chart](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/metal3/-/tree/main/sylva/metal3) `values.yaml` to be included in the field `units.metal3.helmrelease_spec.values`.  
+The `metal3` unit configuration can be provided through the [metal3 helm chart](https://github.com/suse-edge/charts/tree/main/charts/metal3/0.6.3) `values.yaml` to be included in the field `units.metal3.helmrelease_spec.values`.  
 
 By default the `metal3` unit deploys Ironic service and automatically configures it. However you may have to need to customize ironic IP if management cluster IP is not directly accessible from workload clusters.  
 

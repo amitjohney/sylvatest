@@ -103,7 +103,7 @@ source_templates:
       url: '{{ .Values.sylva_base_oci_registry }}/sylva-elements/helm-charts/capi-rancher-import/cattle-kustomize'
 
 unit_templates:
-  sylva-units:  # this applies to any unit having "unit_template: sylva-units"
+  sylva-units:  # this applies to any unit having "unit_templates: ... - sylva-units"
     repo: null
     helm_repo_url: '{{ .Values.sylva_core_oci_registry }}'
     helmrelease_spec:

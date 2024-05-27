@@ -57,23 +57,23 @@ cluster:
     rke2:
       nodeLabels:
         node.longhorn.io/create-default-disk: "config"
-    nodeAnnotations:
-      node.longhorn.io/default-disks-config: '[{..}]'
+      nodeAnnotations:
+        node.longhorn.io/default-disks-config: '[{..}]'
 
   machine_deployment_default:
     rke2:
       nodeLabels:
         node.longhorn.io/create-default-disk: "config"
-    nodeAnnotations:
-      node.longhorn.io/default-disks-config: '[{..}]'
+      nodeAnnotations:
+        node.longhorn.io/default-disks-config: '[{..}]'
 
   machine_deployments:
     md0:
       rke2:
         nodeLabels:
           node.longhorn.io/create-default-disk: "config"
-      nodeAnnotations:
-        node.longhorn.io/default-disks-config: '[{..}]'
+        nodeAnnotations:
+          node.longhorn.io/default-disks-config: '[{..}]'
 
 ```
 

@@ -1,0 +1,191 @@
+{{- $delete_hook := .Values.delete_hook | default dict }}
+{{- if $delete_hook.enabled | default false }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-delete-kustomizations
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": pre-delete
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  activeDeadlineSeconds: {{ $delete_hook.job_timeout | default 1800 }}
+  template:
+    spec:
+      containers:
+      - name: delete-hook
+        image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/kube-job:v1.0.10
+        command:
+          - "/bin/bash"
+          - "-c"
+          - |
+            set -e
+
+            NS="{{ .Release.Namespace }}"
+            NAME="{{ .Release.Name }}"
+
+            function _kubectl {
+                kubectl -n $NS $@
+            }
+
+            echo "=== Disabling the pruning of kustomizations installed on workload cluster ==="
+            for KUST in $(_kubectl get kustomization -l app.kubernetes.io/instance=$NAME -o json | jq -r '.items[] | select(.spec.kubeConfig != null) | .metadata.name'); do
+                echo "Disable pruning in kustomization $KUST"
+                _kubectl patch kustomization $KUST --type=merge --patch='{"spec":{"prune":false}}' >/dev/null
+            done
+
+            echo "=== Disabling the pruning of helmreleases installed on workload cluster ==="
+            for RELEASE in $(_kubectl get  helmreleases -l app.kubernetes.io/instance=$NAME -o json | jq -r '.items[] | select(.spec.kubeConfig != null) | .metadata.name'); do
+                echo "Suspending helmreleases $RELEASE"
+                _kubectl patch helmreleases $RELEASE --type=merge --patch='{"spec":{"suspend":true}}' >/dev/null
+            done
+
+            ALL_KS=$(_kubectl get kustomizations -l app.kubernetes.io/instance=$NAME -o json)
+            CLEANED_KS='[]'
+
+            while true; do
+                # Compute remaining kustomizations
+                REMAINING_KS=$(jq -r --argjson cleaned "$CLEANED_KS" <<< $ALL_KS '[.items[] | select(.metadata.name as $in | $cleaned | index($in) | not)]')
+
+                if jq -e <<< $REMAINING_KS '. | length == 0' >/dev/null; then
+                    echo "=== All kustomizations have been deleted ==="
+                    exit 0
+                fi
+
+                echo "=== Remaining kustomizations ==="
+                jq -r <<< $REMAINING_KS '[.[].metadata.name] | join(" ")'
+
+                # Compute the list of kustomizations that don't have dependents
+                KS_LIST=$(jq -r --arg ns $NS <<< $REMAINING_KS '[.[] | .metadata.name] -
+                     [.[].spec.dependsOn | select(. | length > 0) | .[] | select(.namespace == null or .namespace == "$ns") | .name ]
+                     | unique | join(" ")')
+
+                for KUST in $KS_LIST; do
+                    echo "=== Deleting kustomization $KUST ==="
+                    _kubectl delete kustomization $KUST 2>/dev/null || true
+
+                    KUST_JSON=$(jq --arg kust $KUST <<< $ALL_KS '.items[] | select(.metadata.name == $kust)')
+
+                    # If a Kustomization does not exist anymore, don't wait the deletion of its resources in the following cases:
+                    #  * the Kustomization was targeting a remote cluster
+                    #  * no resource would be deleted (empty kustomization)
+                    #  * the Kustomization was suspended (in that case Flux controller will not delete anything)
+                    #  * the Kustomization had "prune: false" (in that case Flux controller will not delete anything)
+                    if ! _kubectl get kustomization $KUST 2>/dev/null &&
+                       jq -e <<< $KUST_JSON '(.spec.kubeConfig != null) or
+                                             (.status.inventory.entries // [] | length == 0) or
+                                             (.spec.prune == false) or
+                                             (.spec.suspend // false)' >/dev/null; then
+                        CLEANED_KS=$(jq --arg kust $KUST <<< $CLEANED_KS '. + [$kust]')
+
+                    # Wait for kustomization's resources to be pruned from API, as kustomize controller is not (yet?) doing it
+                    else
+                        REMAINING_RES=0
+
+                        while read RES; do
+                            RES_JSON=$(kubectl get $RES -o json 2>/dev/null || true)
+                            if [[ -n $RES_JSON ]] && ! jq -e <<< $RES_JSON '.metadata.annotations."kustomize.toolkit.fluxcd.io/prune" == "disabled"' >/dev/null; then
+                                jq -r <<< $RES_JSON '"Remaining resource: \(.kind) \(if .metadata.namespace != null then "\(.metadata.namespace)/" else "" end)\(.metadata.name)"'
+                                REMAINING_RES=1
+                            fi
+                        # following jq query builds the args for kubectl delete command using kustomization inventory
+                        # these args look like "-n capi-system Issuer.cert-manager.io capi-selfsigned-issuer" (namespace and api group are optionnal)
+                        done < <(jq -r <<< $KUST_JSON '.status.inventory.entries[].id | split ("_") as $entry |
+                            "\(if $entry[0] != "" then "-n \($entry[0])" else "" end) \(if $entry[2] != "" then "\($entry[3]).\($entry[2])" else "\($entry[3])" end) \($entry[1])"')
+
+                        # Mark kustomization as deleted if all resources have been deleted and if the Kustomization does not exist anymore
+                        if [[ $REMAINING_RES -eq 0 ]] && ! _kubectl get kustomization $KUST 2>/dev/null; then
+                            CLEANED_KS=$(jq --arg kust $KUST <<< $CLEANED_KS '. + [$kust]')
+                        fi
+                    fi
+                done
+                sleep 1
+            done
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          runAsNonRoot: true
+          runAsUser: 1000
+          privileged: false
+          seccompProfile:
+            type: RuntimeDefault
+      restartPolicy: Never
+      serviceAccountName: {{ .Release.Name }}-pre-delete-hook-sa
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Release.Name }}-pre-delete-hook-sa
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": pre-delete
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ .Release.Name }}-pre-delete-hook-r
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": pre-delete
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+rules:
+- apiGroups: ["kustomize.toolkit.fluxcd.io"]
+  resources: ["kustomizations"]
+  verbs: ["get", "delete", "list", "watch", "patch"]
+- apiGroups: ["helm.toolkit.fluxcd.io"]
+  resources: ["helmreleases"]
+  verbs: ["get", "delete", "list", "watch", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ .Release.Name }}-pre-delete-hook-rb
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": pre-delete
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+subjects:
+- kind: ServiceAccount
+  name: {{ .Release.Name }}-pre-delete-hook-sa
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: Role
+  name: {{ .Release.Name }}-pre-delete-hook-r
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Release.Name }}-{{ .Release.Namespace }}-pre-delete-hook-cr
+  annotations:
+    "helm.sh/hook": pre-delete
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Release.Name }}-{{ .Release.Namespace }}-pre-delete-hook-crb
+  annotations:
+    "helm.sh/hook": pre-delete
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+subjects:
+- kind: ServiceAccount
+  name: {{ .Release.Name }}-pre-delete-hook-sa
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ .Release.Name }}-{{ .Release.Namespace }}-pre-delete-hook-cr
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}

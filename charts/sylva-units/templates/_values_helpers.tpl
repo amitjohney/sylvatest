@@ -14,8 +14,8 @@ Ensure that no_proxy covers everything that we need by adding the values defined
   {{/* we start building the list of no_proxy items, accumulating them in $no_proxy_list... */}}
   {{- $no_proxy_list := concat $envAll.Values.cluster.cluster_pods_cidrs $envAll.Values.cluster.cluster_services_cidrs -}}
   {{- if $envAll.Values.cluster.capm3 -}}
-    {{- if $envAll.Values.cluster.capm3.public_pool_network -}}
-      {{- $no_proxy_list = append $no_proxy_list (printf "%s/%s" $envAll.Values.cluster.capm3.public_pool_network $envAll.Values.cluster.capm3.public_pool_prefix) -}}
+    {{- if $envAll.Values.cluster.capm3.primary_pool_network -}}
+      {{- $no_proxy_list = append $no_proxy_list (printf "%s/%s" $envAll.Values.cluster.capm3.primary_pool_network $envAll.Values.cluster.capm3.primary_pool_prefix) -}}
     {{- end -}}
     {{- if $envAll.Values.cluster.capm3.provisioning_pool_network -}}
       {{- $no_proxy_list = append $no_proxy_list (printf "%s/%s" $envAll.Values.cluster.capm3.provisioning_pool_network $envAll.Values.cluster.capm3.provisioning_pool_prefix) -}}
@@ -52,4 +52,34 @@ Ensure that no_proxy covers everything that we need by adding the values defined
 
   {{/* render final list */}}
   {{- without $no_proxy_list "" | uniq | join "," -}}
+{{- end -}}
+
+{{/*
+Define the field sylvaUnitsSource that is used in sylva-units-release-template.
+This field is defined differently according to the deployment type.
+*/}}
+{{- define "surT-default" -}}
+ {{- $envAll := . -}}
+ {{- if eq (index .Values.source_templates "sylva-core" "kind") "OCIRepository" -}}
+type: oci
+url: {{ .Values.sylva_core_oci_registry }}
+tag: {{ .Values._internal.sylva_core_version }}
+ {{- else -}}
+   {{- $sylva_spec := dict -}}
+   {{- $sylva_spec = (lookup "source.toolkit.fluxcd.io/v1beta2" "GitRepository" "sylva-system" "sylva-core" | dig "spec" "") -}}
+type: git
+   {{- if $sylva_spec }}
+url: {{ $sylva_spec.url }}
+     {{- if $sylva_spec.ref.commit }}
+commit: {{ $sylva_spec.ref.commit }}
+     {{- else if $sylva_spec.ref.tag }}
+tag: {{ $sylva_spec.ref.tag }}
+     {{- else }}
+branch: {{ $sylva_spec.ref.branch }}
+     {{- end }}
+   {{- else }}
+url: https://gitlab.com/sylva-projects/sylva-core.git
+branch: main
+   {{- end }}
+ {{- end -}}
 {{- end -}}

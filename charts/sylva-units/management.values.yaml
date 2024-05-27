@@ -3,6 +3,17 @@
 #  and not explicitely set 'enabled: false' here)
 units_enabled_default: true
 
+unit_templates:
+  # this unit template gather depends_on common
+  # to most units
+  base-deps:
+    depends_on:
+      # Flux, because starting unit reconciliation while Flux is
+      #       reinstalling itself proved fragile in the past
+      flux-system: true
+      # Kyverno, because we're introducing Kyverno policies that manage pod
+      #          security settings that need to be in place before things can start up
+      #kyverno: true
 
 units:
 
@@ -16,10 +27,7 @@ units:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
 
   metal3:
-    enabled: '{{ (and (tuple . "capm3" | include "unit-enabled") (.Values.metal3.provider | eq "sylva")) }}'
-
-  metal3-suse:
-    enabled: '{{ (and (tuple . "capm3" | include "unit-enabled") (.Values.metal3.provider | eq "suse")) }}'
+    enabled: '{{ tuple . "capm3" | include "unit-enabled" }}'
 
   capv:
     enabled: '{{ .Values.cluster.capi_providers.infra_provider | eq "capv" }}'
@@ -30,8 +38,45 @@ units:
   cabpr:  # RKE2
     enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" }}'
 
+  get-openstack-images:
+    depends_on:
+      '{{ .Values._internal.default_storage_class_unit }}': true
+
+  cluster-bmh:
+    depends_on:
+      metal3: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+
+  cluster:
+    depends_on:
+      # these dependencies are set here rather than in values.yaml, because slightly different ones
+      # need to be declared for workload clusters in workload-cluster.values.yaml
+      capi: true
+      '{{ .Values.cluster.capi_providers.infra_provider }}': true
+      '{{ .Values.cluster.capi_providers.bootstrap_provider }}': true
+      kyverno-policies: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+      os-image-server: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" }}'
+
+  kyverno-policy-prevent-mgmt-cluster-delete:
+    info:
+      description: Kyverno policies to prevent deletion of critical resources for mgmt cluster
+      internal: true
+    enabled_conditions:
+    - '{{ tuple . "kyverno" | include "unit-enabled"  }}'
+    depends_on:
+      kyverno: true
+      capi: true
+    unit_templates:
+    - base-deps
+    repo: sylva-core
+    kustomization_spec:
+      path: ./kustomize-units/kyverno-policies/prevent-mgmt-cluster-delete
+      wait: true
+      postBuild:
+        substitute:
+          CLUSTER_NAME: '{{ .Values.cluster.name }}'
+
   os-image-server:
-    enabled: '{{ tuple . .Values._internal.metal3_unit | include "unit-enabled" }}'
+    enabled: '{{ tuple . "metal3" | include "unit-enabled" }}'
 
   kubevirt:
     enabled: false
@@ -39,12 +84,48 @@ units:
   kubevirt-test-vms:
     enabled: false
 
+  prometheus-flux:
+    depends_on:
+      monitoring-crd: true
+
   monitoring:
     helmrelease_spec:
       values:
         global:
           cattle:
             clusterId: local
+            clusterName: local
+    helm_secret_values:
+      grafana:
+        # https://grafana.com/docs/grafana/latest/administration/provisioning/#example-data-source-config-file
+        additionalDataSources:
+          - name: Thanos
+            type: "prometheus"
+            access: "proxy"
+            url: "https://{{ .Values.external_hostnames.thanos_query }}"
+            basicAuth: true
+            basicAuthUser: "thanos-user"
+            jsonData:
+              tlsSkipVerify: true
+            secureJsonData:
+              basicAuthPassword: '{{ .Values._internal.thanos_password }}'
+            #isDefault: true
+          - name: Loki
+            type: "loki"
+            access: "proxy"
+            url: "https://{{ .Values.external_hostnames.loki }}"
+            basicAuth: true
+            basicAuthUser: "loki-user"
+            jsonData:
+              tlsSkipVerify: true
+              httpHeaderName1: 'X-Scope-OrgID'
+            secureJsonData:
+              httpHeaderValue1: '{{ .Values.cluster.name }}'
+              basicAuthPassword: '{{ .Values._internal.loki_password }}'
+
+  logging:
+    depends_on:
+      loki: '{{ tuple . "loki" | include "unit-enabled" }}'
 
   snmp-exporter:
     enabled: '{{ tuple . "capm3" | include "unit-enabled" }}'
@@ -56,6 +137,7 @@ units:
       kyverno: true
       vault: true
       vault-config-operator: true
+      eso-secret-stores: true
       keycloak-add-client-scope: true
 
   harbor:
@@ -79,8 +161,22 @@ units:
                                   key: CONFIG_OVERWRITE_JSON
                                   name: "harbor-oidc"
 
+  management-flag:
+    info:
+      internal: true
+      description: dummy unit to identify management cluster
+      details: >
+        This unit will produce a configmap in management cluster that can be used by apply scripts
+        to assert that they are properly targeting the management cluster
+    enabled: true
+    unit_templates:
+    - dummy
+
 keycloak:
   keycloak_expire_password_days: 30
 
 cluster:
   prevent_deletion: true
+
+_internal:
+  mgmt_cluster: true

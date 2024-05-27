@@ -1,5 +1,0 @@
-cluster:
-  capi_providers:
-    infra_provider: capo
-    bootstrap_provider: cabpr
-  control_plane_replicas: 1

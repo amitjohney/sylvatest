@@ -1,7 +1,5 @@
 # Grab some info in case of failure, essentially usefull to troubleshoot CI, fell free to add your own commands while troubleshooting
 
-unset KUBECONFIG
-
 # list of kinds to dump
 #
 # for some resources, we add the apiGroup because there are resources
@@ -25,6 +23,8 @@ additional_resources="
   Services
   Ingresses
   HeatStacks
+  ExternalSecrets
+  Keycloaks
   Clusters.*cluster.x-k8s.io
   MachineDeployments
   Machines
@@ -48,6 +48,13 @@ additional_resources="
   Metal3Machines
   Metal3DataTemplates
   BaremetalHosts
+  Nodes.*longhorn.io
+  Replicas.*longhorn.io
+  Volumes.*longhorn.io
+  VolumeAttachments.*longhorn.io
+  Settings.*longhorn.io
+  Engines.*longhorn.io
+  InstanceManagers.*longhorn.io
 "
 
 function dump_additional_resources() {
@@ -56,9 +63,9 @@ function dump_additional_resources() {
     for cr in $@; do
       echo "Dumping resources $cr in the whole cluster"
       if kubectl api-resources | grep -qi $cr ; then
-        base_filename=$cluster_dir/${cr/.\**/}
         kind=${cr/\*/}  # transform the .* used for matching kubectl api-resource, into a plain '.'
                         # (see Clusters.*cluster.x-k8s.io above)
+        base_filename=$cluster_dir/${kind}
 
         if [[ $kind == HelmReleases || $kind == Kustomizations ]]; then
             flux get ${kind,,} -A > $base_filename.summary.txt
@@ -74,17 +81,22 @@ function dump_additional_resources() {
 
 function format_and_sort_events() {
   # this sorts events by lastTimestamp (when defined)
-  yq '[.items[] |
+  include_ns=''
+  if [[ $1 == "include-ns" ]]; then
+    include_ns='.involvedObject.namespace // "-",'
+  fi
+  yq "[.items[] |
        [.firstTimestamp // .eventTime,
-        .lastTimestamp // .firstTimestamp // .eventTime,
+        .lastTimestamp // .series.lastObservedTime // .firstTimestamp // .eventTime,
         .involvedObject.kind,
+        $include_ns
         .involvedObject.name,
-        .count,
+        .count // .series.count // 1,
         .reason,
-        .message // "" | sub("\n","\n        ")]
+        .message // \"\" | sub(\"\n\",\"\n        \")]
        ]
       | sort_by(.1)
-      | @tsv'
+      | @tsv"
 }
 
 function cluster_info_dump() {
@@ -106,9 +118,12 @@ function cluster_info_dump() {
   done
 
   # same in a single file
-  kubectl get events -A -o yaml | format_and_sort_events > $dump_dir/events.log
+  kubectl get events -A -o yaml | format_and_sort_events include-ns > $dump_dir/events.log
 
   dump_additional_resources $dump_dir $additional_resources
+
+  # dump pods
+  kubectl get pods -o wide -A | tee $dump_dir/pods.summary.txt
 
   # dump CAPI secrets
   kubectl get secret -A --field-selector=type=cluster.x-k8s.io/secret &&\
@@ -136,24 +151,32 @@ echo -e "\nSystem info"
 free -h
 df -h || true
 
+# Unset KUBECONFIG to make sure that we are targetting kind cluster
+unset KUBECONFIG
+
 if [[ $(kind get clusters) =~ $KIND_CLUSTER_NAME ]]; then
   cluster_info_dump bootstrap
   echo -e "\nDump bootstrap node logs"
-  docker ps -q -f name=control-plane* | xargs -I % -r docker exec % journalctl -e > bootstrap-cluster-dump/bootstap_node.log
+  docker ps -q -f name=control-plane* | xargs -I % -r docker exec % journalctl -e > bootstrap-cluster-dump/bootstrap_node.log
 fi
 
-if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
-    export KUBECONFIG=${KUBECONFIG:-$BASE_DIR/management-cluster-kubeconfig}
+# Try to guess management-cluster-kubeconfig path:
+# - Use first argument if provided
+# - Use BASE_DIR environment value if it is set (it is usually done by common.sh in CI)
+# - Use relative path to current script location as BASE_DIR as a last option
+
+BASE_DIR=${BASE_DIR:-$(realpath $(dirname $0)/../../)}
+MGMT_KUBECONFIG=${1:-${BASE_DIR}/management-cluster-kubeconfig}
+
+if [[ -f $MGMT_KUBECONFIG ]]; then
+    export KUBECONFIG=${MGMT_KUBECONFIG}
 
     echo -e "\nGet nodes in management cluster"
     kubectl --request-timeout=3s get nodes
 
-    echo -e "\nGet pods in management cluster"
-    kubectl --request-timeout=3s get pods -A
-
     cluster_info_dump management
 
-    workload_cluster_name=$(kubectl get cluster.cluster -A -o jsonpath='{ $.items[?(@.metadata.namespace != "sylva-system")].metadata.name }')
+    workload_cluster_name=$(kubectl --request-timeout=3s get cluster.cluster -A -o jsonpath='{ $.items[?(@.metadata.namespace != "sylva-system")].metadata.name }')
     if [[ -z "$workload_cluster_name" ]]; then
         echo -e "There's no workload cluster for this deployment. All done"
     else
@@ -166,7 +189,7 @@ if [[ -f $BASE_DIR/management-cluster-kubeconfig ]]; then
         else
           # in case of baremetal emulation workload cluster is only accessible from Rancher
           # and rancher API certificates does not match expected (so kubectl must be used with insecure-skip-tls-verify)
-          ./tools/shell-lib/get-wc-kubeconfig-from-rancher.sh $workload_cluster_name > $BASE_DIR/workload-cluster-kubeconfig-rancher
+          $BASE_DIR/tools/shell-lib/get-wc-kubeconfig-from-rancher.sh $workload_cluster_name > $BASE_DIR/workload-cluster-kubeconfig-rancher
           yq -i e '.clusters[].cluster.insecure-skip-tls-verify = true' $BASE_DIR/workload-cluster-kubeconfig-rancher
           yq -i e 'del(.clusters[].cluster.certificate-authority-data)' $BASE_DIR/workload-cluster-kubeconfig-rancher
           export KUBECONFIG=$BASE_DIR/workload-cluster-kubeconfig-rancher

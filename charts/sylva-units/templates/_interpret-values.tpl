@@ -33,7 +33,8 @@ preserved: '{{ dict "foo" "bar" | include "preserve-type" }}'
 
 {{- $_ := set . "Values" (include "interpret-values-gotpl" . | fromJson) -}}
 sample-value: {{ .Values.sample }}
-preserved-value: {{ .Values.preserved }}
+preserved-value:
+{{ .Values.preserved | toYaml | indent 2 }}
 
 # result:
 
@@ -60,7 +61,7 @@ sample_dict:
 # template:
 
 {{- $_ := set . "Values" (include "interpret-values-gotpl" . | fromJson)  -}}
-{{ .Values }}
+{{ .Values | toYaml }}
 
 # result:
 
@@ -87,17 +88,28 @@ Note well that there are a few limitations:
 * templates that use "preserve-type" must define the whole key or value field, it can't be compound inline with a string:
   (this wouldn't make sense anyway, as you can't concaternate a string with another type)
 
+
+To recap what happens when `preserve-type` is used in values.yaml and the result rendered in the final manifest:
+
 value: prefix-{{ 42 | include "preserve-type" }}            -> will produce prefix-{"encapsulated-result":42}
-value: '{{ print "prefix-" 42 | include "preserve-type" }}' -> will produce prefix-42
-value: "prefix-{{ 42 }}"                                    -> will also produce prefix-42
+value: '{{ print "prefix-" 42 | include "preserve-type" }}' -> will produce {"encapsulated-result":"prefix-42"}
+value: "prefix-{{ 42 }}"                                    -> will also produce "prefix-42"
 
 */}}
 
 {{ define "interpret-values-gotpl" }}
 {{ $envAll := . }}
+{{/* we need to preserve this, to allow deferring template computation of _unit_name_ in unit-def */}}
+{{ $saved_unit_templates := deepCopy $envAll.Values.unit_templates }}
+{{ $saved_unit_definition_defaults := deepCopy ($envAll.Values.unit_definition_defaults | default dict) }}
+{{ $_ := set $envAll.Values "unit_templates" dict }}
 {{/* .Values._internal is interpreted first, values compute have the same value once and for all */}}
 {{ $_ := set $envAll.Values "_internal" (index (tuple $envAll $envAll.Values._internal | include "interpret-inner-gotpl" | fromJson) "result") }}
 {{ $_ := set $envAll "Values" (index (tuple $envAll $envAll.Values | include "interpret-inner-gotpl" | fromJson) "result") }}
+{{/* restore preserved values */}}
+{{ $_ := set $envAll.Values "unit_templates" $saved_unit_templates }}
+{{ $_ := set $envAll.Values "unit_definition_defaults" $saved_unit_definition_defaults }}
+{{/* return result */}}
 {{ $envAll.Values | toJson }}
 {{ end }}
 
@@ -123,7 +135,7 @@ test: 42
 # template:
 {{ tpl "{{ .Values.test | include \"preserve-type\" }}" . }}
 # result:
-"{\"encapsulated-result\":4}"
+"{\"encapsulated-result\":42}"
 
 The result is still a string, but we'll be able to match its signature and deserialize properly its content in interpret-inner-gotpl
 */}}
@@ -260,10 +272,10 @@ Note well that there are a few limitations:
     {{ $kind := kindOf $data }}
     {{ $result := 0 }}
     {{ if (eq $kind "string") }}
-        {{ if regexMatch ".*{{(.|\n)+}}.*" $data }}
+        {{ if regexMatch "(.|\n)*{{(.|\n)+}}(.|\n)*" $data }}
             {{/* This is where we actually trigger GoTPL interpretation */}}
             {{ $tpl_res := tpl $data $envAll }}
-            {{ if (hasPrefix "{\"encapsulated-result\":" $tpl_res) }}
+            {{ if (regexMatch "^( |\n)*{\"encapsulated-result\":" $tpl_res) }}
                 {{ $result = index (fromJson $tpl_res) "encapsulated-result" }}
             {{ else }}
                 {{ $result = $tpl_res }}
@@ -279,7 +291,7 @@ Note well that there are a few limitations:
         {{ range $data }}
             {{ $tpl_item := index (tuple $envAll . | include "interpret-inner-gotpl" | fromJson) "result" }}
             {{ if (eq (kindOf $tpl_item) "string") }}
-                {{ if (hasPrefix "{\"encapsulated-result\":" $tpl_item) }}
+                {{ if (regexMatch "^( |\n)*{\"encapsulated-result\":" $tpl_item) }}
                     {{ $result = append $result (index (fromJson $tpl_item) "encapsulated-result") }}
                 {{ else if (ne $tpl_item "skip-as-set-only-if-result-was-false") }}
                     {{ $result = append $result $tpl_item }}
@@ -295,7 +307,7 @@ Note well that there are a few limitations:
             {{ $tpl_key := index (tuple $envAll $key | include "interpret-inner-gotpl" | fromJson) "result" }}
             {{ $tpl_value := index (tuple $envAll $value | include "interpret-inner-gotpl" | fromJson) "result" }}
             {{ if (eq (kindOf $tpl_value) "string") }}
-                {{ if (hasPrefix "{\"encapsulated-result\":" $tpl_value) }}
+                {{ if (regexMatch "^( |\n)*{\"encapsulated-result\":" $tpl_value) }}
                     {{ $_ := set $result $tpl_key (index (fromJson $tpl_value) "encapsulated-result") }}
                 {{ else if (ne $tpl_value "skip-as-set-only-if-result-was-false") }}
                     {{ $_ := set $result $tpl_key $tpl_value }}
@@ -310,7 +322,6 @@ Note well that there are a few limitations:
 
 {{ dict "result" $result | toJson }}
 {{ end }}
-
 
 {{/*
 

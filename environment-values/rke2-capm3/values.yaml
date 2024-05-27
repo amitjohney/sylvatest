@@ -25,18 +25,20 @@ cluster:
               - ssh-rsa AAAA...... YOUR KEY HERE ....UqnQ==
 
   capm3:
-    image_key: ubuntu-jammy-plain-rke2-1-27-6
-    public_pool_network: 10.188.36.128
-    public_pool_gateway: 10.188.36.129
-    public_pool_start: 10.188.36.148
-    public_pool_end: 10.188.36.148
-    public_pool_prefix: "26"
+    image_key: ubuntu-jammy-plain-rke2-1-28-9
+    primary_pool_network: 10.188.36.128
+    primary_pool_gateway: 10.188.36.129
+    primary_pool_start: 10.188.36.148
+    primary_pool_end: 10.188.36.148
+    primary_pool_prefix: "26"
     provisioning_pool_network: 10.199.39.192
     provisioning_pool_gateway: 10.199.39.193
     provisioning_pool_start: 10.199.39.219
     provisioning_pool_end: 10.199.39.219
     provisioning_pool_prefix: "27"
-    dns_server: 1.2.3.4
+    dns_servers:
+    - 1.2.3.4
+    - 8.8.8.8
 
   control_plane:  # tweak network configuration as needed
 
@@ -46,14 +48,12 @@ cluster:
           cluster-role: control-plane
 
       provisioning_pool_interface: bond0
-      public_pool_interface: bond0.13
+      primary_pool_interface: bond0.13
 
     network_interfaces:
       # for CAPM3 folowing are used and mapped to Metal3Data.spec.template.spec.networkData.links
       bond0:
-        # bond_mode can be one of balance-rr, active-backup, balance-xor, broadcast, balance-tlb, balance-alb, 802.3ad
-        # https://github.com/metal3-io/cluster-api-provider-metal3/blob/main/api/v1alpha5/metal3datatemplate_types.go#L201-L202
-        bond_mode: 802.3ad
+        type: bond
         interfaces:
           - ens1f0
           - ens1f1
@@ -72,14 +72,14 @@ cluster:
           cluster-role: worker
 
       provisioning_pool_interface: bond0
-      public_pool_interface: bond0.13
+      primary_pool_interface: bond0.13
 
   machine_deployments:
     md0:
       replicas: 1
       network_interfaces:
         bond0:
-          bond_mode: 802.3ad
+          type: bond
           interfaces:
             - ens2f0
             - ens2f1
@@ -96,7 +96,6 @@ cluster:
       externallyProvisioned: false
       bmc:
         disableCertificateVerification: true
-      automatedCleaningMode: metadata
       bootMode: legacy
       rootDeviceHints:  # https://github.com/metal3-io/baremetal-operator/blob/main/docs/api.md#rootdevicehints
         deviceName: /dev/sda

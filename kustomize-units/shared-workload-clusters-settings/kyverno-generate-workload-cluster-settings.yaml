@@ -1,10 +1,14 @@
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: shared-workload-clusters-setttings
+  name: shared-workload-clusters-settings
+  annotations:
+    kustomize.toolkit.fluxcd.io/force: Enabled
 spec:
+  generateExisting: true
   rules:
   - name: generate-cm
+    skipBackgroundRequests: false
     match:
       any:
       - resources:
@@ -23,6 +27,7 @@ spec:
         name: shared-workload-clusters-settings
         namespace: sylva-system
   - name: clone-os-images-info
+    skipBackgroundRequests: false
     match:
       any:
       - resources:
@@ -41,6 +46,7 @@ spec:
         name: ${OS_IMAGES_INFO_CM}
         namespace: sylva-system
   - name: generate-secret
+    skipBackgroundRequests: false
     match:
       any:
       - resources:
@@ -57,4 +63,23 @@ spec:
       synchronize: true
       clone:
         name: shared-workload-clusters-settings
+        namespace: sylva-system
+  - name: generate-surt
+    skipBackgroundRequests: false
+    match:
+      any:
+      - resources:
+          kinds:
+          - Namespace
+          selector:
+            matchLabels:
+              sylva-project.org/shared-workload-cluster-settings: ""
+    generate:
+      kind: SylvaUnitsReleaseTemplate
+      apiVersion: unitsoperator.sylva/v1alpha1
+      name: default
+      namespace: "{{request.object.metadata.name}}"
+      synchronize: true
+      clone:
+        name: default
         namespace: sylva-system

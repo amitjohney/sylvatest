@@ -81,6 +81,9 @@ kustomize-lint:
     - |
       count=0
       for kustomization in $(find environment-values kustomize-units -type f -name 'kustomization.yaml' | grep -v '/ci/private/' | sed -r 's|/[^/]+$||'); do
+        if yq -e '.kind=="Component"' ${kustomization}/kustomization.yaml 2>stderr 1>/dev/null; then
+          continue # Skip components as they may not be buildable
+        fi
         echo -e "\e[1m\e[0Ksection_start:`date +%s`:$count[collapsed=true]\r\e[0KRun kubectl kustomize for $kustomization\e[0m"
         if kubectl kustomize $kustomization 2>stderr 1>/dev/null; then
           echo "kubectl kustomize suceed for $kustomization"
@@ -125,7 +128,7 @@ avoid-typo-on-bootstrap:
       rm -rf .git  # because busybox grep does not support --exclude-dir
       echo "Check against frequent typos on 'bootstrap'..."
       set +e
-      typos=$(grep -rnsiE 'boostrap|bootrap|bootsrap' . | grep -v '.gitlab-ci.yaml:      typos=')
+      typos=$(grep -rnsiE 'boostrap|bootrap|bootsrap|bootstap' . | grep -v '.gitlab-ci.yaml:      typos=')
       set -e
       if [ -n "$typos" ]; then
         echo "A few typos were found on the 'bootstrap' word:"

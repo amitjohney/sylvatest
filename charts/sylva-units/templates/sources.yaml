@@ -5,8 +5,8 @@
 
 {{- $used_repos := list -}}
 {{- range $unit_name, $unit_def := $envAll.Values.units -}}
-  {{/* inherit settings from any specified unit_template */}}
-  {{- $unit_def := mergeOverwrite (deepCopy ($envAll.Values.unit_templates | dig ($unit_def.unit_template | default "") dict)) $unit_def -}}
+  {{/* inherit settings from any template specified in unit.<this unit>.unit_templates */}}
+  {{- $unit_def := include "unit-def" (tuple $envAll $unit_name) | fromJson -}}
 
   {{- if and (include "unit-enabled" (tuple $envAll $unit_name))
              (not (hasKey $unit_def "helm_repo_url"))            -}}

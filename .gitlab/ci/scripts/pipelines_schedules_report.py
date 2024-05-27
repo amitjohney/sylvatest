@@ -4,191 +4,215 @@ import sys
 import datetime
 import os
 
-from collections import defaultdict
+try:
+    import gitlab
+except ModuleNotFoundError:
+    print("[ERROR] python-gitlab package not found", file=sys.stderr)
+    print("[ERROR] it can be installed with: 'pip install --upgrade python-gitlab'", file=sys.stderr)
+    sys.exit(1)
 
-def get_req_packages():
-    os.system('pip install --upgrade python-gitlab')
-    os.system('pip install tabulate')
-    print("Done with require packages")
+try:
+    from tabulate import tabulate
+except ModuleNotFoundError:
+    print("[ERROR] tabulate package not found", file=sys.stderr)
+    print("[ERROR] it can be installed with: 'pip install --upgrade tabulate'", file=sys.stderr)
+    sys.exit(1)
 
-get_req_packages()
 
-import gitlab
-from tabulate import tabulate
+PIPELINE_HISTORY_COUNT = int(sys.argv[1])
+print(f"PIPELINE_HISTORY_COUNT={PIPELINE_HISTORY_COUNT}")
 
 gitlab_url = "https://gitlab.com"
-private_token = os.getenv('PRIVATE_TOKEN')
-gl = gitlab.Gitlab(gitlab_url, private_token=private_token)
+gl = gitlab.Gitlab(gitlab_url, private_token=os.getenv("PRIVATE_TOKEN"))
 project_id = 42451983
-pipeline_schedule_name="Nightly"
+pipeline_schedule_name = os.getenv("PIPELINE_SCHEDULE_NAME_SELECTOR", default="Nightly")
 project = gl.projects.get(project_id)
 print("retrieving pipeline schedules")
 pipeline_schedules = project.pipelineschedules.list()
 print("  done")
-pipeline_number = sys.argv[1]
-print(f"{pipeline_number=}")
 
-report_fd = open('report_output.md', 'w')
+REPORT_FILE = "report_output.md"
+WIKI_REPORT_PAGE = os.getenv("WIKI_REPORT_PAGE", "Scheduled-pipelines-report")
 
 status_icon = {
     "failed": "❌",
-    "success": ":heavy_check_mark:", # ✅
+    "success": "✔",
     "canceled": "🛇",
     "skipped": "⏩",
+    "running": "🔄",
+    "created": "𑀣",
+    "waiting_for_resource": "🔒",
+    "preparing": "👀",
+    "pending": "⏸️",
+    "manual": "⚙️",
+    "scheduled": "🕒",
 }
-
-def print_report(text):
-    print(text, file=report_fd)
 
 
 def get_status_icon(status):
-    return status_icon.get(status,status)
+    return status_icon.get(status, status)
 
-def order_stages(stages):
-    _stages = list(stages)
-    # return stages in a pre-defined order
-    # (I didn't find a way to get the stages order from the API)
-    for s in [
-            ".pre",
-            "deploy",
-            "update",
-            "deploy-wc",
-            "update-wc",
-            "deployment-test",
-            "delete",
-        ]:
-        if s in _stages:
-            _stages.remove(s)
-            yield s
-    for s in _stages:
-        yield s
 
 def pipeline_summary(pipeline):
+    if not pipeline:
+        return "(no pipeline info)"
+
     pipeline = project.pipelines.get(pipeline["id"])
 
-    stage_statuses = defaultdict(set)
-    stage_jobs = defaultdict(list)
-    for job in pipeline.jobs.list():
-        stage_statuses[job.stage].add(job.status)
-        stage_jobs[job.stage].append(job)
-
     summary = ""
-    for stage in order_stages(stage_statuses.keys()):
-        statuses = stage_statuses[stage]
-        if stage == ".pre":
-            continue
-        if len(statuses) == 0:
-            continue
-        if len(statuses) == 1 and list(statuses)[0] == "skipped":
+
+    def _sort_jobs_by_starting_date(jobs):
+        executed_jobs = [j for j in jobs if hasattr(j, "started_at") and j.started_at]
+        return sorted(
+            executed_jobs,
+            key=lambda x: datetime.datetime.strptime(
+                x.started_at, "%Y-%m-%dT%H:%M:%S.%f%z"
+            ),
+        )
+
+    jobs = _sort_jobs_by_starting_date(pipeline.jobs.list())
+    test_jobs = [j for j in jobs if j.stage == "deployment-test"]
+    test_combined_md = ""
+    for job in jobs:
+        # we don't care about displaying the create-runner job if it worked
+        if job.name == "create-runner" and job.status == "success":
             continue
 
-        # we don't care about displaying the delete stage if it worked
-        if len(statuses) == 1 and stage == "delete" and list(statuses)[0] == "success":
+        # we don't care about displaying the cleanup stage if it worked
+        if job.stage == "cleanup" and job.status == "success":
             continue
 
-        combined_statuses = " ".join([get_status_icon(s) for s in statuses])
-
-        stage_text = f"{stage.replace('-','‑')}: {combined_statuses}"
-        if len(stage_jobs[stage]) == 1:
-            stage_md = f" [{stage_text}]({stage_jobs[stage][0].web_url})"
+        if job not in test_jobs:
+            job_text = f"{job.name.replace('-','‑')}: {get_status_icon(job.status)}"
+            job_md = f"[{job_text}]({job.web_url})<br>"
+            summary += job_md
         else:
-            stage_md = f" {stage_text}"
+            if test_combined_md == "":
+                test_combined_statuses = " ".join(
+                    [get_status_icon(j.status) for j in test_jobs]
+                )
+                test_text = f"tests: {test_combined_statuses}"
+                test_combined_md = f"[{test_text}]({pipeline.web_url})<br>"
+                summary += test_combined_md
 
-        summary += stage_md
+    # dumy line for padding to avoid ugly line breaks
+    summary += "&#160;"*60
 
     return summary
 
 
 def create_report():
-    print_report(f"**scheduled pipelines report produced at " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M") +".**")
-    print_report("")
-    for pipeline_schedule in pipeline_schedules:
+    with open(REPORT_FILE, "w") as report_fd:
 
-        if pipeline_schedule_name not in pipeline_schedule.description:
-            continue
+        def print_report(text):
+            print(text, file=report_fd)
 
-        pipeline_description = pipeline_schedule.description
-
-        print(f"processing pipeline schedule {pipeline_description}")
-
-        schedules = project.pipelineschedules.get(pipeline_schedule.id)
-        pipelines = schedules.pipelines.list(get_all=True)
-        pipelines.reverse()
-        newest_pipelines=pipelines[:int(pipeline_number)]
-
-        print_report(f"## {pipeline_description}")
+        print_report(
+            "**scheduled pipelines report produced at "
+            + datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+            + ".**"
+        )
         print_report("")
-        pipeline_items = []
-        for pipeline in newest_pipelines:
-            print(f"  processing pipeline {pipeline.id}")
-            pipeline_item = {
-                "time / status": f"[{pipeline.created_at[:16]} {get_status_icon(pipeline.status)}]({pipeline.web_url})",
-            }
-            child_pipelines = project.pipelines.get(pipeline.id).bridges.list()
-            for child in child_pipelines:
-                print(f"    processing child {child.name}")
+        for pipeline_schedule in pipeline_schedules:
 
-                duration = child.duration/60.0
+            if not pipeline_schedule.active:
+               print(pipeline_schedule.description + "is not active, skipping")
+               continue
 
+            if pipeline_schedule_name not in pipeline_schedule.description:
+                continue
+
+            pipeline_description = pipeline_schedule.description
+
+            print(f"processing pipeline schedule {pipeline_description}")
+
+            schedules = project.pipelineschedules.get(pipeline_schedule.id)
+            pipelines = schedules.pipelines.list(get_all=True)
+            pipelines.reverse()
+            newest_pipelines = pipelines[:PIPELINE_HISTORY_COUNT]
+
+            print_report(f"## {pipeline_description}")
+            print_report("")
+
+            def _get_child_md(child):
+                duration_text = "unknown runtime"
+                if child.duration:
+                    duration_text = f"{child.duration/60.0:.0f}min"
                 ds_pipeline_summary = pipeline_summary(child.downstream_pipeline)
+                return f"[{duration_text} {get_status_icon(child.status)}]({child.web_url})<br>{ds_pipeline_summary}"
 
-                child_pipeline_md = f"- [{duration:.0f}min {get_status_icon(child.status)}]({child.web_url}) -<br/>{ds_pipeline_summary}"
-                pipeline_item[child.name] = child_pipeline_md
+            child_pipelines_reports = dict()
+            for pipeline in newest_pipelines:
+                print(f"  processing pipeline {pipeline.id}")
+                for child in project.pipelines.get(pipeline.id).bridges.list():
+                    print(f"    processing child {child.name}")
+                    child_pipelines_reports.setdefault(child.name, dict())
+                    child_pipelines_reports[child.name][pipeline.id] = _get_child_md(child)
 
-                #commit_md = f"[{child.commit['short_id']} / { child.commit['committed_date'][:16]}]({child.commit['web_url']})"
-                #pipeline_item["commit"] = commit_md
+            headers = ["name"]
+            rows_as_dict = dict()
+            for pipeline in newest_pipelines:
+                time_status = f"[{pipeline.created_at[:16]} {get_status_icon(pipeline.status)}]({pipeline.web_url})"
+                headers.append(time_status)
+                # add empty cell in table if any child pipeline type doesn't exit at a given date
+                for child_pipeline_name in child_pipelines_reports.keys():
+                    if pipeline.id not in child_pipelines_reports[child_pipeline_name]:
+                        child_pipelines_reports[child_pipeline_name][pipeline.id] = ""
 
-            pipeline_items.append(pipeline_item)
+                    rows_as_dict.setdefault(child_pipeline_name, [child_pipeline_name.replace("-deploy", "").replace("-", "‑")])
+                    rows_as_dict[child_pipeline_name].append(child_pipelines_reports[child_pipeline_name][pipeline.id])
 
-        all_columns = set()
-        for item in pipeline_items:
-            for k in item.keys():
-                all_columns.add(k)
-        all_columns.remove("time / status")
-        #all_columns.remove("commit")
+            report_rows = list(rows_as_dict.values())
+            print_report(tabulate(report_rows, headers=headers, tablefmt="pipe"))
+            print_report(" ")
 
-        headers = []
-        headers.append("time / status")
-        headers.extend(sorted(all_columns))
-        #headers.append("commit")
-
-        tab_values = [[pipeline_item.get(h,"") for h in headers] for pipeline_item in pipeline_items]
-
-        print_report(tabulate(tab_values,headers=headers,tablefmt='pipe'))
-        print_report(" ")
 
 def publish_report():
 
-    main_report = project.wikis.get("Scheduled-pipelines-report")
-    main_report.content = open('report_output.md').read()
-    main_report.save()
+    with open(REPORT_FILE, "r") as f:
+        report_content = f.read()
 
-    date  = datetime.datetime.now().strftime("%Y-%m-%d")
-    project.wikis.create({'title': f'Scheduled-pipelines-report/{date}','content': open('report_output.md').read()})
-    print(f"The report can be found on following URL: https://gitlab.com/sylva-projects/sylva-core/-/wikis/Scheduled-pipelines-report/{date}")
+    if PIPELINE_HISTORY_COUNT > 1:
+        # if script is run for aggregate several days, publish on "WIKI_REPORT_PAGE"
+        wiki_page = WIKI_REPORT_PAGE
+    else:
+        # if script is run for an single day, publish on "WIKI_REPORT_PAGE/date"
+        date = datetime.datetime.now().strftime("%Y-%m-%d")
+        wiki_page = f"{WIKI_REPORT_PAGE}/{date}"
+
+    try:
+        main_report = project.wikis.get(wiki_page)
+    except gitlab.exceptions.GitlabGetError:
+        main_report = project.wikis.create(
+            {
+                "title": f"{wiki_page}",
+                "content": report_content,
+            }
+        )
+    else:
+        main_report.content = report_content
+        main_report.save()
+
+    print(f"The report can be found on following URL: https://gitlab.com/sylva-projects/sylva-core/-/wikis/{wiki_page}")
     print("Report uploaded for " + datetime.datetime.now().strftime("%Y-%m-%d"))
 
-    pages = project.wikis.list()
-    for page in pages:
-        print(page.title)
 
-def delete_report():
+def delete_old_reports():
     print("Delete reports older than 7 days")
-    date  = datetime.datetime.now().strftime("%Y-%m-%d")
-    time_now = datetime.datetime.strptime(date,"%Y-%m-%d")
+    date = datetime.datetime.now().strftime("%Y-%m-%d")
+    time_now = datetime.datetime.strptime(date, "%Y-%m-%d")
     for page in project.wikis.list():
-        if "Scheduled-pipelines-report/" not in page.slug:
+        if f"{WIKI_REPORT_PAGE}/" not in page.slug:
             continue
-        report_date = datetime.datetime.strptime(page.slug.split("/")[1],"%Y-%m-%d")
+        report_date = datetime.datetime.strptime(page.slug.split("/")[1], "%Y-%m-%d")
         delta = time_now - report_date
         if delta.days > 7:
-            print(page.slug)
+            print(f"Deleting page {page.slug}")
             project.wikis.delete(page.slug)
 
 
 create_report()
-
-report_fd.close()
-
 publish_report()
-delete_report()
+
+if PIPELINE_HISTORY_COUNT == 1:
+    delete_old_reports()

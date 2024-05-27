@@ -81,7 +81,7 @@ $defs:
 
   string-with-gotpl:
     type: string
-    pattern: ".*{{ .* }}.*"
+    pattern: '(.|\n)*{{(.|\n)*}}(.|\n)*'
 
   ipv4-cidr-full:
     type: string
@@ -324,6 +324,9 @@ properties:
     type: object
     # TODO: detail more
 
+  unit_definition_defaults:  # -------------------------------
+    type: object
+
   unit_templates:  # -------------------------------
     type: object
     "^[a-z0-9][a-z0-9-]*[a-z0-9]$":  # -------------------------------
@@ -349,9 +352,11 @@ properties:
           info:
             $ref: "#/$defs/unit_info"
 
-          unit_template:
-            type: string
-            pattern: "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+          unit_templates:
+            type: array
+            items:
+              type: string
+              pattern: "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
 
           repo:  # -------------------------------
             anyOf:
@@ -382,6 +387,14 @@ properties:
 
           ref_override:  # -------------------------------
             type: string
+
+          suspend:  # -------------------------------
+            type: boolean
+
+          kustomization_name:  # -------------------------------
+            anyOf:
+              - type: string
+              - $ref: "#/$defs/string-with-gotpl"
 
           kustomization_spec:  # -------------------------------
             type: object
@@ -439,11 +452,13 @@ properties:
                         type: string
 
               _postRenderers: # -------------------------------
-                type: array
-                items:
-                  anyOf:
-                  - type: object
-                  - $ref: "#/$defs/gotpl"
+                anyOf:
+                  - $ref: "#/$defs/string-with-gotpl"
+                  - type: array
+                    items:
+                      anyOf:
+                      - type: object
+                      - $ref: "#/$defs/gotpl"
 
             # prevent having dependsOn here (we want it at the upper level with 'depends_on')
             not:
@@ -459,7 +474,7 @@ properties:
           helm_chart_versions:  # -------------------------------
             type: object
             items:
-              type: string
+              type: boolean
 
           helm_chart_artifact_name:
             type: string
@@ -488,6 +503,8 @@ properties:
 
         required:
           - info
+          - unit_templates  # we make this mandatory to set to avoid people mistakenly forgetting to inherit from base-deps
+                            # if there really is not intention to not inherit from base-deps, this can be set to '[]'
 
         allOf:
           - anyOf:  # require having at least helmrelease_spec or
@@ -496,8 +513,8 @@ properties:
               - helmrelease_spec
             - required:
               - kustomization_spec
-            - required:  # we relax this check if 'unit_template' is used
-              - unit_template
+            - required:  # we relax this check if 'unit_templates' is used
+              - unit_templates
 
           - anyOf:
             # for a unit which is explicitly disabled, we don't mandate anything else
@@ -521,10 +538,10 @@ properties:
               # there are some things we need on kustomization_spec
               # but that aren't needed in the case where we specify helmrelease_spec,
               # (see example where we need that under bootstrap.values.yaml:units.sylva-units)
-              # or in the case where unit_template is used
+              # or in the case where unit_templates is used
               #
               # (note that we have a check for the presence of 'path' in the final resource in templates/units.yaml
-              #  to ensure it's presence when unit_template is used)
+              #  to ensure it's presence when unit_templates is used)
               - if:
                   allOf:
                     - not:
@@ -532,7 +549,7 @@ properties:
                           - helmrelease_spec
                     - not:
                         required:
-                          - unit_template
+                          - unit_templates
                 then:
                   properties:
                     kustomization_spec:
@@ -563,6 +580,14 @@ properties:
     # the values are values of the sylva-capi-cluster chart
     # https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster
     $ref: "#/$defs/sylva-capi-cluster-values"
+
+  cluster_machines_ready:
+    type: object
+    additionalProperties: false
+    properties:
+      wait_timeout:
+        type: string
+        pattern: '^[0-9]+[smh]'
 
   openstack:  # -------------------------------
     type: object
@@ -737,6 +762,36 @@ properties:
             format: hostname
           - const: ''
           - $ref: "#/$defs/string-with-gotpl"
+      thanos:  # -------------------------------
+        anyOf:
+          - type: string
+            format: hostname
+          - const: ''
+          - $ref: "#/$defs/string-with-gotpl"
+      thanos_storegateway:  # -------------------------------
+        anyOf:
+          - type: string
+            format: hostname
+          - const: ''
+          - $ref: "#/$defs/string-with-gotpl"
+      thanos_receive:  # -------------------------------
+        anyOf:
+          - type: string
+            format: hostname
+          - const: ''
+          - $ref: "#/$defs/string-with-gotpl"
+      thanos_query:  # -------------------------------
+        anyOf:
+          - type: string
+            format: hostname
+          - const: ''
+          - $ref: "#/$defs/string-with-gotpl"
+      loki:  # -------------------------------
+        anyOf:
+          - type: string
+            format: hostname
+          - const: ''
+          - $ref: "#/$defs/string-with-gotpl"
 
   external_certificates:  # -------------------------------
     type: object
@@ -764,6 +819,10 @@ properties:
         $ref: "#/$defs/cert-and-key"
       minio_monitoring_tenant:  # -------------------------------
         $ref: "#/$defs/cert-and-key"
+      thanos:  # -------------------------------
+        $ref: "#/$defs/cert-and-key"
+      loki:  # -------------------------------
+        $ref: "#/$defs/cert-and-key"
 
   keycloak: # -------------------------------
     type: object
@@ -776,20 +835,25 @@ properties:
   os_images: # -------------------------------
     type: object
     additionalProperties: false
+    propertyNames: # image name should be k8s object compatible and not be more than 52 chars long
+      pattern: "^[a-z0-9][a-z0-9-]{1,50}[a-z0-9]$"
     patternProperties:
-      "^[a-z0-9][a-z0-9-]{1,50}[a-z0-9]$":        # image name should be k8s object compatible and not be more than 52 chars long
+      ".*":
         type: object
         properties:
           uri:
-            type: string
             anyOf:
-              - pattern: "^(https?://.*|)$"
-              - pattern: "^(oci://.*)$"
-              - pattern: "^{{ .Values.sylva_base_oci_registry }}/.*$"
+              - type: string
+                anyOf:
+                  - pattern: "^(https?://.*|)$"
+                  - pattern: "^(oci://.*)$"
+                  - pattern: "^{{ .Values.sylva_base_oci_registry }}/.*$"
+              - $ref: "#/$defs/string-with-gotpl"
           filename:
             type: string
-          checksum:
+          sha256:
             type: string
+            pattern: "[a-f0-9]*"
           os:
             type: string
           k8s-version:
@@ -872,6 +936,27 @@ properties:
         pattern: "^oci://.*$"
       - $ref: "#/$defs/string-with-gotpl"
 
+  os_images_oci_registries:
+    type: object
+    additionalProperties: false
+    patternProperties:
+
+      "^[a-z0-9][a-z0-9.-]*[a-z0-9]$":  # -------------------------------
+        type: object
+        additionalProperties: false
+        required:
+          - url
+          - tag
+        properties:
+          url:  # -------------------------------
+            anyOf:
+              - type: string
+                format: uri
+                pattern: "^oci://.*$"
+              - $ref: "#/$defs/string-with-gotpl"
+          tag:  # -------------------------------
+            type: string
+
   oci_registry_extra_ca_certs:  # -------------------------------
     type: string
 
@@ -909,6 +994,24 @@ properties:
     items:
       type: string
 
+  delete_hook:  # -------------------------------
+    type: object
+    additionalProperties: false
+    properties:
+      enabled:  # -------------------------------
+        anyOf:
+          - type: boolean
+          - $ref: "#/$defs/string-with-gotpl"
+      job_timeout:  # -------------------------------
+        anyOf:
+          - type: integer
+          - $ref: "#/$defs/string-with-gotpl"
+      delete_timeout:  # -------------------------------
+        anyOf:
+          - type: integer
+          - $ref: "#/$defs/string-with-gotpl"
+
+
   env_type:  # -------------------------------
     type: string
     pattern: "^(dev|ci|prod)$"
@@ -944,12 +1047,103 @@ properties:
             type: boolean
           default_enabled:
             type: boolean
+          os_images_oci_registry:
+            type: string
+
+  bootstrap_os_images_override_enabled: # -------------------------------
+    type: array
+    items:
+      type: string
+      pattern: "^[a-z0-9][a-z0-9-]{1,50}[a-z0-9]$"
 
   additional_sylva_units_status_info:  # -------------------------------
     type: object
 
-  calico_wireguard_enabled:
-    type: boolean
+  security:
+    type: object
+    additionalProperties: false
+    properties:
+      calico_wireguard_enabled:
+        type: boolean
+      neuvector_scanning_enabled:
+        type: boolean
+
+  monitoring:  # -------------------------------
+    type: object
+    additionalProperties: false
+    properties:
+      thanos_receive_url:  # -------------------------------
+        anyOf:
+          - type: string
+            format: uri
+          - $ref: "#/$defs/string-with-gotpl"
+      alertmanager:
+        type: object
+        properties:
+          webhooks:
+            type: object
+            properties:
+              jiralert:
+                type: object
+                additionalProperties: false
+                properties:
+                  env:
+                    type: object
+                  config:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      defaults:
+                        type: object
+                        additionalProperties: true
+                        properties:
+                          api_url:
+                            type: string
+                            pattern: https?://.*
+                          user:
+                            type: string
+                          password:
+                            type: string
+                          personal_access_token:
+                            type: string
+                        oneOf:
+                          - required:
+                              - api_url
+                              - user
+                              - password
+                          - required:
+                              - api_url
+                              - personal_access_token
+                      receivers:
+                        type: array
+                        additionalProperties: true
+                        minItems: 1
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            project:
+                              type: string
+                          required:
+                            - name
+                            - project
+                    required: []
+                    dependencies:
+                      receivers:
+                        - defaults
+                      defaults:
+                        - receivers
+
+  logging:  # -------------------------------
+    type: object
+    additionalProperties: false
+    properties:
+      loki_url:  # -------------------------------
+        anyOf:
+          - type: string
+            format: uri
+          - $ref: "#/$defs/string-with-gotpl"
 
   _internal:  # -------------------------------
     type: object
@@ -974,15 +1168,22 @@ properties:
           type: object
           additionalProperties: false
           properties:
-            name:
+            alias:
               type: string
               format: hostname
-            ip:
+            target:
               type: string
-              format: ipv4
-            group:
+              anyOf:
+                - pattern: "^((tcp|udp)://.*|)$"
+                - format: hostname
+            module:
               type: string
-      groups:
+              pattern: "^(dell_idrac|hp_cpq)$"
+            auth:
+              type: string
+            cluster_name:
+              type: string
+      auth:
         type: object
         additionalProperties: false
         patternProperties:
@@ -994,47 +1195,36 @@ properties:
                 type: integer
                 minimum: 2
                 maximum: 3
-              auth:
-                type: object
-                additionalProperties: false
-                properties:
-                  community:
-                    type: string
-                  security_level:
-                    type: string
-                    pattern: "^(noAuthNoPriv|authNoPriv|authPriv)$"
-                  username:
-                    type: string
-                  password:
-                    type: string
-                  auth_protocol:
-                    type: string
-                    pattern: "^(MD5|SHA|SHA224|SHA256|SHA384|SHA512)$"
-                  priv_protocol:
-                    type: string
-                    pattern: "^(AES|AES192|AES256)$"
-                  priv_password:
-                    type: string
-                required:
-                  - community
-              hw_type:
+              community:
                 type: string
-                pattern: "^(dell|hp)$"
+              security_level:
+                type: string
+                pattern: "^(noAuthNoPriv|authNoPriv|authPriv)$"
+              username:
+                type: string
+              password:
+                type: string
+              auth_protocol:
+                type: string
+                pattern: "^(MD5|SHA|SHA224|SHA256|SHA384|SHA512)$"
+              priv_protocol:
+                type: string
+                pattern: "^(AES|AES192|AES256)$"
+              priv_password:
+                type: string
             # auth credentials properties are required only for SNMP v3
             if:
               properties:
                 version:
                   const: 3
-              then:
-                properties:
-                  auth:
-                    required:
-                      - security_level
-                      - username
-                      - password
-                      - auth_protocol
-                      - priv_protocol
-                      - priv_password
+            then:
+              required:
+                - security_level
+                - username
+                - password
+                - auth_protocol
+                - priv_protocol
+                - priv_password
 
 allOf:
 
@@ -1127,10 +1317,6 @@ allOf:
         metal3:  # -------------------------------
           additionalProperties: false
           properties:
-
-            provider: # -------------------------------
-              type: string
-              pattern: "^(sylva|suse)$"
 
             bootstrap_ip:  # -------------------------------
               type: string

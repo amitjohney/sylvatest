@@ -31,19 +31,19 @@ cluster:
             passwd: $1$pdWEicWs$9ZWQf5.CWyXccmP8Chuu01 # sylva
 
   capm3:
-    image_key: ubuntu-jammy-plain-rke2-1-27-6
-    public_pool_network: 192.168.100.0
-    public_pool_gateway: 192.168.100.1
-    public_pool_start: 192.168.100.20
-    public_pool_end: 192.168.100.50
-    public_pool_prefix: "24"
+    image_key: ubuntu-jammy-plain-rke2-1-28-9
+    primary_pool_network: 192.168.100.0
+    primary_pool_gateway: 192.168.100.1
+    primary_pool_start: 192.168.100.20
+    primary_pool_end: 192.168.100.50
+    primary_pool_prefix: "24"
     provisioning_pool_network: 192.168.10.0
     provisioning_pool_gateway: 192.168.10.1
     provisioning_pool_start: 192.168.10.20
     provisioning_pool_end: 192.168.10.50
     provisioning_pool_prefix: "24"
 
-    dns_server: 1.1.1.1
+    dns_servers: [1.1.1.1]
 
   control_plane:
     capm3:
@@ -52,7 +52,7 @@ cluster:
           cluster-role: control-plane
 
       provisioning_pool_interface: ens4
-      public_pool_interface: ens5
+      primary_pool_interface: ens5
 
     network_interfaces:
       ens4:
@@ -72,7 +72,6 @@ cluster:
       bmc:
         disableCertificateVerification: true
       bootMode: legacy
-      automatedCleaningMode: disabled
       rootDeviceHints:
         deviceName: /dev/vda
 
@@ -81,6 +80,11 @@ cluster:
       bmh_metadata:
         labels:
           cluster-role: control-plane
+          snmp-enabled: "true"
+        annotations:
+          sylvaproject.org/snmp-auth: foo
+          sylvaproject.org/snmp-hw-type: dell_idrac
+          sylvaproject.org/snmp-endpoint: http://192.168.133.1:5432
       bmh_spec:
         bmc:
           address: redfish-virtualmedia://{{ .Values._internal.bootstrap_node_ip }}:8000/redfish/v1/Systems/c0014001-b10b-f001-c0de-feeb1e54ee15
@@ -88,14 +92,24 @@ cluster:
 
 
 units:
+  metal3:
+    helmrelease_spec:
+      values:
+        global:
+          # Add console access to IPA - useful for debuging purposes
+          ironicKernelParams: 'console=ttyS0 suse.autologin=ttyS0 rootpwd="$$1$$DAhhpomu$$YqNcZc3ce5H7uswK4skCZ."'  # "secret"
 
   longhorn:
     # this setting can be overridden to true to enable Longhorn
-    enabled: '{{ .Values.env_type | eq "ci" }}'
+    enabled: true
     helmrelease_spec:
       values:
         persistence:
           defaultClassReplicaCount: 1   # don't enable data replication (this is a single node setup)
+
+  monitoring:
+    enabled_conditions:
+      - '{{ ternary true false (.Values.env_type | eq "ci") | include "preserve-type" }}'
 
   ingress-nginx:
     helmrelease_spec:
@@ -109,47 +123,22 @@ libvirt_metal:
   nodes:
     management-cp-0:
       redfishPort: 8000
-      memGB: 16
+      memGB: 24
       numCPUs: 8
 
     workload-cp-0:
       redfishPort: 8010
-      memGB: 6 # IPA allocates half of it to tmpfs, if must be large enough to store the image.
-      numCPUs: 4
+      memGB: 16 # IPA allocates half of it to tmpfs, if must be large enough to store the image.
+      numCPUs: 6
 
 # dummy configuration to allow deployment of snmp-exporter
 snmp:
   devices:
-    - name: bar
-      ip: 192.168.100.2
-      group: foo
-    - name: abc
-      ip: 192.168.100.2
-      group: def
-  groups:
-    foo:
-      version: 3
-      auth:
-        community: public
-        security_level: authPriv
-        username: user
-        password: xxxxxx
-        auth_protocol: SHA256
-        priv_protocol: AES
-        priv_password: xxxxxx
-      hw_type: dell
-    def:
-      version: 3
-      auth:
-        community: public
-        security_level: authPriv
-        username: user
-        password: xxxxxx
-        auth_protocol: SHA256
-        priv_protocol: AES
-        priv_password: xxxxxx
-      hw_type: hp
-
+    - alias: bar
+      target: 192.168.100.2
+      module: hp_cpq
+      auth: bar
+      cluster_name: dummy_cluster
 
 #proxies:
 #  # put your own proxy settings here if you need
