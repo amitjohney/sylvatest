@@ -16,12 +16,21 @@ cluster:
         /usr/local/bin/miniserve --enable-tar-gz --interfaces 0.0.0.0 --port 25888 --hidden /var/log >/var/log/miniserve.log 2>&1 &
 
 
-  # On capo bootstrap VM where is run the CI script must have access on port 25888 of all node VMs
-  control_plane:
-    capo:
-      additional_security_group_names:
-        - allow_port_25888
-  machine_deployment_default:
-    capo:
-      additional_security_group_names:
-        - allow_port_25888
+# On capo bootstrap VM where is run the CI script must have access on port 25888 of all node VMs
+units:
+  capo-cluster-resources:
+    kustomization_spec:
+      _patches:
+        - target:
+            kind: HeatStack
+          patch: |
+            - op: replace
+              path: /spec/heatStack/template/parameters/common_sg_rules
+              value:
+                type: json
+                description: "Common security group rules associated with the control plane and worker VMs"
+                default:
+                  direction: [ingress, ingress, ingress, egress, ingress]
+                  port: ['80', '443', '22', '53', '25888']
+                  protocol: [tcp, tcp, tcp, udp, tcp]
+                  remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
