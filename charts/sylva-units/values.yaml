@@ -623,7 +623,6 @@ units:
                 - CPUManager
                 - Snapshot
 
-
   kubevirt-test-vms:
     info:
       description: deploys kubevirt VMs for testing
@@ -633,6 +632,7 @@ units:
     depends_on:
       kubevirt: true
       multus: true
+#      sriov: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kubevirt-test-vms
