@@ -4629,6 +4629,8 @@ units:
                   key: username
         ruler:
           enabled: true
+          dnsDiscovery:
+            enabled: false
           extraFlags:
           - --query.config-file=/etc/thanos/ruler-queries.yaml
           extraVolumes:
