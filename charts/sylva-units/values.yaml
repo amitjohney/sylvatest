@@ -125,14 +125,14 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://github.com/minio/operator.git
       ref:
-        tag: v5.0.14
+        tag: v5.0.15
 
   sylva-snmp-resources:
     kind: GitRepository
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-snmp-resources.git
       ref:
-        tag: 0.0.6
+        tag: 0.0.7
 
   loki:
     kind: GitRepository
@@ -146,7 +146,7 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-prometheus-rules.git
       ref:
-        tag: 0.0.9
+        tag: 0.0.10
 
   sylva-alertmanager-resources:
     kind: GitRepository
@@ -215,29 +215,6 @@ unit_templates:
         substitute:
           UNIT_NAME: '{{ .Values._unit_name_ }}'
 
-  # the "versioned-dependency" unit template is used for a
-  # unit X on which another unit Y dependson (Y has a depends_on=X)
-  # when we need to ensure that unit Y will depend on the last "revision"
-  # unit X being ready
-  #
-  # this is typically used with "dummy dependency" units
-  #
-  # for a unit 'foo' inheriting from 'versioned-dependency', the
-  # Kustomization will be named foo-<n> where n is the Helm release revision
-  # which is incremented at each update of the Helm release
-  #
-  # note well: for such units, the names of all resources produced
-  # must include .Release.Revision or another string that is guaranteed to
-  # change for each new Helm release revision (or else the old and new
-  # Kustomization will control the same resource, which hence might get
-  # deleted when the old Kustomization is deleted) -- see DISCRIMINATOR below
-  versioned-dependency:
-    kustomization_name: '{{ .Values._unit_name_ }}-{{ .Release.Revision }}'
-    kustomization_spec:
-      postBuild:
-        substitute:
-          DISCRIMINATOR: '-{{ .Release.Revision }}'  # see explanation above
-
   # this unit template gather depends_on common
   # to most units
   base-deps:
@@ -256,6 +233,22 @@ unit_templates:
         and (tuple . "cluster-machines-ready" | include "unit-enabled")
             (not (.Values._internal.cluster_machines_ready_unit_deps | has .Values._unit_name_))
         }}
+
+# unit_definition_defaults is merged with each "units.x" before
+# it inherits from unit templates
+unit_definition_defaults:
+  # the root-dependency wait job will wait on resources having this label
+  labels:
+    sylva-units/root-dependency-wait: ""
+  annotations:
+    sylva-units-helm-revision: '{{ .Release.Revision }}'
+  depends_on:
+    root-dependency: >-
+      {{
+      and
+         (tuple . "root-dependency" | include "unit-enabled")
+         (not (.Values._unit_name_ | eq "root-dependency"))
+      }}
 
 # this defines Flux Kustomizations and the related ConfigMaps and Secrets
 # for Helm-based unit, the Kustomization will produce a Flux HelmRelease
@@ -303,6 +296,55 @@ units:
   #                   unit templates are defined under "unit_templates"
   #                   the settings for the unit are inherited from the corresponding entries under .Values.unit_templates,
   #                   merging them in the specified order
+
+  root-dependency:
+    info:
+      description: special unit ensuring ordered updates of all Kustomizations
+      details: >-
+        All Kustomizations will depend on this Kustomization, whose name is `root-dependency-<n>`
+        and changes at each update of the sylva-units Helm release. This Kustomization does not become
+        ready before all other Kustomizations have been updated. All this ensures in a race-free way
+        that during an update, units will be reconciled in an order matching dependency declarations.
+      internal: true
+    # Note:
+    # for this unit, the names of all resources produced must include .Release.Revision
+    # or another string that is guaranteed to change for each new sylva-units
+    # Helm release revision (or else the old and new Kustomization will control the same resource,
+    # which hence might get deleted when the old Kustomization is deleted), see DISCRIMINATOR below
+    repo: sylva-core
+    unit_templates: []
+    kustomization_name: root-dependency-{{ .Release.Revision }}
+    kustomization_spec:
+      path: ./kustomize-units/kube-job
+      wait: true
+      force: true
+      postBuild:
+        substitute:
+          JOB_NAME: root-dependency-check
+          DISCRIMINATOR: '-{{ .Release.Revision }}'  # needed to ensure that resources are distinct between root-dependency-<n> and root-dependency-<n+1>
+          JOB_TARGET_NAMESPACE: '{{ .Release.Namespace }}'
+          JOB_CHECKSUM: '{{ .Release.Revision }}'
+          RUNASUSER: '10000'
+          RUNASGROUP: '10000'
+      _patches:
+      - target:
+          kind: Job
+        patch: |
+          - op: add
+            path: /spec/template/spec/containers/0/env/-
+            value:
+              name: HELM_REVISION
+              value: '{{ .Release.Revision }}'
+      - target:
+          kind: ConfigMap
+        patch: |
+          - op: replace
+            path: /metadata/name
+            value: root-dependency-check-{{ .Release.Namespace }}-{{ .Release.Revision }}-cm
+          - op: replace
+            path: /data/kube-job.sh
+            value: |
+          {{ .Files.Get "scripts/root-dependency-check.sh" | indent 4 }}
 
   flux-system:
     info:
@@ -568,7 +610,7 @@ units:
       chart:
         spec:
           chart: kubevirt
-          version: 0.2.3
+          version: 0.2.4
       targetNamespace: kubevirt
       install:
         createNamespace: true
@@ -900,7 +942,7 @@ units:
       chart:
         spec:
           chart: vault-config-operator
-          version: v0.8.25
+          version: v0.8.27
       targetNamespace: vault
       values:
         enableCertManager: true
@@ -954,7 +996,7 @@ units:
       chart:
         spec:
           chart: external-secrets
-          version: 0.9.17
+          version: 0.9.18
       targetNamespace: external-secrets
       install:
         createNamespace: true
@@ -991,7 +1033,7 @@ units:
       chart:
         spec:
           chart: rancher-cis-benchmark-crd
-          version: 4.0.0
+          version: 5.2.0
       targetNamespace: cis-operator-system
       install:
         createNamespace: true
@@ -1011,7 +1053,7 @@ units:
       chart:
         spec:
           chart: rancher-cis-benchmark
-          version: 4.0.0
+          version: 5.2.0
       targetNamespace: cis-operator-system
 
   cis-operator-scan:
@@ -1478,7 +1520,7 @@ units:
       chart:
         spec:
           chart: kyverno
-          version: 3.1.4
+          version: 3.1.5
       targetNamespace: kyverno
       install:
         createNamespace: true
@@ -1902,6 +1944,10 @@ units:
       values:
         storageClass:
           defaultClass: '{{ .Values._internal.default_storage_class | eq "local-path" | include "as-bool" }}'
+        nodePathMap:
+          - node: DEFAULT_PATH_FOR_NON_LISTED_NODES
+            paths:
+              - /var/lib/kubelet/local-path-provisioner
         helperImage:
           repository: docker.io/library/busybox
           tag: 1.36.1
@@ -1958,11 +2004,8 @@ units:
       #  ready (for the controlplane nodes, the kubeadm controlplane provider ignores that)
       healthChecks: >-
         {{
-        (include "cluster-healthchecks" (dict "ns" .Release.Namespace
-                                              "cluster" .Values.cluster
-                                              "includeMDs" false)
-          | fromYaml).result
-          | include "preserve-type"
+        (include "cluster-healthchecks" (dict "ns" .Release.Namespace "cluster" .Values.cluster "includeMDs" false) | fromYaml).result
+        | include "preserve-type"
         }}
     helmrelease_spec:
       upgrade:
@@ -2036,21 +2079,15 @@ units:
       internal: true
     unit_templates:
     - dummy
-    - versioned-dependency  # units depending on this unit will depend on the last version of this unit being ready
     enabled_conditions:
     - '{{ tuple . "cluster" | include "unit-enabled" }}'
     depends_on:
       cluster: true
     kustomization_spec:
-      # release revision used in the job name below, because cluster-ready unit inherits from versioned-dependency unit template
       healthChecks: >-
         {{
-        (include "cluster-healthchecks" (dict "ns" .Release.Namespace
-                                              "cluster" .Values.cluster
-                                              "sleep_job_name" (printf "dummy-deps-cluster-ready-sleep-%d" .Release.Revision)
-                                        )
-          | fromYaml).result
-          | include "preserve-type"
+        (include "cluster-healthchecks" (dict "ns" .Release.Namespace "cluster" .Values.cluster "sleep_job" true) | fromYaml).result
+        | include "preserve-type"
         }}
       # we add a sleep to overcome a race condition happening when
       # from bootstrap cluster, after pivot, the cluster unit is enabled
@@ -2096,8 +2133,7 @@ units:
       calico: '{{ and (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk") (not .Release.IsUpgrade) }}'
       cluster: true
       cluster-ready: true  # no need to start waiting for anything until
-    unit_templates:
-    - versioned-dependency  # units depending on this unit will depend on the last version of this unit being ready
+    unit_templates: []
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kube-job
@@ -2127,7 +2163,7 @@ units:
         patch: |
           - op: replace
             path: /metadata/name
-            value: cluster-machines-ready-{{ .Release.Namespace }}-{{ .Release.Revision }}-cm  # needs to match the ConfigMap names used in the Job manifest container volume
+            value: cluster-machines-ready-{{ .Release.Namespace }}-cm
           - op: replace
             path: /data/kube-job.sh
             value: |
@@ -2269,11 +2305,19 @@ units:
     depends_on:
       namespace-defs: true
     helm_repo_url: https://rke2-charts.rancher.io
-    helm_chart_versions:
-      v3.25.001: '{{ include "k8s-version-match" (tuple . "<1.26")  }}'
-      v3.26.101: '{{ include "k8s-version-match" (tuple . ">=1.26.6,<=1.27.6") }}'
-      v3.26.300: '{{ include "k8s-version-match" (tuple . ">=1.27.10,<1.28.8") }}'
-      v3.27.002: '{{ include "k8s-version-match" (tuple . ">=1.28.8") }}'
+    helm_chart_versions: &calico-chart-versions
+      v3.25.001: '{{ include "k8s-version-match" (tuple . "<1.26") }}'
+      v3.26.101: '{{ include "k8s-version-match" (tuple . ">=1.26.6,<1.26.15") }}'
+      v3.26.300: '{{ include "k8s-version-match" (tuple . ">=1.27.10,<1.27.13") }}'
+      v3.27.200: >-
+        {{ or       (include "k8s-version-match" (tuple . ">=1.26.15,<1.27.0"))
+                    (include "k8s-version-match" (tuple . ">=1.28.0,<1.28.8"))
+        }}
+      v3.27.300: >-
+        {{ or       (include "k8s-version-match" (tuple . ">=1.27.13,<1.28.0"))
+                    (include "k8s-version-match" (tuple . ">=1.28.9"))
+        }}
+
     helmrelease_spec:
       releaseName: rke2-calico-crd
       targetNamespace: kube-system
@@ -2309,11 +2353,7 @@ units:
     depends_on:
       calico-crd: true
     helm_repo_url: https://rke2-charts.rancher.io
-    helm_chart_versions:
-      v3.25.001: '{{ include "k8s-version-match" (tuple . "<1.26") }}'
-      v3.26.101: '{{ include "k8s-version-match" (tuple . ">=1.26.6,<=1.27.6") }}'
-      v3.26.300: '{{ include "k8s-version-match" (tuple . ">=1.27.10,<1.28.8") }}'
-      v3.27.200: '{{ include "k8s-version-match" (tuple . ">=1.28.8") }}'
+    helm_chart_versions: *calico-chart-versions  # we use a YAML anchor rather than templating so that this file can be read by tools/generate_units_documentation.py
     helmrelease_spec:
       chart:
         spec:
@@ -2323,6 +2363,7 @@ units:
         installation:
           calicoNetwork:
             bgp: Enabled
+            nodeAddressAutodetectionV4: '{{ .Values.cluster.calico_autodetection_method | include "preserve-type"}}'
           registry: UseDefault
         felixConfiguration:
           wireguardEnabled: '{{ .Values.security.calico_wireguard_enabled | include "preserve-type" }}'
@@ -2361,6 +2402,7 @@ units:
           - effect: NoSchedule
             key: node-role.kubernetes.io/control-plane
         speaker:
+          ignoreExcludeLB: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" | include "as-bool" }}'
           frr:
             enabled: false
           nodeSelector:
@@ -2451,12 +2493,25 @@ units:
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/synchronize-secrets
-      wait: true
       _components:
         - '{{ tuple "components/keycloak" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
       postBuild:
         substitute:
           FLUX_ADMIN_USERNAME: '{{ .Values.flux_webui.admin_user }}'
+      healthChecks:
+        - apiVersion: v1
+          kind: Secret
+          name: bootstrap-secret
+          namespace: cattle-system
+        - apiVersion: v1
+          kind: Secret
+          name: cluster-user-auth
+          namespace: flux-system
+        - apiVersion: v1
+          kind: Secret
+          name: cluster-creator-secret
+          namespace: flux-system
+        - '{{ tuple (dict "apiVersion" "v1" "kind" "Secret" "name" "keycloak-initial-admin" "namespace" "keycloak") (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
 
   rancher-init:
     info:
@@ -2475,6 +2530,7 @@ units:
     kustomization_spec:
       path: ./kustomize-units/rancher-init
       targetNamespace: cattle-system
+      wait: true
       postBuild:
         substitute:
           SERVICE: rancher
@@ -2485,11 +2541,6 @@ units:
         - '{{ tuple "components/webhook-ha" (.Values._internal.ha_cluster.is_ha) | include "set-only-if" }}'
         - '{{ ternary "../tls-components/tls-secret" "../tls-components/tls-certificate" (hasKey .Values.external_certificates.rancher "cert") }}'
         - "../tls-components/sylva-ca"
-      healthChecks:
-        - apiVersion: v1
-          kind: Secret
-          name: rancher-tls
-          namespace: cattle-system
 
   rancher:
     info:
@@ -2758,7 +2809,8 @@ units:
     helm_chart_versions:
       4.5.202: '{{ include "k8s-version-match" (tuple . "<1.26") }}'
       4.6.101: '{{ include "k8s-version-match" (tuple . ">=1.26,<=1.27.6") }}'
-      4.8.200: '{{ include "k8s-version-match" (tuple . ">=1.27.10") }}'
+      4.8.200: '{{ include "k8s-version-match" (tuple . ">=1.27.10,<1.28.9") }}'
+      4.9.100: '{{ include "k8s-version-match" (tuple . ">=1.28.9") }}'
     helmrelease_spec:
       releaseName: rke2-ingress-nginx
       targetNamespace: kube-system
@@ -2978,7 +3030,7 @@ units:
       chart:
         spec:
           chart: rancher-monitoring-crd
-          version: 103.0.4+up45.31.1
+          version: 103.1.0+up45.31.1
       install:
         createNamespace: true
 
@@ -3000,7 +3052,7 @@ units:
       chart:
         spec:
           chart: rancher-monitoring
-          version: 103.0.4+up45.31.1
+          version: 103.1.0+up45.31.1
       install:
         createNamespace: false
       values:
@@ -3226,7 +3278,7 @@ units:
       chart:
         spec:
           chart: prometheus-snmp-exporter
-          version: 5.2.0
+          version: 5.4.0
       install:
         createNamespace: true
       values:
@@ -3408,7 +3460,6 @@ units:
     unit_templates:
     - base-deps
     - dummy
-    - versioned-dependency  # units depending on this unit will depend on the last version of this unit being ready
     enabled_conditions:
       - '{{ tuple . "multus" | include "unit-enabled" }}'
     depends_on:
@@ -4559,11 +4610,16 @@ units:
           enabled: true
           serviceMonitor:
             enabled: true
+            extraParameters:
+              basicAuth:
+                password:
+                  name: thanos-basic-auth
+                  key: password
+                username:
+                  name: thanos-basic-auth
+                  key: username
         query:
-          enabled: true
           logLevel: debug
-          dnsDiscovery:
-            enabled: true
           extraFlags:
             - --query.auto-downsampling
             - --query.replica-label=prometheus_replica
@@ -4574,24 +4630,9 @@ units:
             hostname: '{{ .Values.external_hostnames.thanos_query }}'
             extraTls:
               - hosts:
-                  - 'thanos-query.{{ .Values.external_hostnames.thanos_query }}'
+                  - '{{ .Values.external_hostnames.thanos_query }}'
                 secretName: thanos-tls
-          containerSecurityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
         queryFrontend:
-          enabled: true
           loglevel: debug
           config: |-
             type: IN-MEMORY
@@ -4607,46 +4648,11 @@ units:
               - hosts:
                   - '{{ .Values.external_hostnames.thanos }}'
                 secretName: thanos-tls
-          containerSecurityContext:
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            runAsNonRoot: true
-            seccompProfile:
-              type: RuntimeDefault
         storegateway:
           enabled: true
           logLevel: debug
           persistence:
             enabled: false
-            storageClass: '{{ .Values._internal.default_storage_class }}'
-            size: 8Gi
-          containerSecurityContext:
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          podSecurityContext:
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
           ingress:
             enabled: true
             hostname: '{{ .Values.external_hostnames.thanos_storegateway }}'
@@ -4661,75 +4667,11 @@ units:
           retentionResolutionRaw: 2d
           retentionResolution5m: 30d
           retentionResolution1h: 1y
-          containerSecurityContext:
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          podSecurityContext:
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-        bucketweb:
-          enabled: false
-        ruler:
-          enabled: false
-          logLevel: debug
-          dnsDiscovery:
-            enabled: true
-          containerSecurityContext:
-            runAsUser: 1001
-            runAsNonRoot: true
-            privileged: false
-            readOnlyRootFilesystem: true
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          podSecurityContext:
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
         receive:
           enabled: true
-          mode: standalone
           logLevel: debug
           persistence:
             enabled: false
-          containerSecurityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
           ingress:
             enabled: true
             ingressClassName: "nginx"
@@ -4752,6 +4694,15 @@ units:
           targetPath: objstoreConfig.config.secret_key
           optional: false
     helm_secret_values:
+      extraDeploy:
+      - apiVersion: v1
+        kind: Secret
+        metadata:
+          name: thanos-basic-auth
+        type: Opaque
+        data:
+          username: '{{ "thanos-user" | b64enc }}'
+          password: '{{ .Values._internal.thanos_password | b64enc }}'
       auth:
         basicAuthUsers:
           thanos-user: '{{ .Values._internal.thanos_password }}'
@@ -4784,7 +4735,7 @@ units:
       chart:
         spec:
           chart: rancher-logging-crd
-          version: 103.0.1+up3.17.10
+          version: 103.1.1+up4.4.0
       install:
         createNamespace: false
 
@@ -4804,7 +4755,7 @@ units:
       chart:
         spec:
           chart: rancher-logging
-          version: 103.0.1+up3.17.10
+          version: 103.1.1+up4.4.0
       install:
         createNamespace: false
       values:
@@ -5313,6 +5264,8 @@ cluster:
     - 100.72.0.0/16
   calico_wireguard_enabled: '{{ .Values.security.calico_wireguard_enabled | include "preserve-type" }}'
 
+  calico_autodetection_method: '{{ .Values._internal.default_calico_autodetection_method | include "preserve-type" }}'
+
   use_custom_rancher_dns_resolver: false
   ntp: '{{ .Values.ntp | include "preserve-type" }}'
   proxies:
@@ -5463,7 +5416,7 @@ audit_log:
 keycloak: {}
 
 # cis benchmark is only for rke2 so far, e.g. rke2-cis-1.23-profile-hardened
-cis_benchmark_scan_profile: '{{ eq .Values.cluster.capi_providers.bootstrap_provider "cabpr" | ternary "rke2-cis-1.23-profile-hardened" "no-scan-profile-defined-for-kubeadm-cluster" }}'
+cis_benchmark_scan_profile: '{{ eq .Values.cluster.capi_providers.bootstrap_provider "cabpr" | ternary "rke2-cis-1.8-profile-hardened" "no-scan-profile-defined-for-kubeadm-cluster" }}'
 
 # os_images images that should be served and from where they should be downloaded
 # if empty default value are used
@@ -5586,22 +5539,22 @@ k8s_version_short: "1.28"
 
 # Renovate Bot needs additional information to detect sylva diskimage-builder version
 # renovate: depName=sylva-projects/sylva-elements/diskimage-builder
-sylva_diskimagebuilder_version: 0.2.5
+sylva_diskimagebuilder_version: 0.2.7
 
 sylva_diskimagebuilder_images:
-  ubuntu-jammy-plain-rke2-1-28-8:
+  ubuntu-jammy-plain-rke2-1-28-9:
     default_enabled: true
-  ubuntu-jammy-plain-rke2-1-27-10: {}
-  ubuntu-jammy-plain-rke2-1-26-9: {}
-  ubuntu-jammy-hardened-rke2-1-28-8: {}
-  ubuntu-jammy-hardened-rke2-1-27-10: {}
-  ubuntu-jammy-hardened-rke2-1-26-9: {}
-  opensuse-15-5-plain-rke2-1-28-8: {}
-  opensuse-15-5-plain-rke2-1-27-10: {}
-  opensuse-15-5-plain-rke2-1-26-9: {}
-  opensuse-15-5-hardened-rke2-1-28-8: {}
-  opensuse-15-5-hardened-rke2-1-27-10: {}
-  opensuse-15-5-hardened-rke2-1-26-9: {}
+  ubuntu-jammy-plain-rke2-1-27-13: {}
+  ubuntu-jammy-plain-rke2-1-26-15: {}
+  ubuntu-jammy-hardened-rke2-1-28-9: {}
+  ubuntu-jammy-hardened-rke2-1-27-13: {}
+  ubuntu-jammy-hardened-rke2-1-26-15: {}
+  opensuse-15-5-plain-rke2-1-28-9: {}
+  opensuse-15-5-plain-rke2-1-27-13: {}
+  opensuse-15-5-plain-rke2-1-26-15: {}
+  opensuse-15-5-hardened-rke2-1-28-9: {}
+  opensuse-15-5-hardened-rke2-1-27-13: {}
+  opensuse-15-5-hardened-rke2-1-26-15: {}
 
 # this dict can be enriched at deployment time to feed additional information
 # into the sylva-units-status ConfigMap
@@ -5676,7 +5629,11 @@ monitoring:
 #              project: Sylva
 
 logging:
-  loki_url: "https://{{ .Values.external_hostnames.loki }}"  # for workload clusters, this is overridden via shared_workload_clusters_values to point to the mgmt cluster Loki
+  # loki_url:
+  # - for mgmt cluster, the local Loki k8s service is used
+  # - for workload clusters, this is overridden via shared_workload_clusters_values.logging.loki_url
+  #   to point to the mgmt cluster Loki
+  loki_url: http://loki-gateway.svc.cluster.local
 
 _internal:
 
@@ -5803,9 +5760,9 @@ _internal:
   bootstrap_node_ip: '{{ lookup "v1" "ConfigMap" "sylva-system" "cluster-public-endpoint" | dig "data" "address" "not_found" | default "not_found" }}'
 
   k8s_version_map:
-    1.26: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.26.9+rke2r1" "v1.26.9" }}'
-    1.27: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.27.10+rke2r1" "v1.27.10" }}'
-    1.28: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.28.8+rke2r1" "v1.28.8" }}'
+    1.26: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.26.15+rke2r1" "v1.26.15" }}'
+    1.27: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.27.13+rke2r1" "v1.27.13" }}'
+    1.28: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | ternary "v1.28.9+rke2r1" "v1.28.9" }}'
 
   # total number of nodes in this cluster
   node_count:
@@ -5830,6 +5787,9 @@ _internal:
     }}'
   default_os_images_info_configmap: os-images-info-{{ tuple . .Values._internal.os_images_info_input_hash | include "interpret-as-string" }}
   os_images_info_configmap: '{{ .Values._internal.default_os_images_info_configmap }}'  # overridden in workload-cluster.values.yaml
+
+  default_calico_autodetection_method:
+    canReach: '{{ not (empty .Values.cluster.mgmt_cluster_ip) | ternary .Values.cluster.mgmt_cluster_ip .Values.cluster.cluster_virtual_ip }}'
 
 shared_workload_clusters_values:
   ntp: '{{ .Values.ntp | include "set-if-defined" }}'
@@ -5860,12 +5820,10 @@ shared_workload_clusters_values:
     cluster-import:
       enabled: '{{ tuple . "rancher" | include "unit-enabled" }}'
   sylva_diskimagebuilder_version: '{{ .Values.sylva_diskimagebuilder_version }}'
-  sylva_diskimagebuilder_images: '{{ .Values.sylva_diskimagebuilder_images | include "preserve-type" }}'
-  os_images: '{{ .Values.os_images | include "preserve-type" }}'
   monitoring:
     thanos_receive_url: https://{{ .Values.external_hostnames.thanos_receive }}/api/v1/receive
   logging:
-    loki_url: '{{ .Values.logging.loki_url }}'
+    loki_url: "https://{{ .Values.external_hostnames.loki }}"
 
   _internal:
     sylva_system_default_storage_class_unit: '{{ .Values._internal.default_storage_class_unit }}'

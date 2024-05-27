@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: dummy-deps-${UNIT_NAME}-sleep${DISCRIMINATOR:-}
+  name: dummy-deps-${UNIT_NAME}-sleep
   namespace: sylva-system
 spec:
   template:

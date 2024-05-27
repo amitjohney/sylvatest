@@ -57,13 +57,19 @@ delete_hook:
   enabled: true
   job_timeout: '{{ .Values.cluster.capi_providers.infra_provider | eq "capm3" | ternary 3600 1200 | include "preserve-type" }}'
 
+
+unit_definition_defaults:
+  depends_on:
+    # all units depend on mgmt-cluster-ready, except root-dependency (everything depends on it, so it can't depend on anything without creating a dependency loop)
+    # and mgmt-cluster-ready itself
+    mgmt-cluster-ready: '{{ not (list "mgmt-cluster-ready" "root-dependency" | has .Values._unit_name_) }}'
+
 unit_templates:
 
   base-deps:
     # we put here the list of base units that most units will need to depend on
     # they correspond to "the workload cluster is ready for stuff to be deployed on it"
     depends_on:
-      mgmt-cluster-ready: true
       cluster-reachable: true
       namespace-defs: true
       calico: '{{ tuple . "calico" | include "unit-enabled" }}'
@@ -72,7 +78,6 @@ unit_templates:
   kustomization-deployed-on-mgmt-cluster:
     depends_on:
       cluster-machines-ready: false
-      mgmt-cluster-ready: true
     # the resources produced by this Kustomization will live in the mgmt cluster
     # so we override what is defined in unit_kustomization_spec_default
     kustomization_spec:
@@ -82,7 +87,6 @@ unit_templates:
   helmrelease-deployed-on-mgmt-cluster:
     depends_on:
       cluster-machines-ready: false
-      mgmt-cluster-ready: true
     helmrelease_spec:
       # the resources produced by this HelmRelease will live in the mgmt cluster:
       # so we override what is defined in unit_helmrelease_spec_default
@@ -94,16 +98,21 @@ unit_templates:
 # here we select which units we want to enable for a workload cluster
 units:
 
+  root-dependency:
+    enabled: on
+    unit_templates:
+    - kustomization-deployed-on-mgmt-cluster
+
   mgmt-cluster-ready:
+    # all units (except 'root-dependency') depend on this unit
+    # (see unit_definition_defaults.depends_on.mgmt-cluster-ready)
     enabled: on
     info:
       description: (workload cluster) this unit reflects the readiness of the mgmt cluster
+      details: this unit acts as simple dependency lock to prevent deploying a workload cluster before the mgmt cluster is ready
     unit_templates:
     - dummy
     - kustomization-deployed-on-mgmt-cluster
-    - versioned-dependency  # units depending on this unit will depend on the last version of this unit being ready
-    depends_on:
-      mgmt-cluster-ready: false  # cancel this dependency inherited via kustomization-deployed-on-mgmt-cluster unit template
     kustomization_spec:
       healthChecks:
         - apiVersion: v1
@@ -169,14 +178,12 @@ units:
     unit_templates:
     - kustomization-deployed-on-mgmt-cluster
     - dummy
-    - versioned-dependency  # units depending on this unit will depend on the last version of this unit being ready
 
   cluster-ready:
     enabled: true
     unit_templates:
     - kustomization-deployed-on-mgmt-cluster
     - dummy
-    - versioned-dependency  # units depending on this unit will depend on the last version of this unit being ready
     kustomization_spec:
       targetNamespace: '{{ .Release.Namespace }}'
 
@@ -184,7 +191,6 @@ units:
     enabled: true
     unit_templates:
     - kustomization-deployed-on-mgmt-cluster
-    - versioned-dependency  # units depending on this unit will depend on the last version of this unit being ready
 
   namespace-defs:
     enabled: true

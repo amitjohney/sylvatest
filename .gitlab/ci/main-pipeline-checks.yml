@@ -128,7 +128,7 @@ avoid-typo-on-bootstrap:
       rm -rf .git  # because busybox grep does not support --exclude-dir
       echo "Check against frequent typos on 'bootstrap'..."
       set +e
-      typos=$(grep -rnsiE 'boostrap|bootrap|bootsrap' . | grep -v '.gitlab-ci.yaml:      typos=')
+      typos=$(grep -rnsiE 'boostrap|bootrap|bootsrap|bootstap' . | grep -v '.gitlab-ci.yaml:      typos=')
       set -e
       if [ -n "$typos" ]; then
         echo "A few typos were found on the 'bootstrap' word:"

@@ -99,13 +99,17 @@ value: "prefix-{{ 42 }}"                                    -> will also produce
 
 {{ define "interpret-values-gotpl" }}
 {{ $envAll := . }}
-{{/* we need to preserve this, to allow deferring template computation of _unit_name_ in unit-def-from-templates */}}
+{{/* we need to preserve this, to allow deferring template computation of _unit_name_ in unit-def */}}
 {{ $saved_unit_templates := deepCopy $envAll.Values.unit_templates }}
+{{ $saved_unit_definition_defaults := deepCopy ($envAll.Values.unit_definition_defaults | default dict) }}
 {{ $_ := set $envAll.Values "unit_templates" dict }}
 {{/* .Values._internal is interpreted first, values compute have the same value once and for all */}}
 {{ $_ := set $envAll.Values "_internal" (index (tuple $envAll $envAll.Values._internal | include "interpret-inner-gotpl" | fromJson) "result") }}
 {{ $_ := set $envAll "Values" (index (tuple $envAll $envAll.Values | include "interpret-inner-gotpl" | fromJson) "result") }}
+{{/* restore preserved values */}}
 {{ $_ := set $envAll.Values "unit_templates" $saved_unit_templates }}
+{{ $_ := set $envAll.Values "unit_definition_defaults" $saved_unit_definition_defaults }}
+{{/* return result */}}
 {{ $envAll.Values | toJson }}
 {{ end }}
 

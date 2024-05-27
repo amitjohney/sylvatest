@@ -264,6 +264,15 @@ include:
     - download_artifact deploy-management-cluster management-cluster-kubeconfig
     - . bin/env
     - kubectl --kubeconfig management-cluster-kubeconfig delete -n ${ENV_NAME} hr sylva-units --timeout 30m
+    - |
+      # Check if we have some remaining resources that should have been deleted
+      # and fail before attempting to delete the namespace in order to ease troubleshooting
+      for KIND in "kustomizations -l app.kubernetes.io/instance=sylva-units" "helmreleases -l app.kubernetes.io/instance=sylva-units" heatstacks; do
+        if kubectl --kubeconfig management-cluster-kubeconfig get -n ${ENV_NAME} $KIND -o yaml | yq -e '.items | length > 0' &>/dev/null; then
+          echo "there remains $(echo $KIND | awk '{print $1}') resources, can't delete namespace"
+          exit 1
+        fi
+      done
     - kubectl --kubeconfig management-cluster-kubeconfig delete ns ${ENV_NAME} --timeout 2m
   after_script:
     - echo -e "\e[1m\e[0Ksection_start:`date +%s`:debug_exit[collapsed=true]\r\e[0Kgathering debugging logs in debug-on-exit.log file\e[0m"

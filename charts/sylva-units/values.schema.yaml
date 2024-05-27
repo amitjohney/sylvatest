@@ -324,6 +324,9 @@ properties:
     type: object
     # TODO: detail more
 
+  unit_definition_defaults:  # -------------------------------
+    type: object
+
   unit_templates:  # -------------------------------
     type: object
     "^[a-z0-9][a-z0-9-]*[a-z0-9]$":  # -------------------------------

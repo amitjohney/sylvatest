@@ -7037,6 +7037,9 @@
     "unit_helmrelease_kustomization_spec_default": {
       "type": "object"
     },
+    "unit_definition_defaults": {
+      "type": "object"
+    },
     "unit_templates": {
       "type": "object",
       "^[a-z0-9][a-z0-9-]*[a-z0-9]$": {

@@ -27,7 +27,7 @@ Process all units
   {{- if include "unit-enabled" (tuple $envAll $unit_name) -}}
 
     {{/* inherit settings from any template specified in unit.<this unit>.unit_templates */}}
-    {{- $unit_def := include "unit-def-from-templates" (tuple $envAll $unit_name) | fromJson -}}
+    {{- $unit_def := include "unit-def" (tuple $envAll $unit_name) | fromJson -}}
 
     {{- if not (or (hasKey $unit_def "kustomization_spec") (hasKey $unit_def "helmrelease_spec")) -}}
       {{- fail (printf "unit %s has neither kustomization_spec or helmrelease_spec:\n%s" $unit_name ($unit_def | toYaml)) -}}
@@ -176,14 +176,14 @@ spec: {{ $helm_repo_spec | toYaml | nindent 2 }}
         {{- range $ver, $enabled := $unit_def.helm_chart_versions }}
           {{- if $enabled -}}
             {{- if $helm_chart_versions_selection -}}
-              {{- fail (printf "unit '%s' has 'true' set on more than one version inside 'helm_chart_versions'" $unit_name) }}
+              {{- fail (printf "unit '%s' has 'true' set on more than one version inside 'helm_chart_versions':\n%s" $unit_name ($unit_def.helm_chart_versions | toYaml)) }}
             {{- else -}}
               {{- $helm_chart_versions_selection = $ver -}}
             {{- end }}
           {{- end }}
         {{- end }}
         {{- if not $helm_chart_versions_selection }}
-          {{- fail (printf "unit '%s' has no version set to true inside 'helm_chart_versions'" $unit_name)}}
+          {{- fail (printf "unit '%s' has no version set to true inside 'helm_chart_versions':\n%s" $unit_name ($unit_def.helm_chart_versions | toYaml))}}
         {{- end }}
         {{- if not $unit_def.helmrelease_spec.chart.spec.version -}}
           {{- $_ := set $unit_def.helmrelease_spec.chart.spec "version" $helm_chart_versions_selection -}}
