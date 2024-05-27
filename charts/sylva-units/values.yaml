@@ -4967,9 +4967,6 @@ units:
             minReplicas: 2
             maxReplicas: 6
             targetCPUUtilizationPercentage: 40
-          podSecurityContext:
-            seccompProfile:
-              type: RuntimeDefault
           extraVolumes:
             - name: data
               emptyDir: {}
