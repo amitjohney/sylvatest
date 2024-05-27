@@ -168,6 +168,15 @@ cluster:
   control_plane_replicas: 3
   capo:
     flavor_name: "m1.xlarge"
+  kubelet_extra_args:
+    # increase max-pods for single-node deployments
+    #node-labels: "feature.node.kubernetes.io/network-sriov.capable=true" ##should be set automatically by rancher-nfd
+    # feature-gates: "TopologyManager=true,CPUManager=true"
+    topology-manager-policy: "best-effort"
+    cpu-manager-policy: "static"
+    system-reserved: "cpu=100m,memory=500Mi"
+    kube-reserved: "cpu=100m,memory=500Mi"
+
 _internal:
   default_storage_class: '{{ .Values.openstack.storageClass.name }}'
 monitoring:
