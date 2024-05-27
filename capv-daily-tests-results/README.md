@@ -8,6 +8,7 @@ The results are summarized by the following table:
 
 | Date                      | Management Cluster CAPI Providers | Sylva-Core main commit ID        | Management cluster result                    | Workload cluster result              | Test logs (only for failed tests) |
 |---------------------------|-----------------------------------|----------------------------------|----------------------------------------------|--------------------------------------|-----------------------------------|
+|2024-05-25 02:00|kubeadm-capv|c4d21ebfcce3b2d7ef62ce416f2d8dcfb383dacb|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/384bf1b1c2ee84a916edbceba9cecda1/capv-logs.gz)|
 |2024-05-25 02:56|rke2-capv|c4d21ebfcce3b2d7ef62ce416f2d8dcfb383dacb|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/df2030c0c334561d9773605099ba200c/capv-logs.gz)|
 |2024-05-25 02:56|rke2-capv|c4d21ebfcce3b2d7ef62ce416f2d8dcfb383dacb|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/e5ff461584618499a341fe1ce066404f/capv-logs.gz)|
 |2024-05-25 02:00|kubeadm-capv|c4d21ebfcce3b2d7ef62ce416f2d8dcfb383dacb|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/e5ff461584618499a341fe1ce066404f/capv-logs.gz)|
@@ -27,8 +28,6 @@ The results are summarized by the following table:
 |2024-05-03 02:27|kubeadm-capv|af401ecf561077f073b28a61f0c2521a28f6c2e8|:white_check_mark:|:x:||
 |2024-05-02 02:43|rke2-capv|af5750d9e74b08f913542d7129027668795a8413|:white_check_mark:|:x:|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/ed8d060995cc87bea28a305d56dddb95/capv-logs.gz)|
 |2024-05-02 02:32|kubeadm-capv|af5750d9e74b08f913542d7129027668795a8413|:x:|N/A|[link](https://gitlab.com/sylva-projects/sylva-core/-/wikis/uploads/ed8d060995cc87bea28a305d56dddb95/capv-logs.gz)|
-|2024-05-01 02:30|rke2-capv|a99abf9ec27e7aba874287a4684d15a570583c86|:white_check_mark:|:x:||
-|2024-05-01 02:31|kubeadm-capv|a99abf9ec27e7aba874287a4684d15a570583c86|:white_check_mark:|:x:||
 
 Old layout table:
 
