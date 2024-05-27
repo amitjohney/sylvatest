@@ -63,8 +63,8 @@ units:
       values:
         persistence:
           defaultClassReplicaCount: 3   # enable data replication
-        defaultSettings:
-          replicaReplenishmentWaitInterval: 60
+        #defaultSettings:
+        #  replicaReplenishmentWaitInterval: 60
 
 libvirt_metal:
   #image: registry.gitlab.com/sylva-projects/sylva-elements/container-images/libvirt-metal:0.1.4  # customize if wanted
