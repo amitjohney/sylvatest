@@ -78,6 +78,21 @@ units:
   os-image-server:
     enabled: '{{ tuple . "metal3" | include "unit-enabled" }}'
 
+  firewall-kyverno-capo:
+    enabled: '{{ tuple . "capo" | include "unit-enabled" }}'
+
+  firewall-kyverno-capm3:
+    enabled: '{{ tuple . "capm3" | include "unit-enabled" }}'
+
+  firewall-kyverno-calico-role:
+    enabled: true
+
+  firewall-management-cluster:
+    enabled: true
+
+  firewall-common:
+    enabled: true
+
   kubevirt:
     enabled: false
 

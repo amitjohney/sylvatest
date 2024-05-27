@@ -1,0 +1,18 @@
+apiVersion: crd.projectcalico.org/v1
+kind: GlobalNetworkPolicy
+metadata:
+  name: prometheus-to-fip
+spec:
+  order: 40
+  preDNAT: true
+  applyOnForward: true
+  ingress:
+  - action: Allow
+    protocol: TCP
+    source:
+      selector: app.kubernetes.io/instance == 'rancher-monitoring-prometheus'
+    destination:
+      nets:
+      - ${CLUSTER_EXTERNAL_IP}
+      ports:
+      - 443

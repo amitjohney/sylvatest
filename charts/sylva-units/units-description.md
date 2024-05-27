@@ -9,8 +9,8 @@
 | **capo** | installs OpenStack CAPI infra provider | core-component |  | [Kustomize](https://github.com/kubernetes-sigs/cluster-api-provider-openstack/config/default?ref=75ffe73f88544dbc26c6636a491bca5b3f63c3d4) | 75 |
 | **capv** | installs vSphere CAPI infra provider | core-component |  | [Kustomize](https://github.com/kubernetes-sigs/cluster-api-provider-vsphere/releases/download/v1.9.3/infrastructure-components.yaml) | v1.9.3 |
 | **cert-manager** | installs cert-manager, an X.509 certificate controller | core-component |  | [Helm](https://charts.jetstack.io) | v1.14.5 |
-| **cluster** | holds the Cluster API definition for the cluster | core-component |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git) | 0.2.18 |
-| **cluster-bmh** | definitions for Cluster API BareMetalHosts resources (capm3) | core-component |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git) | 0.2.18 |
+| **cluster** | holds the Cluster API definition for the cluster | core-component |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git) | ath/firewall |
+| **cluster-bmh** | definitions for Cluster API BareMetalHosts resources (capm3) | core-component |  | [Helm](https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git) | ath/firewall |
 | **flux-system** | contains Flux definitions *to manage the Flux system itself via gitops*<br/><br/>Note that Flux is always installed on the current cluster as a pre-requisite to installing the chart | core-component |  | [Kustomize](https://github.com/fluxcd/flux2/releases/download/v2.2.3/install.yaml) | v2.2.3 |
 | **heat-operator** | installs OpenStack Heat operator | core-component |  | [Kustomize](https://gitlab.com/sylva-projects/sylva-elements/heat-operator.git/config/default?ref=0.0.7) | 0.0.7 |
 | **kyverno** | installs Kyverno | core-component |  | [Helm](https://kyverno.github.io/kyverno) | 3.1.5 |
@@ -78,6 +78,12 @@
 | **cluster-ready** | unit to check readiness of cluster CAPI objects |  | True | Kustomize | N/A |
 | **coredns** | configures DNS inside cluster |  | True | Kustomize | N/A |
 | **eso-secret-stores** | defines External Secrets stores |  | True | Kustomize | N/A |
+| **firewall-common** | configures global network policies applying on the management cluster and on workload clusters |  | True | Kustomize | N/A |
+| **firewall-kyverno-calico-role** | configures the permissions allowing kyverno to manage calico resources |  | True | Kustomize | N/A |
+| **firewall-kyverno-capm3** | configures a kyverno policy to create global network sets with the IP address assigned to the nodes of the baremetal workload clusters |  | True | Kustomize | N/A |
+| **firewall-kyverno-capo** | configures a kyverno policy to create global network sets with the IP address assigned to the nodes of the Openstack workload clusters |  | True | Kustomize | N/A |
+| **firewall-management-cluster** | configures global network policies applying only on the management cluster |  | True | Kustomize | N/A |
+| **firewall-workload-cluster** | configures global network policies applying only on the management cluster |  | True | Kustomize | N/A |
 | **first-login-rancher** | configure Rancher authentication for admin |  | True | Kustomize | N/A |
 | **get-openstack-images** | Automatically push openstack images to cinder |  | True | Kustomize | N/A |
 | **gitea-eso** | write secrets in gitea namespace in gitea expected format |  | True | Kustomize | N/A |
