@@ -341,10 +341,10 @@ capo-rke2-oci-suse:
   variables:
     ENV_NAME: rke2-capm3-virt
     DOCKER_HOST: ""
-    MGMT_INITIAL_REVISION: "1.1.0-patch-issue1193-baburciu"
+    MGMT_INITIAL_REVISION: "bb/test-issue1193-1.1.0-patch" # https://gitlab.com/sylva-projects/sylva-core/-/compare/1.1.0...bb%2Ftest-issue1193-1.1.0-patch?from_project_id=42451983&straight=false
     MGMT_INITIAL_ADDITIONAL_VALUES: environment-values/ci/capm3-virt-1.1.0-to-main-patch.yml
     MGMT_UPDATE_REVISION: "main"
-    WC_INITIAL_REVISION: "1.1.0-patch-issue1193-baburciu"
+    WC_INITIAL_REVISION: "bb/test-issue1193-1.1.0-patch"   # https://gitlab.com/sylva-projects/sylva-core/-/compare/1.1.0...bb%2Ftest-issue1193-1.1.0-patch?from_project_id=42451983&straight=false
     WC_INITIAL_ADDITIONAL_VALUES: environment-values/ci/capm3-virt-1.1.0-to-main-patch.yml
     WC_UPDATE_REVISION: "main"
   trigger:
