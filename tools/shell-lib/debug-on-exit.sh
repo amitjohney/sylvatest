@@ -123,13 +123,18 @@ function cluster_info_dump() {
   dump_additional_resources $dump_dir $additional_resources
 
   # dump pods
-  kubectl get pods -o wide -A | tee $dump_dir/pods.summary.txt
+  kubectl get pods -o wide -A 2>/dev/null | tee "$dump_dir/pods.summary.txt" > /dev/null
 
-  # dump CAPI secrets
-  kubectl get secret -A --field-selector=type=cluster.x-k8s.io/secret &&\
-  kubectl get secret -A --field-selector=type=infrastructure.cluster.x-k8s.io/secret                               > $dump_dir/Secrets-capi.summary.txt
-  kubectl get secret -A --field-selector=type=cluster.x-k8s.io/secret -o yaml --show-managed-fields &&\
-  kubectl get secret -A --field-selector=type=infrastructure.cluster.x-k8s.io/secret -o yaml --show-managed-fields > $dump_dir/Secrets-capi.yaml
+  # dump CAPI sensitive secrets ONLY in CI context
+  if [[ -n "${CI_JOB_NAME:-}" ]]; then
+    kubectl get secret -A --field-selector=type=cluster.x-k8s.io/secret | tee -a $dump_dir/Secrets-capi.summary.txt > /dev/null && \
+    kubectl get secret -A --field-selector=type=infrastructure.cluster.x-k8s.io/secret | tee -a $dump_dir/Secrets-capi.summary.txt > /dev/null
+    kubectl get secret -A --field-selector=type=cluster.x-k8s.io/secret -o yaml --show-managed-fields | tee -a $dump_dir/Secrets-capi.yaml > /dev/null && \
+    kubectl get secret -A --field-selector=type=infrastructure.cluster.x-k8s.io/secret -o yaml --show-managed-fields  | tee -a $dump_dir/Secrets-capi.yaml > /dev/null
+  else
+    kubectl get secret -A --field-selector=type=cluster.x-k8s.io/secret 2>/dev/null  | tee -a $dump_dir/Secrets-capi.summary.txt > /dev/null && \
+    kubectl get secret -A --field-selector=type=infrastructure.cluster.x-k8s.io/secret 2>/dev/null | tee -a $dump_dir/Secrets-capi.summary.txt > /dev/null
+  fi
 
   # list secrets
   kubectl get secret -A > $dump_dir/Secrets.summary.txt
@@ -139,6 +144,18 @@ function cluster_info_dump() {
   # From https://github.com/kubernetes/kubernetes/issues/17512
   kubectl get nodes --no-headers | awk '{print $1}' | xargs -I {} sh -c 'echo {} ; kubectl describe node {} | grep Allocated -A 5 | grep -ve Event -ve Allocated -ve percent -ve -- ; echo '
 }
+
+if [[ -z "${CI_JOB_NAME:-}" ]]; then
+  BASE_DIR=$(realpath "${1:-$(pwd -P)}")
+  if [ "$(realpath "$(dirname "$0")")" != *"/shell-lib"* && -z "$2"  ]; then
+    echo "You are not in In that case you should to provide the path of core "
+    exit 1
+  else
+    PATH_SYLVA_CORE=$2
+  fi
+fi
+
+MGMT_KUBECONFIG=${1:-${BASE_DIR}/management-cluster-kubeconfig}
 
 echo "Start debug-on-exit at: $(date -Iseconds)"
 
@@ -157,7 +174,7 @@ unset KUBECONFIG
 if [[ $(kind get clusters) =~ $KIND_CLUSTER_NAME ]]; then
   cluster_info_dump bootstrap
   echo -e "\nDump bootstrap node logs"
-  docker ps -q -f name=control-plane* | xargs -I % -r docker exec % journalctl -e > bootstrap-cluster-dump/bootstrap_node.log
+  docker ps -q -f name=control-plane* | xargs -I % -r docker exec % journalctl -e > $BASE_DIR/bootstrap-cluster-dump/bootstrap_node.log
 fi
 
 # Try to guess management-cluster-kubeconfig path:
@@ -165,8 +182,13 @@ fi
 # - Use BASE_DIR environment value if it is set (it is usually done by common.sh in CI)
 # - Use relative path to current script location as BASE_DIR as a last option
 
-BASE_DIR=${BASE_DIR:-$(realpath $(dirname $0)/../../)}
-MGMT_KUBECONFIG=${1:-${BASE_DIR}/management-cluster-kubeconfig}
+if [[ -z "${CI_JOB_NAME:-}" ]]; then
+  BASE_DIR=$(realpath "$(dirname "$0")/../../")
+  MGMT_KUBECONFIG=${BASE_DIR}/management-cluster-kubeconfig
+  if [ "$(realpath "$(dirname "$0")")" != *"/shell-lib"* ]; then
+    BASE_DIR=$PATH_SYLVA_CORE
+  fi
+fi
 
 if [[ -f $MGMT_KUBECONFIG ]]; then
     export KUBECONFIG=${MGMT_KUBECONFIG}
@@ -197,4 +219,26 @@ if [[ -f $MGMT_KUBECONFIG ]]; then
 
         cluster_info_dump workload
     fi
+fi
+
+TAR_FOLDER=("bootstrap-cluster-dump" "management-cluster-dump" "workload-cluster-kubeconfig-rancher")
+TAR_OUTPUT="dump_archive.tar.gz"
+
+EXISTING_DIRS=()
+#Check if each directory exists
+for dir in "${TAR_FOLDER[@]}"; do
+  if [ -d "$dir" ]; then
+    EXISTING_DIRS+=("$dir")
+  else
+    echo "Warning: the directory $dir does not exist and will not be included in the archive."
+  fi
+done
+
+# Check if there are any directories to archive
+if [ ${#EXISTING_DIRS[@]} -eq 0 ]; then
+  echo "Error: none of the specified directories exist. The archive will not be created."
+else
+  # create le fichier tar.gz
+  tar -czf $TAR_OUTPUT "${EXISTING_DIRS[@]}"
+  echo "The archive $OUTPUT has been successfully created."
 fi
