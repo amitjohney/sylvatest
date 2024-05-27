@@ -2493,12 +2493,25 @@ units:
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/synchronize-secrets
-      wait: true
       _components:
         - '{{ tuple "components/keycloak" (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
       postBuild:
         substitute:
           FLUX_ADMIN_USERNAME: '{{ .Values.flux_webui.admin_user }}'
+      healthChecks:
+        - apiVersion: v1
+          kind: Secret
+          name: bootstrap-secret
+          namespace: cattle-system
+        - apiVersion: v1
+          kind: Secret
+          name: cluster-user-auth
+          namespace: flux-system
+        - apiVersion: v1
+          kind: Secret
+          name: cluster-creator-secret
+          namespace: flux-system
+        - '{{ tuple (dict "apiVersion" "v1" "kind" "Secret" "name" "keycloak-initial-admin" "namespace" "keycloak") (tuple . "keycloak" | include "unit-enabled") | include "set-only-if" }}'
 
   rancher-init:
     info:
