@@ -191,6 +191,7 @@ def wait_for_in_progress_image(image_name, checksum):
         for image in images:
             if image.get('status') == 'active':
                 image_active = image
+                break
             if image.get('status') == 'queued':
                 logger.warning(
                     f"Stalling image {image.get('name')} {image.get('id')} waiting {WAIT_QUEUED_IMAGE} seconds")
@@ -243,7 +244,9 @@ def push_image_to_glance(file, manifest, image_name, image_format, update_only=F
             except Exception:
                 logger.exception("Unexpected error during image creation.")
                 raise
-
+        else:
+            image_id = image.get('id')
+        
     # Common block for updating image properties, applicable in both cases
     try:
         _image_data = conn.image.find_image(image_id)
