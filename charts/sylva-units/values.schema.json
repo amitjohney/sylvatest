@@ -8020,6 +8020,9 @@
             },
             "tag": {
               "type": "string"
+            },
+            "insecure": {
+              "type": "boolean"
             }
           }
         }
