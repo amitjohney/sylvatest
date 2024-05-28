@@ -600,6 +600,10 @@ properties:
   vsphere:  # -------------------------------
     type: object
     # actual constraints are later in this file under '# additional constraints for .vsphere'
+  
+  machine_pools:
+    replicas: # -------------------------------
+      type: integer
 
   capd_docker_host:  # -------------------------------
     type: string
