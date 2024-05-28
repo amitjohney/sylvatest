@@ -30,7 +30,7 @@ units:
                 type: json
                 description: "Common security group rules associated with the control plane and worker VMs"
                 default:
-                  direction: [ingress, ingress, ingress, egress, ingress]
-                  port: ['80', '443', '22', '53', '25888']
-                  protocol: [tcp, tcp, tcp, udp, tcp]
-                  remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
+                  direction: [ingress, ingress, ingress, ingress, egress, ingress]
+                  port: ['80', '443', '22', '53', '53', '25888']
+                  protocol: [tcp, tcp, tcp, udp, udp, tcp]
+                  remote_ip_prefix: [0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0, 0.0.0.0/0]
