@@ -182,7 +182,7 @@ def wait_for_in_progress_image(image_name, checksum):
     t0 = time.time()
     image_active = None
     images = [None]
-    while ((time.time() - t0 < TIMEOUT) and not image_active and images):
+    while (time.time() - t0 < TIMEOUT):
         images = image_exists_in_glance(
             _image_name=image_name,
             checksum=checksum,
@@ -201,8 +201,9 @@ def wait_for_in_progress_image(image_name, checksum):
                     handle_queued_image(image)
             if image.get('status') in ['saving', 'importing', 'uploading']:
                 logger.info(f"Waiting for image {image.get('name')} {image.get('id')} to be active")
-        if images and not image_active:
-            time.sleep(LOOP_INTERVAL)
+        if image_active or not images:
+            break
+        time.sleep(LOOP_INTERVAL)
     return image_active
 
 
