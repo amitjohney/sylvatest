@@ -4682,6 +4682,13 @@ units:
             storageClass: '{{ tuple . (tuple . "single-replica-storageclass" | include "unit-enabled") "single-replica-storageclass" .Values._internal.default_storage_class | include "interpret-ternary" }}'
             accessModes: ["ReadWriteOnce"]
             size: '{{  has .Values.env_type (list "dev" "ci") | ternary "2Gi" "4Gi" }}'
+          evalInterval: 1m
+          replicaCount: '{{ .Values._internal.ha_cluster.is_ha | ternary 2 1 | include "preserve-type" }}'
+          pdb:
+            create: true
+            minAvailable: '{{ .Values._internal.ha_cluster.is_ha | ternary 1 0 | include "preserve-type" }}'
+          service:
+            clusterIP: None
         query:
           logLevel: debug
           extraFlags:
