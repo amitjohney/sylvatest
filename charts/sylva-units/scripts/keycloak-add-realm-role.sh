@@ -11,14 +11,8 @@ function cleanup {
 }
 trap cleanup EXIT
 
-# workaround for https://gitlab.com/sylva-projects/sylva-core/-/issues/144
-echo "-- Wait for Keycloak realm resource to be ready and created by keycloak operators" | tee -a $LOGFILE
-attempts=0
-max_attempts=5
-until kubectl get -n keycloak keycloakrealmimport.k8s.keycloak.org sylva -o json | jq -e '.status.conditions[]|select(.type=="Done")|.status'; do
-    sleep 3
-    ((attempts++)) && ((attempts==max_attempts)) && echo "timed out waiting for sylva keycloakrealmimport to become ready" | tee -a $LOGFILE && exit -1
-done
+echo "-- Wait for Keycloak realm resource to be ready and created by keycloak operators"
+kubectl wait --for=condition=Done --timeout=15s -n keycloak keycloakrealmimport.k8s.keycloak.org/sylva || (echo "timed out waiting for sylva keycloakrealmimport to become ready" && exit -1)
 
 KEYCLOAK_BASE_URL="https://keycloak-service.keycloak.svc.cluster.local:8443"
 KEYCLOAK_INITIAL_USERNAME="admin"
