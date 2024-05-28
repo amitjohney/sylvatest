@@ -6,19 +6,19 @@ In Sylva we build OS images using [diskimage-builder](https://gitlab.com/sylva-p
 
 ```yaml
 sylva_diskimagebuilder_images:
-  ubuntu-jammy-plain-rke2-1-27-6:
-    default_enabled:  true
-  ubuntu-jammy-plain-rke2-1-26-9:  {}
-  ubuntu-jammy-plain-rke2-1-25-14:  {}
-  ubuntu-jammy-hardened-rke2-1-27-6:  {}
-  ubuntu-jammy-hardened-rke2-1-26-9:  {}
-  ubuntu-jammy-hardened-rke2-1-25-14:  {}
-  opensuse-15-5-plain-rke2-1-27-6:  {}
-  opensuse-15-5-plain-rke2-1-26-9:  {}
-  opensuse-15-5-plain-rke2-1-25-14:  {}
-  opensuse-15-5-hardened-rke2-1-27-6:  {}
-  opensuse-15-5-hardened-rke2-1-26-9:  {}
-  opensuse-15-5-hardened-rke2-1-25-14:  {}
+  ubuntu-jammy-hardened-rke2-1-28-9:
+    default_enabled: true
+  ubuntu-jammy-plain-rke2-1-28-9: {}
+  ubuntu-jammy-plain-rke2-1-27-13: {}
+  ubuntu-jammy-plain-rke2-1-26-15: {}
+  ubuntu-jammy-hardened-rke2-1-27-13: {}
+  ubuntu-jammy-hardened-rke2-1-26-15: {}
+  opensuse-15-5-plain-rke2-1-28-9: {}
+  opensuse-15-5-plain-rke2-1-27-13: {}
+  opensuse-15-5-plain-rke2-1-26-15: {}
+  opensuse-15-5-hardened-rke2-1-28-9: {}
+  opensuse-15-5-hardened-rke2-1-27-13: {}
+  opensuse-15-5-hardened-rke2-1-26-15: {}
 ```
 
 The version of [Sylva diskimage-builder](https://gitlab.com/sylva-projects/sylva-elements/diskimage-builder) used for building the images is specified as
