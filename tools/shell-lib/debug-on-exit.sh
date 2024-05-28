@@ -171,7 +171,7 @@ df -h || true
 # Unset KUBECONFIG to make sure that we are targetting kind cluster
 unset KUBECONFIG
 
-if [[ $(kind get clusters) =~ $KIND_CLUSTER_NAME ]]; then
+if [[ $(kind get clusters) == "sylva" ]]; then
   cluster_info_dump bootstrap
   echo -e "\nDump bootstrap node logs"
   docker ps -q -f name=control-plane* | xargs -I % -r docker exec % journalctl -e > $BASE_DIR/bootstrap-cluster-dump/bootstrap_node.log
