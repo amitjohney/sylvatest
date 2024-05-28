@@ -1,3 +1,5 @@
+#!/usr/bin/bash
+
 # Grab some info in case of failure, essentially usefull to troubleshoot CI, fell free to add your own commands while troubleshooting
 
 # list of kinds to dump
@@ -125,15 +127,13 @@ function cluster_info_dump() {
   # dump pods
   kubectl get pods -o wide -A 2>/dev/null | tee "$dump_dir/pods.summary.txt" > /dev/null
 
+  kubectl get secret -A --field-selector=type=cluster.x-k8s.io/secret | tee -a $dump_dir/Secrets-capi.summary.txt > /dev/null && \
+  kubectl get secret -A --field-selector=type=infrastructure.cluster.x-k8s.io/secret | tee -a $dump_dir/Secrets-capi.summary.txt > /dev/null
+
   # dump CAPI sensitive secrets ONLY in CI context
   if [[ -n "${CI_JOB_NAME:-}" ]]; then
-    kubectl get secret -A --field-selector=type=cluster.x-k8s.io/secret | tee -a $dump_dir/Secrets-capi.summary.txt > /dev/null && \
-    kubectl get secret -A --field-selector=type=infrastructure.cluster.x-k8s.io/secret | tee -a $dump_dir/Secrets-capi.summary.txt > /dev/null
     kubectl get secret -A --field-selector=type=cluster.x-k8s.io/secret -o yaml --show-managed-fields | tee -a $dump_dir/Secrets-capi.yaml > /dev/null && \
     kubectl get secret -A --field-selector=type=infrastructure.cluster.x-k8s.io/secret -o yaml --show-managed-fields  | tee -a $dump_dir/Secrets-capi.yaml > /dev/null
-  else
-    kubectl get secret -A --field-selector=type=cluster.x-k8s.io/secret 2>/dev/null  | tee -a $dump_dir/Secrets-capi.summary.txt > /dev/null && \
-    kubectl get secret -A --field-selector=type=infrastructure.cluster.x-k8s.io/secret 2>/dev/null | tee -a $dump_dir/Secrets-capi.summary.txt > /dev/null
   fi
 
   # list secrets
@@ -221,24 +221,28 @@ if [[ -f $MGMT_KUBECONFIG ]]; then
     fi
 fi
 
-TAR_FOLDER=("bootstrap-cluster-dump" "management-cluster-dump" "workload-cluster-kubeconfig-rancher")
-TAR_OUTPUT="dump_archive.tar.gz"
+if [[ -z "${CI_JOB_NAME:-}" ]]; then
 
-EXISTING_DIRS=()
-#Check if each directory exists
-for dir in "${TAR_FOLDER[@]}"; do
-  if [ -d "$dir" ]; then
-    EXISTING_DIRS+=("$dir")
+  TAR_FOLDER=("bootstrap-cluster-dump" "management-cluster-dump" "workload-cluster-kubeconfig-rancher")
+  TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+  TAR_OUTPUT="dump_archive_$TIMESTAMP.tar.gz"
+
+  EXISTING_DIRS=()
+  #Check if each directory exists
+  for dir in "${TAR_FOLDER[@]}"; do
+    if [ -d "$dir" ]; then
+      EXISTING_DIRS+=("$dir")
+    else
+      echo "Warning: the directory $dir does not exist and will not be included in the archive."
+    fi
+  done
+
+  # Check if there are any directories to archive
+  if [ ${#EXISTING_DIRS[@]} -eq 0 ]; then
+    echo "Error: none of the specified directories exist. The archive will not be created."
   else
-    echo "Warning: the directory $dir does not exist and will not be included in the archive."
+    # create file tar.gz
+    tar -czf $TAR_OUTPUT "${EXISTING_DIRS[@]}"
+    echo "The archive $OUTPUT has been successfully created."
   fi
-done
-
-# Check if there are any directories to archive
-if [ ${#EXISTING_DIRS[@]} -eq 0 ]; then
-  echo "Error: none of the specified directories exist. The archive will not be created."
-else
-  # create le fichier tar.gz
-  tar -czf $TAR_OUTPUT "${EXISTING_DIRS[@]}"
-  echo "The archive $OUTPUT has been successfully created."
 fi
