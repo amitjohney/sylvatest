@@ -19,7 +19,7 @@ include:
 deploy-management-cluster:
   timeout: 15min
   script:
-    - !reference [.setup_ci_values]
+    - !reference [.setup_ci_context_and_values]
     - ./preview.sh environment-values/${ENV_NAME}
   artifacts:
     when: on_failure
@@ -28,6 +28,3 @@ deploy-management-cluster:
       - debug-on-exit.log
       - bootstrap-cluster-dump/
     reports: null
-
-
-
