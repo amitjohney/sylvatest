@@ -220,9 +220,11 @@ units:
       wait: true
       _components:
       - '{{ tuple "../components/extra-ca" .Values.oci_registry_extra_ca_certs | include "set-only-if" }}'
+      - '{{ tuple "../components/cosign" .Values.oci_registry_cosign_pub_key | include "set-only-if" }}'
       postBuild:
         substitute:
           EXTRA_CA_CERTS: '{{ tuple (.Values.oci_registry_extra_ca_certs | default "" | b64enc) .Values.oci_registry_extra_ca_certs | include "set-only-if" }}'
+          SYLVA_BASE_OCI_COSIGN_PUB: '{{ tuple (.Values.oci_registry_cosign_pub_key | default "" | b64enc) .Values.oci_registry_cosign_pub_key | include "set-only-if" }}'
           # the no_proxy computed for bootstrap cluster includes pods/services subnets for the kind cluster (see no_proxy_additional in this file)
           # but we don't need nor want that in the mgmt cluster
           no_proxy:

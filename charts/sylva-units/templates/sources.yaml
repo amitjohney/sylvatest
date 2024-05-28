@@ -43,6 +43,12 @@ spec:
     {{- end -}}
     {{- $spec := dict -}}
     {{- $spec = mergeOverwrite $spec (deepCopy ($repo_def.kind | eq "GitRepository" | ternary $envAll.Values.git_repo_spec_default $envAll.Values.oci_repo_spec_default)) (deepCopy $repo_def.spec) (deepCopy $secret_ref) -}}
+    {{- if and ($repo_def.kind | eq "OCIRepository") (tuple $envAll.Values.oci_registry_cosign_pub_key $envAll.Values.oci_registry_cosign_pub_key | include "set-only-if") }}
+      {{- $verify := dict "verify"
+            (dict "provider" "cosign" "secretRef"
+              (dict "name" "cosign-public-keys" $envAll.Values.oci_registry_cosign_pub_key)) }}
+      {{ $verify | toYaml | indent 4 -}}
+    {{- end -}}
 {{ $spec | toYaml | nindent 2 }}
     {{- if hasKey $repo_def "auth" }}
 ---
