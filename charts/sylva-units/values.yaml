@@ -3107,6 +3107,23 @@ units:
                   batch_send_deadline: 5s
                   min_backoff: 1s
                   max_backoff: 30s
+        alertmanager:
+          alertmanagerSpec:
+            useExistingSecret: true
+            configSecret: sylva-alertmanager-config # this Secret is a byproduct of the alertmanager-config unit
+            replicas: '{{ .Values._internal.ha_cluster.is_ha | ternary 2 1 | include "preserve-type" }}'
+            storage:
+              volumeClaimTemplate:
+                spec:
+                  storageClassName: '{{ tuple . (tuple . "single-replica-storageclass" | include "unit-enabled") "single-replica-storageclass" .Values._internal.default_storage_class | include "interpret-ternary" }}'
+                  accessModes: ["ReadWriteOnce"]
+                  resources:
+                    requests:
+                      # default storage is 2Gi, except for CI and dev environments, 1Gi
+                      storage: '{{  has .Values.env_type (list "dev" "ci") | ternary "1Gi" "2Gi" }}'
+          podDisruptionBudget:
+            enabled: true
+            minAvailable: '{{ .Values._internal.ha_cluster.is_ha | ternary 1 0 | include "preserve-type" }}'
       valuesFrom:
         - kind: ConfigMap
           name: flux-custom-resource-state-config # this configmap is a byproduct of the prometheus-flux unit
@@ -3224,6 +3241,26 @@ units:
       targetNamespace: cattle-monitoring-system
     helm_secret_values:
       config: '{{ .Values.monitoring.alertmanager.webhooks.jiralert.config | include "preserve-type" }}'
+
+  alertmanager-config:
+    info:
+      description: generates the config for Alertmanager
+    enabled_conditions:
+    - '{{ tuple . "monitoring" | include "unit-enabled" }}'
+    - '{{ .Values.units.monitoring.helmrelease_spec.values.alertmanager.alertmanagerSpec.useExistingSecret }}'
+    unit_templates:
+    - base-deps
+    depends_on:
+      namespace-defs: true
+    repo: sylva-alertmanager-resources
+    helm_chart_artifact_name: alertmanager-config
+    helmrelease_spec:
+      chart:
+        spec:
+          chart: config
+      targetNamespace: cattle-monitoring-system
+    helm_secret_values:
+      config: '{{ .Values.monitoring.alertmanager.config | include "preserve-type" }}'
 
   snmp-exporter:
     info:
@@ -5549,15 +5586,28 @@ monitoring:
   thanos_receive_url: http://thanos-receive.thanos.svc.cluster.local:19291/api/v1/receive
 
   alertmanager:
+    config: {}
     webhooks:
       jiralert:
         env: {}
         config: {}
 
-# Supported values from: https://github.com/prometheus-community/helm-charts/blob/main/charts/jiralert/values.yaml
-# Example config file: https://github.com/prometheus-community/jiralert/blob/master/examples/jiralert.yml
 #monitoring:
 #  alertmanager:
+#    # Supported values from: https://prometheus.io/docs/alerting/latest/configuration/
+#    config:
+#      global:
+#        resolve_timeout: 15m
+#      route:
+#         group_by: ['namespace', 'alertname']
+#         receiver: 'jira_receiver'
+#      receivers:
+#      - name: 'jira_receiver'
+#        webhook_configs:
+#        - url: 'http://alertmanager-jiralert:9097/alert'
+#          send_resolved: false
+#    # Supported values from: https://github.com/prometheus-community/helm-charts/blob/main/charts/jiralert/values.yaml
+#    # Example config file: https://github.com/prometheus-community/jiralert/blob/master/examples/jiralert.yml
 #    webhooks:
 #      jiralert:
 #        # If missing, the proxies are those configured in `.Values.proxies`
