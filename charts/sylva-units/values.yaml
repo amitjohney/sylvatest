@@ -4629,6 +4629,13 @@ units:
                   key: username
         ruler:
           enabled: true
+          resources:
+            requests:
+              cpu: 0.1
+              memory: 128Mi
+            limits:
+              cpu: 0.5
+              memory: 512Mi
           dnsDiscovery:
             enabled: false
           extraFlags:
@@ -4663,6 +4670,18 @@ units:
               runAsNonRoot: true
               seccompProfile:
                 type: RuntimeDefault
+            resources:
+              requests:
+                memory: "64Mi"
+                cpu: "100m"
+              limits:
+                memory: "128Mi"
+                cpu: "250m"
+          persistence:
+            enabled: true
+            storageClass: '{{ tuple . (tuple . "single-replica-storageclass" | include "unit-enabled") "single-replica-storageclass" .Values._internal.default_storage_class | include "interpret-ternary" }}'
+            accessModes: ["ReadWriteOnce"]
+            size: '{{  has .Values.env_type (list "dev" "ci") | ternary "2Gi" "4Gi" }}'
         query:
           logLevel: debug
           extraFlags:
