@@ -62,7 +62,8 @@ source_templates: # template to generate Flux GitRepository/OCIRepository resour
     spec:
       url: https://gitlab.com/sylva-projects/sylva-elements/helm-charts/sylva-capi-cluster.git
       ref:
-        tag: 0.2.18
+        # tag: 0.2.18
+        branch: cm/test-calico
 
   local-path-provisioner:
     kind: GitRepository
@@ -2346,8 +2347,6 @@ units:
     info:
       description: install Calico CNI
       maturity: stable
-    enabled_conditions:
-    - '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'  # installed by RKE2 when RKE2 is used
     unit_templates:
     - base-deps
     depends_on:
@@ -2355,6 +2354,8 @@ units:
     helm_repo_url: https://rke2-charts.rancher.io
     helm_chart_versions: *calico-chart-versions  # we use a YAML anchor rather than templating so that this file can be read by tools/generate_units_documentation.py
     helmrelease_spec:
+      releaseName: rke2-calico
+      targetNamespace: kube-system
       chart:
         spec:
           chart: rke2-calico
@@ -2375,7 +2376,12 @@ units:
     unit_templates:
     - base-deps
     enabled_conditions:
-      - '{{ .Values.cluster.capi_providers.infra_provider | eq "capd" }}'
+      # Disable for cabpk when deploying on capo/capm3 infra because in this case we use kube-vip
+      - '{{ or
+              (.Values.cluster.capi_providers.infra_provider | eq "capd")
+              ( and (not (.Values.cluster.capi_providers.infra_provider | eq "capd"))
+                    (not (.Values.cluster.capi_providers.bootstrap_provider | eq "cabpk")))
+        | include "preserve-type" }}'
     depends_on:
       calico: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpk" }}'
     helm_repo_url: https://metallb.github.io/metallb
