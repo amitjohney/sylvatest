@@ -35,28 +35,28 @@
         unset https_proxy http_proxy
         echo "Checking Thanos alerts"
         curl -k -s -G https://$thanos_url:443/api/v1/query -u thanos-user:$thanos_token \
-        --data-urlencode "$ALERT_QUERY" | tee thanos-alert-$CLUSTER.log
+        --data-urlencode "$ALERT_QUERY" | tee thanos-alert.log
         curl -k -s -G https://$thanos_url:443/api/v1/query -u thanos-user:$thanos_token \
-        --data-urlencode "$ALERT_QUERY" | jq -c .data.result[].metric | jtbl | tee thanos-alert-$CLUSTER.log
+        --data-urlencode "$ALERT_QUERY" | jq -c .data.result[].metric | jtbl
+        critical_alerts=$(curl -k -s -G https://$thanos_url:443/api/v1/query -u thanos-user:$thanos_token \
+        --data-urlencode "$ALERT_QUERY" | jq '.data.result[].metric | if (.severity == "critical") then .alertname, .cluster  else empty end')
+        if [[ ! -z "$critical_alerts" ]]; then
+           echo "Critical alerts found <alert_name> <cluster_name>"
+           echo $critical_alerts
+           exit 1
+        fi
       else
         echo "Thanos unit is not enable - SKIPPING"
       fi
   variables:
-    ALERT_QUERY: "query=ALERTS{alertstate=\"firing\", cluster=\"$CLUSTER\"}"
+    ALERT_QUERY: "query=ALERTS{alertstate=\"firing\"}"
   artifacts:
     expire_in: 48 hour
     when: always
     paths:
-      - thanos-alert-$CLUSTER.log
+      - thanos-alert.log
 
-alert-check:management:
+alert-check:
+  allow_failure: true
   extends:
     .thanos-alert-check
-  variables:
-    CLUSTER: $MANAGEMENT_CLUSTER_NAME
-
-#alert-check:workload:
-#  extends:
-#    .thanos-alert-check
-#  variables:
-#    CLUSTER: $WORKLOAD_CLUSTER_NAME
