@@ -194,6 +194,7 @@ include:
       - management-cluster-units-report.xml
       - "*-timeline.html"
       - management-cluster-kubeconfig
+      - environment-values/${ENV_NAME}/values.yaml
     reports:
       junit:
       - bootstrap-cluster-units-report.xml
@@ -234,6 +235,7 @@ include:
       - management-cluster-units-report.xml
       - "*-timeline.html"
       - management-cluster-kubeconfig
+      - environment-values/${ENV_NAME}/values.yaml
     reports:
       junit:
       - management-cluster-units-report.xml
