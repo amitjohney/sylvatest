@@ -5264,9 +5264,11 @@ cluster:
     - 100.73.0.0/16
   cluster_pods_cidrs:
     - 100.72.0.0/16
-  calico_wireguard_enabled: '{{ .Values.security.calico_wireguard_enabled | include "preserve-type" }}'
 
-  calico_autodetection_method: '{{ .Values._internal.default_calico_autodetection_method | include "preserve-type" }}'
+  cni:
+    calico:
+      wireguard_enabled: '{{ .Values.security.calico_wireguard_enabled | include "preserve-type" }}'
+      autodetection_method: '{{ .Values._internal.default_calico_autodetection_method | include "preserve-type" }}'
 
   use_custom_rancher_dns_resolver: false
   ntp: '{{ .Values.ntp | include "preserve-type" }}'
