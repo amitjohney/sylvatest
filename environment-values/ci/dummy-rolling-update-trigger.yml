@@ -4,3 +4,10 @@ cluster:
   # trigger a rolling update
   kubelet_extra_args:
     file-check-frequency: 21s
+
+  # control_plane:
+  #   rolloutStrategy:
+  #     rollingUpdate:
+  #       maxSurge: 0
+  #       maxUnavailable: 1
+  #     type: RollingUpdate
