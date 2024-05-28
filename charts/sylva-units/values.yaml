@@ -5787,8 +5787,8 @@ shared_workload_clusters_values:
       {{- $units | include "preserve-type" -}}
 
 shared_workload_clusters_secret_values:
-  cluster:
-    capo: '{{ tuple (dict "clouds_yaml" (.Values.cluster | dig "capo" "clouds_yaml" dict)) (.Values.cluster | dig "capo" "clouds_yaml" dict) | include "set-only-if" }}'
+  # cluster:
+  #   capo: '{{ tuple (dict "clouds_yaml" (.Values.cluster | dig "capo" "clouds_yaml" dict)) (.Values.cluster | dig "capo" "clouds_yaml" dict) | include "set-only-if" }}'
   _internal:
     thanos_password: '{{ .Values._internal.thanos_password }}'
     loki_password: '{{ .Values._internal.loki_password }}'
