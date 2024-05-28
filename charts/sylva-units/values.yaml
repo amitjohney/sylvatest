@@ -5192,7 +5192,7 @@ units:
     unit_templates:
     - base-deps
     depends_on:
-      monitoring: true # ?
+      thanos-init: true
     enabled_conditions:
       - '{{ tuple . "thanos" | include "unit-enabled" }}'
       - '{{ .Values.units.thanos.helmrelease_spec.values.ruler.enabled }}'
@@ -5204,8 +5204,6 @@ units:
       chart:
         spec:
           chart: .
-      install:
-        createNamespace: true # false?
 
   get-openstack-images:
     info:
