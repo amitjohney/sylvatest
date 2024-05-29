@@ -49,6 +49,7 @@ yq '.os_images | keys | .[]' /opt/images.yaml | while read os_image_key; do
 done
 
 echo "Adding maximum image size"
+export MAX_IMAGE_SIZE
 yq eval -i '.data["MAX_IMAGE_SIZE"] = strenv(MAX_IMAGE_SIZE)' "$configmap_file"
 
 # Update configmap
