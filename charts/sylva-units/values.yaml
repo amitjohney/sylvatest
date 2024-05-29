@@ -5300,7 +5300,6 @@ cluster:
 
   capm3:
     machine_image_checksum_type: sha256
-    image_provisioning_host: '{{ .Values.display_external_ip }}'
 
   enable_longhorn: '{{ or (tuple . "longhorn" | include "unit-enabled") (tuple . .Values.units.longhorn.enabled | include "interpret-for-test") | include "as-bool" }}'
 
@@ -5808,8 +5807,6 @@ shared_workload_clusters_values:
     mgmt_cluster_ip: '{{ .Values.display_external_ip }}'
     rancher_domain: '{{ .Values.cluster_domain }}'
     use_custom_rancher_dns_resolver: true
-    capm3:
-      image_provisioning_host: '{{ .Values.display_external_ip }}'
     capo:
       network_id: '{{ .Values.cluster.capo.network_id | include "set-if-defined" }}'
     default_node_class: '{{ .Values.cluster.default_node_class }}'
