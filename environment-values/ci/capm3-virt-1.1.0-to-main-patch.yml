@@ -1,0 +1,21 @@
+# This needs to be present in the source git revision, so on top of 1.1.0 tag,
+# like in branch bb/test-issue1193-1.1.0-patch
+# we have it here only for doc purposes only
+
+---
+source_templates:
+  sylva-capi-cluster:
+    spec:
+      ref:
+        tag: 0.2.15
+  libvirt-metal:
+    spec:
+      ref:
+        tag: 0.1.12-200g-data-disk # https://gitlab.com/sylva-projects/sylva-elements/container-images/libvirt-metal/-/tree/bb/increase-longhorn-disk?ref_type=heads
+
+
+# https://gitlab.com/sylva-projects/sylva-core/-/issues/1193#note_1920529270
+# [git:add_set_e_command]root@caasdev:sylva-capi-cluster# git tag --contains  f2eff2fc98ffb2f73d40ef90b91cf1113d5e48ee
+# 0.2.15
+# 0.2.16
+# :
