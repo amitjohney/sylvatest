@@ -42,15 +42,14 @@ yq '.os_images | keys | .[]' /opt/images.yaml | while read os_image_key; do
     if (( current_image_size > MAX_IMAGE_SIZE )); then
       MAX_IMAGE_SIZE=$current_image_size
       export MAX_IMAGE_SIZE
+      echo "Adding maximum image size"
+      yq eval -i '.data["MAX_IMAGE_SIZE"] = strenv(MAX_IMAGE_SIZE)' "$configmap_file"
     fi
   fi
   echo "Adding user provided details"
   yq '.os_images.[env(os_image_key)] |del(.. | select(has("sylva_dib_image")).sylva_dib_image)' /opt/images.yaml | sed 's/^/        /' >> $configmap_file
   echo ---
 done
-
-echo "Adding maximum image size"
-yq eval -i '.data["MAX_IMAGE_SIZE"] = strenv(MAX_IMAGE_SIZE)' "$configmap_file"
 
 # Update configmap
 echo "Updating ${OUTPUT_CONFIGMAP} configmap"
