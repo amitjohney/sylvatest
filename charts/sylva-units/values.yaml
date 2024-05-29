@@ -3283,6 +3283,8 @@ units:
       install:
         createNamespace: true
       values:
+        persistentVolume:
+          enabled: true
         securityContext:
           runAsNonRoot: true
           allowPrivilegeEscalation: false
@@ -3293,6 +3295,47 @@ units:
           capabilities:
             drop:
               - ALL
+        extraArgs:
+          - --persistence.file=/data/pushgateway.data
+          - --persistence.interval=5m
+        extraContainers:
+          - name: prometheus-pushgateway-metrics-purger
+            image: curlimages/curl:8.8.0
+            command:
+            - sh
+            - -c
+            - |
+              while true
+              do
+                del_req="curl -X DELETE http://localhost:9091/metrics/job/"
+                curl -s http://localhost:9091/metrics | \
+                grep push_time_seconds | \
+                grep -Ev '^#' | \
+                while read line
+                do
+                  last_pushed=$(printf "%.f" `echo $line | awk '{print $2}'`)
+                  job_name=$(echo $line | \
+                          awk -F '}' '{print $1}' | \
+                          grep -o 'job=.*' | \
+                          cut -f1 -d ',' | \
+                          cut -f2 -d'=' | \
+                          tr -d '"')
+                  std_unix_time_now=$(date +%s)
+                  interval_seconds=$((std_unix_time_now - last_pushed))
+                  [ $interval_seconds -gt 180 ] \
+                  && eval $del_req$job_name && echo "$(date), Deleted job group - $job_name" \
+                  || echo "$(date), Purge action skipped. Interval not satisfied" # adjust interval_seconds as per requirement
+                done
+                sleep 3600
+              done
+            securityContext:
+              allowPrivilegeEscalation: false
+              runAsNonRoot: true
+              capabilities:
+                drop:
+                - ALL
+              seccompProfile:
+                type: RuntimeDefault
 
   snmp-exporter:
     info:
