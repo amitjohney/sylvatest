@@ -34,10 +34,10 @@ variables:
     value: "20"
     description: "apply.sh timeout"
   MGMT_WATCH_TIMEOUT_MIN:
-    value: "30"
+    value: "60"
     description: "bootstrap.sh timeout"
   BOOTSTRAP_WATCH_TIMEOUT_MIN:
-    value: "45"
+    value: "60"
     description: "bootstrap.sh timeout for bootstrap cluster"
   # Customize values files
   MGMT_INITIAL_ADDITIONAL_VALUES:
@@ -60,7 +60,7 @@ variables:
       Git revision used for the management cluster update"
   # Workload cluster relative variables
   APPLY_WC_WATCH_TIMEOUT_MIN:
-    value: "30"
+    value: "60"
     description: "apply-workload-cluster.sh timeout"
   # Customize values files
   WC_INITIAL_ADDITIONAL_VALUES:
@@ -235,7 +235,7 @@ capd-rke2-ubuntu:
 capd-kubeadm-oci-ubuntu:
   extends: .default-trigger-oci
   variables:
-    CAPD_RUNNER_TAG: gitlab-org-docker
+    CAPD_RUNNER_TAG: saas-linux-medium-amd64
     E2E_JOB_MR_PARITY: odd
     ENV_NAME: kubeadm-capd
     ONLY_DEPLOY_MGMT: "true"
