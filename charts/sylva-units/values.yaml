@@ -3498,7 +3498,7 @@ units:
       chart:
         spec:
           chart: sriov-crd
-          version: 103.0.0+up0.1.0
+          version: 103.1.0+up0.1.0
 
   sriov:
     info:
@@ -3517,7 +3517,7 @@ units:
       chart:
         spec:
           chart: sriov
-          version: 103.0.0+up0.1.0
+          version: 103.1.0+up0.1.0
       values:
         cert_manager: true
 
