@@ -569,7 +569,7 @@ units:
       chart:
         spec:
           chart: postgresql
-          version: 14.3.3
+          version: 15.5.0
       targetNamespace: keycloak
       values:
         auth:
@@ -686,7 +686,7 @@ units:
       chart:
         spec:
           chart: postgresql
-          version: 14.0.5
+          version: 15.5.0
       targetNamespace: harbor
       values:
         auth:
