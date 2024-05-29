@@ -34,7 +34,7 @@ variables:
     value: "20"
     description: "apply.sh timeout"
   MGMT_WATCH_TIMEOUT_MIN:
-    value: "30"
+    value: "45"
     description: "bootstrap.sh timeout"
   BOOTSTRAP_WATCH_TIMEOUT_MIN:
     value: "45"
@@ -60,7 +60,7 @@ variables:
       Git revision used for the management cluster update"
   # Workload cluster relative variables
   APPLY_WC_WATCH_TIMEOUT_MIN:
-    value: "30"
+    value: "45"
     description: "apply-workload-cluster.sh timeout"
   # Customize values files
   WC_INITIAL_ADDITIONAL_VALUES:
