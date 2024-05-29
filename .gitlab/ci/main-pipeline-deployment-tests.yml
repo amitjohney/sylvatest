@@ -341,6 +341,12 @@ capo-rke2-oci-suse:
   variables:
     ENV_NAME: rke2-capm3-virt
     DOCKER_HOST: ""
+    MGMT_INITIAL_REVISION: "bb/test-issue1193-1.1.0-patch" # https://gitlab.com/sylva-projects/sylva-core/-/compare/1.1.0...bb%2Ftest-issue1193-1.1.0-patch?from_project_id=42451983&straight=false
+    MGMT_INITIAL_ADDITIONAL_VALUES: environment-values/ci/capm3-virt-1.1.0-to-main-patch.yml
+    MGMT_UPDATE_REVISION: "main"
+    WC_INITIAL_REVISION: "bb/test-issue1193-1.1.0-patch"   # https://gitlab.com/sylva-projects/sylva-core/-/compare/1.1.0...bb%2Ftest-issue1193-1.1.0-patch?from_project_id=42451983&straight=false
+    WC_INITIAL_ADDITIONAL_VALUES: environment-values/ci/capm3-virt-1.1.0-to-main-patch.yml
+    WC_UPDATE_REVISION: "main"
   trigger:
     include: .gitlab/ci/pipeline-deploy-capm3-virt-equinix.yml
     strategy: depend
@@ -349,6 +355,8 @@ capm3-ha-rke2-virt-ubuntu:
   extends: .capm3-virt-equinix
   variables:
     MGMT_ADDITIONAL_VALUES: environment-values/rke2-capm3-virt/ha.yaml
+    MGMT_INITIAL_ADDITIONAL_VALUES: environment-values/ci/control-plane-replicas-3.yml
+    MGMT_UPDATE_ADDITIONAL_VALUES: environment-values/ci/dummy-rolling-update-trigger.yml
     WC_ADDITIONAL_VALUES: environment-values/workload-clusters/rke2-capm3-virt/ha.yaml
     RUNNER_PLAN: m3.large.x86
 
