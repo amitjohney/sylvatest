@@ -2,9 +2,11 @@
 
 This document explains how to use `cosign` to sign the artifacts pushed to the OCI registry of this project.
 
-## Generate Keys
+## Generate Signing Keys
 
-The first step is to generate keys using the GitLab provider with the command:
+### Generating a Cosign Key Pair for a GitLab Project
+
+If you want a `cosign` key pair dedicated to a GitLab project, e.g. the `cosign` key pair for sylva-core, you can generate keys with the GitLab provider. The later stores the Cosign signing material in the CI/CD variables of the project. The command is as follows:
 
 ```shell
 cosign generate-key-pair gitlab://<project_id>
@@ -38,7 +40,7 @@ On success, three CI/CD variables are added to the project:
 >
 > For example, if using Vault: when the signing is handled by a CI, the signing job shall authenticate against Vault with the JWT method (see https://docs.gitlab.com/ee/ci/secrets/) to fetch the signing keys. On the Vault side, a role is configured to grant only the Job's JWT with the appropriate bound claims, e.g. a set of GitLab user ID, to access the secret path with the signing keys.
 
-The public key can be retrieved with:
+The public key is in the file `cosign.pub` created in your current repository. You can also retrieve the public key with the command `cosign public-key --key gitlab://<project ID>`, for example:
 
 ```shell
 $ cosign public-key --key gitlab://43786055
@@ -46,6 +48,71 @@ $ cosign public-key --key gitlab://43786055
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAESbuSEUBFW0yndQABomJKA3dQwbKD
 cSWbGpnECsZ7IvdUj9GGGlmPpYl8H0WCHCRuWGSGX58ZiiSuUQRDQoHAxw==
 -----END PUBLIC KEY-----
+```
+
+### Generating a Cosign Key Pair for a GitLab Group
+
+When dealing with a bunch of GitLab project aiming at producing Sylva artifacts, e.g. projects of the group `sylva-elements`, the cosign keypair should be created at the group to avoid using different keys per project, which would turn the signature verification of Sylva artifacts into a nightmare. In this case, all the projects belonging to the group inherit the same signing material stored in the group variables. However `cosign generate-key-pair gitlab://foo/bar`, used in the previous section, only generates a key pair with a project as destination (cf. https://github.com/sigstore/cosign/issues/2914). To adress the issue, a group member with read/write privileges on CI/CD variables can use the script `sylva-core/tools/security/groups-keys.sh`. This script generates the key pair in a target project (or copy an existing key pair from a given project) and then promotes it at the group level (export the environment variable `GITLAB_TOKEN` with rights to create CI/CD variables before runing the script):
+
+```shell
+$ ./groups-keys.sh -h
+Manages Cosign Key pair at the Gitlab Group level
+  - Moves an existing Cosign Key pair from a Gitlab project to a Gitlab group.
+  - Creates a Cosign Key pair in a Gitlab project then moves it to a Gitlab group.
+  - Deletes a Cosign Key pair from a Gitlab group
+
+Before runing this script: export the environment variable GITLAB_TOKEN with rights to create CI/CD variables
+
+Syntax:
+groups-keys.sh [-c|h] PROJECT_ID GROUP_ID
+groups-keys.sh [-d|h] GROUP_ID
+
+options:
+c     Create Cosign key pair in PROJECT_ID before moving it.
+d     Delete key pair
+h     Print this Help.
+```
+
+For example, to create a key pair in a givent GitLab proj-ect and promote it at the group level:
+
+```shell
+$ ./groups-keys.sh -c 43786055 63142339
+Generating key pair for Project diskimage-builder (ID: 43786055)
+Password written to "COSIGN_PASSWORD" variable
+Private key written to "COSIGN_PRIVATE_KEY" variable
+Public key written to "COSIGN_PUBLIC_KEY" variable
+Public key also written to cosign.pub
+Moving key pair from diskimage-builder (ID: 43786055) to Group sylva-elements (ID: 63142339)
+Group Variable COSIGN_PRIVATE_KEY created
+Group Variable COSIGN_PASSWORD created
+Group Variable COSIGN_PUBLIC_KEY created
+Removing key pair from Project diskimage-builder (ID: 43786055)
+Project Variable COSIGN_PRIVATE_KEY deleted
+Project Variable COSIGN_PASSWORD deleted
+Project Variable COSIGN_PUBLIC_KEY deleted
+```
+
+Skip the flag `-c` if you want to promote an existing key pair at the group level. For example, to promote **diskimage-builder** cosign signing material at the **sylva-elements** group level, run the following command:
+
+```shell
+$ ./groups-keys.sh 43786055 63142339
+Moving key pair from diskimage-builder (ID: 43786055) to Group sylva-elements (ID: 63142339)
+Group Variable COSIGN_PRIVATE_KEY created
+Group Variable COSIGN_PASSWORD created
+Group Variable COSIGN_PUBLIC_KEY created
+Removing key pair from Project diskimage-builder (ID: 43786055)
+Project Variable COSIGN_PRIVATE_KEY deleted
+Project Variable COSIGN_PASSWORD deleted
+Project Variable COSIGN_PUBLIC_KEY deleted
+```
+
+Now, you should have the `cosign` material stored in the CI/CD variable of the group **sylva-elements** and all projects of this group inherit from these CI/CD variables.
+
+To delete the group key pair, run:
+
+```shell
+$ ./groups-keys.sh -d 63142339
+Deleting key pair from Group: sylva-elements (ID: 63142339)
 ```
 
 ## Signing
