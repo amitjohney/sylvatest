@@ -3264,8 +3264,7 @@ units:
 
   prometheus-pushgateway:
     info:
-      description: installs Prometheus Pushgateway
-      # maturity: beta
+      description: installs Prometheus Push-gateway exporter
     enabled_conditions:
     - '{{ tuple . "monitoring" | include "unit-enabled" }}'
     unit_templates:
@@ -3284,15 +3283,6 @@ units:
       install:
         createNamespace: true
       values:
-      #   extraArgs:
-      #     - "--config.file=/config/pushgateway.yaml"
-      #   # metrics:
-      #   #   enabled: true
-      #   # serviceMonitor:
-      #   #   enabled: true
-      #   #   namespace: default
-      #   #   additionalLabels:
-      #   #     app: prometheus-pushgateway
         securityContext:
           runAsNonRoot: true
           allowPrivilegeEscalation: false
@@ -3303,38 +3293,6 @@ units:
           capabilities:
             drop:
               - ALL
-      #   extraManifests:
-      #     - |
-      #       apiVersion: v1
-      #       kind: ConfigMap
-      #       metadata:
-      #         name: prometheus-pushgateway-extra-ca-certs
-      #       data:
-      #         extra-ca-certs.pem: | {{ .Values.oci_registry_extra_ca_certs | default "" | nindent 4 }}
-      # #   fullnameOverride: 'snmp-exporter'
-      # #   replicas: 1
-      # _postRenderers:
-      #   - kustomize:
-      #       patchesStrategicMerge:
-      #         - kind: Deployment
-      #           apiVersion: apps/v1
-      #           # metadata:
-      #           #   name: snmp-exporter
-      #           spec:
-      #             template:
-      #               spec:
-      #                 containers:
-      #                   - name: prometheus-pushgateway
-      #                     volumeMounts:
-      #                       - mountPath: /config
-      #                         name: config
-      #                 volumes:
-      #                   - emptyDir: {}
-      #                     name: config
-      #                   - name: extra-ca-certs
-      #                     configMap:
-      #                       name: prometheus-pushgateway-extra-ca-certs
-
 
   snmp-exporter:
     info:
