@@ -43,6 +43,7 @@ yq '.os_images | keys | .[]' /opt/images.yaml | while read os_image_key; do
       MAX_IMAGE_SIZE=$current_image_size
     fi
   fi
+  MAX_IMAGE_SIZE=7
   echo "Adding user provided details"
   yq '.os_images.[env(os_image_key)] |del(.. | select(has("sylva_dib_image")).sylva_dib_image)' /opt/images.yaml | sed 's/^/        /' >> $configmap_file
   echo ---
