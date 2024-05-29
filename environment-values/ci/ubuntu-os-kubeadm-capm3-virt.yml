@@ -10,3 +10,13 @@ cluster:
     bootstrap_provider: cabpk
   capm3:
     image_key: ubuntu-jammy-plain-kubeadm-1-28-9
+
+units:
+  multus:
+    enabled: true
+  multus-ready:
+    enabled: true
+  kubevirt:
+    enabled: true
+  kubevirt-test-vms:
+    enabled: true

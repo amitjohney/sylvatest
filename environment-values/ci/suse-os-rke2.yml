@@ -11,3 +11,13 @@ cluster:
     image_key: opensuse-15-5-plain-rke2-1-28-9
   capo:
     image_key: opensuse-15-5-plain-rke2-1-28-9
+
+units:
+  multus:
+    enabled: true
+  multus-ready:
+    enabled: true
+  kubevirt:
+    enabled: true
+  kubevirt-test-vms:
+    enabled: true

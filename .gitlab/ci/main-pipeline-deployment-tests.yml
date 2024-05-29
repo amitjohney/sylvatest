@@ -354,6 +354,9 @@ capm3-ha-rke2-virt-ubuntu:
 
 capm3-rke2-virt-ubuntu:
   extends: .capm3-virt-equinix
+  variables:
+    MGMT_ADDITIONAL_VALUES: environment-values/ci/enable-kubevirt.yml
+    WC_ADDITIONAL_VALUES: environment-values/ci/enable-kubevirt.yml
 
 capm3-rke2-virt-suse:
   extends: .capm3-virt-equinix
