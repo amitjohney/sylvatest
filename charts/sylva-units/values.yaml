@@ -459,14 +459,9 @@ units:
           runAsNonRoot: true
           seccompProfile:
             type: RuntimeDefault
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - ALL
           privileged: false
           readOnlyRootFilesystem: true
           runAsGroup: 10000
-          runAsUser: 10000
         serviceAccount:
           annotations: {}
           create: true
@@ -576,6 +571,8 @@ units:
           database: keycloak
           password: '{{ .Values._internal.postgres_user_password }}'
           replicationPassword: '{{ .Values._internal.postgres_replication_password }}'
+        commonLabels:
+          skipSecurityContext: "true"
         architecture: replication
         nameOverride: postgres
         serviceAccount:
@@ -791,56 +788,21 @@ units:
         - kustomize:
             patches:
               - target:
-                  kind: Deployment|StatefulSet
-                patch: |-
-                  - op: add
-                    path: /spec/template/spec/containers/0/securityContext
-                    value:
-                      runAsNonRoot: true
-                      seccompProfile:
-                        type: RuntimeDefault
-                      allowPrivilegeEscalation: false
-                      capabilities:
-                        drop:
-                          - ALL
-              - target:
-                  kind: Deployment
-                  name: harbor-registry
-                patch: |-
-                  - op: add
-                    path: /spec/template/spec/containers/1/securityContext
-                    value:
-                      runAsNonRoot: true
-                      seccompProfile:
-                        type: RuntimeDefault
-                      allowPrivilegeEscalation: false
-                      capabilities:
-                        drop:
-                          - ALL
-              - target:
                   kind: StatefulSet
                   name: harbor-database
                 patch: |-
                   - op: add
+                    path: /spec/template/spec/containers/0/securityContext
+                    value:
+                      runAsUser: 999
+                  - op: add
                     path: /spec/template/spec/initContainers/0/securityContext
                     value:
-                      runAsNonRoot: true
-                      seccompProfile:
-                        type: RuntimeDefault
-                      allowPrivilegeEscalation: false
-                      capabilities:
-                        drop:
-                          - ALL
+                      runAsUser: 999
                   - op: add
                     path: /spec/template/spec/initContainers/1/securityContext
                     value:
-                      runAsNonRoot: true
-                      seccompProfile:
-                        type: RuntimeDefault
-                      allowPrivilegeEscalation: false
-                      capabilities:
-                        drop:
-                          - ALL
+                      runAsUser: 999
       install:
         createNamespace: true
 
@@ -1090,7 +1052,6 @@ units:
       sylva-ca: true
       vault: true
       vault-config-operator: true
-      kyverno: true
       keycloak-add-client-scope: true
       keycloak-oidc-external-secrets: true
     repo: sylva-core
@@ -1513,8 +1474,7 @@ units:
     info:
       description: installs Kyverno
       maturity: core-component
-    unit_templates:
-    - base-deps
+    unit_templates: []  # we intendedly don't inherit from base-deps, because kyverno is itself part of base dependencies
     helm_repo_url: https://kyverno.github.io/kyverno
     helmrelease_spec:
       chart:
@@ -1590,8 +1550,6 @@ units:
     - base-deps
     enabled_conditions:
     - '{{ tuple . "kyverno" | include "unit-enabled" }}'
-    depends_on:
-      kyverno: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/kyverno-policies/generic
@@ -1613,7 +1571,6 @@ units:
     - '{{ tuple . "kyverno" | include "unit-enabled" }}'
     - '{{ tuple . "rancher" | include "unit-enabled" }}'
     depends_on:
-      kyverno: '{{ tuple . "kyverno" | include "unit-enabled" }}'
       rancher: true
     repo: sylva-core
     kustomization_spec:
@@ -1710,6 +1667,19 @@ units:
       wait: true
       _components:
         - '{{ tuple "components/ha" (.Values._internal.ha_cluster.is_ha) | include "set-only-if" }}'
+      _patches:
+        - target:
+            group: apps
+            version: v1
+            kind: Deployment
+            name: capd-controller-manager
+            namespace: capd-system
+          patch: |-
+            - op: add
+              path: /spec/template/spec/containers/0/securityContext
+              value:
+                privileged: false
+                allowPrivilegeEscalation: true
 
   capo:
     info:
@@ -1725,24 +1695,6 @@ units:
       wait: true
       _components:
         - '{{ tuple "components/ha" (.Values._internal.ha_cluster.is_ha) | include "set-only-if" }}'
-      _patches:
-        - target:
-            group: apps
-            version: v1
-            kind: Deployment
-            name: capo-controller-manager
-            namespace: capo-system
-          patch: |-
-            - op: add
-              path: /spec/template/spec/containers/0/securityContext
-              value:
-                runAsNonRoot: true
-                seccompProfile:
-                  type: RuntimeDefault
-                allowPrivilegeEscalation: false
-                capabilities:
-                  drop:
-                    - ALL
 
   capm3:
     info:
@@ -1876,6 +1828,9 @@ units:
           ironicIP: '{{ .Values.display_external_ip }}'
           provisioningInterface: eth0
         metal3-ironic:
+          securityContext:
+            runAsUser: 10475
+            fsGroup: 10475
           service:
             type: LoadBalancer
             externalIPs:
@@ -1892,6 +1847,9 @@ units:
         metal3-baremetal-operator:
           replicaCount: '{{ .Values._internal.ha_cluster.is_ha | ternary 2 1 | include "preserve-type" }}'
         metal3-mariadb:
+          securityContext:
+            runAsUser: 10060
+            fsGroup: 10060
           persistence:
             storageClass: '{{ .Values._internal.default_storage_class }}'
 
@@ -2782,10 +2740,10 @@ units:
               - ALL
           privileged: false
           runAsNonRoot: true
-          runAsGroup: 10000
-          runAsUser: 10000
           seccompProfile:
             type: RuntimeDefault
+          runAsGroup: 1
+          runAsUser: 1
         conf:
           env:
             - name: URL_REMAP
@@ -2976,27 +2934,6 @@ units:
                   - apiGroup: rbac.authorization.k8s.io
                     kind: User
                     name: sylva-admin@example.com  # add same RBAC for the SSO user, so that when flux-webui SA impersonates it has privileges; cannot use "infra-admins" group here, see https://gitlab.com/sylva-projects/sylva-core/-/issues/427
-              - kind: Deployment
-                apiVersion: apps/v1
-                metadata:
-                  name: flux-webui-weave-gitops
-                spec:
-                  template:
-                    spec:
-                      containers:
-                      - name: weave-gitops
-                        securityContext:
-                          allowPrivilegeEscalation: false
-                          capabilities:
-                            drop:
-                            - ALL
-                          privileged: false
-                          readOnlyRootFilesystem: true
-                          runAsNonRoot: true
-                          runAsGroup: 1000
-                          runAsUser: 1000
-                          seccompProfile:
-                            type: RuntimeDefault
 
   prometheus-flux:
     info:
@@ -3353,15 +3290,8 @@ units:
             - name: no_proxy
               value: '{{ include "sylva-units.no_proxy" (tuple .) | quote }}'
           securityContext:
-            capabilities:
-              drop:
-              - ALL
-            runAsNonRoot: true
             runAsUser: 1000
             readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-            seccompProfile:
-              type: RuntimeDefault
           volumeMounts:
             - mountPath: /config
               name: config
@@ -3691,7 +3621,6 @@ units:
     - base-deps
     depends_on:
       cluster-creator-login: true
-      kyverno: true
     repo: sylva-core
     kustomization_spec:
       path: ./kustomize-units/cluster-creator-policy
@@ -3806,27 +3735,6 @@ units:
           proxy: '{{ get .Values.proxies "https_proxy" }}'
           no_proxy: '{{ include "sylva-units.no_proxy" (tuple .) }}'
           extra_ca_certs: '{{ .Values.oci_registry_extra_ca_certs | include "set-if-defined" }}'
-          securityContext:
-            capabilities:
-              drop:
-              - ALL
-            runAsNonRoot: true
-            runAsUser: 10000
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-            seccompProfile:
-              type: RuntimeDefault
-        nginx:
-          securityContext:
-            capabilities:
-              drop:
-              - ALL
-            runAsNonRoot: true
-            runAsUser: 10000
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-            seccompProfile:
-              type: RuntimeDefault
         ingress:
           className: nginx
           hosts:
@@ -4150,8 +4058,8 @@ units:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-          runAsGroup: 1000
           runAsNonRoot: true
+          runAsGroup: 1000
           runAsUser: 1000
           seccompProfile:
             type: RuntimeDefault
@@ -4482,13 +4390,13 @@ units:
                 seccompProfile:
                   type: RuntimeDefault
               securityContext:
+                runAsNonRoot: true
+                seccompProfile:
+                  type: RuntimeDefault
                 runAsUser: 1000
                 runAsGroup: 1000
                 fsGroup: 1000
                 fsGroupChangePolicy: "OnRootMismatch"
-                runAsNonRoot: true
-                seccompProfile:
-                  type: RuntimeDefault
           metrics:
             enabled: disable
           features:
@@ -4766,12 +4674,7 @@ units:
           rke2:
             enabled: '{{ .Values.cluster.capi_providers.bootstrap_provider | eq "cabpr" | include "as-bool" }}'
         securityContext:
-          allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
-          capabilities:
-            drop: ["ALL"]
-          seccompProfile:
-            type: RuntimeDefault
 
   logging-config:
     info:

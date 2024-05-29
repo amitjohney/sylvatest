@@ -11,8 +11,6 @@ units:
     enabled: false
   capi-rancher-import:
     enabled: false
-  kyverno:
-    enabled: false
   shared-workload-clusters-settings:
     enabled: false
   harbor:
