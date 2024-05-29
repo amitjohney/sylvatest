@@ -3674,11 +3674,14 @@ units:
     kustomization_spec:
       path: ./kustomize-units/kube-job
       force: true
+      _components:
+      - '{{ tuple "./components/certs" (not .Values.oci_registry_insecure) | include "set-only-if" }}'
       postBuild:
         substitute:
           JOB_NAME: create-image-info
           JOB_TARGET_NAMESPACE: '{{ .Release.Namespace }}'
           JOB_CHECKSUM: '{{ .Values._internal.os_images_info_input_hash }}'
+          EXTRA_CA_CERTS: '{{ tuple (.Values.oci_registry_extra_ca_certs | default "" | b64enc) (not .Values.oci_registry_insecure) | include "set-only-if" }}'
       _patches:
         - target:
             kind: Job
