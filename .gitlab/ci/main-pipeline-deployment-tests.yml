@@ -37,7 +37,7 @@ variables:
     value: "60"
     description: "bootstrap.sh timeout"
   BOOTSTRAP_WATCH_TIMEOUT_MIN:
-    value: "45"
+    value: "60"
     description: "bootstrap.sh timeout for bootstrap cluster"
   # Customize values files
   MGMT_INITIAL_ADDITIONAL_VALUES:
