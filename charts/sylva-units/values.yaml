@@ -3262,6 +3262,80 @@ units:
     helm_secret_values:
       config: '{{ .Values.monitoring.alertmanager.config | include "preserve-type" }}'
 
+  prometheus-pushgateway:
+    info:
+      description: installs Prometheus Pushgateway
+      # maturity: beta
+    enabled_conditions:
+    - '{{ tuple . "monitoring" | include "unit-enabled" }}'
+    unit_templates:
+    - base-deps
+    depends_on:
+      monitoring: true
+    helm_repo_url: https://prometheus-community.github.io/helm-charts
+    helmrelease_spec:
+      releaseName: prometheus-pushgateway
+      targetNamespace: pushgateway
+      storageNamespace: pushgateway
+      chart:
+        spec:
+          chart: prometheus-pushgateway
+          version: 2.12.0
+      install:
+        createNamespace: true
+      values:
+      #   extraArgs:
+      #     - "--config.file=/config/pushgateway.yaml"
+      #   # metrics:
+      #   #   enabled: true
+      #   # serviceMonitor:
+      #   #   enabled: true
+      #   #   namespace: default
+      #   #   additionalLabels:
+      #   #     app: prometheus-pushgateway
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+        containerSecurityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+      #   extraManifests:
+      #     - |
+      #       apiVersion: v1
+      #       kind: ConfigMap
+      #       metadata:
+      #         name: prometheus-pushgateway-extra-ca-certs
+      #       data:
+      #         extra-ca-certs.pem: | {{ .Values.oci_registry_extra_ca_certs | default "" | nindent 4 }}
+      # #   fullnameOverride: 'snmp-exporter'
+      # #   replicas: 1
+      # _postRenderers:
+      #   - kustomize:
+      #       patchesStrategicMerge:
+      #         - kind: Deployment
+      #           apiVersion: apps/v1
+      #           # metadata:
+      #           #   name: snmp-exporter
+      #           spec:
+      #             template:
+      #               spec:
+      #                 containers:
+      #                   - name: prometheus-pushgateway
+      #                     volumeMounts:
+      #                       - mountPath: /config
+      #                         name: config
+      #                 volumes:
+      #                   - emptyDir: {}
+      #                     name: config
+      #                   - name: extra-ca-certs
+      #                     configMap:
+      #                       name: prometheus-pushgateway-extra-ca-certs
+
+
   snmp-exporter:
     info:
       description: installs SNMP exporter
