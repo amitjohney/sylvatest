@@ -17,6 +17,15 @@
 # Requirements:
 # - kubectl (for 'kubectl kustomize')
 # - flux (used to push the artifact)
+#
+# To enable signing when running manually, export the environment variables:
+# - COSIGN_PASSWORD
+# - COSIGN_PRIVATE_KEY (in PEM format)
+#
+# Cosign default signing material is available on sylva project gitlab://43786055
+#
+
+source $(dirname $0)/common.sh
 
 set -eu
 set -o pipefail
@@ -92,8 +101,13 @@ if [[ -n ${CI_REGISTRY_USER:-} ]]; then
     creds="--creds $CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD"
 fi
 
-flux push artifact $OCI_REGISTRY_ARTIFACT:$artifact_tag \
-	--path=. \
-	--source=$artifact_source \
-	--revision=$artifact_revision \
-    ${creds:-}
+artifact_url=$OCI_REGISTRY_ARTIFACT:$artifact_tag
+if (can_skip_artifact_push $artifact_url); then
+  echo "Skipping kustomize-units processing, kustomize-units:$artifact_tag already exists in $OCI_REGISTRY"
+  echo -e $section_end
+ continue
+else
+  tar -czf /tmp/kustomize-units-$artifact_tag.tgz ./kustomize-units
+  tgz_file="/tmp/kustomize-units-$artifact_tag.tgz"
+  push_and_sign $tgz_file kustomize-units $artifact_tag oci
+fi
